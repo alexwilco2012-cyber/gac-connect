@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAC Connect — Every port call. Every supplier. One platform.</title>
+<meta name="description" content="GAC Connect is the offshore services platform: a vetted supplier marketplace, predictive procurement, instant quote comparison, and tier discounts on GAC in-house services.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   GAC CONNECT — LANDING
+   ============================================================ */
+:root{
+  --ink:#0A2540; --ink-deep:#06132B; --ink-soft:#33475F;
+  --paper:#FAFBFD; --white:#FFFFFF;
+  --line:#E5EAF1; --line-strong:#CBD6E2;
+  --sea:#0E5E8A; --sea-bright:#1B7FB5; --sea-soft:#E8F1F7;
+  --gold:#C9A227; --gold-bright:#FFC72C; --gold-deep:#9A7B14; --gold-soft:#FBF6E3;
+  --success:#047857; --success-soft:#E7F4EF;
+  --warn:#B45309; --warn-soft:#FBF0E1;
+  --danger:#B91C1C; --danger-soft:#FBEAEA;
+  --promoted:#5B3FA8; --promoted-soft:#EFE9FB;
+  --radius:14px;
+  --shadow:0 1px 3px rgba(10,37,64,.08), 0 8px 30px rgba(10,37,64,.08);
+  --shadow-lg:0 2px 6px rgba(10,37,64,.10), 0 24px 60px rgba(10,37,64,.16);
+  --font:"Inter","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --display:"Space Grotesk","Segoe UI",Arial,sans-serif;
+  --maxw:1180px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+img,svg{display:block;max-width:100%;}
+a{color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--gold-bright);outline-offset:3px;border-radius:4px;}
+::selection{background:var(--gold-bright);color:var(--ink);}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+.eyebrow{font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--sea);display:flex;align-items:center;gap:10px;}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--gold-bright);border-radius:2px;flex-shrink:0;}
+.eyebrow.center{justify-content:center;}
+.eyebrow.center::after{content:"";width:26px;height:2px;background:var(--gold-bright);border-radius:2px;flex-shrink:0;}
+.h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.4vw,44px);line-height:1.12;letter-spacing:-.02em;margin-top:14px;}
+.lede{color:var(--ink-soft);font-size:clamp(15.5px,1.7vw,18px);margin-top:14px;max-width:640px;}
+.center-head{text-align:center;}
+.center-head .lede{margin-left:auto;margin-right:auto;}
+section{padding:clamp(64px,9vw,120px) 0;position:relative;scroll-margin-top:72px;}
+
+/* ------- buttons ------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:none;border-radius:10px;padding:14px 26px;font-weight:700;font-size:15px;text-decoration:none;transition:transform .18s ease, box-shadow .18s ease, background .18s ease;white-space:nowrap;}
+.btn:hover{transform:translateY(-2px);}
+.btn:active{transform:translateY(0);}
+.btn-gold{background:var(--gold-bright);color:var(--ink);box-shadow:0 6px 20px rgba(255,199,44,.35);}
+.btn-gold:hover{background:#FFD45C;box-shadow:0 10px 28px rgba(255,199,44,.45);}
+.btn-outline-light{background:rgba(255,255,255,.06);color:#fff;border:1.5px solid rgba(255,255,255,.28);backdrop-filter:blur(6px);}
+.btn-outline-light:hover{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);}
+.btn-navy{background:var(--ink);color:#fff;}
+.btn-navy:hover{background:#13314F;}
+.btn-outline{background:#fff;color:var(--sea);border:1.5px solid var(--line-strong);}
+.btn-outline:hover{border-color:var(--sea);}
+.btn .arrow{transition:transform .18s ease;}
+.btn:hover .arrow{transform:translateX(4px);}
+
+/* ------- pills ------- */
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;letter-spacing:.02em;}
+.pill-verified{background:var(--success-soft);color:var(--success);}
+.pill-inhouse{background:var(--gold-soft);color:var(--gold-deep);border:1px solid #E5D89A;}
+.pill-warn{background:var(--warn-soft);color:var(--warn);}
+.pill-danger{background:var(--danger-soft);color:var(--danger);}
+.pill-info{background:var(--sea-soft);color:var(--sea);}
+.pill-promoted{background:var(--promoted-soft);color:var(--promoted);border:1px solid #D9CCF5;}
+.pill-beta{background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);color:var(--gold-deep);}
+
+/* ------- reveal on scroll ------- */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);}
+.reveal.in{opacity:1;transform:none;}
+.reveal.d1{transition-delay:.08s;} .reveal.d2{transition-delay:.16s;} .reveal.d3{transition-delay:.24s;} .reveal.d4{transition-delay:.32s;} .reveal.d5{transition-delay:.4s;}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+  html{scroll-behavior:auto;}
+  .reveal,.mock,.hero-enter{opacity:1;transform:none;}
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;transition:background .3s ease, box-shadow .3s ease, border-color .3s ease;border-bottom:1px solid transparent;}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 24px;height:72px;display:flex;align-items:center;gap:28px;}
+.nav.scrolled{background:rgba(6,19,43,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:rgba(255,255,255,.08);box-shadow:0 8px 30px rgba(4,10,24,.35);}
+.wordmark{display:flex;align-items:baseline;gap:9px;text-decoration:none;color:#fff;flex-shrink:0;}
+.wordmark .gac{font-family:var(--display);font-weight:700;letter-spacing:.12em;font-size:21px;}
+.wordmark .connect{font-weight:400;letter-spacing:.3em;font-size:12px;color:var(--gold-bright);text-transform:uppercase;}
+.nav-links{display:flex;gap:4px;flex:1;justify-content:center;}
+.nav-links a{color:rgba(255,255,255,.72);text-decoration:none;font-weight:600;font-size:14px;padding:8px 14px;border-radius:8px;transition:color .2s, background .2s;}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.08);}
+.nav-cta{flex-shrink:0;display:flex;align-items:center;gap:12px;}
+.nav-cta .btn{padding:10px 20px;font-size:14px;}
+.menu-btn{display:none;background:none;border:none;width:44px;height:44px;border-radius:10px;position:relative;flex-shrink:0;}
+.menu-btn span{position:absolute;left:11px;right:11px;height:2px;background:#fff;border-radius:2px;transition:transform .3s ease, opacity .3s ease, top .3s ease;}
+.menu-btn span:nth-child(1){top:15px;} .menu-btn span:nth-child(2){top:21px;} .menu-btn span:nth-child(3){top:27px;}
+.menu-btn[aria-expanded="true"] span:nth-child(1){top:21px;transform:rotate(45deg);}
+.menu-btn[aria-expanded="true"] span:nth-child(2){opacity:0;}
+.menu-btn[aria-expanded="true"] span:nth-child(3){top:21px;transform:rotate(-45deg);}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;z-index:99;background:rgba(6,19,43,.97);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.1);padding:14px 24px 26px;flex-direction:column;gap:4px;}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{color:rgba(255,255,255,.85);text-decoration:none;font-weight:600;font-size:17px;padding:13px 10px;border-radius:10px;}
+.mobile-menu a:hover{background:rgba(255,255,255,.08);color:#fff;}
+.mobile-menu .btn{margin-top:12px;justify-content:center;}
+@media (max-width:920px){
+  .nav-links{display:none;}
+  .nav-cta .btn-demo{display:none;}
+  .menu-btn{display:block;}
+  .nav-inner{justify-content:space-between;}
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{position:relative;background:radial-gradient(120% 110% at 50% -10%, #11335A 0%, #0A2540 45%, #06132B 100%);color:#fff;padding:0;overflow:hidden;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,199,44,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,199,44,.05) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 75% 65% at 50% 35%,#000 0%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse 75% 65% at 50% 35%,#000 0%,transparent 80%);}
+.hero-glow{position:absolute;top:8%;left:50%;width:900px;height:700px;transform:translateX(-50%);background:radial-gradient(circle,rgba(255,199,44,.13) 0%,transparent 62%);pointer-events:none;}
+.hero-inner{position:relative;z-index:2;max-width:var(--maxw);margin:0 auto;padding:clamp(130px,16vh,176px) 24px clamp(170px,20vw,230px);display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;background:rgba(255,199,44,.1);border:1px solid rgba(255,199,44,.32);color:var(--gold-bright);border-radius:999px;padding:7px 16px;font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;}
+.hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--gold-bright);box-shadow:0 0 0 0 rgba(255,199,44,.5);animation:pulse 2.4s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.5);}70%{box-shadow:0 0 0 9px rgba(255,199,44,0);}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);}}
+.hero h1{font-family:var(--display);font-weight:700;font-size:clamp(38px,5.6vw,64px);line-height:1.06;letter-spacing:-.025em;margin-top:26px;}
+.hero h1 .gold{color:var(--gold-bright);position:relative;white-space:nowrap;}
+.hero h1 .gold svg{position:absolute;left:0;right:0;bottom:-10px;width:100%;height:12px;color:rgba(255,199,44,.55);}
+.hero h1 .gold svg path{stroke-dasharray:320;stroke-dashoffset:320;animation:draw 1.1s 1s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes draw{to{stroke-dashoffset:0;}}
+.hero .sub{color:#B9C8D6;font-size:clamp(16px,1.9vw,19px);line-height:1.65;margin-top:24px;max-width:540px;}
+.hero .sub strong{color:#fff;font-weight:600;}
+.hero-ctas{display:flex;gap:14px;margin-top:38px;flex-wrap:wrap;}
+.hero-proof{display:flex;gap:26px;margin-top:46px;flex-wrap:wrap;}
+.hero-proof .item{display:flex;flex-direction:column;gap:2px;}
+.hero-proof .n{font-family:var(--display);font-weight:700;font-size:26px;color:#fff;letter-spacing:-.01em;}
+.hero-proof .n em{font-style:normal;color:var(--gold-bright);}
+.hero-proof .l{font-size:12.5px;color:#8FA6BC;letter-spacing:.04em;}
+.hero-enter{opacity:0;transform:translateY(26px);animation:enter .85s cubic-bezier(.22,.61,.36,1) forwards;}
+.hero-enter.e2{animation-delay:.12s;} .hero-enter.e3{animation-delay:.24s;} .hero-enter.e4{animation-delay:.36s;} .hero-enter.e5{animation-delay:.48s;}
+@keyframes enter{to{opacity:1;transform:none;}}
+
+/* hero product mock */
+.hero-visual{position:relative;min-height:540px;}
+.mock{position:absolute;background:#fff;color:var(--ink);border-radius:16px;box-shadow:0 30px 70px rgba(2,8,20,.55);padding:20px;opacity:0;}
+@keyframes mock-in{from{opacity:0;transform:translateY(34px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+.mock-quote{top:30%;left:0;width:min(330px,78%);z-index:3;animation:mock-in .9s .5s cubic-bezier(.22,.61,.36,1) forwards, floaty 6s 1.5s ease-in-out infinite;}
+.mock-quote .head{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.mock-quote .name{font-weight:700;font-size:15px;}
+.mock-quote .src{font-size:11.5px;color:var(--ink-soft);margin-top:3px;display:flex;align-items:center;gap:6px;}
+.mock-quote .src .d{width:7px;height:7px;border-radius:50%;background:#0F6CBD;}
+.mock-quote .price{font-family:var(--display);font-weight:700;font-size:30px;margin-top:12px;display:flex;align-items:center;gap:10px;}
+.mock-quote table{width:100%;font-size:12.5px;border-collapse:collapse;margin-top:10px;}
+.mock-quote td{padding:6px 0;border-bottom:1px dashed var(--line);color:var(--ink-soft);}
+.mock-quote td:last-child{text-align:right;font-weight:600;color:var(--ink);}
+.mock-quote tr:last-child td{border-bottom:none;}
+.mock-quote .accept{margin-top:12px;width:100%;border:none;background:var(--sea);color:#fff;font-weight:700;font-size:13.5px;border-radius:9px;padding:11px;}
+.mock-predict{top:0;right:0;width:min(290px,70%);z-index:2;animation:mock-in .9s .75s cubic-bezier(.22,.61,.36,1) forwards, floaty 6s 2.8s ease-in-out infinite;}
+.mock-predict .ey{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sea);}
+.mock-predict .v{font-weight:700;font-size:14.5px;margin-top:6px;}
+.mock-predict ul{list-style:none;margin-top:10px;}
+.mock-predict li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;padding:7px 0;border-bottom:1px dashed var(--line);}
+.mock-predict li:last-child{border-bottom:none;}
+.mock-predict .pill{font-size:10px;padding:3px 8px;flex-shrink:0;}
+.mock-alert{bottom:2%;right:0;width:min(290px,70%);z-index:4;padding:16px 18px;animation:mock-in .9s 1s cubic-bezier(.22,.61,.36,1) forwards, floaty 6s 3.6s ease-in-out infinite;}
+.mock-alert .row{display:flex;gap:11px;align-items:flex-start;}
+.mock-alert .ic{width:34px;height:34px;border-radius:9px;background:var(--warn-soft);color:var(--warn);display:grid;place-items:center;font-size:16px;flex-shrink:0;}
+.mock-alert .t{font-weight:700;font-size:13px;}
+.mock-alert .s{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.mock-badge{top:12%;left:8%;z-index:5;padding:12px 18px;border-radius:999px;display:flex;align-items:center;gap:9px;background:var(--ink);color:#fff;border:1px solid rgba(255,199,44,.4);animation:mock-in .9s 1.2s cubic-bezier(.22,.61,.36,1) forwards, floaty 6s 4.2s ease-in-out infinite;}
+.mock-badge .check{width:22px;height:22px;border-radius:50%;background:var(--gold-bright);color:var(--ink);display:grid;place-items:center;font-size:12px;font-weight:800;}
+.mock-badge .txt{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.04em;}
+@keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+
+/* hero sea */
+.hero-sea{position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;z-index:1;}
+.hero-sea .waves{position:absolute;inset:0;width:100%;height:100%;}
+.hero-vessel{position:absolute;bottom:52px;width:150px;animation:vessel-drift 36s linear infinite;}
+@keyframes vessel-drift{0%{transform:translateX(-180px);}100%{transform:translateX(calc(100vw + 60px));}}
+.vessel-bob{animation:bob 3s ease-in-out infinite;transform-origin:center;}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-.6deg);}50%{transform:translateY(-3px) rotate(.6deg);}}
+@media (max-width:920px){
+  .hero-inner{grid-template-columns:1fr;padding-top:120px;gap:26px;}
+  .hero-visual{min-height:0;height:430px;margin-top:8px;}
+  .mock-quote{left:0;}
+  .mock-predict{right:0;}
+}
+@media (max-width:560px){
+  .hero-visual{height:430px;}
+  .mock-quote{width:86%;top:24%;}
+  .mock-predict{width:78%;top:0;}
+  .mock-alert{width:80%;bottom:0;}
+  .mock-badge{display:none;}
+  .hero-proof{gap:18px;}
+  .hero-proof .n{font-size:22px;}
+}
+
+/* ============================================================
+   MARQUEE
+   ============================================================ */
+.marquee-band{background:var(--ink-deep);border-top:1px solid rgba(255,255,255,.06);padding:18px 0;overflow:hidden;position:relative;}
+.marquee{display:flex;gap:0;width:max-content;animation:marquee 38s linear infinite;}
+.marquee-band:hover .marquee{animation-play-state:paused;}
+.marquee span{font-family:var(--display);font-size:13px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,.38);padding:0 28px;display:flex;align-items:center;gap:28px;white-space:nowrap;}
+.marquee span::after{content:"⬡";color:rgba(255,199,44,.55);font-size:11px;letter-spacing:0;}
+@keyframes marquee{to{transform:translateX(-50%);}}
+
+/* ============================================================
+   PROBLEM / HOW IT WORKS
+   ============================================================ */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:54px;counter-reset:step;}
+.step{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:30px 28px;position:relative;box-shadow:var(--shadow);transition:transform .25s ease, box-shadow .25s ease;}
+.step:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
+.step::before{counter-increment:step;content:"0" counter(step);font-family:var(--display);font-weight:700;font-size:15px;color:var(--gold-deep);background:var(--gold-soft);border:1px solid #E5D89A;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;}
+.step h3{font-family:var(--display);font-size:20px;font-weight:700;margin-top:18px;letter-spacing:-.01em;}
+.step p{color:var(--ink-soft);font-size:14.5px;margin-top:10px;}
+.step .tagline{display:inline-block;margin-top:16px;font-size:12px;font-weight:700;color:var(--sea);background:var(--sea-soft);border-radius:7px;padding:5px 11px;}
+.step-connector{position:absolute;top:50px;right:-26px;width:30px;color:var(--line-strong);display:block;z-index:1;}
+.step:last-child .step-connector{display:none;}
+@media (max-width:920px){
+  .steps{grid-template-columns:1fr;gap:18px;}
+  .step-connector{display:none;}
+}
+
+/* ============================================================
+   BENTO FEATURES
+   ============================================================ */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:20px;margin-top:54px;}
+.bcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px;box-shadow:var(--shadow);overflow:hidden;position:relative;transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;display:flex;flex-direction:column;}
+.bcard:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--line-strong);}
+.bcard h3{font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.bcard > p{color:var(--ink-soft);font-size:14.5px;margin-top:10px;max-width:520px;}
+.bcard .art{margin-top:auto;padding-top:22px;}
+.b-market{grid-column:span 4;}
+.b-svs{grid-column:span 2;background:linear-gradient(165deg,#0D2B4D, var(--ink) 55%, #081B33);color:#fff;border-color:rgba(255,255,255,.08);}
+.b-svs > p{color:#B9C8D6;}
+.b-quotes{grid-column:span 2;}
+.b-tiers{grid-column:span 2;background:linear-gradient(180deg,#FFFDF4,#fff 70%);border-color:#EADFB4;}
+.b-outlook{grid-column:span 2;}
+@media (max-width:920px){
+  .bento{grid-template-columns:1fr;gap:16px;}
+  .b-market,.b-svs,.b-quotes,.b-tiers,.b-outlook{grid-column:span 1;}
+}
+/* mini supplier rows (marketplace card) */
+.mini-supplier{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:11px;padding:12px 15px;margin-top:9px;background:#fff;font-size:13px;}
+.mini-supplier:first-child{margin-top:0;}
+.mini-supplier.gold{border:1.5px solid var(--gold);background:linear-gradient(180deg,#FFFDF4,#fff 70%);}
+.mini-supplier .nm{font-weight:700;}
+.mini-supplier .sub{font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
+.mini-supplier .pill{flex-shrink:0;}
+/* cert pills (svs card) */
+.cert-row{display:flex;flex-wrap:wrap;gap:7px;}
+.certp{border-radius:7px;padding:5px 11px;font-size:12px;font-weight:700;}
+.certp.ok{background:rgba(4,120,87,.18);color:#5EEAD4;}
+.certp.due{background:rgba(180,83,9,.2);color:#FCD34D;}
+.certp.lapsed{background:rgba(185,28,28,.22);color:#FCA5A5;}
+.svs-block{margin-top:14px;border:1px dashed rgba(255,255,255,.22);border-radius:11px;padding:12px 15px;font-size:12.5px;color:#B9C8D6;}
+.svs-block strong{color:#fff;}
+/* quote bars (quotes card) */
+.qbar{margin-top:11px;}
+.qbar .lbl{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+.qbar .lbl b{color:var(--ink);}
+.qbar .track{height:9px;background:var(--sea-soft);border-radius:6px;margin-top:5px;overflow:hidden;}
+.qbar .fill{display:block;height:100%;border-radius:6px;background:var(--sea);width:0;transition:width 1.1s cubic-bezier(.22,.61,.36,1);}
+.qbar.best .fill{background:var(--success);}
+.in .qbar .fill{width:var(--w);}
+/* tiers art */
+.house-art{width:200px;margin:0 auto;}
+.house-art .pillar{fill:var(--sea);}
+.house-art .roof{fill:var(--gold);stroke:var(--gold-deep);stroke-width:1;}
+.house-art .plabel{font-size:9px;font-weight:700;fill:var(--ink-soft);text-anchor:middle;letter-spacing:.04em;font-family:var(--font);}
+/* outlook art */
+.mailmock{border:1px solid var(--line);border-radius:11px;padding:13px 15px;font-size:12.5px;background:#fff;}
+.mailmock .frm{font-weight:700;font-size:12.5px;}
+.mailmock .sb{color:var(--ink-soft);font-size:11.5px;margin-top:2px;}
+.mailmock .addin{background:var(--sea-soft);border:1px dashed var(--sea);border-radius:8px;padding:9px 11px;font-size:11.5px;margin-top:9px;line-height:1.5;}
+.mailmock .addin strong{color:var(--sea);}
+
+/* ============================================================
+   STATS BAND
+   ============================================================ */
+.stats-band{background:linear-gradient(160deg,#0D2B4D 0%,var(--ink) 50%,#06132B 100%);color:#fff;position:relative;overflow:hidden;}
+.stats-band .hero-grid{mask-image:radial-gradient(ellipse 80% 90% at 50% 50%,#000 0%,transparent 85%);-webkit-mask-image:radial-gradient(ellipse 80% 90% at 50% 50%,#000 0%,transparent 85%);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;position:relative;z-index:2;}
+.stat-cell{text-align:center;padding:10px;}
+.stat-cell .num{font-family:var(--display);font-weight:700;font-size:clamp(38px,5vw,56px);letter-spacing:-.02em;color:var(--gold-bright);line-height:1;}
+.stat-cell .num sup{font-size:.45em;top:-.8em;}
+.stat-cell .cap{margin-top:10px;color:#B9C8D6;font-size:14px;}
+@media (max-width:760px){.stats-grid{grid-template-columns:repeat(2,1fr);gap:34px 18px;}}
+
+/* ============================================================
+   TIER CALCULATOR
+   ============================================================ */
+.calc-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;margin-top:50px;align-items:start;}
+.svc-toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1.5px solid var(--line-strong);border-radius:13px;padding:18px 20px;margin-bottom:12px;background:#fff;transition:border-color .2s, box-shadow .2s;}
+.svc-toggle.on{border-color:var(--sea);box-shadow:0 0 0 3px var(--sea-soft);}
+.svc-toggle .name{font-weight:700;font-size:15.5px;}
+.svc-toggle .tier{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.switch{position:relative;width:50px;height:28px;border-radius:999px;background:#CBD6E2;border:none;transition:background .2s;flex-shrink:0;}
+.switch[aria-pressed="true"]{background:var(--sea);}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.switch[aria-pressed="true"]::after{left:25px;}
+.spend-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:20px;box-shadow:var(--shadow);margin-top:18px;}
+.spend-card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.spend-card .val{font-family:var(--display);font-weight:700;font-size:22px;}
+.spend-card input[type=range]{width:100%;accent-color:var(--sea);margin-top:14px;height:28px;}
+.spend-card .minmax{display:flex;justify-content:space-between;color:var(--ink-soft);font-size:12.5px;}
+.result-card{background:radial-gradient(130% 130% at 50% -20%,#12365C 0%,var(--ink) 55%,#06132B 100%);color:#fff;text-align:center;padding:40px 30px;border-radius:18px;box-shadow:var(--shadow-lg);position:relative;overflow:hidden;}
+.result-card::before{content:"";position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:340px;height:200px;background:radial-gradient(circle,rgba(255,199,44,.2),transparent 65%);}
+.result-card .rc-ey{font-family:var(--display);font-size:11.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#9FB4C8;}
+.result-card .pct{font-family:var(--display);font-size:clamp(58px,8vw,76px);font-weight:700;line-height:1.05;color:var(--gold-bright);letter-spacing:-.02em;margin-top:10px;position:relative;}
+.result-card .save{font-family:var(--display);font-size:21px;font-weight:600;margin-top:16px;}
+.result-card .note{color:#9FB4C8;font-size:13px;margin-top:12px;max-width:330px;margin-left:auto;margin-right:auto;line-height:1.55;}
+.fullstack-flag{display:none;margin:14px auto 0;width:fit-content;}
+.fullstack-flag.show{display:inline-flex;}
+@media (max-width:920px){.calc-grid{grid-template-columns:1fr;}}
+
+/* ============================================================
+   SUPPLIERS / PRICING
+   ============================================================ */
+.suppliers-sec{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.founder{background:linear-gradient(120deg,#0D2B4D,var(--ink) 60%,#081B33);color:#fff;border-radius:18px;padding:30px 32px;display:flex;gap:24px;align-items:center;margin-top:50px;box-shadow:var(--shadow-lg);position:relative;overflow:hidden;}
+.founder::after{content:"";position:absolute;right:-60px;top:-60px;width:230px;height:230px;background:radial-gradient(circle,rgba(255,199,44,.18),transparent 65%);}
+.founder .badge{background:var(--gold-bright);color:var(--ink);font-family:var(--display);font-weight:700;border-radius:10px;padding:12px 16px;font-size:13.5px;white-space:nowrap;letter-spacing:.04em;flex-shrink:0;}
+.founder p{flex:1;font-size:15px;color:#D8E2EC;position:relative;z-index:1;}
+.founder p strong{color:#fff;}
+.founder .btn{position:relative;z-index:1;flex-shrink:0;}
+@media (max-width:860px){.founder{flex-direction:column;align-items:flex-start;}}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:34px;align-items:stretch;}
+.plan{background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px 28px;display:flex;flex-direction:column;position:relative;box-shadow:var(--shadow);transition:transform .25s ease, box-shadow .25s ease;}
+.plan:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
+.plan.popular{border:2px solid var(--gold);box-shadow:0 12px 44px rgba(201,162,39,.22);}
+.plan .pop-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--gold-bright);color:var(--ink);font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:100px;white-space:nowrap;}
+.plan h3{font-family:var(--display);font-size:19px;font-weight:700;}
+.plan .price{font-family:var(--display);font-size:38px;font-weight:700;margin-top:12px;letter-spacing:-.02em;}
+.plan .per{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+.plan ul{list-style:none;margin:20px 0 24px;flex:1;}
+.plan li{padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;display:flex;gap:10px;align-items:flex-start;}
+.plan li:last-child{border-bottom:none;}
+.plan li::before{content:"✓";color:var(--success);font-weight:800;flex-shrink:0;}
+.plan li.no::before{content:"–";color:var(--line-strong);}
+.plan li.no{color:#9AA8B8;}
+.plan .btn{justify-content:center;}
+@media (max-width:920px){.plans{grid-template-columns:1fr;}.plan.popular{order:-1;}}
+.trust-note{margin-top:30px;background:var(--sea-soft);border:1px solid #CFE2EE;border-radius:13px;padding:18px 22px;font-size:14px;color:var(--ink-soft);display:flex;gap:13px;align-items:flex-start;}
+.trust-note .ic{color:var(--sea);font-size:18px;flex-shrink:0;line-height:1.4;}
+.trust-note strong{color:var(--ink);}
+
+/* ============================================================
+   ROADMAP
+   ============================================================ */
+.roadmap{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:50px;}
+.road-card{background:linear-gradient(170deg,#0D2B4D,var(--ink) 60%,#081B33);color:#fff;border-radius:18px;padding:34px 30px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.07);transition:transform .25s ease;}
+.road-card:hover{transform:translateY(-5px);}
+.road-card::after{content:"";position:absolute;right:-50px;bottom:-70px;width:230px;height:230px;background:radial-gradient(circle,rgba(255,199,44,.13),transparent 65%);}
+.road-card h3{font-family:var(--display);font-size:23px;font-weight:700;margin-top:16px;letter-spacing:-.01em;}
+.road-card p{color:#B9C8D6;font-size:14.5px;margin-top:10px;max-width:430px;position:relative;z-index:1;}
+.road-card ul{list-style:none;margin-top:18px;position:relative;z-index:1;}
+.road-card li{padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.14);font-size:13.5px;color:#D8E2EC;display:flex;gap:10px;}
+.road-card li:last-child{border-bottom:none;}
+.road-card li::before{content:"→";color:var(--gold-bright);font-weight:700;flex-shrink:0;}
+@media (max-width:860px){.roadmap{grid-template-columns:1fr;}}
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+.final-cta{background:radial-gradient(110% 130% at 50% 115%,#143C66 0%,var(--ink) 55%,#06132B 100%);color:#fff;text-align:center;position:relative;overflow:hidden;}
+.final-cta .hero-grid{mask-image:radial-gradient(ellipse 70% 80% at 50% 70%,#000,transparent 85%);-webkit-mask-image:radial-gradient(ellipse 70% 80% at 50% 70%,#000,transparent 85%);}
+.final-cta .inner{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:0 24px;}
+.final-cta h2{font-family:var(--display);font-weight:700;font-size:clamp(30px,5vw,52px);line-height:1.1;letter-spacing:-.02em;}
+.final-cta h2 .gold{color:var(--gold-bright);}
+.final-cta p{color:#B9C8D6;font-size:clamp(15px,1.8vw,18px);margin-top:18px;max-width:560px;margin-left:auto;margin-right:auto;}
+.final-cta .ctas{display:flex;gap:14px;justify-content:center;margin-top:36px;flex-wrap:wrap;}
+.anchor-chain{display:flex;justify-content:center;gap:8px;margin-bottom:28px;}
+.anchor-chain i{width:13px;height:8px;border:2.5px solid var(--gold-bright);border-radius:50%;display:block;opacity:.85;}
+.anchor-chain i:nth-child(2n){width:8px;height:13px;}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{background:var(--ink-deep);color:#8FA6BC;padding:54px 0 38px;border-top:1px solid rgba(255,255,255,.07);font-size:13.5px;}
+.foot-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;align-items:flex-start;}
+.foot-grid .wordmark .connect{color:var(--gold-bright);}
+.foot-links{display:flex;gap:26px;flex-wrap:wrap;}
+.foot-links a{color:#B9C8D6;text-decoration:none;font-weight:600;font-size:13.5px;}
+.foot-links a:hover{color:#fff;}
+.foot-note{margin-top:30px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.7;color:#5F7A94;}
+</style>
+</head>
+<body>
+
+<!-- ============================ NAV ============================ -->
+<nav class="nav" id="nav" aria-label="Main">
+  <div class="nav-inner">
+    <a class="wordmark" href="#top" aria-label="GAC Connect home"><span class="gac">GAC</span><span class="connect">Connect</span></a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#platform">Platform</a>
+      <a href="#tiers">Tier discount</a>
+      <a href="#suppliers">For suppliers</a>
+      <a href="#roadmap">Roadmap</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-gold btn-demo" href="#cta">Request a demo</a>
+      <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#how">How it works</a>
+  <a href="#platform">Platform</a>
+  <a href="#tiers">Tier discount</a>
+  <a href="#suppliers">For suppliers</a>
+  <a href="#roadmap">Roadmap</a>
+  <a class="btn btn-gold" href="#cta">Request a demo</a>
+</div>
+
+<!-- ============================ HERO ============================ -->
+<header class="hero" id="top">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-glow" aria-hidden="true"></div>
+
+  <div class="hero-inner">
+    <div>
+      <span class="hero-eyebrow hero-enter"><span class="dot"></span>Offshore Services · Connected</span>
+      <h1 class="hero-enter e2">Every port call.<br>Every supplier.<br><span class="gold">One platform.<svg viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true"><path d="M2 9 Q 75 2 150 7 T 298 5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></span></h1>
+      <p class="sub hero-enter e3">GAC Connect turns days of phone calls, spreadsheets, and inbox-chasing into a single workflow — <strong>predictive procurement</strong> from vessel history, <strong>vetted suppliers</strong> with live compliance, and quotes compared side by side before your vessel reaches the berth.</p>
+      <div class="hero-ctas hero-enter e4">
+        <a class="btn btn-gold" href="#cta">Request a demo <span class="arrow">→</span></a>
+        <a class="btn btn-outline-light" href="#how">See how it works</a>
+      </div>
+      <div class="hero-proof hero-enter e5">
+        <div class="item"><span class="n"><em>40+</em></span><span class="l">service categories</span></div>
+        <div class="item"><span class="n"><em>31 hrs</em></span><span class="l">admin saved / month</span></div>
+        <div class="item"><span class="n"><em>7%</em></span><span class="l">top tier discount</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="mock mock-predict mock-float f2">
+        <p class="ey">Predictive procurement</p>
+        <p class="v">MV Caledonian Star — ETA 08:00</p>
+        <ul>
+          <li><span><strong>Crane hire</strong> · 3 matched</span><span class="pill pill-verified">✓ Verified</span></li>
+          <li><span><strong>Medical cover</strong> · 3 matched</span><span class="pill pill-verified">✓ Verified</span></li>
+          <li><span><strong>Scaffolding</strong> · 3 matched</span><span class="pill pill-verified">✓ Verified</span></li>
+        </ul>
+      </div>
+      <div class="mock mock-quote mock-float">
+        <div class="head"><span class="name">Caledonia Lifting Ltd</span><span class="pill pill-verified">✓ GAC Verified</span></div>
+        <p class="src"><span class="d"></span>Parsed from Outlook reply · 10:15</p>
+        <p class="price">£4,400 <span class="pill pill-info">Best match</span></p>
+        <table>
+          <tr><td>Availability</td><td>Fri 06:00</td></tr>
+          <tr><td>Capacity</td><td>130t mobile</td></tr>
+          <tr><td>Rating</td><td>4.9 ★ · ESG A</td></tr>
+        </table>
+        <button class="accept" tabindex="-1">Accept &amp; e-sign</button>
+      </div>
+      <div class="mock mock-alert mock-float f3">
+        <div class="row">
+          <span class="ic">⚠</span>
+          <div><p class="t">Compliance watch</p><p class="s">Granite NDT — GWO expires in 21 days. Renewal reminder sent.</p></div>
+        </div>
+      </div>
+      <div class="mock mock-badge mock-float f2">
+        <span class="check">✓</span><span class="txt">GAC VERIFIED</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-sea" aria-hidden="true">
+    <svg class="waves" viewBox="0 0 1200 150" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 80 Q60 70 120 80 T240 80 T360 80 T480 80 T600 80 T720 80 T840 80 T960 80 T1080 80 T1200 80 V150 H0 Z" fill="#06132B"></path>
+      <path d="M0 100 Q60 92 120 100 T240 100 T360 100 T480 100 T600 100 T720 100 T840 100 T960 100 T1080 100 T1200 100" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="1.2"></path>
+      <path d="M0 122 Q60 116 120 122 T240 122 T360 122 T480 122 T600 122 T720 122 T840 122 T960 122 T1080 122 T1200 122" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1"></path>
+    </svg>
+    <svg class="hero-vessel" viewBox="0 0 200 90" xmlns="http://www.w3.org/2000/svg">
+      <g class="vessel-bob">
+        <path d="M6 56 L22 72 L160 72 L182 56 L182 48 L6 48 Z" fill="#FFFFFF"></path>
+        <rect x="6" y="52" width="176" height="4" fill="#FFC72C"></rect>
+        <rect x="38" y="34" width="22" height="14" fill="#3B82F6"></rect>
+        <rect x="64" y="34" width="22" height="14" fill="#FFC72C"></rect>
+        <rect x="90" y="34" width="22" height="14" fill="#FFFFFF" stroke="#0A2540" stroke-width=".8"></rect>
+        <path d="M120 48 L120 18 L160 18 L172 28 L172 48 Z" fill="#FFFFFF"></path>
+        <rect x="124" y="22" width="44" height="5" fill="#0A2540"></rect>
+        <line x1="146" y1="18" x2="146" y2="2" stroke="#FFFFFF" stroke-width="1.2"></line>
+        <circle cx="146" cy="2" r="2" fill="#FFC72C"></circle>
+        <rect x="108" y="22" width="4" height="26" fill="#FFC72C"></rect>
+        <line x1="110" y1="22" x2="78" y2="2" stroke="#FFC72C" stroke-width="2.6"></line>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<!-- ============================ MARQUEE ============================ -->
+<div class="marquee-band" aria-hidden="true">
+  <div class="marquee" id="marquee">
+    <span>Cranes</span><span>Medical</span><span>Scaffolding</span><span>Diving</span><span>NDT</span><span>Welding</span><span>Catering</span><span>Waste</span><span>Bunkers</span><span>Agency</span><span>Logistics</span><span>Customs</span><span>Assets</span>
+  </div>
+</div>
+
+<!-- ============================ HOW IT WORKS ============================ -->
+<section id="how">
+  <div class="wrap">
+    <div class="center-head reveal">
+      <p class="eyebrow center">How it works</p>
+      <h2 class="h2">From ETA to booked supplier,<br>before the vessel berths</h2>
+      <p class="lede">The platform already knows your vessel. GA history pre-builds the procurement list; the marketplace prices it; one signature books it.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal d1">
+        <h3>Predict</h3>
+        <p>A vessel profile loads from GA history the moment an ETA lands. GAC Connect drafts the full procurement list — crane hire, medical cover, scaffolding — with vetted suppliers pre-matched to each line.</p>
+        <span class="tagline">9 quote requests, one click</span>
+        <svg class="step-connector" viewBox="0 0 30 12" fill="none" aria-hidden="true"><path d="M0 6 H24 M19 1 L25 6 L19 11" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div class="step reveal d2">
+        <h3>Compare</h3>
+        <p>Replies populate a live comparison view automatically — even quotes sent as plain Outlook emails are parsed and matched to the job. Price, availability, rating, and ESG score, side by side.</p>
+        <span class="tagline">No re-keying, ever</span>
+        <svg class="step-connector" viewBox="0 0 30 12" fill="none" aria-hidden="true"><path d="M0 6 H24 M19 1 L25 6 L19 11" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div class="step reveal d3">
+        <h3>Book</h3>
+        <p>Accept a quote and both parties e-sign a per-transaction agreement with a full audit trail. The purchase order generates itself — billing splits applied straight from the vessel profile.</p>
+        <span class="tagline">Audit-grade, automatically</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ STATS ============================ -->
+<section class="stats-band">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat-cell reveal"><div class="num"><span data-count="52">0</span></div><p class="cap">SVS-verified suppliers live</p></div>
+      <div class="stat-cell reveal d1"><div class="num"><span data-count="40">0</span><sup>+</sup></div><p class="cap">service categories vetted</p></div>
+      <div class="stat-cell reveal d2"><div class="num"><span data-count="31">0</span> <span style="font-size:.5em">hrs</span></div><p class="cap">admin saved per month</p></div>
+      <div class="stat-cell reveal d3"><div class="num">£<span data-count="35">0</span>k</div><p class="cap">saved yearly at Full Stack tier</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PLATFORM BENTO ============================ -->
+<section id="platform">
+  <div class="wrap">
+    <div class="center-head reveal">
+      <p class="eyebrow center">The platform</p>
+      <h2 class="h2">One marketplace. Zero blind spots.</h2>
+      <p class="lede">Every listing is vetted through GAC's proprietary Supplier Vetting System. Trust is never for sale — promotion changes position, not credentials.</p>
+    </div>
+
+    <div class="bento">
+      <!-- Marketplace -->
+      <div class="bcard b-market reveal">
+        <h3>The vetted marketplace</h3>
+        <p>Search 40+ offshore service categories. GAC's own service lines appear first where relevant; promoted suppliers are always labelled; blocked suppliers can't buy their way back in.</p>
+        <div class="art">
+          <div class="mini-supplier gold">
+            <div><p class="nm">GAC Customs</p><p class="sub">T1 transit, clearance, documentation — in-house</p></div>
+            <span class="pill pill-inhouse">★ GAC In-House</span>
+          </div>
+          <div class="mini-supplier">
+            <div><p class="nm">Caledonia Lifting Ltd</p><p class="sub">Mobile cranes to 130t · 4.9 ★ · ESG A</p></div>
+            <span class="pill pill-verified">✓ GAC Verified</span>
+          </div>
+          <div class="mini-supplier">
+            <div><p class="nm">Silver City Welding</p><p class="sub">Coded welders, 24/7 call-out · 4.4 ★</p></div>
+            <span class="pill pill-promoted">▲ Promoted</span>
+          </div>
+          <div class="mini-supplier" style="opacity:.55;">
+            <div><p class="nm">Peterhead Diving Services</p><p class="sub">Insurance lapsed — cannot be booked</p></div>
+            <span class="pill pill-danger">✗ Blocked</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SVS -->
+      <div class="bcard b-svs reveal d1">
+        <h3 style="color:#fff;">Supplier Vetting System</h3>
+        <p>Certification is a mandatory field, not a checkbox. Expiries trigger automatic alerts; lapsed suppliers are blocked from booking until evidence is uploaded.</p>
+        <div class="art">
+          <div class="cert-row">
+            <span class="certp ok">LOLER ✓</span>
+            <span class="certp ok">Insurance ✓</span>
+            <span class="certp due">GWO · 21 days</span>
+            <span class="certp lapsed">Lapsed ✗</span>
+          </div>
+          <div class="svs-block"><strong>Owned by GAC, on GAC infrastructure</strong> — live ratings fed from completed platform transactions, built-in ESG scoring, and the GAC Verified badge as a visible mark of quality.</div>
+        </div>
+      </div>
+
+      <!-- Quotes -->
+      <div class="bcard b-quotes reveal">
+        <h3>Quotes, side by side</h3>
+        <p>Three suppliers, one view. The best match surfaces itself on price, availability, rating, and ESG.</p>
+        <div class="art">
+          <div class="qbar best"><div class="lbl"><b>Caledonia Lifting</b><b>£4,400</b></div><div class="track"><span class="fill" style="--w:71%"></span></div></div>
+          <div class="qbar"><div class="lbl"><span>North Sea Crane Co.</span><span>£4,850</span></div><div class="track"><span class="fill" style="--w:81%"></span></div></div>
+          <div class="qbar"><div class="lbl"><span>Granite Cranes</span><span>£5,100</span></div><div class="track"><span class="fill" style="--w:88%"></span></div></div>
+        </div>
+      </div>
+
+      <!-- Tiers -->
+      <div class="bcard b-tiers reveal d1">
+        <h3>Tier discounts <span class="pill pill-inhouse">★ Full Stack</span></h3>
+        <p>Consolidate agency, logistics, and customs under one roof and hold up to a 7% discount on GAC in-house charges.</p>
+        <div class="art">
+          <svg class="house-art" viewBox="0 0 240 150" role="img" aria-label="Four pillars under one GAC Connect roof">
+            <polygon class="roof" points="120,8 12,52 228,52"></polygon>
+            <text x="120" y="42" text-anchor="middle" style="font-size:10px;font-weight:800;letter-spacing:.08em;font-family:Inter,sans-serif;" fill="#0A2540">GAC CONNECT</text>
+            <rect class="pillar" x="22" y="62" width="38" height="62" rx="3"></rect>
+            <rect class="pillar" x="74" y="62" width="38" height="62" rx="3"></rect>
+            <rect class="pillar" x="126" y="62" width="38" height="62" rx="3"></rect>
+            <rect class="pillar" x="178" y="62" width="38" height="62" rx="3"></rect>
+            <text class="plabel" x="41" y="138">AGENCY</text>
+            <text class="plabel" x="93" y="138">LOGISTICS</text>
+            <text class="plabel" x="145" y="138">CUSTOMS</text>
+            <text class="plabel" x="197" y="138">PROCURE</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Outlook -->
+      <div class="bcard b-outlook reveal d2">
+        <h3>Lives inside Outlook</h3>
+        <p>The add-in matches supplier replies to live jobs and logs quotes automatically — agents keep their inbox, lose the re-keying.</p>
+        <div class="art">
+          <div class="mailmock">
+            <p class="frm">Caledonia Lifting Ltd</p>
+            <p class="sb">RE: Quote request — crane hire, MV Caledonian Star</p>
+            <div class="addin"><strong>GAC Connect:</strong> Reply matched to job <strong>#CS-2207</strong>. Quote £4,400 added to comparison automatically.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TIER CALCULATOR ============================ -->
+<section id="tiers" style="background:#fff;border-top:1px solid var(--line);">
+  <div class="wrap">
+    <div class="center-head reveal">
+      <p class="eyebrow center">Commercial mechanics</p>
+      <h2 class="h2">The more you consolidate,<br>the less you pay</h2>
+      <p class="lede">The tier discount applies to GAC in-house service charges booked through the platform. Non-cumulative — you hold the highest single tier you qualify for. Try it:</p>
+    </div>
+
+    <div class="calc-grid">
+      <div class="reveal">
+        <div class="svc-toggle on" id="st-agency">
+          <div><p class="name">GAC Agency</p><p class="tier">Port calls, vessel support, crew coordination · 2% tier</p></div>
+          <button class="switch" id="sw-agency" aria-pressed="true" aria-label="Toggle GAC Agency" onclick="toggleSvc('agency')"></button>
+        </div>
+        <div class="svc-toggle" id="st-logistics">
+          <div><p class="name">GAC Logistics</p><p class="tier">Freight forwarding, warehousing, project cargo · 4% tier</p></div>
+          <button class="switch" id="sw-logistics" aria-pressed="false" aria-label="Toggle GAC Logistics" onclick="toggleSvc('logistics')"></button>
+        </div>
+        <div class="svc-toggle" id="st-customs">
+          <div><p class="name">GAC Customs</p><p class="tier">T1 transit, import/export clearance, documentation · 7% tier</p></div>
+          <button class="switch" id="sw-customs" aria-pressed="false" aria-label="Toggle GAC Customs" onclick="toggleSvc('customs')"></button>
+        </div>
+        <p style="font-size:13px;color:var(--ink-soft);margin:6px 2px 0;">GAC Assets and GAC Procurement are included at any tier as added value.</p>
+
+        <div class="spend-card">
+          <div class="top"><p class="eyebrow" style="font-size:11px;">Annual GAC service spend via platform</p><p class="val" id="spendVal">£500,000</p></div>
+          <input type="range" id="spendRange" min="50000" max="2000000" step="25000" value="500000" oninput="calcTier()" aria-label="Annual GAC service spend">
+          <div class="minmax"><span>£50k</span><span>£2.0m</span></div>
+        </div>
+      </div>
+
+      <div class="reveal d2">
+        <div class="result-card">
+          <p class="rc-ey">Discount tier held</p>
+          <p class="pct" id="tierPct">2%</p>
+          <span class="pill pill-inhouse fullstack-flag" id="fullstackFlag">★ Full Stack — all three pillars</span>
+          <p class="save" id="saveVal">£10,000 saved / year</p>
+          <p class="note" id="tierNote">Qualifying tier: GAC Agency (2%). Adding Logistics lifts you to 4%; adding Customs to 7%.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOR SUPPLIERS ============================ -->
+<section id="suppliers" class="suppliers-sec" style="background:var(--paper);">
+  <div class="wrap">
+    <div class="center-head reveal">
+      <p class="eyebrow center">For suppliers</p>
+      <h2 class="h2">Get found by every operator GAC serves</h2>
+      <p class="lede">A verified profile puts you in front of offshore operators at the moment they're buying. Subscriptions control how visible you are — never how trusted you are.</p>
+    </div>
+
+    <div class="founder reveal">
+      <span class="badge">FOUNDER PROGRAMME</span>
+      <p><strong>The first 50 suppliers join free for 12 months</strong> — full Professional features, no charge — then keep a 25% discount permanently. Founder suppliers shape the platform and carry the badge to prove it.</p>
+      <a class="btn btn-gold" href="#cta">Register interest</a>
+    </div>
+
+    <div class="plans">
+      <div class="plan reveal d1">
+        <h3>Free</h3>
+        <p class="price">£0</p>
+        <p class="per">forever</p>
+        <ul>
+          <li>SVS-verified profile &amp; GAC Verified badge</li>
+          <li>Appear in marketplace search</li>
+          <li>Receive and respond to quote requests</li>
+          <li>Compliance vault with expiry alerts</li>
+          <li class="no">Featured category placement</li>
+          <li class="no">Performance analytics</li>
+        </ul>
+        <a class="btn btn-outline" href="#cta">Start free</a>
+      </div>
+
+      <div class="plan popular reveal d2">
+        <span class="pop-pill">Most popular</span>
+        <h3>Professional</h3>
+        <p class="price">£900</p>
+        <p class="per">per year</p>
+        <ul>
+          <li>Everything in Free</li>
+          <li>Enhanced profile: photos, case studies, capability statements</li>
+          <li>Featured category placement — 2 campaigns / month</li>
+          <li>Analytics: views, quote requests, win rate</li>
+          <li>Priority verification renewals</li>
+          <li class="no">Homepage spotlight &amp; category sponsorship</li>
+        </ul>
+        <a class="btn btn-gold" href="#cta">Choose Professional</a>
+      </div>
+
+      <div class="plan reveal d3">
+        <h3>Premium</h3>
+        <p class="price">£1,800</p>
+        <p class="per">per year</p>
+        <ul>
+          <li>Everything in Professional</li>
+          <li>Homepage spotlight rotation</li>
+          <li>Category sponsorship — own a category for a month</li>
+          <li>Promoted search placement, always labelled</li>
+          <li>Full analytics with market benchmarking</li>
+          <li>Quarterly review with GAC commercial team</li>
+        </ul>
+        <a class="btn btn-outline" href="#cta">Choose Premium</a>
+      </div>
+    </div>
+
+    <div class="trust-note reveal">
+      <span class="ic">🛡</span>
+      <p><strong>Advertising buys visibility, never trust.</strong> Promoted listings are always labelled, and no promotion overrides SVS compliance status. A blocked supplier cannot advertise its way back into search. Rating, ESG score, and compliance status are always the supplier's own.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ ROADMAP ============================ -->
+<section id="roadmap" style="background:#fff;border-top:1px solid var(--line);">
+  <div class="wrap">
+    <div class="center-head reveal">
+      <p class="eyebrow center">Built as a chassis</p>
+      <h2 class="h2">Designed for the service lines<br>that come next</h2>
+      <p class="lede">GAC Connect isn't a single-purpose tool. The same vessel profiles, vetting engine, and audit layer extend to whatever the platform hosts next.</p>
+    </div>
+
+    <div class="roadmap">
+      <div class="road-card reveal d1">
+        <span class="pill pill-beta">⏲ BETA · future service preview</span>
+        <h3>Crew Certification Tracking</h3>
+        <p>Every credential, every crew member, one expiry view. BOSIET, HUET, GWO, ENG1, passports, and sea service records tracked at vessel level.</p>
+        <ul>
+          <li>Vessel-level credential register held against the GA profile</li>
+          <li>90 / 30 / 7-day expiry horizon alerts — the SVS engine, pointed at crew</li>
+          <li>Renewals routed to vetted training providers automatically</li>
+        </ul>
+      </div>
+      <div class="road-card reveal d2">
+        <span class="pill pill-beta">⏲ BETA · future service preview</span>
+        <h3>Bunkers</h3>
+        <p>Fuel sourcing inside the same workflow. VLSFO, LSMGO, and MGO enquiries raised against the vessel profile.</p>
+        <ul>
+          <li>Vessel-matched enquiries — pre-filled from consumption history</li>
+          <li>Price windows compared side by side, like any other quote</li>
+          <li>E-signed agreements and delivery confirmation, audit-grade</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FINAL CTA ============================ -->
+<section class="final-cta" id="cta">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="inner">
+    <div class="anchor-chain reveal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <h2 class="reveal d1">Ready to connect<br><span class="gold">your next port call?</span></h2>
+    <p class="reveal d2">See the platform live against a real vessel scenario — predictive procurement, quote comparison, and the tier calculator with your own numbers.</p>
+    <div class="ctas reveal d3">
+      <a class="btn btn-gold" href="mailto:connect@gac.com?subject=GAC%20Connect%20demo%20request">Request a demo <span class="arrow">→</span></a>
+      <a class="btn btn-outline-light" href="#suppliers">Join as a supplier</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOOTER ============================ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <a class="wordmark" href="#top"><span class="gac">GAC</span><span class="connect">Connect</span></a>
+      <div class="foot-links">
+        <a href="#how">How it works</a>
+        <a href="#platform">Platform</a>
+        <a href="#tiers">Tier discount</a>
+        <a href="#suppliers">For suppliers</a>
+        <a href="#roadmap">Roadmap</a>
+      </div>
+    </div>
+    <p class="foot-note">GAC Connect · proof of concept built internally at no cost · the production platform is scoped under the GAC Connect business proposal (FP03). Beta previews show future directions outside the Year 1–3 scope. All suppliers, vessels, clients, prices, and figures on this page are illustrative.</p>
+  </div>
+</footer>
+
+<script>
+/* ---------- nav scroll state ---------- */
+const nav=document.getElementById('nav');
+const onScroll=()=>{nav.classList.toggle('scrolled',window.scrollY>24);};
+window.addEventListener('scroll',onScroll,{passive:true});
+onScroll();
+
+/* ---------- mobile menu ---------- */
+const menuBtn=document.getElementById('menuBtn');
+const mobileMenu=document.getElementById('mobileMenu');
+menuBtn.addEventListener('click',()=>{
+  const open=menuBtn.getAttribute('aria-expanded')==='true';
+  menuBtn.setAttribute('aria-expanded',String(!open));
+  menuBtn.setAttribute('aria-label',open?'Open menu':'Close menu');
+  mobileMenu.classList.toggle('open',!open);
+});
+mobileMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+  menuBtn.setAttribute('aria-expanded','false');
+  mobileMenu.classList.remove('open');
+}));
+
+/* ---------- marquee: duplicate content for seamless loop ---------- */
+const mq=document.getElementById('marquee');
+mq.innerHTML+=mq.innerHTML;
+
+/* ---------- reveal on scroll ---------- */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+},{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ---------- animated counters ---------- */
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    cio.unobserve(e.target);
+    const el=e.target, target=+el.dataset.count;
+    if(reduced){ el.textContent=target; return; }
+    const t0=performance.now(), dur=1400;
+    const tick=now=>{
+      const p=Math.min((now-t0)/dur,1);
+      el.textContent=Math.round(target*(1-Math.pow(1-p,3)));
+      if(p<1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+/* ---------- tier calculator ---------- */
+const TIERS={agency:2,logistics:4,customs:7};
+const state={agency:true,logistics:false,customs:false};
+function toggleSvc(k){
+  state[k]=!state[k];
+  const sw=document.getElementById('sw-'+k);
+  sw.setAttribute('aria-pressed',String(state[k]));
+  document.getElementById('st-'+k).classList.toggle('on',state[k]);
+  calcTier();
+}
+function gbp(n){return '£'+Math.round(n).toLocaleString('en-GB');}
+function calcTier(){
+  const spend=+document.getElementById('spendRange').value;
+  document.getElementById('spendVal').textContent=gbp(spend);
+  const active=Object.keys(TIERS).filter(k=>state[k]);
+  const pct=active.length?Math.max(...active.map(k=>TIERS[k])):0;
+  document.getElementById('tierPct').textContent=pct+'%';
+  document.getElementById('saveVal').textContent=pct?gbp(spend*pct/100)+' saved / year':'Select a service to qualify';
+  const full=active.length===3;
+  document.getElementById('fullstackFlag').classList.toggle('show',full);
+  const note=document.getElementById('tierNote');
+  if(!active.length){ note.textContent='No GAC in-house services selected. Toggle a pillar to see the tier you would hold.'; }
+  else if(full){ note.textContent='Full Stack: all three pillars consolidated. The 7% Customs tier applies across your platform-booked GAC charges.'; }
+  else{
+    const top=active.reduce((a,b)=>TIERS[a]>=TIERS[b]?a:b);
+    const names={agency:'GAC Agency',logistics:'GAC Logistics',customs:'GAC Customs'};
+    const missing=Object.keys(TIERS).filter(k=>!state[k]&&TIERS[k]>pct)
+      .map(k=>names[k]+' ('+TIERS[k]+'%)');
+    note.textContent='Qualifying tier: '+names[top]+' ('+pct+'%).'+(missing.length?' Adding '+missing.join(' or ')+' lifts your tier.':'');
+  }
+}
+calcTier();
+</script>
+</body>
+</html>
