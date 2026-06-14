@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>document.documentElement.className+=' js';</script>
 <title>GAC Connect — Every port call. Every supplier. One platform.</title>
 <meta name="description" content="GAC Connect is the offshore services platform: a vetted supplier marketplace, predictive procurement, instant quote comparison, and tier discounts on GAC in-house services.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -75,7 +76,8 @@ section{padding:clamp(64px,9vw,120px) 0;position:relative;scroll-margin-top:72px
 .pill-beta{background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);color:var(--gold-deep);}
 
 /* ------- reveal on scroll ------- */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);}
+.reveal{transition:opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);}
+.js .reveal{opacity:0;transform:translateY(28px);}
 .reveal.in{opacity:1;transform:none;}
 .reveal.d1{transition-delay:.08s;} .reveal.d2{transition-delay:.16s;} .reveal.d3{transition-delay:.24s;} .reveal.d4{transition-delay:.32s;} .reveal.d5{transition-delay:.4s;}
 @media (prefers-reduced-motion:reduce){
@@ -539,10 +541,10 @@ footer{background:var(--ink-deep);color:#8FA6BC;padding:54px 0 38px;border-top:1
   <div class="hero-grid" aria-hidden="true"></div>
   <div class="wrap">
     <div class="stats-grid">
-      <div class="stat-cell reveal"><div class="num"><span data-count="52">0</span></div><p class="cap">SVS-verified suppliers live</p></div>
-      <div class="stat-cell reveal d1"><div class="num"><span data-count="40">0</span><sup>+</sup></div><p class="cap">service categories vetted</p></div>
-      <div class="stat-cell reveal d2"><div class="num"><span data-count="31">0</span> <span style="font-size:.5em">hrs</span></div><p class="cap">admin saved per month</p></div>
-      <div class="stat-cell reveal d3"><div class="num">£<span data-count="35">0</span>k</div><p class="cap">saved yearly at Full Stack tier</p></div>
+      <div class="stat-cell reveal"><div class="num"><span data-count="52">52</span></div><p class="cap">SVS-verified suppliers live</p></div>
+      <div class="stat-cell reveal d1"><div class="num"><span data-count="40">40</span><sup>+</sup></div><p class="cap">service categories vetted</p></div>
+      <div class="stat-cell reveal d2"><div class="num"><span data-count="31">31</span> <span style="font-size:.5em">hrs</span></div><p class="cap">admin saved per month</p></div>
+      <div class="stat-cell reveal d3"><div class="num">£<span data-count="35">35</span>k</div><p class="cap">saved yearly at Full Stack tier</p></div>
     </div>
   </div>
 </section>
@@ -848,30 +850,39 @@ mobileMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
 const mq=document.getElementById('marquee');
 mq.innerHTML+=mq.innerHTML;
 
-/* ---------- reveal on scroll ---------- */
-const io=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-},{threshold:.15,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+/* ---------- reveal on scroll (with fallback if IntersectionObserver is unsupported) ---------- */
+const hasIO = 'IntersectionObserver' in window;
+const revealAll=()=>document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+if(hasIO){
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}else{
+  revealAll();
+}
 
 /* ---------- animated counters ---------- */
-const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const cio=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    cio.unobserve(e.target);
-    const el=e.target, target=+el.dataset.count;
-    if(reduced){ el.textContent=target; return; }
-    const t0=performance.now(), dur=1400;
-    const tick=now=>{
-      const p=Math.min((now-t0)/dur,1);
-      el.textContent=Math.round(target*(1-Math.pow(1-p,3)));
-      if(p<1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  });
-},{threshold:.5});
-document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(hasIO && !reduced){
+  document.querySelectorAll('[data-count]').forEach(el=>{el.textContent='0';});
+  const cio=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      cio.unobserve(e.target);
+      const el=e.target, target=+el.dataset.count;
+      const t0=performance.now(), dur=1400;
+      const tick=now=>{
+        const p=Math.min((now-t0)/dur,1);
+        el.textContent=Math.round(target*(1-Math.pow(1-p,3)));
+        if(p<1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+}
+/* else: no IO or reduced motion -> the real numbers in the HTML stay as-is */
 
 /* ---------- tier calculator ---------- */
 const TIERS={agency:2,logistics:4,customs:7};
