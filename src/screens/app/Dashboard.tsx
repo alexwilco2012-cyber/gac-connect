@@ -11,6 +11,7 @@ import { gbp } from '../../lib/format';
 import { annualSaving, isFullStack, tierPct } from '../../lib/tier';
 import { DASHBOARD_KPIS, PREDICTED_NEEDS, VESSELS } from '../../data/vessels';
 import { useApp } from '../../store/app';
+import { TourPrompt } from '../../tour/Tour';
 
 const PILL_TONE = { info: 'info', warn: 'warn', success: 'verified' } as const;
 
@@ -46,6 +47,8 @@ export default function Dashboard() {
           Open Outlook add-in preview
         </Button>
       </div>
+
+      <TourPrompt />
 
       {/* KPIs */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-tour="kpis">

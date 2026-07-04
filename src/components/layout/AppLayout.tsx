@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { POC_RIBBON } from '../../config/brand';
+import { Tour } from '../../tour/Tour';
 import { Loader } from '../motif/Loader';
 import { BetaPill } from '../ui/Pill';
 import { Wordmark } from './Wordmark';
@@ -18,6 +19,7 @@ export default function AppLayout() {
   return (
     <div className="flex min-h-dvh flex-col">
       <Loader />
+      <Tour />
       <a
         href="#app-main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:font-bold"
