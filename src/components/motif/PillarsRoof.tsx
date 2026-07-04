@@ -17,6 +17,7 @@ export function PillarsRoof({
   showLabels = true,
   showWordmark = true,
   monochrome = false,
+  dark = false,
   className,
 }: {
   pillars: PillarDef[];
@@ -24,6 +25,8 @@ export function PillarsRoof({
   showLabels?: boolean;
   showWordmark?: boolean;
   monochrome?: boolean;
+  /** Render labels legibly on dark surfaces. */
+  dark?: boolean;
   className?: string;
 }) {
   const PILLAR_W = 38;
@@ -44,7 +47,17 @@ export function PillarsRoof({
   const cx = width / 2;
 
   const roofOn = fullStack && !monochrome;
-  const pillarFill = (on: boolean) => (monochrome ? 'currentColor' : on ? 'var(--sea)' : '#D7DFE8');
+  const labelFill = monochrome ? 'currentColor' : dark ? '#9FB4C8' : 'var(--ink-soft)';
+  const pillarFill = (on: boolean) =>
+    monochrome
+      ? 'currentColor'
+      : on
+        ? dark
+          ? 'var(--sea-bright, #1B7FB5)'
+          : 'var(--sea)'
+        : dark
+          ? '#2C4159'
+          : '#D7DFE8';
 
   return (
     <svg
@@ -96,7 +109,7 @@ export function PillarsRoof({
                 y={LABEL_Y}
                 textAnchor="middle"
                 style={{ fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.04em' }}
-                fill={monochrome ? 'currentColor' : 'var(--ink-soft)'}
+                fill={labelFill}
               >
                 {p.label.toUpperCase()}
               </text>
