@@ -1,0 +1,245 @@
+/* Loader choreography — ported from the reference demo (02 §motion).
+   Reduced-motion users never see this component (bypassed in TSX). */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(ellipse at center, #0f2d4f 0%, #06132b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    opacity 0.8s cubic-bezier(0.7, 0, 0.3, 1),
+    visibility 0s linear 0.8s;
+}
+.loader.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 199, 44, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 199, 44, 0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 80%);
+  opacity: 0;
+  animation: loader-fade-in 1.2s 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.loader-glow {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  width: 700px;
+  height: 700px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 199, 44, 0.15) 0%, transparent 60%);
+  border-radius: 50%;
+  opacity: 0;
+  animation: loader-fade-in 1.5s 0.5s ease-out forwards;
+}
+@keyframes loader-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.loader-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.loader-svg {
+  width: 560px;
+  max-width: 92vw;
+  height: 200px;
+  overflow: visible;
+}
+.loader-letter {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 120px;
+  fill: #ffffff;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: loader-letter-in 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.loader-letter.from-left {
+  transform: translateX(-160px) rotate(-8deg);
+}
+.loader-letter.from-top {
+  transform: translateY(-140px) rotate(4deg);
+}
+.loader-letter.from-right {
+  transform: translateX(160px) rotate(8deg);
+}
+@keyframes loader-letter-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.chain-link {
+  fill: none;
+  stroke: var(--gold-bright);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  animation: link-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes link-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-20deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.3) rotate(8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+.loader-sub {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.3rem;
+  letter-spacing: 0.58em;
+  text-indent: 0.58em;
+  color: var(--gold-bright);
+  margin-top: 0.5rem;
+  opacity: 0;
+  animation: loader-sub-in 0.8s 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes loader-sub-in {
+  0% {
+    opacity: 0;
+    letter-spacing: 1.2em;
+  }
+  100% {
+    opacity: 1;
+    letter-spacing: 0.58em;
+  }
+}
+.loader-tag {
+  font-weight: 400;
+  font-size: 0.78rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 1.4rem;
+  opacity: 0;
+  animation: loader-fade-in 0.6s 2.8s ease forwards;
+}
+.loader-skip {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  z-index: 4;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.loader-sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 130px;
+  pointer-events: none;
+}
+.loader-sea-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(11, 30, 61, 0.5) 60%, #0a2540 100%);
+}
+.loader-sea-waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+.loader-vessel {
+  position: absolute;
+  bottom: 56px;
+  width: 180px;
+  transform: translateX(-220px);
+  animation: vessel-cross 4s 0.8s cubic-bezier(0.4, 0.05, 0.6, 0.95) forwards;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+}
+@keyframes vessel-cross {
+  0% {
+    transform: translateX(-220px);
+  }
+  50% {
+    transform: translate(calc(50vw - 90px), -4px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 60px));
+  }
+}
+.loader-vessel-bob {
+  animation: loader-bob 2.6s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes loader-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.6deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(0.6deg);
+  }
+}
+
+.loader-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 2px;
+  background: rgba(255, 199, 44, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  z-index: 3;
+}
+.loader-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  animation: loader-bar-fill 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes loader-bar-fill {
+  to {
+    width: 100%;
+  }
+}

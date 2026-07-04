@@ -114,6 +114,12 @@ body {
   color: var(--ink);
 }
 
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
 /* Route-enter fade (02 §motion): 250ms fade-up, once per mount */
 .screen-enter {
   animation: screen-fade-up 0.25s ease both;
