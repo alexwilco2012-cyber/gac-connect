@@ -4,6 +4,7 @@ One line per decision: date · epic · what · why. Newest first.
 
 | Date | Epic | Decision | Why |
 |---|---|---|---|
+| 2026-06-14 | E7 | "Why this works for GAC" card rewritten without the internal demo's proposal figures | 07_GUARDRAILS §1: no internal financials in a public tree — the demo was internal, this site is not |
 | 2026-06-14 | E2 | Drawer renders only while open (slide-in keyframe) instead of parking off-canvas | Off-canvas fixed element extended document scrollWidth (horizontal scrollbar) and left hidden focusables in the tab order |
 | 2026-06-14 | E2 | Loader letters/links generated from BRAND_MARK, not hard-coded G-A-C | One-line rebrand guarantee extends to the loader choreography |
 | 2026-06-14 | E2 | Loader replay button lives on /kitchen-sink | Gives design review a way to re-run the once-per-session entrance without clearing storage by hand |
