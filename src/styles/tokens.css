@@ -1,0 +1,130 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   GAC Connect design tokens — single source of truth (02_DESIGN_SYSTEM).
+   Raw custom properties for CSS/SVG use; mirrored into the Tailwind
+   theme below so utilities carry the same values.
+   ============================================================ */
+
+:root {
+  --ink: #0a2540;
+  --ink-soft: #33475f;
+  --paper: #fafbfd;
+  --white: #ffffff;
+  --line: #e5eaf1;
+  --line-strong: #cbd6e2;
+  --sea: #0e5e8a;
+  --sea-soft: #e8f1f7;
+  --gold: #c9a227;
+  --gold-bright: #ffc72c;
+  --gold-deep: #9a7b14;
+  --gold-soft: #fbf6e3;
+  --success: #047857;
+  --success-soft: #e7f4ef;
+  --warn: #b45309;
+  --warn-soft: #fbf0e1;
+  --danger: #b91c1c;
+  --danger-soft: #fbeaea;
+  --promoted: #5b3fa8;
+  --promoted-soft: #efe9fb;
+  --promoted-line: #d9ccf5;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(10, 37, 64, 0.08), 0 4px 14px rgba(10, 37, 64, 0.06);
+  --font-body: 'Segoe UI', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Space Grotesk', 'Segoe UI', 'Avenir Next', Arial, sans-serif;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-sea: var(--sea);
+  --color-sea-soft: var(--sea-soft);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-deep: var(--gold-deep);
+  --color-gold-soft: var(--gold-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-promoted: var(--promoted);
+  --color-promoted-soft: var(--promoted-soft);
+  --color-promoted-line: var(--promoted-line);
+  --radius-brand: var(--radius);
+  --shadow-card: var(--shadow);
+  --font-display: 'Space Grotesk', 'Segoe UI', 'Avenir Next', Arial, sans-serif;
+  --font-sans: 'Segoe UI', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Space Grotesk — self-hosted, OFL licence in public/fonts/OFL.txt */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/space-grotesk-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/space-grotesk-700.woff2') format('woff2');
+}
+
+/* Base */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus — 3px sea outline, 2px offset, everywhere (02 §accessibility) */
+:focus-visible {
+  outline: 3px solid var(--sea);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--gold-bright);
+  color: var(--ink);
+}
+
+/* Route-enter fade (02 §motion): 250ms fade-up, once per mount */
+.screen-enter {
+  animation: screen-fade-up 0.25s ease both;
+}
+@keyframes screen-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

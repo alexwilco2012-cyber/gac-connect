@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Brand string reservation (07_GUARDRAILS)
+        run: |
+          # BRAND_NAME must only be written in src/config/brand.ts
+          if grep -rn "GAC Connect" src --include='*.ts' --include='*.tsx' --include='*.css' | grep -v "src/config/brand.ts"; then
+            echo "::error::Brand string hard-coded outside src/config/brand.ts"
+            exit 1
+          fi
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
