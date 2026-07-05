@@ -35,7 +35,7 @@ export default function KitchenSink() {
     { label: 'Agency', on: pillars[0] ?? false },
     { label: 'Logistics', on: pillars[1] ?? false },
     { label: 'Customs', on: pillars[2] ?? false },
-    { label: 'Procure', on: pillars[3] ?? false },
+    { label: 'Procurement', on: pillars[3] ?? false },
   ];
   const fullStack = pillars.every(Boolean);
 

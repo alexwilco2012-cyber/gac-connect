@@ -43,7 +43,7 @@ const FULL_PILLARS = [
   { label: 'Agency', on: true },
   { label: 'Logistics', on: true },
   { label: 'Customs', on: true },
-  { label: 'Procure', on: true },
+  { label: 'Procurement', on: true },
 ];
 
 export default function Landing() {

@@ -108,7 +108,7 @@ export function PillarsRoof({
                 x={x + PILLAR_W / 2}
                 y={LABEL_Y}
                 textAnchor="middle"
-                style={{ fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.04em' }}
+                style={{ fontSize: '7.5px', fontWeight: 700, letterSpacing: '0.03em' }}
                 fill={labelFill}
               >
                 {p.label.toUpperCase()}

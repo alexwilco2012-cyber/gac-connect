@@ -76,9 +76,11 @@ export function InteractiveHarbour({ alwaysShowLabels = true }: { alwaysShowLabe
                 >
                   <span className="relative block w-full">
                     <span
-                      className={`pointer-events-none absolute -top-4 left-1/2 z-[3] -translate-x-1/2 rounded-full px-3 py-1 text-[12.5px] font-bold whitespace-nowrap shadow-[0_2px_10px_rgba(4,16,31,0.4)] transition-[opacity,background-color] duration-200 ${
+                      className={`pointer-events-none absolute -top-4 left-1/2 z-[3] -translate-x-1/2 rounded-full px-2 py-0.5 text-[10.5px] font-bold whitespace-nowrap shadow-[0_2px_10px_rgba(4,16,31,0.4)] transition-[opacity,background-color] duration-200 sm:px-3 sm:py-1 sm:text-[12.5px] ${
                         selected ? 'bg-gold-bright text-ink' : 'bg-white text-ink'
-                      } ${lit ? 'opacity-100' : 'opacity-0'}`}
+                      } ${selected ? 'opacity-100' : 'opacity-0'} ${
+                        lit ? 'sm:opacity-100' : 'sm:opacity-0'
+                      }`}
                     >
                       {service.chipLabel}
                     </span>

@@ -129,7 +129,7 @@ export default function Dashboard() {
                 { label: 'Agency', on: tier.agency },
                 { label: 'Logistics', on: tier.logistics },
                 { label: 'Customs', on: tier.customs },
-                { label: 'Procure', on: true },
+                { label: 'Procurement', on: true },
               ]}
               fullStack={fullStack}
               className="mx-auto mt-2 w-[240px]"
