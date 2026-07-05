@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /* ============================================================
-   GAC Connect design tokens — single source of truth (02_DESIGN_SYSTEM).
+   Design tokens — single source of truth (02_DESIGN_SYSTEM).
    Raw custom properties for CSS/SVG use; mirrored into the Tailwind
    theme below so utilities carry the same values.
    ============================================================ */
