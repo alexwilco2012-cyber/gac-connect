@@ -73,7 +73,7 @@ test('3 · quote accept opens the agreement and raises the billing-split toast',
   await page.getByRole('button', { name: 'Accept quote' }).nth(1).click();
   await page.getByRole('button', { name: 'Sign & book' }).click();
   await expect(
-    page.getByText(/PO 48211 generated in GAC Agent — billing split 60\/40 Northmoor/),
+    page.getByText(/PO 48211 generated in GAC Agent — billing split 60\/40 Browne/),
   ).toBeVisible();
   await expect(page.getByText('✓ Accepted — PO 48211 generated')).toBeVisible();
 });

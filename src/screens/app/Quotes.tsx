@@ -137,8 +137,8 @@ export default function Quotes() {
             <span className="rounded-md bg-white/12 px-2 py-0.5 text-[11.5px] font-bold">GA</span>
             <span className="flex-1">
               <strong className="text-white">GAC Agent is ready.</strong> On acceptance, a purchase
-              order is generated automatically against MV Caledonian Star with the 60/40 Northmoor
-              Energy / Solway Marine billing split applied from the vessel profile. No re-keying.
+              order is generated automatically against MV Caledonian Star with the 60/40 Browne
+              Energy / Grizzell Marine billing split applied from the vessel profile. No re-keying.
             </span>
             {acceptedQuoteId ? (
               <Button variant="dark-outline" onClick={resetQuote} className="!min-h-[36px] !py-1">
@@ -164,7 +164,7 @@ export default function Quotes() {
               agreement is stored with a full audit trail.
             </p>
             <p className="mt-5 border-b-2 border-ink px-1 pb-0.5 font-serif text-[22px] italic">
-              A. Fraser
+              A. Wilkinson
             </p>
             <p className="mt-1.5 text-[12px] text-ink-soft">
               Signed on behalf of client · supplier countersignature requested automatically

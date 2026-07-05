@@ -50,8 +50,8 @@ export const SUPPLIERS: Supplier[] = [
     plan: 'professional',
     recentJobs: [
       'Crane hire — MV Caledonian Star, Aberdeen',
-      'Heavy lift support — Northmoor Energy quayside works',
-      'Lift plan and appointed person — Fairhaven Drilling mobilisation',
+      'Heavy lift support — Browne Energy quayside works',
+      'Lift plan and appointed person — Wilkinson Drilling mobilisation',
     ],
   },
   {
@@ -64,8 +64,8 @@ export const SUPPLIERS: Supplier[] = [
     certs: fullCerts(['LOLER', 'Insurance', 'GWO']),
     plan: 'professional',
     recentJobs: [
-      'Crawler crane — Brinmore Subsea spoolbase',
-      'Quayside lifts — Solway Marine cargo runs',
+      'Crawler crane — Stronach Subsea spoolbase',
+      'Quayside lifts — Grizzell Marine cargo runs',
     ],
   },
   {
@@ -77,7 +77,7 @@ export const SUPPLIERS: Supplier[] = [
     esg: 'B',
     certs: fullCerts(['LOLER', 'Insurance', 'GWO']),
     plan: 'free',
-    recentJobs: ['Contract lift — Fairhaven Drilling laydown area'],
+    recentJobs: ['Contract lift — Wilkinson Drilling laydown area'],
   },
   {
     id: 'aberdeen-offshore-medical',
@@ -90,7 +90,7 @@ export const SUPPLIERS: Supplier[] = [
     plan: 'professional',
     recentJobs: [
       'Medical cover — MV Caledonian Star port call',
-      'Topside medic — Northmoor Energy shutdown',
+      'Topside medic — Browne Energy shutdown',
     ],
   },
   {
@@ -116,7 +116,7 @@ export const SUPPLIERS: Supplier[] = [
       { name: 'GWO', state: 'due', daysToExpiry: 21 },
     ],
     plan: 'professional',
-    recentJobs: ['Weld inspection — Brinmore Subsea fabrication'],
+    recentJobs: ['Weld inspection — Stronach Subsea fabrication'],
   },
   {
     id: 'peterhead-diving',
@@ -130,7 +130,7 @@ export const SUPPLIERS: Supplier[] = [
       { name: 'Insurance', state: 'lapsed' },
     ],
     plan: 'free',
-    recentJobs: ['Hull inspection — Solway Marine coaster'],
+    recentJobs: ['Hull inspection — Grizzell Marine coaster'],
   },
   {
     id: 'silver-city-welding',
@@ -144,7 +144,7 @@ export const SUPPLIERS: Supplier[] = [
     plan: 'premium',
     recentJobs: [
       'Onboard pipework repair — MV Granite Coast',
-      'Fabrication — Fairhaven Drilling skid frames',
+      'Fabrication — Wilkinson Drilling skid frames',
     ],
   },
   {

@@ -10,19 +10,19 @@ export interface Vessel {
 }
 
 export const OPERATORS = [
-  'Northmoor Energy',
-  'Solway Marine',
-  'Brinmore Subsea',
-  'Fairhaven Drilling',
+  'Browne Energy',
+  'Grizzell Marine',
+  'Stronach Subsea',
+  'Wilkinson Drilling',
 ] as const;
 
-export const BILLING_SPLIT = '60/40 Northmoor Energy / Solway Marine';
+export const BILLING_SPLIT = '60/40 Browne Energy / Grizzell Marine';
 
 export const VESSELS: Vessel[] = [
   {
     id: 'caledonian-star',
     name: 'MV Caledonian Star',
-    operatorLine: 'Northmoor Energy / Solway Marine (60/40)',
+    operatorLine: 'Browne Energy / Grizzell Marine (60/40)',
     port: 'Aberdeen',
     scheduleLine: 'Aberdeen · ETA Fri 08:00 · Berth: Regent Quay',
     statusPill: { label: 'Procurement list ready', tone: 'info' },
@@ -30,7 +30,7 @@ export const VESSELS: Vessel[] = [
   {
     id: 'boreal',
     name: 'MV Boreal',
-    operatorLine: 'Brinmore Subsea',
+    operatorLine: 'Stronach Subsea',
     port: 'Peterhead',
     scheduleLine: 'Peterhead · ETA Fri 14:30 · Berth: Smith Quay',
     statusPill: { label: '2 certs expiring on booked supplier', tone: 'warn' },
@@ -38,7 +38,7 @@ export const VESSELS: Vessel[] = [
   {
     id: 'granite-coast',
     name: 'MV Granite Coast',
-    operatorLine: 'Fairhaven Drilling',
+    operatorLine: 'Wilkinson Drilling',
     port: 'Aberdeen',
     scheduleLine: 'Aberdeen · ETD Sat 06:00 · Customs: T1 in progress',
     statusPill: { label: 'All documents complete', tone: 'success' },

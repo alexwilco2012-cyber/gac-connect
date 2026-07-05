@@ -52,12 +52,12 @@ export default function AppLayout() {
             ))}
           </nav>
           <div className="hidden items-center gap-2.5 text-[13px] text-[#C9D6E2] lg:flex">
-            <span>A. Fraser · Aberdeen Agency</span>
+            <span>A. Wilkinson · Aberdeen Agency</span>
             <span
               aria-hidden="true"
               className="grid h-8 w-8 place-items-center rounded-full bg-gold text-[13px] font-extrabold text-ink"
             >
-              AF
+              AW
             </span>
           </div>
         </div>

@@ -55,7 +55,7 @@ export const QUOTES: Quote[] = [
 ];
 
 export const ACCEPTANCE_TOAST =
-  'PO 48211 generated in GAC Agent — billing split 60/40 Northmoor Energy / Solway Marine applied automatically.';
+  'PO 48211 generated in GAC Agent — billing split 60/40 Browne Energy / Grizzell Marine applied automatically.';
 
 /** The request queue sidebar — this job plus two other open requests (01 §B5). */
 export const REQUEST_QUEUE = [

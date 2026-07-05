@@ -4,6 +4,7 @@ One line per decision: date · epic · what · why. Newest first.
 
 | Date | Epic | Decision | Why |
 |---|---|---|---|
+| 2026-07-05 | Data | Owner-directed personalisation: fictional operators renamed to surname-based companies (Browne Energy, Grizzell Marine, Stronach Subsea, Wilkinson Drilling) and the agent persona set to the owner's own name | Owner's choice after the guardrail trade-offs were laid out; companies-only format carries no first names, job titles, or org-chart references — deviation from 03 §3.4's mock set, logged |
 | 2026-07-05 | E12 | Actions workflows pushed (PAT with repo+workflow scopes; device flow abandoned after four timeouts) and Pages switched from the gh-pages branch to the Actions pipeline; gh-pages branch deleted | The architecture's intended deploy path (04) is now live end-to-end: push → CI (lint, tests, build, e2e, brand guard) → deploy |
 | 2026-07-05 | E12 | CI brand guard fired on its first real run — a tokens.css comment carried the brand string; comment reworded | The guard exists precisely for this; the one-line rebrand promise now holds across src/ including comments |
 | 2026-06-16 | Harbour | Interactive services landing (design handoff) integrated as the Landing hero inside MarketingLayout; the prototype's own header/footer dropped as duplicates of the layout chrome | README sanctions hero-section integration and "use the repo's established patterns"; CTAs rewired to /app/tiers, /app/marketplace, /app |

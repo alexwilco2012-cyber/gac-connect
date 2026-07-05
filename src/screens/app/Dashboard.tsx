@@ -123,7 +123,7 @@ export default function Dashboard() {
         <div className="space-y-5">
           {/* Consolidation widget — live tier state */}
           <Card data-tour="consolidation">
-            <Eyebrow>Client consolidation · Northmoor Energy</Eyebrow>
+            <Eyebrow>Client consolidation · Browne Energy</Eyebrow>
             <PillarsRoof
               pillars={[
                 { label: 'Agency', on: tier.agency },
