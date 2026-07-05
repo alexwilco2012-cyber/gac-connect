@@ -2,8 +2,8 @@ import { PillarsRoof } from '../../components/motif/PillarsRoof';
 import { ButtonLink } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Eyebrow } from '../../components/ui/Eyebrow';
-import { BRAND_NAME } from '../../config/brand';
 import { OPERATORS } from '../../data/vessels';
+import { InteractiveHarbour } from './harbour/InteractiveHarbour';
 
 const PROBLEMS = [
   {
@@ -49,52 +49,8 @@ const FULL_PILLARS = [
 export default function Landing() {
   return (
     <main className="screen-enter">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-ink text-white">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,199,44,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,199,44,.05) 1px, transparent 1px)',
-            backgroundSize: '56px 56px',
-            maskImage: 'radial-gradient(ellipse 70% 65% at 50% 30%, #000 0%, transparent 80%)',
-            WebkitMaskImage:
-              'radial-gradient(ellipse 70% 65% at 50% 30%, #000 0%, transparent 80%)',
-          }}
-        />
-        <div className="relative mx-auto grid max-w-[1180px] gap-12 px-6 py-16 md:grid-cols-[1.1fr_0.9fr] md:items-center md:py-24">
-          <div>
-            <Eyebrow dark>Offshore services · connected</Eyebrow>
-            <h1 className="mt-4 font-display text-[clamp(34px,5vw,56px)] leading-[1.08] font-bold tracking-tight">
-              Offshore services.
-              <br />
-              Found, vetted, <span className="text-gold-bright">booked.</span>
-            </h1>
-            <p className="mt-5 max-w-[520px] text-[16px] leading-relaxed text-[#B9C8D6]">
-              {BRAND_NAME} is a B2B marketplace for offshore energy operations: vetted suppliers,
-              GAC’s own service lines, and predictive procurement from vessel history — one workflow
-              that starts before the vessel reaches the berth.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink to="/app" variant="gold">
-                Explore the platform →
-              </ButtonLink>
-              <ButtonLink to="/for-suppliers" variant="dark-outline">
-                List your services
-              </ButtonLink>
-            </div>
-          </div>
-          <div className="hidden justify-center md:flex">
-            <div className="w-full max-w-[380px] rounded-[14px] border border-white/10 bg-white/5 p-8">
-              <PillarsRoof pillars={FULL_PILLARS} fullStack dark className="w-full" />
-              <p className="mt-4 text-center text-[12.5px] text-[#9FB4C8]">
-                Four pillars, one roof: consolidate services and the roof turns gold.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Interactive services hero — the night-harbour scene (design handoff) */}
+      <InteractiveHarbour />
 
       {/* Problem */}
       <section className="mx-auto max-w-[1180px] px-6 py-16 md:py-20">

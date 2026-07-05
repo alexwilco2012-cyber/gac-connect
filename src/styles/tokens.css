@@ -122,6 +122,53 @@ body {
   }
 }
 
+/* Interactive harbour hero (services landing design handoff) */
+@keyframes harbour-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.4deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(0.4deg);
+  }
+}
+@keyframes harbour-flick {
+  0%,
+  100% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+.harbour-bob {
+  animation: harbour-bob 4.5s ease-in-out infinite;
+  transform-origin: center;
+}
+.harbour-flick,
+.harbour-flick-late {
+  animation: harbour-flick 1.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.harbour-flick-late {
+  animation-delay: 0.4s;
+}
+.harbour-hotspot:hover,
+.harbour-hotspot:focus-visible {
+  transform: translateY(var(--lift, -5px));
+}
+.harbour-hotspot:focus-visible {
+  outline: 3px solid var(--gold-bright);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+.harbour-panel-fade {
+  animation: screen-fade-up 0.22s ease;
+}
+
 /* Route-enter fade (02 §motion): 250ms fade-up, once per mount */
 .screen-enter {
   animation: screen-fade-up 0.25s ease both;

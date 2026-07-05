@@ -98,6 +98,38 @@ test('4 · tier calculator shows £35,000 at £500k Full Stack', async ({ page }
   await expect(page.getByTestId('tier-pct')).toHaveText('4%');
 });
 
+test('6 · interactive harbour: hotspots, menu, Escape, and CTA rewiring', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(
+    page.getByRole('heading', { name: 'Every service on this quay. One platform.' }),
+  ).toBeVisible();
+
+  // Click the lorry → Logistics detail card with the tiers CTA.
+  await page.getByRole('button', { name: /Lorry — GAC Logistics/ }).click();
+  await expect(page.getByRole('heading', { name: 'GAC Logistics' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'See tier savings →' })).toHaveAttribute(
+    'href',
+    '/app/tiers',
+  );
+
+  // Escape returns to the default panel.
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading', { name: 'Tap any part of the harbour' })).toBeVisible();
+
+  // Menu selection → Marketplace detail with marketplace CTA.
+  await page.getByRole('button', { name: /The Marketplace/ }).click();
+  await expect(page.getByRole('heading', { name: 'The Offshore Marketplace' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Browse the marketplace →' })).toHaveAttribute(
+    'href',
+    '/app/marketplace',
+  );
+
+  // Marketplace is selected — clicking its own hotspot deselects it.
+  await page.getByRole('button', { name: /Offshore platform/ }).click();
+  await expect(page.getByRole('heading', { name: 'Tap any part of the harbour' })).toBeVisible();
+});
+
 test('5 · SVS blocked supplier is unbookable from its profile', async ({ page }) => {
   await page.goto('/app/svs');
   await page.keyboard.press('Escape');

@@ -4,6 +4,9 @@ One line per decision: date · epic · what · why. Newest first.
 
 | Date | Epic | Decision | Why |
 |---|---|---|---|
+| 2026-06-16 | Harbour | Interactive services landing (design handoff) integrated as the Landing hero inside MarketingLayout; the prototype's own header/footer dropped as duplicates of the layout chrome | README sanctions hero-section integration and "use the repo's established patterns"; CTAs rewired to /app/tiers, /app/marketplace, /app |
+| 2026-06-16 | Harbour | Design palette used verbatim (incl. menu dots #16A34A/#B45309/#3B82F6 and illustration yellow) | Handoff states high fidelity — colors final; illustration yellow is brand identity, consistent with the gold reservation |
+| 2026-06-16 | Harbour | Chip labels clip at the scene edge at very narrow widths, as in the reference geometry | Identical overflow behaviour to the design; full labels remain available in the menu and detail panel |
 | 2026-06-15 | E12 | Deployed from a `gh-pages` branch (locally built dist) instead of Actions; `.github/workflows/` held back from the remote | The OAuth token could not gain the `workflow` scope (device-flow authorisation repeatedly timed out); workflows exist locally and land with one push once the scope is granted |
 | 2026-06-15 | E12 | Force-pushed over the interim landing page's history (owner approved) | The old page's footer carried an internal approval-form reference; guardrails treat history as public |
 | 2026-06-15 | E12 | Lighthouse run against the live URL with a Playwright-launched browser; performance computed from metric scores as the runner nulled category aggregates | The standalone Chromium binary would not launch on this machine; scores recorded in README with method stated |
