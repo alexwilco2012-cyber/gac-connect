@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAC Connect — Offshore Services Platform</title>
+<style>
+  :root{
+    --ink:#0A2540; --ink-soft:#33475F; --paper:#FAFBFD; --white:#FFFFFF;
+    --line:#E5EAF1; --line-strong:#CBD6E2;
+    --sea:#0E5E8A; --sea-soft:#E8F1F7;
+    --gold:#C9A227; --gold-bright:#FFC72C; --gold-deep:#9A7B14; --gold-soft:#FBF6E3;
+    --success:#047857; --success-soft:#E7F4EF;
+    --warn:#B45309; --warn-soft:#FBF0E1;
+    --danger:#B91C1C; --danger-soft:#FBEAEA;
+    --radius:10px; --shadow:0 1px 3px rgba(10,37,64,.08), 0 4px 14px rgba(10,37,64,.06);
+    --font:"Segoe UI", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --display:"Space Grotesk", "Segoe UI", "Avenir Next", Arial, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important;} html{scroll-behavior:auto;} }
+  body{font-family:var(--font); background:var(--paper); color:var(--ink); font-size:15px; line-height:1.5;}
+  body.loading{overflow:hidden; height:100vh;}
+  button{font-family:inherit; font-size:inherit; cursor:pointer;}
+  button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible{outline:3px solid var(--sea); outline-offset:2px; border-radius:4px;}
+
+  /* ============================ LOADER (from standalone v3) ============================ */
+  .loader{position:fixed; inset:0; z-index:9999;
+    background:radial-gradient(ellipse at center, #0F2D4F 0%, #06132B 100%);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; overflow:hidden;
+    transition:opacity .8s cubic-bezier(.7,0,.3,1), visibility 0s linear .8s; cursor:pointer;}
+  .loader.hide{opacity:0; visibility:hidden; pointer-events:none;}
+  .loader-watermark{position:absolute; inset:0; pointer-events:none; display:grid; place-items:center; z-index:0; opacity:0; animation:lwm-in 1.4s .1s ease-out forwards;}
+  .loader-watermark svg{width:140vmin; height:auto; max-width:none; color:rgba(255,199,44,.045);}
+  @keyframes lwm-in{to{opacity:1;}}
+  .loader-grid{position:absolute; inset:0;
+    background-image:linear-gradient(rgba(255,199,44,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,199,44,.06) 1px, transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 80%);
+    -webkit-mask-image:radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 80%);
+    opacity:0; animation:lg-in 1.2s .2s cubic-bezier(.4,0,.2,1) forwards;}
+  @keyframes lg-in{to{opacity:1;}}
+  .loader-glow{position:absolute; top:45%; left:50%; width:700px; height:700px; transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(255,199,44,.15) 0%, transparent 60%); border-radius:50%;
+    opacity:0; animation:lglow-in 1.5s .5s ease-out forwards;}
+  @keyframes lglow-in{to{opacity:1;}}
+  .loader-stage{position:relative; z-index:2; display:flex; flex-direction:column; align-items:center;}
+  .loader-svg{width:560px; max-width:92vw; height:200px; overflow:visible;}
+  .loader-letter{font-family:var(--display); font-weight:700; font-size:120px; fill:#FFFFFF; letter-spacing:-.02em;
+    opacity:0; transform-box:fill-box; transform-origin:center;}
+  .loader-letter.G{animation:l-G .9s .3s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .loader-letter.A{animation:l-A .9s .55s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .loader-letter.C{animation:l-C .9s .8s cubic-bezier(.34,1.56,.64,1) forwards;}
+  @keyframes l-G{0%{opacity:0; transform:translateX(-160px) rotate(-8deg);}100%{opacity:1; transform:none;}}
+  @keyframes l-A{0%{opacity:0; transform:translateY(-140px) rotate(4deg);}100%{opacity:1; transform:none;}}
+  @keyframes l-C{0%{opacity:0; transform:translateX(160px) rotate(8deg);}100%{opacity:1; transform:none;}}
+  .chain-link{fill:none; stroke:#FFC72C; stroke-width:4; stroke-linecap:round; opacity:0; transform-box:fill-box; transform-origin:center; transform:scale(0);}
+  .chain-link.k1{animation:link-pop .3s 1.10s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .chain-link.k2{animation:link-pop .3s 1.20s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .chain-link.k3{animation:link-pop .3s 1.30s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .chain-link.k4{animation:link-pop .3s 1.45s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .chain-link.k5{animation:link-pop .3s 1.55s cubic-bezier(.34,1.56,.64,1) forwards;}
+  .chain-link.k6{animation:link-pop .3s 1.65s cubic-bezier(.34,1.56,.64,1) forwards;}
+  @keyframes link-pop{0%{opacity:0; transform:scale(0) rotate(-20deg);}60%{opacity:1; transform:scale(1.3) rotate(8deg);}100%{opacity:1; transform:scale(1) rotate(0);}}
+  .loader-sub{font-family:var(--display); font-weight:500; font-size:1.3rem; letter-spacing:.58em; text-indent:.58em;
+    color:#FFC72C; margin-top:.5rem; opacity:0; animation:sub-in .8s 2.4s cubic-bezier(.4,0,.2,1) forwards;}
+  @keyframes sub-in{0%{opacity:0; letter-spacing:1.2em;}100%{opacity:1; letter-spacing:.58em;}}
+  .loader-tag{font-weight:400; font-size:.78rem; letter-spacing:.3em; text-transform:uppercase;
+    color:rgba(255,255,255,.45); margin-top:1.4rem; opacity:0; animation:tag-in .6s 2.8s ease forwards;}
+  @keyframes tag-in{to{opacity:1;}}
+  .loader-skip{position:absolute; top:18px; right:22px; z-index:4; color:rgba(255,255,255,.4); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;}
+  .loader-sea{position:absolute; left:0; right:0; bottom:0; height:130px; pointer-events:none;}
+  .loader-sea-bg{position:absolute; inset:0; background:linear-gradient(180deg, transparent 0%, rgba(11,30,61,.5) 60%, #0A2540 100%);}
+  .loader-sea-waves{position:absolute; inset:0; opacity:.55;}
+  .loader-vessel{position:absolute; bottom:56px; width:180px; transform:translateX(-220px);
+    animation:vessel-cross 4s .8s cubic-bezier(.4,.05,.6,.95) forwards; filter:drop-shadow(0 4px 6px rgba(0,0,0,.35));}
+  @keyframes vessel-cross{0%{transform:translateX(-220px);}50%{transform:translate(calc(50vw - 90px), -4px);}100%{transform:translateX(calc(100vw + 60px));}}
+  .loader-vessel-bob{animation:bob 2.6s ease-in-out infinite; transform-origin:center;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-.6deg);}50%{transform:translateY(-3px) rotate(.6deg);}}
+  .loader-bar{position:absolute; bottom:24px; left:50%; transform:translateX(-50%); width:220px; height:2px;
+    background:rgba(255,199,44,.15); border-radius:2px; overflow:hidden; z-index:3;}
+  .loader-bar::after{content:''; position:absolute; top:0; left:0; height:100%; width:0;
+    background:linear-gradient(90deg, transparent, #FFC72C, transparent); animation:bar-fill 4s cubic-bezier(.4,0,.2,1) forwards;}
+  @keyframes bar-fill{to{width:100%;}}
+  @media (prefers-reduced-motion:reduce){ .loader{display:none;} body.loading{overflow:auto; height:auto;} }
+
+  /* ============================ Top bar ============================ */
+  .topbar{background:var(--ink); color:#fff; display:flex; align-items:center; gap:24px; padding:0 24px; height:58px; position:sticky; top:0; z-index:50;}
+  .wordmark{display:flex; align-items:baseline; gap:8px; white-space:nowrap;}
+  .wordmark .gac{font-family:var(--display); font-weight:800; letter-spacing:.12em; font-size:18px;}
+  .wordmark .connect{font-weight:300; letter-spacing:.28em; font-size:13px; color:#9FB4C8; text-transform:uppercase;}
+  .nav{display:flex; gap:2px; flex:1; overflow-x:auto;}
+  .nav button{background:none; border:none; color:#B9C8D6; padding:8px 12px; border-radius:6px; font-weight:600; font-size:13.5px; white-space:nowrap;}
+  .nav button:hover{color:#fff; background:rgba(255,255,255,.08);}
+  .nav button[aria-current="page"]{color:#fff; background:rgba(255,255,255,.14); box-shadow:inset 0 -3px 0 var(--gold);}
+  .nav-beta{display:inline-block; margin-left:6px; background:var(--gold-bright); color:var(--ink);
+    font-family:var(--display); font-size:9px; font-weight:700; letter-spacing:.08em;
+    padding:2px 5px; border-radius:3px; vertical-align:middle; position:relative; top:-1px;}
+  .userchip{display:flex; align-items:center; gap:10px; font-size:13px; color:#C9D6E2;}
+  .userchip .avatar{width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:13px;}
+  .poc-ribbon{background:var(--gold-soft); color:var(--gold-deep); border-bottom:1px solid #EADFB4; text-align:center; font-size:12.5px; padding:5px 12px; font-weight:600; letter-spacing:.02em;}
+
+  /* ============================ Layout ============================ */
+  .screen{display:none; max-width:1180px; margin:0 auto; padding:28px 24px 80px;}
+  .screen.active{display:block; animation:fadeUp .25s ease;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  h1{font-size:24px; font-weight:800; letter-spacing:-.01em;}
+  .sub{color:var(--ink-soft); margin-top:4px; font-size:14px;}
+  .eyebrow{font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--sea);}
+  .grid{display:grid; gap:18px;}
+  .card{background:var(--white); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px;}
+  .row{display:flex; align-items:center; gap:12px;}
+  .spread{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .btn{border:none; border-radius:8px; padding:9px 16px; font-weight:700; font-size:13.5px;}
+  .btn-primary{background:var(--sea); color:#fff;} .btn-primary:hover{background:#0B4C70;}
+  .btn-ghost{background:var(--white); color:var(--sea); border:1.5px solid var(--line-strong);} .btn-ghost:hover{border-color:var(--sea);}
+  .btn-gold{background:var(--gold); color:var(--ink);} .btn-gold:hover{background:#B89018;}
+  .pill{display:inline-flex; align-items:center; gap:5px; border-radius:999px; padding:3px 10px; font-size:11.5px; font-weight:700; letter-spacing:.02em;}
+  .pill-verified{background:var(--success-soft); color:var(--success);}
+  .pill-inhouse{background:var(--gold-soft); color:var(--gold-deep); border:1px solid #E5D89A;}
+  .pill-warn{background:var(--warn-soft); color:var(--warn);}
+  .pill-danger{background:var(--danger-soft); color:var(--danger);}
+  .pill-info{background:var(--sea-soft); color:var(--sea);}
+  .pill-promoted{background:#EFE9FB; color:#5B3FA8; border:1px solid #D9CCF5;}
+  .muted{color:var(--ink-soft); font-size:13px;}
+  .small{font-size:12.5px;}
+  .divider{height:1px; background:var(--line); margin:14px 0;}
+
+  /* ============================ Beta banner ============================ */
+  .beta-banner{background:linear-gradient(90deg, rgba(255,199,44,.12), rgba(255,199,44,.04));
+    border:1px solid rgba(255,199,44,.3); border-radius:12px; padding:14px 18px;
+    display:flex; gap:14px; align-items:center; margin:20px 0;}
+  .beta-banner .ic{color:var(--gold-deep); flex-shrink:0; font-size:18px;}
+  .beta-banner p{font-size:13px; color:var(--ink-soft); margin:0; flex:1;}
+  .beta-banner strong{color:var(--ink);}
+
+  /* ============================ Dashboard ============================ */
+  .kpis{grid-template-columns:repeat(4,1fr);}
+  .kpi .big{font-size:26px; font-weight:800; margin-top:2px;}
+  .kpi .delta{font-size:12px; font-weight:700; color:var(--success);}
+  .dash-main{grid-template-columns:1.6fr 1fr; margin-top:18px; align-items:start;}
+  .arrival{border-left:4px solid var(--sea); padding-left:14px; margin-bottom:14px;}
+  .arrival:last-child{margin-bottom:0;}
+  .predictive{background:linear-gradient(180deg,var(--sea-soft),#fff 70%); border:1px solid #CFE2EE;}
+  .predictive ul{list-style:none; margin:10px 0;}
+  .predictive li{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--line-strong); font-size:14px;}
+  .predictive li:last-child{border-bottom:none;}
+
+  /* Pillars & roof */
+  .house{display:block; margin:6px auto 2px; width:240px;}
+  .pillar{fill:#D7DFE8; transition:fill .35s;}
+  .pillar.on{fill:var(--sea);}
+  .pillar-label{font-size:9.5px; font-weight:700; fill:var(--ink-soft); text-anchor:middle; letter-spacing:.04em;}
+  .roof{fill:#E9EDF2; stroke:#CBD6E2; stroke-width:1; transition:fill .4s, stroke .4s;}
+  .roof.on{fill:var(--gold); stroke:var(--gold-deep);}
+  .tier-readout{text-align:center; margin-top:8px;}
+  .tier-readout .pct{font-size:34px; font-weight:800; letter-spacing:-.02em;}
+  .tier-readout .pct.gold{color:var(--gold-deep);}
+
+  /* ============================ Marketplace ============================ */
+  .searchbar{display:flex; gap:10px; margin:18px 0 10px;}
+  .searchbar input{flex:1; border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 14px; font-size:14.5px; background:#fff;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;}
+  .chip{border:1.5px solid var(--line-strong); background:#fff; border-radius:999px; padding:6px 14px; font-size:13px; font-weight:600; color:var(--ink-soft);}
+  .chip[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .supplier{display:grid; grid-template-columns:1fr auto; gap:14px; padding:16px 18px; margin-bottom:12px;}
+  .supplier.inhouse{border:1.5px solid var(--gold); background:linear-gradient(180deg,#FFFDF4,#fff 60%);}
+  .supplier.promoted{border:1.5px solid #C9BCF0; background:linear-gradient(180deg,#FBFAFF,#fff 60%);}
+  .supplier h3{font-size:16px;}
+  .meta{display:flex; flex-wrap:wrap; gap:14px; margin-top:6px; font-size:13px; color:var(--ink-soft);}
+  .stars{color:var(--gold-deep); font-weight:700;}
+  .esg{font-weight:700;}
+  .esg.a{color:var(--success);} .esg.b{color:#3E7C2F;} .esg.c{color:var(--warn);}
+  .supplier .side{display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; gap:8px;}
+  .pinned-note{margin:6px 0 10px;}
+  .ad-disclosure{font-size:10.5px; color:#8A7FB0; letter-spacing:.06em; text-transform:uppercase; font-weight:700;}
+
+  /* ============================ Quotes ============================ */
+  .quote-grid{grid-template-columns:repeat(3,1fr); align-items:stretch;}
+  .quote{display:flex; flex-direction:column; gap:8px;}
+  .quote .price{font-size:24px; font-weight:800;}
+  .quote.best{border:1.5px solid var(--success);}
+  .quote .src{font-size:11.5px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;}
+  .src .dot{width:7px;height:7px;border-radius:50%;background:var(--sea);}
+  .quote table{width:100%; font-size:13px; border-collapse:collapse;}
+  .quote td{padding:5px 0; border-bottom:1px dashed var(--line);}
+  .quote td:last-child{text-align:right; font-weight:600;}
+  .ga-strip{margin-top:16px; background:var(--ink); color:#D8E2EC; border-radius:var(--radius); padding:14px 18px; display:flex; gap:18px; align-items:center; font-size:13.5px;}
+  .ga-strip strong{color:#fff;}
+  .ga-strip .tag{background:rgba(255,255,255,.12); border-radius:6px; padding:3px 8px; font-size:11.5px; font-weight:700;}
+
+  /* ============================ Tier calculator ============================ */
+  .calc{grid-template-columns:1.1fr 1fr; align-items:start;}
+  .svc-toggle{display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--line-strong); border-radius:10px; padding:14px 16px; margin-bottom:10px; background:#fff;}
+  .svc-toggle .name{font-weight:700;}
+  .svc-toggle .tier{font-size:12px; color:var(--ink-soft);}
+  .switch{position:relative; width:46px; height:26px; border-radius:999px; background:#CBD6E2; border:none; transition:background .2s;}
+  .switch[aria-pressed="true"]{background:var(--sea);}
+  .switch::after{content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .2s;}
+  .switch[aria-pressed="true"]::after{left:23px;}
+  .spend{margin-top:18px;}
+  .spend input[type=range]{width:100%; accent-color:var(--sea);}
+  .spend .val{font-weight:800; font-size:18px;}
+  .result-card{background:var(--ink); color:#fff; text-align:center; padding:28px 22px;}
+  .result-card .pct{font-size:52px; font-weight:800; line-height:1;}
+  .result-card .pct.gold{color:var(--gold-bright);}
+  .result-card .save{font-size:22px; font-weight:700; margin-top:14px;}
+  .result-card .note{color:#9FB4C8; font-size:12.5px; margin-top:10px;}
+  .fullstack-flag{display:none; margin:10px auto 0; width:fit-content;}
+  .fullstack-flag.show{display:inline-flex;}
+
+  /* ============================ SVS ============================ */
+  .svs-table{width:100%; border-collapse:collapse; font-size:13.5px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  .svs-table th{background:var(--ink); color:#fff; text-align:left; padding:10px 14px; font-size:12px; letter-spacing:.05em; text-transform:uppercase;}
+  .svs-table td{padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .svs-table tr:last-child td{border-bottom:none;}
+  .cert{display:inline-block; border-radius:6px; padding:2px 8px; font-size:11.5px; font-weight:700; margin:1px 2px;}
+  .cert.ok{background:var(--success-soft); color:var(--success);}
+  .cert.due{background:var(--warn-soft); color:var(--warn);}
+  .cert.lapsed{background:var(--danger-soft); color:var(--danger);}
+  .alertbar{border-left:4px solid var(--warn); background:var(--warn-soft); border-radius:8px; padding:12px 16px; margin:14px 0; font-size:13.5px;}
+
+  /* ============================ For Suppliers (advertising) ============================ */
+  .founder{background:var(--ink); color:#fff; border-radius:var(--radius); padding:22px 24px; display:flex; gap:18px; align-items:center; margin:20px 0;}
+  .founder .badge{background:var(--gold-bright); color:var(--ink); font-family:var(--display); font-weight:800; border-radius:8px; padding:8px 12px; font-size:13px; white-space:nowrap;}
+  .founder p{flex:1; font-size:14px; color:#D8E2EC;}
+  .founder strong{color:#fff;}
+  .plans{grid-template-columns:repeat(3,1fr); align-items:stretch;}
+  .plan{display:flex; flex-direction:column; gap:0; position:relative;}
+  .plan.popular{border:1.5px solid var(--gold);}
+  .plan .pop-pill{position:absolute; top:-11px; right:14px; background:var(--gold); color:var(--ink); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:4px 9px; border-radius:100px;}
+  .plan h3{font-size:17px;}
+  .plan .price{font-size:30px; font-weight:800; margin:8px 0 2px;}
+  .plan .per{font-size:12px; color:var(--ink-soft);}
+  .plan ul{list-style:none; margin:14px 0; flex:1;}
+  .plan li{padding:7px 0; border-bottom:1px dashed var(--line); font-size:13.5px; display:flex; gap:8px;}
+  .plan li:last-child{border-bottom:none;}
+  .plan li::before{content:"\2713"; color:var(--success); font-weight:800;}
+  .plan li.no::before{content:"\2013"; color:var(--line-strong);}
+  .plan li.no{color:#9AA8B8;}
+  .ad-products{grid-template-columns:repeat(3,1fr); margin-top:18px;}
+  .ad-product .ic{font-size:22px;}
+  .ad-product h4{font-size:14.5px; margin-top:8px;}
+  .ad-product p{font-size:13px; color:var(--ink-soft); margin-top:4px;}
+  .analytics{grid-template-columns:repeat(4,1fr); margin-top:18px;}
+  .stat .label{font-size:12px; color:var(--ink-soft);}
+  .stat .num{font-size:24px; font-weight:800; margin-top:2px;}
+  .bar{height:6px; background:var(--sea-soft); border-radius:4px; margin-top:10px; overflow:hidden;}
+  .bar > span{display:block; height:100%; background:var(--sea); border-radius:4px;}
+  .preview-wrap{border:1.5px dashed var(--line-strong); border-radius:12px; padding:18px; margin-top:14px; background:#FCFDFE;}
+
+  /* ============================ Beta screens ============================ */
+  .beta-hero{background:linear-gradient(180deg, #04101F 0%, #0B2138 60%, var(--ink) 100%); color:#fff; border-radius:14px; padding:34px 30px; margin-top:20px;}
+  .beta-hero h2{font-family:var(--display); font-size:24px;}
+  .beta-hero p{color:#B9C8D6; margin-top:8px; max-width:640px; font-size:14px;}
+  .gate-pill{display:inline-flex; align-items:center; gap:6px; background:rgba(255,199,44,.14); border:1px solid rgba(255,199,44,.35); color:var(--gold-bright); border-radius:999px; padding:4px 12px; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-bottom:14px;}
+  .beta-grid{grid-template-columns:repeat(3,1fr); margin-top:18px;}
+  .beta-card h4{font-size:14.5px;}
+  .beta-card p{font-size:13px; color:var(--ink-soft); margin-top:4px;}
+
+  /* ============================ Outlook drawer ============================ */
+  .drawer{position:fixed; top:0; right:-420px; width:400px; max-width:92vw; height:100vh; background:#fff; border-left:1px solid var(--line-strong); box-shadow:-8px 0 30px rgba(10,37,64,.18); z-index:80; transition:right .3s ease; display:flex; flex-direction:column;}
+  .drawer.open{right:0;}
+  .drawer-head{background:#0F6CBD; color:#fff; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;}
+  .drawer-head .t{font-weight:700; font-size:14px;}
+  .drawer-body{padding:16px 18px; overflow-y:auto; font-size:13.5px;}
+  .mail{border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:10px;}
+  .mail .from{font-weight:700; font-size:13px;}
+  .mail .subj{color:var(--ink-soft); font-size:12.5px; margin:2px 0 6px;}
+  .addin{background:var(--sea-soft); border:1px dashed var(--sea); border-radius:8px; padding:10px 12px; font-size:12.5px; margin-top:8px;}
+  .addin strong{color:var(--sea);}
+  .closex{background:none; border:none; color:#fff; font-size:20px; line-height:1;}
+
+  /* ============================ Modal & toast ============================ */
+  .overlay{position:fixed; inset:0; background:rgba(10,37,64,.45); display:none; place-items:center; z-index:90;}
+  .overlay.open{display:grid;}
+  .modal{background:#fff; border-radius:14px; max-width:460px; width:92vw; padding:26px;}
+  .sigline{border-bottom:2px solid var(--ink); margin:22px 0 6px; font-family:Georgia, 'Times New Roman', serif; font-style:italic; font-size:22px; padding:0 4px 2px;}
+  .toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--ink); color:#fff; border-radius:10px; padding:14px 20px; font-size:14px; box-shadow:var(--shadow); z-index:100; opacity:0; transition:all .35s ease; max-width:560px; text-align:center;}
+  .toast.show{transform:translateX(-50%) translateY(0); opacity:1;}
+  .toast .tag{background:var(--gold); color:var(--ink); border-radius:5px; padding:1px 7px; font-weight:800; font-size:11.5px; margin-right:8px;}
+
+  footer{max-width:1180px; margin:0 auto; padding:18px 24px 36px; color:var(--ink-soft); font-size:12px; border-top:1px solid var(--line);}
+
+  @media (max-width:900px){
+    .kpis, .analytics{grid-template-columns:repeat(2,1fr);}
+    .dash-main, .calc, .quote-grid, .plans, .ad-products, .beta-grid{grid-template-columns:1fr;}
+    .userchip .uname{display:none;}
+    .founder{flex-direction:column; align-items:flex-start;}
+  }
+</style>
+</head>
+<body class="loading">
+
+<!-- ============================ LOADER ============================ -->
+<div class="loader" id="loader" aria-hidden="true" onclick="hideLoader()" title="Click to skip">
+  <span class="loader-skip">Click to skip</span>
+  <div class="loader-watermark">
+    <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <text x="400" y="230" font-family="Space Grotesk, sans-serif" font-size="260" font-weight="700" text-anchor="middle" fill="currentColor" letter-spacing="0.04em">GAC</text>
+    </svg>
+  </div>
+  <div class="loader-grid"></div>
+  <div class="loader-glow"></div>
+
+  <div class="loader-stage">
+    <svg class="loader-svg" viewBox="0 0 560 200">
+      <text class="loader-letter G" x="120" y="140" text-anchor="middle">G</text>
+      <text class="loader-letter A" x="280" y="140" text-anchor="middle">A</text>
+      <text class="loader-letter C" x="440" y="140" text-anchor="middle">C</text>
+      <ellipse class="chain-link k1" cx="176" cy="105" rx="10" ry="6"></ellipse>
+      <ellipse class="chain-link k2" cx="200" cy="105" rx="6" ry="10"></ellipse>
+      <ellipse class="chain-link k3" cx="224" cy="105" rx="10" ry="6"></ellipse>
+      <ellipse class="chain-link k4" cx="336" cy="105" rx="10" ry="6"></ellipse>
+      <ellipse class="chain-link k5" cx="360" cy="105" rx="6" ry="10"></ellipse>
+      <ellipse class="chain-link k6" cx="384" cy="105" rx="10" ry="6"></ellipse>
+    </svg>
+    <div class="loader-sub">CONNECT</div>
+    <div class="loader-tag">Offshore Services &middot; Connected</div>
+  </div>
+
+  <div class="loader-sea">
+    <div class="loader-sea-bg"></div>
+    <svg class="loader-sea-waves" viewBox="0 0 1200 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 70 Q60 60 120 70 T240 70 T360 70 T480 70 T600 70 T720 70 T840 70 T960 70 T1080 70 T1200 70 V130 H0 Z" fill="#0A2540"></path>
+      <path d="M0 90 Q60 82 120 90 T240 90 T360 90 T480 90 T600 90 T720 90 T840 90 T960 90 T1080 90 T1200 90" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.2"></path>
+      <path d="M0 110 Q60 104 120 110 T240 110 T360 110 T480 110 T600 110 T720 110 T840 110 T960 110 T1080 110 T1200 110" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"></path>
+    </svg>
+    <svg class="loader-vessel" viewBox="0 0 200 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g class="loader-vessel-bob">
+        <path d="M6 56 L22 72 L160 72 L182 56 L182 48 L6 48 Z" fill="#FFFFFF"></path>
+        <rect x="6" y="52" width="176" height="4" fill="#FFC72C"></rect>
+        <rect x="38" y="34" width="22" height="14" fill="#3B82F6"></rect>
+        <rect x="64" y="34" width="22" height="14" fill="#FFC72C"></rect>
+        <rect x="90" y="34" width="22" height="14" fill="#FFFFFF" stroke="#0A2540" stroke-width=".8"></rect>
+        <path d="M120 48 L120 18 L160 18 L172 28 L172 48 Z" fill="#FFFFFF"></path>
+        <rect x="124" y="22" width="44" height="5" fill="#0A2540"></rect>
+        <rect x="126" y="23" width="6" height="3" fill="#FFC72C"></rect>
+        <rect x="136" y="23" width="6" height="3" fill="#FFC72C"></rect>
+        <rect x="146" y="23" width="6" height="3" fill="#FFC72C"></rect>
+        <rect x="156" y="23" width="6" height="3" fill="#FFC72C"></rect>
+        <line x1="146" y1="18" x2="146" y2="2" stroke="#FFFFFF" stroke-width="1.2"></line>
+        <circle cx="146" cy="2" r="2" fill="#FFC72C"></circle>
+        <rect x="108" y="22" width="4" height="26" fill="#FFC72C"></rect>
+        <line x1="110" y1="22" x2="78" y2="2" stroke="#FFC72C" stroke-width="2.6"></line>
+        <circle cx="30" cy="60" r="1.5" fill="#0A2540"></circle>
+        <circle cx="44" cy="60" r="1.5" fill="#0A2540"></circle>
+        <circle cx="58" cy="60" r="1.5" fill="#0A2540"></circle>
+        <circle cx="72" cy="60" r="1.5" fill="#0A2540"></circle>
+      </g>
+      <path d="M178 60 Q186 58 194 60 Q190 64 178 64 Z" fill="rgba(255,255,255,.5)"></path>
+    </svg>
+  </div>
+  <div class="loader-bar"></div>
+</div>
+
+<div class="poc-ribbon">Proof of concept &middot; internal demonstration &middot; all data is illustrative</div>
+
+<header class="topbar">
+  <div class="wordmark"><span class="gac">GAC</span><span class="connect">Connect</span></div>
+  <nav class="nav" aria-label="Main">
+    <button data-nav="dashboard" aria-current="page" onclick="go('dashboard')">Dashboard</button>
+    <button data-nav="marketplace" onclick="go('marketplace')">Marketplace</button>
+    <button data-nav="quotes" onclick="go('quotes')">Quotes</button>
+    <button data-nav="tiers" onclick="go('tiers')">Tier Calculator</button>
+    <button data-nav="svs" onclick="go('svs')">SVS</button>
+    <button data-nav="suppliers" onclick="go('suppliers')">For Suppliers</button>
+    <button data-nav="certification" onclick="go('certification')">Certification<span class="nav-beta">BETA</span></button>
+    <button data-nav="bunkers" onclick="go('bunkers')">Bunkers<span class="nav-beta">BETA</span></button>
+  </nav>
+  <div class="userchip"><span class="uname">A. Fraser &middot; Aberdeen Agency</span><span class="avatar">AF</span></div>
+</header>
+
+<!-- ============================ DASHBOARD ============================ -->
+<main id="dashboard" class="screen active" aria-label="Dashboard">
+  <div class="spread">
+    <div>
+      <p class="eyebrow">Thursday 11 June &middot; Aberdeen</p>
+      <h1>Morning, agent</h1>
+      <p class="sub">2 vessels arriving in the next 24 hours. 1 procurement list ready to send.</p>
+    </div>
+    <button class="btn btn-ghost" onclick="toggleDrawer(true)">Open Outlook add-in preview</button>
+  </div>
+
+  <div class="grid kpis" style="margin-top:20px;">
+    <div class="card kpi"><p class="muted small">Active jobs</p><p class="big">14</p><p class="delta">+3 this week</p></div>
+    <div class="card kpi"><p class="muted small">Open quote requests</p><p class="big">6</p><p class="delta">2 replies awaiting review</p></div>
+    <div class="card kpi"><p class="muted small">SVS-verified suppliers</p><p class="big">52</p><p class="delta">4 onboarding</p></div>
+    <div class="card kpi"><p class="muted small">Admin time saved (mo.)</p><p class="big">31 hrs</p><p class="delta">vs manual workflow</p></div>
+  </div>
+
+  <div class="grid dash-main">
+    <div>
+      <div class="card predictive">
+        <div class="spread">
+          <div>
+            <p class="eyebrow">Predictive procurement &middot; from GA history</p>
+            <h2 style="font-size:18px; margin-top:2px;">MV Caledonian Star &mdash; Aberdeen, ETA 08:00 tomorrow</h2>
+          </div>
+          <span class="pill pill-info">GA vessel profile loaded</span>
+        </div>
+        <p class="muted" style="margin-top:8px;">This vessel typically requires the following on a call to Aberdeen. SVS-verified suppliers are pre-selected for each.</p>
+        <ul>
+          <li><span><strong>Crane hire</strong> &middot; 3 suppliers matched</span><span class="pill pill-verified">&#10003; GAC Verified</span></li>
+          <li><span><strong>Medical cover</strong> &middot; 3 suppliers matched</span><span class="pill pill-verified">&#10003; GAC Verified</span></li>
+          <li><span><strong>Scaffolding</strong> &middot; 3 suppliers matched</span><span class="pill pill-verified">&#10003; GAC Verified</span></li>
+        </ul>
+        <div class="row">
+          <button class="btn btn-primary" onclick="sendQuoteRequests()">Send quote requests</button>
+          <span class="muted small">9 emails &middot; replies will populate the comparison view automatically</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px;">
+        <p class="eyebrow">Arrivals &amp; departures</p>
+        <div style="margin-top:12px;">
+          <div class="arrival spread">
+            <div><strong>MV Caledonian Star</strong> &middot; Northmoor Energy / Solway Marine (60/40)<br><span class="muted small">Aberdeen &middot; ETA Fri 08:00 &middot; Berth: Regent Quay</span></div>
+            <span class="pill pill-info">Procurement list ready</span>
+          </div>
+          <div class="arrival spread">
+            <div><strong>MV Boreal</strong> &middot; Brinmore Subsea<br><span class="muted small">Peterhead &middot; ETA Fri 14:30 &middot; Berth: Smith Quay</span></div>
+            <span class="pill pill-warn">2 certs expiring on booked supplier</span>
+          </div>
+          <div class="arrival spread">
+            <div><strong>MV Granite Coast</strong> &middot; Brinmore Subsea<br><span class="muted small">Aberdeen &middot; ETD Sat 06:00 &middot; Customs: T1 in progress</span></div>
+            <span class="pill pill-verified">All documents complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <p class="eyebrow">Client consolidation &middot; Northmoor Energy</p>
+        <svg class="house" viewBox="0 0 240 150" role="img" aria-label="Four pillars and a roof diagram showing GAC service consolidation">
+          <polygon class="roof on" points="120,8 12,52 228,52"></polygon>
+          <text x="120" y="42" text-anchor="middle" style="font-size:10px;font-weight:800;letter-spacing:.08em;" fill="#0A2540">GAC CONNECT</text>
+          <rect class="pillar on" x="22"  y="62" width="38" height="62" rx="3"></rect>
+          <rect class="pillar on" x="74"  y="62" width="38" height="62" rx="3"></rect>
+          <rect class="pillar on" x="126" y="62" width="38" height="62" rx="3"></rect>
+          <rect class="pillar on" x="178" y="62" width="38" height="62" rx="3"></rect>
+          <text class="pillar-label" x="41"  y="138">AGENCY</text>
+          <text class="pillar-label" x="93"  y="138">LOGISTICS</text>
+          <text class="pillar-label" x="145" y="138">CUSTOMS</text>
+          <text class="pillar-label" x="197" y="138">PROCURE</text>
+        </svg>
+        <div class="tier-readout">
+          <span class="pill pill-inhouse">&#9733; Full Stack client</span>
+          <p class="pct gold">7%</p>
+          <p class="muted small">tier discount held &middot; est. &pound;35,000 saved this year on &pound;500k GAC service spend</p>
+        </div>
+        <div class="divider"></div>
+        <p class="muted small">The tier is non-cumulative: clients hold the highest single tier they qualify for. Try the mechanics in the <a href="#" onclick="go('tiers');return false;">Tier Calculator</a>.</p>
+      </div>
+
+      <div class="card" style="margin-top:18px;">
+        <p class="eyebrow">Compliance watch &middot; SVS</p>
+        <p style="margin-top:10px; font-size:14px;"><strong>Granite NDT Ltd</strong> &mdash; GWO expires in 21 days. Renewal reminder sent automatically.</p>
+        <p style="margin-top:8px; font-size:14px;"><strong>Peterhead Diving Services</strong> &mdash; insurance certificate lapsed. <span class="pill pill-danger">Blocked from booking</span></p>
+        <button class="btn btn-ghost" style="margin-top:12px;" onclick="go('svs')">Open SVS</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ============================ MARKETPLACE ============================ -->
+<main id="marketplace" class="screen" aria-label="Marketplace">
+  <p class="eyebrow">Marketplace</p>
+  <h1>Find a service</h1>
+  <p class="sub">Every listing is vetted through the GAC Supplier Vetting System. GAC&rsquo;s own service lines appear first where relevant; promoted suppliers are always labelled.</p>
+
+  <div class="searchbar">
+    <input id="searchInput" type="search" placeholder="Search services, suppliers, or categories&hellip; e.g. crane hire Aberdeen" aria-label="Search marketplace" oninput="filterMarket()">
+    <button class="btn btn-primary" onclick="filterMarket()">Search</button>
+  </div>
+  <div class="chips" id="chips" role="group" aria-label="Service categories"></div>
+
+  <div id="marketList"></div>
+</main>
+
+<!-- ============================ QUOTES ============================ -->
+<main id="quotes" class="screen" aria-label="Quote comparison">
+  <p class="eyebrow">Quote comparison</p>
+  <h1>Crane hire &mdash; MV Caledonian Star, Aberdeen</h1>
+  <p class="sub">3 of 3 suppliers have replied. One reply was parsed automatically from Outlook &mdash; no manual logging.</p>
+
+  <div class="grid quote-grid" style="margin-top:20px;">
+    <div class="card quote">
+      <div class="spread"><strong>North Sea Crane Co.</strong><span class="pill pill-verified">&#10003; GAC Verified</span></div>
+      <p class="src"><span class="dot"></span>Replied via platform &middot; 09:42</p>
+      <p class="price">&pound;4,850</p>
+      <table>
+        <tr><td>Availability</td><td>Fri 06:00</td></tr>
+        <tr><td>Capacity</td><td>120t mobile</td></tr>
+        <tr><td>Rating</td><td>4.7 &#9733;</td></tr>
+        <tr><td>ESG score</td><td>B</td></tr>
+      </table>
+      <button class="btn btn-ghost" onclick="openSignModal('North Sea Crane Co.','£4,850')">Accept quote</button>
+    </div>
+
+    <div class="card quote best">
+      <div class="spread"><strong>Caledonia Lifting Ltd</strong><span class="pill pill-verified">&#10003; GAC Verified</span></div>
+      <p class="src"><span class="dot" style="background:#0F6CBD;"></span>Parsed from Outlook reply &middot; 10:15</p>
+      <p class="price">&pound;4,400 <span class="pill pill-info" style="vertical-align:middle;">Best match</span></p>
+      <table>
+        <tr><td>Availability</td><td>Fri 06:00</td></tr>
+        <tr><td>Capacity</td><td>130t mobile</td></tr>
+        <tr><td>Rating</td><td>4.9 &#9733;</td></tr>
+        <tr><td>ESG score</td><td>A</td></tr>
+      </table>
+      <button class="btn btn-primary" onclick="openSignModal('Caledonia Lifting Ltd','£4,400')">Accept quote</button>
+    </div>
+
+    <div class="card quote">
+      <div class="spread"><strong>Granite Cranes</strong><span class="pill pill-verified">&#10003; GAC Verified</span></div>
+      <p class="src"><span class="dot"></span>Replied via platform &middot; 11:03</p>
+      <p class="price">&pound;5,100</p>
+      <table>
+        <tr><td>Availability</td><td>Fri 09:00</td></tr>
+        <tr><td>Capacity</td><td>110t mobile</td></tr>
+        <tr><td>Rating</td><td>4.5 &#9733;</td></tr>
+        <tr><td>ESG score</td><td>B</td></tr>
+      </table>
+      <button class="btn btn-ghost" onclick="openSignModal('Granite Cranes','£5,100')">Accept quote</button>
+    </div>
+  </div>
+
+  <div class="ga-strip">
+    <span class="tag">GA</span>
+    <span><strong>GAC Agent is ready.</strong> On acceptance, a purchase order is generated automatically against MV Caledonian Star with the 60/40 Northmoor Energy / Solway Marine billing split applied from the vessel profile. No re-keying.</span>
+  </div>
+</main>
+
+<!-- ============================ TIER CALCULATOR ============================ -->
+<main id="tiers" class="screen" aria-label="Tier calculator">
+  <p class="eyebrow">Commercial mechanics</p>
+  <h1>Tier discount calculator</h1>
+  <p class="sub">The discount applies to a client&rsquo;s GAC in-house service charges booked through the platform. It is non-cumulative &mdash; the highest single tier the client qualifies for applies.</p>
+
+  <div class="grid calc" style="margin-top:22px;">
+    <div>
+      <div class="svc-toggle">
+        <div><p class="name">GAC Agency</p><p class="tier">Port calls, vessel support, crew coordination &middot; 2% tier</p></div>
+        <button class="switch" id="sw-agency" aria-pressed="true" aria-label="Toggle GAC Agency" onclick="toggleSvc('agency')"></button>
+      </div>
+      <div class="svc-toggle">
+        <div><p class="name">GAC Logistics</p><p class="tier">Freight forwarding, warehousing, project cargo &middot; 4% tier</p></div>
+        <button class="switch" id="sw-logistics" aria-pressed="false" aria-label="Toggle GAC Logistics" onclick="toggleSvc('logistics')"></button>
+      </div>
+      <div class="svc-toggle">
+        <div><p class="name">GAC Customs</p><p class="tier">T1 transit, import/export clearance, documentation &middot; 7% tier</p></div>
+        <button class="switch" id="sw-customs" aria-pressed="false" aria-label="Toggle GAC Customs" onclick="toggleSvc('customs')"></button>
+      </div>
+      <p class="muted small" style="margin:4px 2px 0;">GAC Assets and GAC Procurement are included at any tier as added value.</p>
+
+      <div class="spend card" style="margin-top:18px;">
+        <div class="spread"><p class="eyebrow">Annual GAC service spend via platform</p><p class="val" id="spendVal">&pound;500,000</p></div>
+        <input type="range" id="spendRange" min="50000" max="2000000" step="25000" value="500000" oninput="calcTier()" aria-label="Annual GAC service spend">
+        <div class="spread muted small"><span>&pound;50k</span><span>&pound;2.0m</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card result-card">
+        <p class="eyebrow" style="color:#9FB4C8;">Discount tier held</p>
+        <p class="pct" id="tierPct">2%</p>
+        <span class="pill pill-inhouse fullstack-flag" id="fullstackFlag">&#9733; Full Stack &mdash; all three pillars</span>
+        <p class="save" id="saveVal">&pound;10,000 saved / year</p>
+        <p class="note" id="tierNote">Qualifying tier: GAC Agency (2%). Adding Logistics lifts the client to 4%; adding Customs to 7%.</p>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <p class="eyebrow">Why this works for GAC</p>
+        <p style="margin-top:8px; font-size:13.5px;">The discount is a cost; the consolidated service revenue it attracts is the prize. In the proposal P&amp;L the discount pass-through runs at a fraction of the in-house uplift in every year.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ============================ SVS ============================ -->
+<main id="svs" class="screen" aria-label="Supplier Vetting System">
+  <p class="eyebrow">Supplier Vetting System &middot; proprietary</p>
+  <h1>Compliance at a glance</h1>
+  <p class="sub">Certification is a mandatory vetting field. Expiries trigger automatic alerts; lapsed suppliers cannot be booked.</p>
+
+  <div class="alertbar"><strong>2 alerts:</strong> Granite NDT Ltd &mdash; GWO expires in 21 days (renewal reminder sent). Peterhead Diving Services &mdash; insurance lapsed (booking blocked until evidence uploaded).</div>
+
+  <table class="svs-table">
+    <thead><tr><th>Supplier</th><th>Category</th><th>Certifications</th><th>ESG</th><th>Rating</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Caledonia Lifting Ltd</strong></td><td>Cranes</td><td><span class="cert ok">LOLER</span><span class="cert ok">Insurance</span><span class="cert ok">GWO</span></td><td><span class="esg a">A</span></td><td>4.9 &#9733;</td><td><span class="pill pill-verified">&#10003; GAC Verified</span></td></tr>
+      <tr><td><strong>North Sea Crane Co.</strong></td><td>Cranes</td><td><span class="cert ok">LOLER</span><span class="cert ok">Insurance</span><span class="cert ok">GWO</span></td><td><span class="esg b">B</span></td><td>4.7 &#9733;</td><td><span class="pill pill-verified">&#10003; GAC Verified</span></td></tr>
+      <tr><td><strong>Aberdeen Offshore Medical</strong></td><td>Medical</td><td><span class="cert ok">BOSIET</span><span class="cert ok">HUET</span><span class="cert ok">Medical certs</span></td><td><span class="esg a">A</span></td><td>4.8 &#9733;</td><td><span class="pill pill-verified">&#10003; GAC Verified</span></td></tr>
+      <tr><td><strong>Granite NDT Ltd</strong></td><td>NDT</td><td><span class="cert ok">Insurance</span><span class="cert due">GWO &middot; 21 days</span></td><td><span class="esg b">B</span></td><td>4.6 &#9733;</td><td><span class="pill pill-warn">&#9888; Renewal due</span></td></tr>
+      <tr><td><strong>Caledonia Scaffolding</strong></td><td>Scaffolding</td><td><span class="cert ok">Insurance</span><span class="cert ok">Inspection records</span></td><td><span class="esg b">B</span></td><td>4.5 &#9733;</td><td><span class="pill pill-verified">&#10003; GAC Verified</span></td></tr>
+      <tr><td><strong>Peterhead Diving Services</strong></td><td>Diving</td><td><span class="cert ok">HUET</span><span class="cert lapsed">Insurance &middot; lapsed</span></td><td><span class="esg c">C</span></td><td>4.2 &#9733;</td><td><span class="pill pill-danger">&#10007; Booking blocked</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:18px;">
+    <p class="eyebrow">What the proprietary SVS adds</p>
+    <p style="margin-top:8px; font-size:14px;">Keyword taxonomy across 40+ service categories &middot; supplier self-service portal &middot; automated expiry alerts &middot; live performance ratings fed from completed platform transactions &middot; built-in ESG scoring &middot; the GAC Verified badge as a visible mark of quality. Owned by GAC, on GAC infrastructure &mdash; replacing the third-party licence.</p>
+  </div>
+</main>
+
+<!-- ============================ FOR SUPPLIERS (advertising & marketing) ============================ -->
+<main id="suppliers" class="screen" aria-label="For suppliers">
+  <p class="eyebrow">For suppliers</p>
+  <h1>Grow your business on GAC Connect</h1>
+  <p class="sub">A verified profile puts you in front of every offshore operator GAC serves. Subscriptions and promotion tools control how visible you are.</p>
+
+  <div class="founder">
+    <span class="badge">FOUNDER PROGRAMME</span>
+    <p><strong>The first 50 suppliers join free for 12 months</strong> &mdash; full Professional features, no charge &mdash; then keep a 25% discount permanently. Founder suppliers shape the platform and carry the badge to prove it.</p>
+    <button class="btn btn-gold" onclick="toastMsg('Founder Programme interest registered. The onboarding team will be in touch with your verification checklist.')">Register interest</button>
+  </div>
+
+  <h2 style="font-size:18px; margin:8px 0 14px;">Listing plans</h2>
+  <div class="grid plans">
+    <div class="card plan">
+      <h3>Free</h3>
+      <p class="price">&pound;0</p>
+      <p class="per">forever</p>
+      <ul>
+        <li>SVS-verified profile and GAC Verified badge</li>
+        <li>Appear in marketplace search</li>
+        <li>Receive and respond to quote requests</li>
+        <li>Compliance vault with expiry alerts</li>
+        <li class="no">Featured category placement</li>
+        <li class="no">Performance analytics</li>
+        <li class="no">Homepage spotlight &amp; sponsorship</li>
+      </ul>
+      <button class="btn btn-ghost" onclick="toastMsg('Free listing selected. Verification is the only gate \u2014 the SVS checklist will be sent to you.')">Start free</button>
+    </div>
+
+    <div class="card plan popular">
+      <span class="pop-pill">Most popular</span>
+      <h3>Professional</h3>
+      <p class="price">&pound;900</p>
+      <p class="per">per year</p>
+      <ul>
+        <li>Everything in Free</li>
+        <li>Enhanced profile: photos, case studies, capability statements</li>
+        <li>Featured category placement (2 campaigns / month)</li>
+        <li>Performance analytics: views, quote requests, win rate</li>
+        <li>Priority verification renewals</li>
+        <li class="no">Homepage spotlight &amp; category sponsorship</li>
+      </ul>
+      <button class="btn btn-primary" onclick="toastMsg('Professional plan selected \u2014 \u00a3900/year. Founder suppliers receive this tier free for 12 months.')">Choose Professional</button>
+    </div>
+
+    <div class="card plan">
+      <h3>Premium</h3>
+      <p class="price">&pound;1,800</p>
+      <p class="per">per year</p>
+      <ul>
+        <li>Everything in Professional</li>
+        <li>Homepage spotlight rotation</li>
+        <li>Category sponsorship (own a category for a month)</li>
+        <li>Promoted placement in relevant searches, always labelled</li>
+        <li>Full analytics with market benchmarking</li>
+        <li>Quarterly performance review with GAC commercial team</li>
+      </ul>
+      <button class="btn btn-ghost" onclick="toastMsg('Premium plan selected \u2014 \u00a31,800/year. Promoted placements are always labelled and never override SVS compliance status.')">Choose Premium</button>
+    </div>
+  </div>
+
+  <h2 style="font-size:18px; margin:28px 0 4px;">Promotion tools</h2>
+  <p class="muted">Advertising buys visibility, never trust: promoted listings are always labelled, and no promotion overrides SVS compliance status. A blocked supplier cannot advertise its way back into search.</p>
+  <div class="grid ad-products">
+    <div class="card ad-product"><span class="ic">&#11088;</span><h4>Featured category placement</h4><p>Your listing pinned to the top of a chosen service category for the campaign period, with the Promoted label.</p></div>
+    <div class="card ad-product"><span class="ic">&#127968;</span><h4>Homepage spotlight</h4><p>Rotating placement on the client landing view &mdash; the first thing operators see when they open the platform.</p></div>
+    <div class="card ad-product"><span class="ic">&#127942;</span><h4>Category sponsorship</h4><p>Own a category banner for a month: &ldquo;Cranes &mdash; sponsored by Caledonia Lifting.&rdquo; One sponsor per category.</p></div>
+  </div>
+
+  <h2 style="font-size:18px; margin:28px 0 4px;">How a promoted listing appears</h2>
+  <div class="preview-wrap">
+    <p class="ad-disclosure" style="margin-bottom:8px;">Promoted &middot; featured placement</p>
+    <div class="card supplier promoted" style="margin-bottom:0;">
+      <div>
+        <div class="row"><h3>Silver City Welding</h3><span class="pill pill-promoted">&#9650; Promoted</span><span class="pill pill-verified">&#10003; GAC Verified</span></div>
+        <p class="muted" style="margin-top:6px;">Coded welders, onboard fabrication and repair, 24/7 call-out. Premium subscriber &mdash; featured in Welding this month.</p>
+        <div class="meta"><span class="stars">4.4 &#9733;</span><span>ESG <span class="esg b">B</span></span><span>Welding</span></div>
+      </div>
+      <div class="side"><button class="btn btn-ghost" onclick="toastMsg('Quote request sent to Silver City Welding.')">Request quote</button></div>
+    </div>
+    <p class="muted small" style="margin-top:10px;">Promotion changes position, not credentials. Rating, ESG score, and compliance status are always the supplier&rsquo;s own.</p>
+  </div>
+
+  <h2 style="font-size:18px; margin:28px 0 4px;">Your performance, measured</h2>
+  <p class="muted">Professional and Premium suppliers see exactly what their presence earns &mdash; example dashboard:</p>
+  <div class="grid analytics">
+    <div class="card stat"><p class="label">Profile views (30 days)</p><p class="num">412</p><div class="bar"><span style="width:72%"></span></div></div>
+    <div class="card stat"><p class="label">Quote requests received</p><p class="num">38</p><div class="bar"><span style="width:58%"></span></div></div>
+    <div class="card stat"><p class="label">Win rate</p><p class="num">34%</p><div class="bar"><span style="width:34%"></span></div></div>
+    <div class="card stat"><p class="label">Avg. response time</p><p class="num">2.1 hrs</p><div class="bar"><span style="width:86%"></span></div></div>
+  </div>
+</main>
+
+<!-- ============================ CERTIFICATION (BETA) ============================ -->
+<main id="certification" class="screen" aria-label="Certification beta preview">
+  <p class="eyebrow">Future service preview</p>
+  <h1>Crew Certification Tracking <span class="nav-beta" style="font-size:11px; top:-3px;">BETA</span></h1>
+
+  <div class="beta-banner">
+    <span class="ic">&#9432;</span>
+    <p><strong>Beta preview &middot; not in the Year 1&ndash;3 scope.</strong> Offshore certification as a GAC service line is a strategic idea under consideration, not an established offering. This preview shows the tracking layer the platform could host once live &mdash; it would require its own business case.</p>
+  </div>
+
+  <div class="beta-hero">
+    <span class="gate-pill">&#9202; BETA &middot; future service preview</span>
+    <h2>Every credential, every crew member, one expiry view</h2>
+    <p>BOSIET, HUET, GWO, ENG1, passports, and sea service records tracked at vessel level &mdash; with renewals routed to vetted training providers on the marketplace before anything lapses.</p>
+  </div>
+
+  <div class="grid beta-grid">
+    <div class="card beta-card"><h4>Vessel-level credential register</h4><p>Crew certifications held against the vessel profile in GA, visible to the operator and the agent in one place.</p></div>
+    <div class="card beta-card"><h4>Expiry horizon alerts</h4><p>The same SVS alert engine that watches supplier compliance, pointed at crew credentials: 90, 30, and 7-day warnings.</p></div>
+    <div class="card beta-card"><h4>Renewal routing</h4><p>Lapsing certificates generate quote requests to vetted training providers on the marketplace automatically.</p></div>
+  </div>
+</main>
+
+<!-- ============================ BUNKERS (BETA) ============================ -->
+<main id="bunkers" class="screen" aria-label="Bunkers beta preview">
+  <p class="eyebrow">Future service preview</p>
+  <h1>Bunkers <span class="nav-beta" style="font-size:11px; top:-3px;">BETA</span></h1>
+
+  <div class="beta-banner">
+    <span class="ic">&#9432;</span>
+    <p><strong>Beta preview &middot; not in the Year 1&ndash;3 scope.</strong> Bunker coordination is shown here as a direction the platform architecture supports &mdash; demonstrating that GAC Connect is a chassis for future service lines, not a single-purpose tool.</p>
+  </div>
+
+  <div class="beta-hero">
+    <span class="gate-pill">&#9202; BETA &middot; future service preview</span>
+    <h2>Fuel sourcing inside the same workflow</h2>
+    <p>VLSFO, LSMGO, and MGO enquiries raised against the vessel profile, with port availability, indicative pricing windows, and the same agreement and audit layer as every other booking.</p>
+  </div>
+
+  <div class="grid beta-grid">
+    <div class="card beta-card"><h4>Vessel-matched enquiries</h4><p>GA knows the vessel, the port call, and the consumption history &mdash; the enquiry pre-fills itself.</p></div>
+    <div class="card beta-card"><h4>Price window comparison</h4><p>Indicative quotes side by side with validity windows, the same comparison pattern as the marketplace.</p></div>
+    <div class="card beta-card"><h4>Audit-grade confirmation</h4><p>E-signed agreements and delivery confirmation, identical to the platform&rsquo;s standard three-layer accountability model.</p></div>
+  </div>
+</main>
+
+<!-- ============================ OUTLOOK DRAWER ============================ -->
+<aside class="drawer" id="drawer" aria-label="Outlook add-in preview" aria-hidden="true">
+  <div class="drawer-head"><span class="t">Outlook &mdash; GAC Connect add-in (preview)</span><button class="closex" onclick="toggleDrawer(false)" aria-label="Close preview">&times;</button></div>
+  <div class="drawer-body">
+    <p class="muted small" style="margin-bottom:12px;">The add-in surfaces the relevant GAC Connect job alongside the email the agent is reading.</p>
+    <div class="mail">
+      <p class="from">Caledonia Lifting Ltd</p>
+      <p class="subj">RE: Quote request &mdash; crane hire, MV Caledonian Star, Aberdeen</p>
+      <p class="small">Morning, we can do Friday 06:00 with the 130t mobile. &pound;4,400 all-in as discussed&hellip;</p>
+      <div class="addin"><strong>GAC Connect:</strong> Reply matched to job <strong>#CS-2207</strong>. Quote &pound;4,400 added to the comparison view automatically. <a href="#" onclick="toggleDrawer(false);go('quotes');return false;">Open comparison &rarr;</a></div>
+    </div>
+    <div class="mail">
+      <p class="from">Aberdeen Harbour VTS</p>
+      <p class="subj">MV Caledonian Star &mdash; berth confirmation Regent Quay</p>
+      <p class="small">Confirming berth allocation for Friday 08:00 arrival&hellip;</p>
+      <div class="addin"><strong>GAC Connect:</strong> Berth confirmed. Calendar entry updated for agent and client.</div>
+    </div>
+    <p class="muted small" style="margin-top:14px;">Phase 1 delivers the sidebar and calendar sync. Automated email parsing is the Phase 2 enhancement.</p>
+  </div>
+</aside>
+
+<!-- ============================ SIGN MODAL ============================ -->
+<div class="overlay" id="signOverlay" role="dialog" aria-modal="true" aria-labelledby="signTitle">
+  <div class="modal">
+    <p class="eyebrow">Per-transaction agreement</p>
+    <h2 id="signTitle" style="margin-top:4px; font-size:19px;">Accept quote &mdash; <span id="signSupplier"></span></h2>
+    <p class="muted" style="margin-top:10px;">Scope: 1 &times; mobile crane, MV Caledonian Star, Aberdeen, Fri 06:00&ndash;18:00. Price: <strong id="signPrice"></strong>. Terms incorporated by reference from the platform Terms of Use. Both parties sign electronically; the agreement is stored with a full audit trail.</p>
+    <div class="sigline">A. Fraser</div>
+    <p class="muted small">Signed on behalf of client &middot; supplier countersignature requested automatically</p>
+    <div class="row" style="margin-top:20px; justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeSignModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="confirmBooking()">Sign &amp; book</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer>GAC Connect &middot; proof of concept built internally at no cost &middot; the production platform is scoped separately. Beta tabs preview future directions outside the Year 1&ndash;3 scope. All suppliers, vessels, clients, prices, and data on this page are illustrative.</footer>
+
+<script>
+/* ---------------- Loader ---------------- */
+function hideLoader(){
+  const l=document.getElementById('loader');
+  if(!l) return;
+  l.classList.add('hide');
+  document.body.classList.remove('loading');
+}
+window.addEventListener('load', ()=>{ setTimeout(hideLoader, 4800); });
+// Safety: if 'load' fired before this script ran, still hide.
+setTimeout(hideLoader, 7000);
+
+/* ---------------- Navigation ---------------- */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>{
+    if(b.dataset.nav===id){b.setAttribute('aria-current','page');}else{b.removeAttribute('aria-current');}
+  });
+  window.scrollTo({top:0});
+}
+
+/* ---------------- Marketplace data ---------------- */
+const CATEGORIES=['All','Cranes','Medical','Scaffolding','Diving','NDT','Welding','Catering','Waste','Bunkers'];
+const SUPPLIERS=[
+  {name:'GAC Agency', inhouse:true, cat:'Agency', desc:'Ship\u2019s agent services, port calls, vessel support, crew coordination \u2014 your single point of contact.', tier:'2% tier', rating:null, esg:'A', tags:['Agency','All']},
+  {name:'GAC Logistics', inhouse:true, cat:'Logistics', desc:'Freight forwarding, warehousing, and project cargo, run alongside your agency work.', tier:'4% tier', rating:null, esg:'A', tags:['Logistics','All']},
+  {name:'GAC Customs', inhouse:true, cat:'Customs', desc:'T1 transit, import and export clearance, and customs documentation, handled end-to-end in-house.', tier:'7% tier', rating:null, esg:'A', tags:['Customs','All']},
+  {name:'GAC Assets', inhouse:true, cat:'Assets', desc:'Fender hire, portable cabins, security fencing, and specialist equipment from GAC\u2019s own pool.', tier:'Included with any tier', rating:null, esg:'A', tags:['Assets','All']},
+  {name:'Silver City Welding', inhouse:false, promoted:true, cat:'Welding', desc:'Coded welders, onboard fabrication and repair, 24/7 call-out. Featured in Welding this month.', rating:4.4, esg:'B', tags:['Welding','All']},
+  {name:'Caledonia Lifting Ltd', inhouse:false, cat:'Cranes', desc:'Mobile cranes to 130t, Aberdeen and Peterhead. Same-day mobilisation.', rating:4.9, esg:'A', tags:['Cranes','All']},
+  {name:'North Sea Crane Co.', inhouse:false, cat:'Cranes', desc:'Mobile and crawler cranes, lift planning, appointed person services.', rating:4.7, esg:'B', tags:['Cranes','All']},
+  {name:'Aberdeen Offshore Medical', inhouse:false, cat:'Medical', desc:'Offshore medics, topside support, OGUK medicals, emergency cover.', rating:4.8, esg:'A', tags:['Medical','All']},
+  {name:'Caledonia Scaffolding', inhouse:false, cat:'Scaffolding', desc:'Quayside and onboard access scaffolding, inspection-tagged systems.', rating:4.5, esg:'B', tags:['Scaffolding','All']},
+  {name:'Granite NDT Ltd', inhouse:false, cat:'NDT', desc:'UT, MPI, and radiographic testing. Offshore-certified technicians.', rating:4.6, esg:'B', tags:['NDT','All']},
+  {name:'Peterhead Diving Services', inhouse:false, cat:'Diving', desc:'Inshore commercial diving, hull inspection, prop clearance.', rating:4.2, esg:'C', blocked:true, tags:['Diving','All']},
+  {name:'Quayside Catering Co.', inhouse:false, cat:'Catering', desc:'Crew provisions and fresh catering, Aberdeen harbour delivery.', rating:4.7, esg:'B', tags:['Catering','All']}
+];
+let activeChip='All';
+
+function buildChips(){
+  const wrap=document.getElementById('chips');
+  wrap.innerHTML='';
+  CATEGORIES.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='chip'; b.textContent=c;
+    b.setAttribute('aria-pressed', c===activeChip ? 'true':'false');
+    b.onclick=()=>{activeChip=c; buildChips(); filterMarket();};
+    wrap.appendChild(b);
+  });
+}
+
+function supplierCard(s){
+  let badge;
+  if(s.inhouse) badge='<span class="pill pill-inhouse">&#9733; GAC In-House</span>';
+  else if(s.blocked) badge='<span class="pill pill-danger">&#10007; Booking blocked</span>';
+  else badge='<span class="pill pill-verified">&#10003; GAC Verified</span>';
+  if(s.promoted) badge='<span class="pill pill-promoted">&#9650; Promoted</span>'+badge;
+  const metaBits=[];
+  if(s.rating) metaBits.push('<span class="stars">'+s.rating.toFixed(1)+' &#9733;</span>');
+  metaBits.push('<span>ESG <span class="esg '+s.esg.toLowerCase()+'">'+s.esg+'</span></span>');
+  metaBits.push('<span>'+s.cat+'</span>');
+  if(s.inhouse && s.tier) metaBits.push('<span style="color:var(--gold-deep);font-weight:700;">'+s.tier+'</span>');
+  const action = s.inhouse
+    ? '<button class="btn btn-gold" onclick="toastMsg(\'Request sent to your GAC agent \u2014 surfaced inside the existing relationship, not a new queue.\')">Engage service</button>'
+    : (s.blocked
+        ? '<button class="btn btn-ghost" disabled style="opacity:.5;cursor:not-allowed;">Unavailable</button>'
+        : '<button class="btn btn-ghost" onclick="toastMsg(\'Quote request sent to '+s.name.replace(/'/g,'')+'. Replies will appear in the comparison view.\')">Request quote</button>');
+  const cls = 'card supplier' + (s.inhouse?' inhouse':'') + (s.promoted?' promoted':'');
+  return '<div class="'+cls+'">'
+    + '<div><div class="row"><h3>'+s.name+'</h3>'+badge+'</div>'
+    + '<p class="muted" style="margin-top:6px;">'+s.desc+'</p>'
+    + '<div class="meta">'+metaBits.join('')+'</div></div>'
+    + '<div class="side">'+action+'</div></div>';
+}
+
+function filterMarket(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const list=document.getElementById('marketList');
+  const match=s=>{
+    const inCat = activeChip==='All' || s.tags.includes(activeChip);
+    const inQ = !q || (s.name+' '+s.desc+' '+s.cat).toLowerCase().includes(q);
+    return inCat && inQ;
+  };
+  const inhouse=SUPPLIERS.filter(s=>s.inhouse&&match(s));
+  let third=SUPPLIERS.filter(s=>!s.inhouse&&match(s));
+  // Promoted suppliers sort first among third-party results, always labelled.
+  third=third.slice().sort((a,b)=>(b.promoted?1:0)-(a.promoted?1:0));
+  let html='';
+  if(inhouse.length){
+    html+='<p class="eyebrow pinned-note" style="color:var(--gold-deep);">GAC in-house \u2014 premium listings</p>';
+    html+=inhouse.map(supplierCard).join('');
+  }
+  if(third.length){
+    const hasPromoted=third.some(s=>s.promoted);
+    html+='<p class="eyebrow pinned-note" style="margin-top:'+(inhouse.length?'18px':'0')+';">Vetted marketplace suppliers'+(hasPromoted?' <span class="ad-disclosure" style="margin-left:8px;">includes promoted placement</span>':'')+'</p>';
+    html+=third.map(supplierCard).join('');
+  }
+  if(!html) html='<div class="card"><p><strong>No matches for that search.</strong></p><p class="muted" style="margin-top:6px;">Try a broader term, or clear the category filter. New suppliers can be invited to the platform from the SVS.</p></div>';
+  list.innerHTML=html;
+}
+
+/* ---------------- Tier calculator ---------------- */
+const TIERS={agency:2, logistics:4, customs:7};
+const state={agency:true, logistics:false, customs:false};
+
+function toggleSvc(key){
+  state[key]=!state[key];
+  document.getElementById('sw-'+key).setAttribute('aria-pressed', state[key]?'true':'false');
+  calcTier();
+}
+
+function calcTier(){
+  const spend=parseInt(document.getElementById('spendRange').value,10);
+  document.getElementById('spendVal').innerHTML='&pound;'+spend.toLocaleString('en-GB');
+  const active=Object.keys(state).filter(k=>state[k]);
+  const pct=active.length?Math.max(...active.map(k=>TIERS[k])):0;
+  const full=state.agency&&state.logistics&&state.customs;
+  const pctEl=document.getElementById('tierPct');
+  pctEl.textContent=pct+'%';
+  pctEl.classList.toggle('gold', pct===7);
+  document.getElementById('fullstackFlag').classList.toggle('show', full);
+  document.getElementById('saveVal').innerHTML='&pound;'+Math.round(spend*pct/100).toLocaleString('en-GB')+' saved / year';
+  let note;
+  if(!active.length) note='No GAC services selected \u2014 no tier discount applies. Marketplace access is unaffected.';
+  else if(full) note='Full Stack: all three pillars in use. The 7% tier applies across the client\u2019s GAC service spend \u2014 the highest single tier, not 2+4+7.';
+  else if(pct===7) note='Qualifying tier: GAC Customs (7%) \u2014 already the top tier. Adding the other pillars deepens consolidation at the same rate.';
+  else if(pct===4) note='Qualifying tier: GAC Logistics (4%). Adding Customs lifts the client to the 7% top tier.';
+  else note='Qualifying tier: GAC Agency (2%). Adding Logistics lifts the client to 4%; adding Customs to 7%.';
+  document.getElementById('tierNote').textContent=note;
+}
+
+/* ---------------- Quote flow ---------------- */
+function sendQuoteRequests(){
+  toastMsg('<span class="tag">SENT</span>9 quote requests issued for MV Caledonian Star. Replies will populate the comparison view.', true);
+  setTimeout(()=>go('quotes'), 1600);
+}
+
+let pendingSupplier='', pendingPrice='';
+function openSignModal(name, price){
+  pendingSupplier=name; pendingPrice=price;
+  document.getElementById('signSupplier').textContent=name;
+  document.getElementById('signPrice').textContent=price;
+  document.getElementById('signOverlay').classList.add('open');
+}
+function closeSignModal(){ document.getElementById('signOverlay').classList.remove('open'); }
+function confirmBooking(){
+  closeSignModal();
+  toastMsg('<span class="tag">GA</span>Booked with '+pendingSupplier+' at '+pendingPrice+'. PO 48211 generated in GAC Agent \u2014 billing split 60/40 Northmoor Energy / Solway Marine applied automatically.', true);
+}
+
+/* ---------------- Drawer & toast ---------------- */
+function toggleDrawer(open){
+  const d=document.getElementById('drawer');
+  d.classList.toggle('open', open);
+  d.setAttribute('aria-hidden', open?'false':'true');
+}
+let toastTimer=null;
+function toastMsg(html, rich){
+  const t=document.getElementById('toast');
+  if(rich){t.innerHTML=html;}else{t.textContent=html;}
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 5200);
+}
+
+/* ---------------- Init ---------------- */
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeSignModal(); toggleDrawer(false); hideLoader();} });
+buildChips();
+filterMarket();
+calcTier();
+</script>
+</body>
+</html>
