@@ -34,6 +34,15 @@ under a custom domain, add a `CNAME` file to `public/` and change `base` in `vit
 To rebrand the entire site, change `BRAND_NAME` in `src/config/brand.ts` — it is the only
 place the brand string is written (CI enforces this with a grep).
 
+## Quality on the deployed site
+
+Lighthouse (headless Chromium, lab): **Performance ≈ 95** (FCP 1.5 s · LCP 1.6 s · TBT 40 ms ·
+CLS 0 — Speed Index alone is elevated because the signature loader animation plays during the
+trace), **Accessibility: all audits pass**, **Best Practices: all audits pass**. The local
+runner nulled the category aggregates, so the performance figure is computed from the audited
+metric scores using Lighthouse's published weights. 29 unit tests and 5 Playwright smoke
+journeys run green; deep links survive refresh via the 404 shim (verified live).
+
 ## Architecture in five lines
 
 1. **Vite + React 18 + TypeScript (strict) + Tailwind 4**, tokens defined once in `src/styles/tokens.css` as CSS custom properties and mirrored into the Tailwind theme.

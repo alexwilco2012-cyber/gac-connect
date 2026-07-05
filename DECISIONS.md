@@ -4,6 +4,9 @@ One line per decision: date · epic · what · why. Newest first.
 
 | Date | Epic | Decision | Why |
 |---|---|---|---|
+| 2026-06-15 | E12 | Deployed from a `gh-pages` branch (locally built dist) instead of Actions; `.github/workflows/` held back from the remote | The OAuth token could not gain the `workflow` scope (device-flow authorisation repeatedly timed out); workflows exist locally and land with one push once the scope is granted |
+| 2026-06-15 | E12 | Force-pushed over the interim landing page's history (owner approved) | The old page's footer carried an internal approval-form reference; guardrails treat history as public |
+| 2026-06-15 | E12 | Lighthouse run against the live URL with a Playwright-launched browser; performance computed from metric scores as the runner nulled category aggregates | The standalone Chromium binary would not launch on this machine; scores recorded in README with method stated |
 | 2026-06-15 | Audit | Multi-agent audit attempted twice, blocked by model usage limits; completed inline instead: guardrail greps over tree, history, and commit messages; copy-fact greps (no invented fees, no exclamation marks, British English); WCAG contrast computed mathematically; business rules covered by 29 unit tests + 5 Playwright smokes | The audit gate had to hold even without subagents |
 | 2026-06-15 | Audit | Two DECISIONS rows had quoted the very strings they documented removing; rewritten and scrubbed from all git history (filter-branch) before any push | 07_GUARDRAILS applies to the log and to history, not just the product |
 | 2026-06-15 | Audit | Contrast fixes: --gold-deep #9A7B14→#7A6210 (was ~3.7:1 on gold-soft), promoted disclosure #8A7FB0→#6C6191 (was 3.7:1), excluded plan features #9AA8B8→#5F7085 (was 2.4:1) — all now ≥4.5:1 | 02 §accessibility: adjust shade, not palette, when a pair fails |
