@@ -4,6 +4,8 @@ One line per decision: date · epic · what · why. Newest first.
 
 | Date | Epic | Decision | Why |
 |---|---|---|---|
+| 2026-07-05 | E12 | Actions workflows pushed (PAT with repo+workflow scopes; device flow abandoned after four timeouts) and Pages switched from the gh-pages branch to the Actions pipeline; gh-pages branch deleted | The architecture's intended deploy path (04) is now live end-to-end: push → CI (lint, tests, build, e2e, brand guard) → deploy |
+| 2026-07-05 | E12 | CI brand guard fired on its first real run — a tokens.css comment carried the brand string; comment reworded | The guard exists precisely for this; the one-line rebrand promise now holds across src/ including comments |
 | 2026-06-16 | Harbour | Interactive services landing (design handoff) integrated as the Landing hero inside MarketingLayout; the prototype's own header/footer dropped as duplicates of the layout chrome | README sanctions hero-section integration and "use the repo's established patterns"; CTAs rewired to /app/tiers, /app/marketplace, /app |
 | 2026-06-16 | Harbour | Design palette used verbatim (incl. menu dots #16A34A/#B45309/#3B82F6 and illustration yellow) | Handoff states high fidelity — colors final; illustration yellow is brand identity, consistent with the gold reservation |
 | 2026-06-16 | Harbour | Chip labels clip at the scene edge at very narrow widths, as in the reference geometry | Identical overflow behaviour to the design; full labels remain available in the menu and detail panel |
