@@ -69,7 +69,7 @@ export default function ForSuppliers() {
                 <li
                   key={f.text}
                   className={`flex gap-2 border-b border-dashed border-line py-2 text-[13.5px] last:border-b-0 ${
-                    f.included ? '' : 'text-[#9AA8B8]'
+                    f.included ? '' : 'text-[#5F7085]'
                   }`}
                 >
                   <span
@@ -122,7 +122,7 @@ export default function ForSuppliers() {
         How a promoted listing appears
       </h2>
       <div className="rounded-xl border-[1.5px] border-dashed border-line-strong bg-[#FCFDFE] p-5">
-        <p className="mb-3 text-[10.5px] font-bold tracking-[0.06em] text-[#8A7FB0] uppercase">
+        <p className="mb-3 text-[10.5px] font-bold tracking-[0.06em] text-[#6C6191] uppercase">
           Promoted · featured placement
         </p>
         <Card variant="promoted" className="flex flex-col justify-between gap-4 sm:flex-row">

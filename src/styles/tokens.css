@@ -17,7 +17,9 @@
   --sea-soft: #e8f1f7;
   --gold: #c9a227;
   --gold-bright: #ffc72c;
-  --gold-deep: #9a7b14;
+  /* Darkened from #9a7b14: as small text on gold-soft/white it measured
+     ~3.7:1; this shade passes 4.5:1 on both (02: adjust shade, not palette). */
+  --gold-deep: #7a6210;
   --gold-soft: #fbf6e3;
   --success: #047857;
   --success-soft: #e7f4ef;

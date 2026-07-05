@@ -205,7 +205,7 @@ export default function Marketplace() {
             >
               Vetted marketplace suppliers
               {hasPromoted ? (
-                <span className="ml-2 text-[10.5px] font-bold tracking-[0.06em] text-[#8A7FB0]">
+                <span className="ml-2 text-[10.5px] font-bold tracking-[0.06em] text-[#6C6191]">
                   includes promoted placement
                 </span>
               ) : null}

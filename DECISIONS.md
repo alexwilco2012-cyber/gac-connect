@@ -4,6 +4,9 @@ One line per decision: date · epic · what · why. Newest first.
 
 | Date | Epic | Decision | Why |
 |---|---|---|---|
+| 2026-06-15 | Audit | Multi-agent audit attempted twice, blocked by model usage limits; completed inline instead: guardrail greps over tree, history, and commit messages; copy-fact greps (no invented fees, no exclamation marks, British English); WCAG contrast computed mathematically; business rules covered by 29 unit tests + 5 Playwright smokes | The audit gate had to hold even without subagents |
+| 2026-06-15 | Audit | Two DECISIONS rows had quoted the very strings they documented removing; rewritten and scrubbed from all git history (filter-branch) before any push | 07_GUARDRAILS applies to the log and to history, not just the product |
+| 2026-06-15 | Audit | Contrast fixes: --gold-deep #9A7B14→#7A6210 (was ~3.7:1 on gold-soft), promoted disclosure #8A7FB0→#6C6191 (was 3.7:1), excluded plan features #9AA8B8→#5F7085 (was 2.4:1) — all now ≥4.5:1 | 02 §accessibility: adjust shade, not palette, when a pair fails |
 | 2026-06-14 | E11 | Keyboard walkthrough verified in-browser: loader Escape-skip, tour five stops by button focus/Enter, drawer/modal focus traps with Escape and focus restore, switches with role="switch", skip links on both layouts | Backlog requires the keyboard pass recorded here |
 | 2026-06-14 | E11 | Tour implemented as fixed coach-mark following route per step, positioned from data-tour anchors with a centred fallback | Simpler and more robust than portal-into-anchor positioning across lazy routes |
 | 2026-06-14 | E11 | Console-error sweep: 15 routes (incl. unknown-supplier fallback) — zero errors | Definition of done requires no console errors |
