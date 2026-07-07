@@ -1,7 +1,13 @@
-/* Loader choreography — ported from the reference demo (02 §motion).
-   Reduced-motion users never see this component (bypassed in TSX). */
+/* Loader choreography — bespoke rework of the signature entrance (01 §B1).
+   Story: sonar pings seek a signal, the letters rise from the deep tracked
+   wide apart, a gold chain forges itself link by link between them in a
+   slack catenary, then snaps taut and pulls the letters together — the
+   "connect" moment — with a glint at each join. All motion is transform/
+   opacity only. Reduced-motion users never see this component (bypassed in
+   the TSX). --snap is the shared beat when the chain pulls taut. */
 
 .loader {
+  --snap: 2s;
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -44,11 +50,21 @@
   background: radial-gradient(circle, rgba(255, 199, 44, 0.15) 0%, transparent 60%);
   border-radius: 50%;
   opacity: 0;
-  animation: loader-fade-in 1.5s 0.5s ease-out forwards;
+  animation:
+    loader-fade-in 1.4s 0.4s ease-out forwards,
+    loader-breathe 5.5s 2s ease-in-out infinite alternate;
 }
 @keyframes loader-fade-in {
   to {
     opacity: 1;
+  }
+}
+@keyframes loader-breathe {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.08);
   }
 }
 
@@ -64,57 +80,183 @@
   max-width: 92vw;
   height: 200px;
   overflow: visible;
+  transform-origin: center;
+  animation: lockup-settle 0.5s ease-out both;
+  animation-delay: calc(var(--snap) + 0.02s);
 }
+/* A sympathetic pulse of the whole lockup as the chain snaps taut. */
+@keyframes lockup-settle {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Sonar pings — a signal seeking connection, rippling out from centre. */
+.loader-ping {
+  fill: none;
+  stroke: var(--gold-bright);
+  stroke-width: 1;
+  opacity: 0;
+  animation: loader-ping 1.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes loader-ping {
+  0% {
+    r: 5;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.35;
+  }
+  100% {
+    r: 150;
+    opacity: 0;
+  }
+}
+
+/* Letters rise from the deep into wide tracking, then get pulled together
+   at the snap. Two animations per letter; delays are set inline. */
 .loader-letter {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 120px;
-  fill: #ffffff;
+  fill: url(#ldr-letter);
   letter-spacing: -0.02em;
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
-  animation: loader-letter-in 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  /* The snap must fill forwards only — a backwards fill would pin the
+     transform at the spread position and cancel the rise animation. */
+  animation:
+    letter-rise 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    letter-snap 0.42s cubic-bezier(0.22, 1.4, 0.36, 1) forwards;
 }
-.loader-letter.from-left {
-  transform: translateX(-160px) rotate(-8deg);
-}
-.loader-letter.from-top {
-  transform: translateY(-140px) rotate(4deg);
-}
-.loader-letter.from-right {
-  transform: translateX(160px) rotate(8deg);
-}
-@keyframes loader-letter-in {
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.chain-link {
-  fill: none;
-  stroke: var(--gold-bright);
-  stroke-width: 4;
-  stroke-linecap: round;
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: scale(0);
-  animation: link-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-@keyframes link-pop {
+@keyframes letter-rise {
   0% {
     opacity: 0;
-    transform: scale(0) rotate(-20deg);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.3) rotate(8deg);
+    transform: translate(var(--spread), 48px) rotate(var(--tilt));
   }
   100% {
     opacity: 1;
-    transform: scale(1) rotate(0);
+    transform: translate(var(--spread), 0) rotate(0deg);
+  }
+}
+@keyframes letter-snap {
+  from {
+    transform: translate(var(--spread), 0);
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+/* Chain runs — one per gap. Each run starts stretched across the wider
+   initial gap and closes up as the letters pull in. */
+.chain-run {
+  transform: translateX(var(--cshift)) scaleX(var(--cscale));
+  animation: chain-close 0.42s cubic-bezier(0.22, 1.4, 0.36, 1) both;
+  animation-delay: var(--snap);
+}
+@keyframes chain-close {
+  from {
+    transform: translateX(var(--cshift)) scaleX(var(--cscale));
+  }
+  to {
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+/* Links: face-on rings alternating with edge-on bars. Each forges in with
+   its catenary droop, then the whole run twangs taut at the snap. */
+.chain-ring,
+.chain-bar {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  /* As with letter-snap, the taut pull fills forwards only so its
+     backwards fill cannot cancel the forge pop. */
+  animation:
+    link-forge 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    link-taut 0.38s cubic-bezier(0.22, 1.4, 0.36, 1) forwards;
+}
+.chain-ring {
+  fill: none;
+  stroke: url(#ldr-gold);
+  stroke-width: 4;
+}
+.chain-bar {
+  fill: var(--gold);
+}
+@keyframes link-forge {
+  0% {
+    opacity: 0;
+    transform: translateY(var(--droop)) scale(0.25) rotate(-28deg);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(var(--droop)) scale(1.22) rotate(9deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(var(--droop)) scale(1) rotate(0deg);
+  }
+}
+@keyframes link-taut {
+  from {
+    transform: translateY(var(--droop));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* The connect moment — a glint burst and ripple at each join. */
+.glint-star {
+  fill: #fff3c9;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: glint-pop 0.55s ease-out both;
+  animation-delay: calc(var(--snap) + 0.08s);
+}
+@keyframes glint-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.5) rotate(20deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.3) rotate(60deg);
+  }
+}
+.glint-ripple {
+  fill: none;
+  stroke: rgba(255, 233, 168, 0.8);
+  stroke-width: 1.5;
+  opacity: 0;
+  animation: glint-ripple 0.6s ease-out both;
+  animation-delay: calc(var(--snap) + 0.1s);
+}
+@keyframes glint-ripple {
+  0% {
+    r: 3;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.6;
+  }
+  100% {
+    r: 30;
+    opacity: 0;
   }
 }
 
@@ -127,16 +269,18 @@
   color: var(--gold-bright);
   margin-top: 0.5rem;
   opacity: 0;
-  animation: loader-sub-in 0.8s 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: loader-sub-in 0.8s 2.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 @keyframes loader-sub-in {
   0% {
     opacity: 0;
-    letter-spacing: 1.2em;
+    letter-spacing: 1.1em;
+    transform: translateY(8px);
   }
   100% {
     opacity: 1;
     letter-spacing: 0.58em;
+    transform: translateY(0);
   }
 }
 .loader-tag {
@@ -147,7 +291,17 @@
   color: rgba(255, 255, 255, 0.45);
   margin-top: 1.4rem;
   opacity: 0;
-  animation: loader-fade-in 0.6s 2.8s ease forwards;
+  animation: loader-tag-in 0.7s 3.15s ease forwards;
+}
+@keyframes loader-tag-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .loader-skip {
   position: absolute;
@@ -161,6 +315,8 @@
   background: none;
   border: none;
   cursor: pointer;
+  opacity: 0;
+  animation: loader-fade-in 0.6s 1s ease forwards;
 }
 
 .loader-sea {
@@ -183,12 +339,31 @@
   height: 100%;
   opacity: 0.55;
 }
+/* Wave layers drift at different speeds for a touch of parallax. The wave
+   pattern repeats every 240 units, so a 240-unit shift loops seamlessly. */
+.wave-a {
+  animation: wave-drift 16s linear infinite;
+}
+.wave-b {
+  animation: wave-drift 22s linear infinite;
+}
+.wave-c {
+  animation: wave-drift 18s linear infinite reverse;
+}
+@keyframes wave-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-240px);
+  }
+}
 .loader-vessel {
   position: absolute;
   bottom: 56px;
   width: 180px;
   transform: translateX(-220px);
-  animation: vessel-cross 4s 0.8s cubic-bezier(0.4, 0.05, 0.6, 0.95) forwards;
+  animation: vessel-cross 4.4s 0.9s cubic-bezier(0.4, 0.05, 0.6, 0.95) forwards;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
 }
 @keyframes vessel-cross {
@@ -215,6 +390,18 @@
     transform: translateY(-3px) rotate(0.6deg);
   }
 }
+.loader-mast-halo {
+  animation: mast-pulse 1.8s ease-in-out infinite;
+}
+@keyframes mast-pulse {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
 
 .loader-bar {
   position: absolute;
@@ -235,8 +422,9 @@
   left: 0;
   height: 100%;
   width: 0;
-  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
-  animation: loader-bar-fill 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  background: linear-gradient(90deg, rgba(255, 199, 44, 0.35), var(--gold-bright));
+  box-shadow: 0 0 8px 1px rgba(255, 199, 44, 0.7);
+  animation: loader-bar-fill 4.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 @keyframes loader-bar-fill {
   to {
