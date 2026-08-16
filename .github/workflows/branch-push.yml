@@ -1,0 +1,17 @@
+name: Branch pushed
+
+# A push to any branch other than main completes this trivial workflow, and its
+# completion triggers "Deploy to GitHub Pages" (workflow_run). A workflow_run
+# always executes on the DEFAULT branch's ref, so the deploy satisfies the
+# github-pages environment rule (only main may deploy) while still publishing
+# every branch as a preview under /preview/<slug>/. See docs/WORKFLOW.md.
+
+on:
+  push:
+    branches-ignore: [main]
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "push to '${{ github.ref_name }}' — the deploy will now rebuild main and every branch preview"

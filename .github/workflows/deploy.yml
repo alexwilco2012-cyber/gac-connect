@@ -7,10 +7,19 @@ name: Deploy to GitHub Pages
 # Every push to any branch, and every branch deletion, rebuilds the whole set
 # from what is on GitHub right now — so a deleted branch's preview disappears
 # and main is always built from main. Plain-English guide: docs/WORKFLOW.md.
+#
+# Triggers: pushes to main and branch deletions run this directly. Pushes to
+# other branches arrive via workflow_run from "Branch pushed" — a workflow_run
+# executes on the default branch's ref, which is what the github-pages
+# environment's protection rule requires (only main may deploy). The build
+# itself is identical whichever way it was triggered.
 
 on:
   push:
-    branches: ['**']
+    branches: [main]
+  workflow_run:
+    workflows: ['Branch pushed']
+    types: [completed]
   delete:
   workflow_dispatch:
 
@@ -50,6 +59,8 @@ jobs:
           cp -r dist/. site/
           {
             echo "### Deployed"
+            echo
+            echo "_Triggered by ${{ github.event_name }}${{ github.event.workflow_run && format(' — push to `{0}`', github.event.workflow_run.head_branch) || '' }}_"
             echo
             echo "- **live** (main) → ${SITE_URL}/"
           } >> "$GITHUB_STEP_SUMMARY"

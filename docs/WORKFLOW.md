@@ -53,14 +53,17 @@ change, newest first.
 
 ## What "publish" involves (so the timings make sense)
 
-Every push to any branch triggers two automatic jobs on GitHub:
+Every push to any branch triggers automatic jobs on GitHub:
 
 1. **CI** — lint, 67 unit tests, the Playwright smoke journeys, the brand-string
    guard, and a full build. Red/green next to the change.
 2. **Deploy** — builds the live site from `main` *and* a preview for every other
    branch, then publishes the whole set to GitHub Pages in one go. This is why
    deleting a branch removes its preview: the next publish simply doesn't
-   include it.
+   include it. (A push to a trial branch first completes a ten-second
+   "Branch pushed" job, which is what starts the deploy — GitHub only lets
+   `main` publish to Pages, so the deploy always runs *as* `main` and builds
+   the previews from the other branches.)
 
 Deploy takes roughly 2–4 minutes plus about a minute per open trial branch.
 Progress and the preview links are listed under

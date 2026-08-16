@@ -29,7 +29,7 @@ npm run build:presenter  # presenter only → public/presenter.html + public/pre
 
 ## Branch workflow (owner-facing rules — see `docs/WORKFLOW.md`)
 
-- `main` **is the live site**. Every push to any branch triggers CI and a Pages deploy that publishes `main` at the root and **every other branch as a preview** at `/preview/<branch-with-slashes-as-dashes>/`.
+- `main` **is the live site**. Every push to any branch triggers CI and a Pages deploy that publishes `main` at the root and **every other branch as a preview** at `/preview/<branch-with-slashes-as-dashes>/`. Non-main pushes reach the deploy through `branch-push.yml` → `workflow_run` because the `github-pages` environment only allows `main` to deploy (a repo setting; leave both the setting and this indirection alone).
 - **Default: work on a branch.** Name it `change/<slug>`; push; hand the owner the preview URL (`https://alexwilco2012-cyber.github.io/gac-connect/preview/change-<slug>/`, presenter at `…/presenter.html` under it) and one line on what to look at. Merge to `main` only when the owner says so ("make it live"); delete the branch when they say "bin it". Go straight to `main` only when the owner explicitly asks ("straight to live") or for a hotfix they've asked for.
 - Merges into `main` are fast-forward or plain merges with a conventional-commit message; never force-push `main`; never rewrite history. Rollbacks are `git revert` (new commit), so every live version stays recoverable.
 - The deploy builds previews with `vite build --base=/gac-connect/preview/<slug>/`; anything that assumes the base path is `/gac-connect/` must use `import.meta.env.BASE_URL` (router does) or relative URLs (presenter does).
