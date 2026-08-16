@@ -29,6 +29,23 @@ export function isBookable(certs: readonly Cert[]): boolean {
   return deriveStatus(certs) !== 'blocked';
 }
 
+/**
+ * GAC Gold Band — the audit tier above standard verification, open to Premium
+ * suppliers and earned through an enhanced annual audit (documentation,
+ * insurance, performance history, site practice). 'held' means the audit is
+ * current; 'scheduled' means the supplier is eligible and booked in but has
+ * not yet earned the marque. Advertising cannot confer it, and lapsed
+ * compliance removes it — the same rule as every other trust mark.
+ */
+export type GoldBandState = 'held' | 'scheduled';
+
+export function goldBandActive(
+  goldBand: GoldBandState | undefined,
+  certs: readonly Cert[],
+): boolean {
+  return goldBand === 'held' && deriveStatus(certs) !== 'blocked';
+}
+
 /** Alert tiers: 90 / 30 / 7 days (03 §3.3). */
 export const ALERT_TIERS = [90, 30, 7] as const;
 

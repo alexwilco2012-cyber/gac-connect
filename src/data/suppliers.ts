@@ -1,4 +1,4 @@
-import type { Cert } from '../lib/svs';
+import type { Cert, GoldBandState } from '../lib/svs';
 
 /**
  * Canonical mock suppliers — 03_COMMERCIAL_RULES §3.4. Fictional only;
@@ -15,10 +15,16 @@ export interface Supplier {
   category: string;
   description: string;
   rating: number;
+  /** Ratings actually submitted by agents and clients on completed jobs. */
+  ratingCount: number;
   esg: Esg;
   certs: Cert[];
   promoted?: boolean;
   plan: Plan;
+  /** GAC Gold Band audit tier — Premium only, earned not bought (lib/svs). */
+  goldBand?: GoldBandState;
+  /** When the Gold Band audit was last renewed (held) or is booked (scheduled). */
+  goldBandDate?: string;
   /** Fictional recent activity for the profile page. */
   recentJobs: string[];
 }
@@ -45,9 +51,12 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Cranes',
     description: 'Mobile cranes to 130t, Aberdeen and Peterhead. Same-day mobilisation.',
     rating: 4.9,
+    ratingCount: 127,
     esg: 'A',
     certs: fullCerts(['LOLER', 'Insurance', 'GWO']),
-    plan: 'professional',
+    plan: 'premium',
+    goldBand: 'held',
+    goldBandDate: 'Audit renewed May 2026',
     recentJobs: [
       'Crane hire — MV Caledonian Star, Aberdeen',
       'Heavy lift support — Browne Energy quayside works',
@@ -60,6 +69,7 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Cranes',
     description: 'Mobile and crawler cranes, lift planning, appointed person services.',
     rating: 4.7,
+    ratingCount: 84,
     esg: 'B',
     certs: fullCerts(['LOLER', 'Insurance', 'GWO']),
     plan: 'professional',
@@ -74,6 +84,7 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Cranes',
     description: 'Mobile cranes to 110t, contract lift and CPA hire across the north-east.',
     rating: 4.5,
+    ratingCount: 46,
     esg: 'B',
     certs: fullCerts(['LOLER', 'Insurance', 'GWO']),
     plan: 'free',
@@ -85,6 +96,7 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Medical',
     description: 'Offshore medics, topside support, OGUK medicals, emergency cover.',
     rating: 4.8,
+    ratingCount: 93,
     esg: 'A',
     certs: fullCerts(['BOSIET', 'HUET', 'Medical certificates']),
     plan: 'professional',
@@ -99,6 +111,7 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Scaffolding',
     description: 'Quayside and onboard access scaffolding, inspection-tagged systems.',
     rating: 4.5,
+    ratingCount: 31,
     esg: 'B',
     certs: fullCerts(['Insurance', 'Inspection records']),
     plan: 'free',
@@ -110,6 +123,7 @@ export const SUPPLIERS: Supplier[] = [
     category: 'NDT',
     description: 'UT, MPI, and radiographic testing. Offshore-certified technicians.',
     rating: 4.6,
+    ratingCount: 58,
     esg: 'B',
     certs: [
       { name: 'Insurance', state: 'ok' },
@@ -124,6 +138,7 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Diving',
     description: 'Inshore commercial diving, hull inspection, prop clearance.',
     rating: 4.2,
+    ratingCount: 19,
     esg: 'C',
     certs: [
       { name: 'HUET', state: 'ok' },
@@ -138,10 +153,13 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Welding',
     description: 'Coded welders, onboard fabrication and repair, 24/7 call-out.',
     rating: 4.4,
+    ratingCount: 72,
     esg: 'B',
     certs: fullCerts(['Insurance', 'Coding certificates']),
     promoted: true,
     plan: 'premium',
+    goldBand: 'scheduled',
+    goldBandDate: 'Audit booked for September 2026',
     recentJobs: [
       'Onboard pipework repair — MV Granite Coast',
       'Fabrication — Wilkinson Drilling skid frames',
@@ -153,6 +171,7 @@ export const SUPPLIERS: Supplier[] = [
     category: 'Catering',
     description: 'Crew provisions and fresh catering, Aberdeen harbour delivery.',
     rating: 4.7,
+    ratingCount: 64,
     esg: 'B',
     certs: fullCerts(['Insurance', 'Food hygiene certificates']),
     plan: 'free',

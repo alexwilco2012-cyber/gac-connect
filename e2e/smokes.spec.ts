@@ -143,3 +143,88 @@ test('5 · SVS blocked supplier is unbookable from its profile', async ({ page }
   await expect(page.getByText('Blocked by the SVS')).toBeVisible();
   await expect(page.getByText('Insurance · lapsed')).toBeVisible();
 });
+
+test('7 · invoice review: seven-day window, allocation, match to GA, agent rating', async ({
+  page,
+}) => {
+  await page.goto('/app/invoices');
+  await page.keyboard.press('Escape');
+
+  await expect(
+    page.getByRole('heading', { name: 'Supplier invoices, reviewed by you first' }),
+  ).toBeVisible();
+  // Open windows count down; the closed one already matched as it stood.
+  await expect(page.getByText('5 days left')).toBeVisible();
+  await expect(page.getByText('2 days left')).toBeVisible();
+  await expect(page.getByTestId('invoice-INV-4452')).toHaveAttribute('data-state', 'auto-matched');
+
+  // Allocate and match the crane invoice: commission is deducted at matching.
+  const crane = page.getByTestId('invoice-INV-4471');
+  await crane.getByRole('radio', { name: /Browne Energy — 100%/ }).check();
+  await crane.getByRole('button', { name: 'Confirm & match to GA' }).click();
+  await expect(page.getByText(/INV-4471 matched to GA — Browne Energy — 100%/)).toBeVisible();
+  await expect(page.getByText(/£440 supplier commission \(10% Premium band\)/)).toBeVisible();
+  await expect(crane).toHaveAttribute('data-state', 'matched');
+  await expect(crane.getByText(/Changes after matching carry an administrative fee/)).toBeVisible();
+
+  // Rate the supplier for the job.
+  await page.getByTestId('rate-INV-4471-5').click();
+  await expect(page.getByTestId('rated-INV-4471')).toHaveText('You rated this job 5 ★');
+
+  // Decision persists across reload.
+  await page.reload();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('invoice-INV-4471')).toHaveAttribute('data-state', 'matched');
+});
+
+test('8 · quote request: client-set deadline advice, medical cross-sell, hotel caveat, meal scale', async ({
+  page,
+}) => {
+  await page.goto('/app/marketplace');
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: 'Medical', exact: true }).click();
+  await page.getByRole('button', { name: 'Request quote' }).first().click();
+  const dialog = page.getByRole('dialog', { name: /Request a quote — Aberdeen Offshore Medical/ });
+  await expect(dialog).toBeVisible();
+
+  // Default window is a full one; ten minutes is warned (the taxi exception).
+  await expect(dialog.getByTestId('deadline-advice')).toHaveAttribute('data-tone', 'ok');
+  await dialog.getByRole('button', { name: '10 minutes' }).click();
+  await expect(dialog.getByTestId('deadline-advice')).toHaveAttribute('data-tone', 'warn');
+  await expect(dialog.getByTestId('deadline-advice')).toContainText('taxi');
+
+  // Cross-sell: transfer + hotel suggested; the hotel carries the availability caveat.
+  await expect(dialog.getByText(/You may also need/)).toBeVisible();
+  await expect(dialog.getByText(/subject to availability/)).toBeVisible();
+  await dialog.getByRole('checkbox', { name: /Hotel accommodation/ }).check();
+  await dialog.getByRole('switch', { name: 'Include meal allowance' }).click();
+  await expect(dialog.getByTestId('meal-scale')).toContainText('£30 per day');
+
+  await dialog.getByRole('button', { name: 'Send request' }).click();
+  await expect(page.getByText(/Reply-by window: 10 minutes/)).toBeVisible();
+  await expect(page.getByText(/1 related service passed to your GAC agent/)).toBeVisible();
+});
+
+test('9 · Gold Band shows only where earned; ratings carry counts; plans carry bands', async ({
+  page,
+}) => {
+  await page.goto('/app/marketplace');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Cranes', exact: true }).click();
+  await expect(page.getByText('◆ GAC Gold Band').first()).toBeVisible();
+  await expect(page.getByText('127 ratings').first()).toBeVisible();
+
+  // Promoted Premium supplier without the audit passed does not carry the marque.
+  await page.getByRole('button', { name: 'Welding', exact: true }).click();
+  await expect(page.getByText('▲ Promoted').first()).toBeVisible();
+  await expect(page.getByText('◆ GAC Gold Band')).toHaveCount(0);
+
+  // Plans carry the commission bands and the keep-more worked example.
+  await page.goto('/for-suppliers');
+  await expect(page.getByText('20% commission').first()).toBeVisible();
+  await expect(page.getByText('15% commission').first()).toBeVisible();
+  await expect(page.getByText('10% commission').first()).toBeVisible();
+  await expect(page.getByTestId('keeps-premium')).toHaveText('£3,960');
+  await expect(page.getByText(/first year/).first()).toBeVisible();
+});

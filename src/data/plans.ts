@@ -1,10 +1,15 @@
-/** Supplier plans and promotion products — 03 §3.2. */
+/** Supplier plans and promotion products — 03 §3.2 (v12 commission model). */
+
+import { COMMISSION_BANDS } from '../lib/commission';
+import type { Plan } from './suppliers';
 
 export interface PlanDef {
-  id: 'free' | 'professional' | 'premium';
+  id: Plan;
   name: string;
   priceLine: string;
   perLine: string;
+  /** Commission band on third-party work won through the platform. */
+  commissionPct: number;
   popular?: boolean;
   features: { text: string; included: boolean }[];
   cta: string;
@@ -13,9 +18,10 @@ export interface PlanDef {
 export const PLANS: PlanDef[] = [
   {
     id: 'free',
-    name: 'Free',
+    name: 'Basic',
     priceLine: '£0',
-    perLine: 'forever',
+    perLine: 'free, forever',
+    commissionPct: COMMISSION_BANDS.free,
     features: [
       { text: 'SVS-verified profile and GAC Verified badge', included: true },
       { text: 'Appear in marketplace search', included: true },
@@ -23,23 +29,24 @@ export const PLANS: PlanDef[] = [
       { text: 'Compliance vault with expiry alerts', included: true },
       { text: 'Featured category placement', included: false },
       { text: 'Performance analytics', included: false },
-      { text: 'Homepage spotlight and sponsorship', included: false },
+      { text: 'Eligible for the GAC Gold Band audit', included: false },
     ],
-    cta: 'Start free',
+    cta: 'Start on Basic',
   },
   {
     id: 'professional',
     name: 'Professional',
     priceLine: '£900',
     perLine: 'per year',
+    commissionPct: COMMISSION_BANDS.professional,
     popular: true,
     features: [
-      { text: 'Everything in Free', included: true },
+      { text: 'Everything in Basic', included: true },
       { text: 'Enhanced profile: photos, case studies, capability statements', included: true },
       { text: 'Featured category placement (2 campaigns / month)', included: true },
       { text: 'Performance analytics: views, quote requests, win rate', included: true },
       { text: 'Priority verification renewals', included: true },
-      { text: 'Homepage spotlight and category sponsorship', included: false },
+      { text: 'Eligible for the GAC Gold Band audit', included: false },
     ],
     cta: 'Choose Professional',
   },
@@ -48,8 +55,13 @@ export const PLANS: PlanDef[] = [
     name: 'Premium',
     priceLine: '£1,800',
     perLine: 'per year',
+    commissionPct: COMMISSION_BANDS.premium,
     features: [
       { text: 'Everything in Professional', included: true },
+      {
+        text: 'Eligible for the GAC Gold Band audit — earned annually, never bought',
+        included: true,
+      },
       { text: 'Homepage spotlight rotation', included: true },
       { text: 'Category sponsorship (own a category for a month)', included: true },
       { text: 'Promoted placement in relevant searches, always labelled', included: true },
@@ -60,8 +72,20 @@ export const PLANS: PlanDef[] = [
   },
 ];
 
-export const FOUNDER_PROGRAMME =
-  'The first 50 suppliers join free for 12 months — full Professional features, no charge — then keep a 25% discount permanently. Founder suppliers shape the platform and carry the badge to prove it.';
+export function planById(id: Plan): PlanDef {
+  return PLANS.find((p) => p.id === id) ?? PLANS[0]!;
+}
+
+/** Founder Programme (v12): first 50 suppliers, first year free, and a
+ *  5-point commission-band reduction for the first 24 months. */
+export const FOUNDER_LEAD = 'The first 50 suppliers join free for the first year';
+export const FOUNDER_BODY =
+  'full Professional features, no charge — and hold a 5-point commission-band reduction for 24 months. Founder suppliers shape the platform and carry the badge to prove it.';
+export const FOUNDER_PROGRAMME = `${FOUNDER_LEAD} — ${FOUNDER_BODY}`;
+
+/** How commission works — the one new mechanism the platform introduces. */
+export const COMMISSION_RULE =
+  'Commission applies only to third-party work won through the platform, and is deducted when the supplier invoice matches in GAC Agent — no separate collection, nothing charged to clients, no booking fee. A supplier who commits more keeps more of each job, and can quote sharper because of it.';
 
 export const PROMOTION_PRODUCTS = [
   {

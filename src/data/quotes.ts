@@ -8,6 +8,8 @@ export interface Quote {
   availability: string;
   capacity: string;
   rating: number;
+  /** Ratings actually submitted — mirrors the supplier record. */
+  ratingCount: number;
   esg: 'A' | 'B' | 'C';
   source: 'platform' | 'outlook';
   sourceTime: string;
@@ -23,6 +25,7 @@ export const QUOTES: Quote[] = [
     availability: 'Fri 06:00',
     capacity: '120t mobile',
     rating: 4.7,
+    ratingCount: 84,
     esg: 'B',
     source: 'platform',
     sourceTime: '09:42',
@@ -35,6 +38,7 @@ export const QUOTES: Quote[] = [
     availability: 'Fri 06:00',
     capacity: '130t mobile',
     rating: 4.9,
+    ratingCount: 127,
     esg: 'A',
     source: 'outlook',
     sourceTime: '10:15',
@@ -48,11 +52,26 @@ export const QUOTES: Quote[] = [
     availability: 'Fri 09:00',
     capacity: '110t mobile',
     rating: 4.5,
+    ratingCount: 46,
     esg: 'B',
     source: 'platform',
     sourceTime: '11:03',
   },
 ];
+
+/**
+ * The request behind this comparison. The client sets the reply-by deadline
+ * when the request goes out; suppliers quote against it.
+ */
+export const QUOTE_REQUEST = {
+  service: 'Crane hire',
+  vessel: 'MV Caledonian Star',
+  port: 'Aberdeen',
+  neededBy: 'Fri 06:00',
+  replyBy: 'Thu 12:00',
+  replyWindowLabel: '4 hours',
+  sentAt: 'Thu 08:00',
+} as const;
 
 export const ACCEPTANCE_TOAST =
   'PO 48211 generated in GAC Agent — billing split 60/40 Browne Energy / Grizzell Marine applied automatically.';

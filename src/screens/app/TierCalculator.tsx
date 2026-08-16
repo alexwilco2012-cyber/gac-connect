@@ -123,6 +123,10 @@ export default function TierCalculator() {
               Clients who bring agency, logistics, and customs under one roof stay, spend more, and
               route it all through the platform where every booking is auditable.
             </p>
+            <p className="mt-2.5 font-display text-[12.5px] text-ink-soft">
+              2 · 4 · 7 also happens to spell out the 24/7 operation behind the discount. The tiers
+              are a reminder of it: round-the-clock agency, logistics, and customs cover.
+            </p>
           </Card>
         </div>
       </div>

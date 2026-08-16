@@ -29,7 +29,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        className="w-full max-w-[460px] rounded-[14px] bg-white p-6 shadow-card"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-[460px] overflow-y-auto rounded-[14px] bg-white p-6 shadow-card"
         tabIndex={-1}
       >
         {children}

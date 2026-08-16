@@ -8,27 +8,60 @@ import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Pill } from '../../components/ui/Pill';
 import { StatCard } from '../../components/ui/StatCard';
 import { gbp } from '../../lib/format';
+import { daysLeft, invoiceState, windowLabel } from '../../lib/invoices';
+import {
+  DEFAULT_REPLY_WINDOW,
+  deadlineAdvice,
+  REPLY_WINDOWS,
+  replyWindowById,
+} from '../../lib/requests';
 import { annualSaving, isFullStack, tierPct } from '../../lib/tier';
+import { INVOICES } from '../../data/invoices';
+import { CATEGORY_SERVICE, relatedServicesFor } from '../../data/related';
 import { DASHBOARD_KPIS, PREDICTED_NEEDS, VESSELS } from '../../data/vessels';
 import { useApp } from '../../store/app';
 import { TourPrompt } from '../../tour/Tour';
 
 const PILL_TONE = { info: 'info', warn: 'warn', success: 'verified' } as const;
 
+/** Cross-sell hint for a predicted need — the medical example: transfer and hotel. */
+function relatedHint(service: string): string | null {
+  const category = Object.keys(CATEGORY_SERVICE).find((c) => CATEGORY_SERVICE[c] === service);
+  const related = category ? relatedServicesFor(category) : [];
+  if (related.length === 0) return null;
+  return `+ ${related.map((r) => r.label.toLowerCase()).join(' · ')} suggested`;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const pushToast = useApp((s) => s.pushToast);
   const tier = useApp((s) => s.tier);
   const spend = useApp((s) => s.spend);
+  const invoiceDecisions = useApp((s) => s.invoiceDecisions);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [replyWindowId, setReplyWindowId] = useState(DEFAULT_REPLY_WINDOW);
 
   const pct = tierPct(tier);
   const fullStack = isFullStack(tier);
   const saving = annualSaving(spend, tier);
 
+  // Invoice review — invoices still inside their seven-day client window.
+  const awaitingInvoices = INVOICES.filter(
+    (inv) => invoiceState(inv.receivedDaysAgo, invoiceDecisions[inv.id]) === 'awaiting',
+  );
+  const tightest = awaitingInvoices.reduce<number | null>(
+    (acc, inv) =>
+      acc === null || daysLeft(inv.receivedDaysAgo) < daysLeft(acc) ? inv.receivedDaysAgo : acc,
+    null,
+  );
+
   function sendQuoteRequests() {
+    const window_ = replyWindowById(replyWindowId);
+    const short = deadlineAdvice(window_.hours).tone === 'warn';
     pushToast(
-      '9 quote requests sent for MV Caledonian Star. Replies will populate the comparison view automatically.',
+      `9 quote requests sent for MV Caledonian Star. Reply-by window ${window_.label}. Replies will populate the comparison view automatically.${
+        short ? ' Short windows rarely draw a full set of replies.' : ''
+      }`,
     );
     navigate('/app/quotes');
   }
@@ -78,20 +111,46 @@ export default function Dashboard() {
               suppliers are pre-selected for each.
             </p>
             <ul className="my-3">
-              {PREDICTED_NEEDS.map((n) => (
-                <li
-                  key={n.service}
-                  className="flex items-center justify-between gap-3 border-b border-dashed border-line-strong py-2 text-[14px] last:border-b-0"
-                >
-                  <span>
-                    <strong>{n.service}</strong> · {n.matched} suppliers matched
-                  </span>
-                  <Pill tone="verified">✓ GAC Verified</Pill>
-                </li>
-              ))}
+              {PREDICTED_NEEDS.map((n) => {
+                const hint = relatedHint(n.service);
+                return (
+                  <li
+                    key={n.service}
+                    className="flex items-center justify-between gap-3 border-b border-dashed border-line-strong py-2 text-[14px] last:border-b-0"
+                  >
+                    <span>
+                      <strong>{n.service}</strong> · {n.matched} suppliers matched
+                      {hint ? (
+                        <span
+                          className="ml-2 text-[12px] font-semibold text-sea"
+                          data-testid="related-hint"
+                        >
+                          {hint}
+                        </span>
+                      ) : null}
+                    </span>
+                    <Pill tone="verified">✓ GAC Verified</Pill>
+                  </li>
+                );
+              })}
             </ul>
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={sendQuoteRequests}>Send quote requests</Button>
+              <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-soft">
+                Reply-by
+                <select
+                  value={replyWindowId}
+                  onChange={(e) => setReplyWindowId(e.target.value)}
+                  aria-label="Reply-by window"
+                  className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+                >
+                  {REPLY_WINDOWS.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <span className="text-[12.5px] text-ink-soft">
                 9 emails · replies will populate the comparison view automatically
               </span>
@@ -157,6 +216,44 @@ export default function Dashboard() {
               </Link>
               .
             </p>
+          </Card>
+
+          {/* Invoice review — the client's seven-day window */}
+          <Card data-testid="dashboard-invoices">
+            <Eyebrow>Invoice review · 7-day window</Eyebrow>
+            <p className="mt-2.5 text-[14px]">
+              {awaitingInvoices.length === 0 ? (
+                <>
+                  <strong>No invoices awaiting your review.</strong> Everything received has matched
+                  in GAC Agent.
+                </>
+              ) : (
+                <>
+                  <strong>
+                    {awaitingInvoices.length}{' '}
+                    {awaitingInvoices.length === 1 ? 'invoice' : 'invoices'} awaiting your review
+                  </strong>{' '}
+                  — allocate the billing party before the window closes.
+                </>
+              )}
+            </p>
+            {tightest !== null ? (
+              <p className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-ink-soft">
+                <span>Tightest window</span>
+                <Pill tone={daysLeft(tightest) <= 2 ? 'warn' : 'info'}>
+                  {windowLabel(tightest)}
+                </Pill>
+              </p>
+            ) : null}
+            <p className="mt-2 text-[12.5px] text-ink-soft">
+              Left alone, an invoice matches as it stands; supplier commission is deducted at
+              matching.
+            </p>
+            <div className="mt-3">
+              <Button variant="ghost" onClick={() => navigate('/app/invoices')}>
+                Review invoices
+              </Button>
+            </div>
           </Card>
 
           {/* Compliance watch */}

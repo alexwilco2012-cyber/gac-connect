@@ -6,7 +6,8 @@ import { Chip } from '../components/ui/Chip';
 import { Drawer } from '../components/ui/Drawer';
 import { Eyebrow } from '../components/ui/Eyebrow';
 import { Modal } from '../components/ui/Modal';
-import { BetaPill, Pill, StatusPill } from '../components/ui/Pill';
+import { BetaPill, GoldBandPill, Pill, StatusPill } from '../components/ui/Pill';
+import { Rating } from '../components/ui/Rating';
 import { StatCard } from '../components/ui/StatCard';
 import { Toggle } from '../components/ui/Toggle';
 import { Loader } from '../components/motif/Loader';
@@ -54,6 +55,7 @@ export default function KitchenSink() {
           <Pill tone="danger">✗ Blocked</Pill>
           <Pill tone="info">GA vessel profile loaded</Pill>
           <Pill tone="neutral">Neutral</Pill>
+          <GoldBandPill />
           <span>
             Nav item
             <BetaPill />
@@ -62,6 +64,9 @@ export default function KitchenSink() {
           <StatusPill status="renewal-due" />
           <StatusPill status="blocked" />
         </div>
+        <p className="mt-3 text-[14px]">
+          <Rating rating={4.9} count={127} />
+        </p>
       </section>
 
       <section className="mt-8">

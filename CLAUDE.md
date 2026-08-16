@@ -4,10 +4,10 @@ This repo builds **GAC Connect**, a standalone offshore-services marketplace fro
 
 ## Quick rules
 
-- **Business logic is law**: tier discount is non-cumulative max(2,4,7); Full Stack = 7%; £500k → £35,000; no "platform commission" exists; blocked suppliers are unbookable regardless of promotion; beta screens carry the scope banner. Tests for these are mandatory (`03_COMMERCIAL_RULES_AND_DATA.md` §3.1).
+- **Business logic is law**: tier discount is non-cumulative max(2,4,7); Full Stack = 7%; £500k → £35,000; clients pay nothing to use the platform (no booking fee); supplier commission on platform-won third-party work is banded 20/15/10 (Basic/Professional/Premium) and deducted at invoice matching; the client has a 7-day invoice-review window; Gold Band is earned (Premium + annual audit) and lost on lapse; ratings always show the count submitted; blocked suppliers are unbookable regardless of promotion or Gold Band; beta screens carry the scope banner. Tests for these are mandatory (`03_COMMERCIAL_RULES_AND_DATA.md` §3.1–3.2).
 - **Gold is reserved** for in-house identity / Full Stack / BETA / loader. Never decorative.
 - **Brand string** only in `src/config/brand.ts`.
-- Mock data only from 03 §3.4 (fictional operators: Northmoor Energy, Solway Marine, Brinmore Subsea, Fairhaven Drilling).
+- Mock data only from 03 §3.4 (fictional operators — owner-renamed 2026-07-05: Browne Energy, Grizzell Marine, Stronach Subsea, Wilkinson Drilling).
 - British English. No exclamation marks in product copy.
 - Reference implementation: `reference/GAC_Connect_demo_v4.html` — port its copy verbatim where specs say so; match its interaction patterns; improve everything structural.
 

@@ -1,23 +1,32 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { RequestQuoteModal } from '../../components/RequestQuoteModal';
+import type { RequestTarget } from '../../components/RequestQuoteModal';
 import { Button, ButtonLink } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Chip } from '../../components/ui/Chip';
 import { Eyebrow } from '../../components/ui/Eyebrow';
-import { Pill, StatusPill } from '../../components/ui/Pill';
+import { GoldBandPill, Pill, StatusPill } from '../../components/ui/Pill';
+import { Rating } from '../../components/ui/Rating';
 import { orderThirdParty } from '../../lib/marketplace';
 import type { SortKey } from '../../lib/marketplace';
-import { deriveStatus, isBookable } from '../../lib/svs';
+import { deriveStatus, goldBandActive, isBookable } from '../../lib/svs';
 import { CATEGORIES, IN_HOUSE_LINES, SUPPLIERS } from '../../data/suppliers';
 import type { Supplier } from '../../data/suppliers';
 import { useApp } from '../../store/app';
 
 type EsgFilter = 'all' | 'a' | 'ab';
 
-function SupplierRow({ supplier }: { supplier: Supplier }) {
-  const pushToast = useApp((s) => s.pushToast);
+function SupplierRow({
+  supplier,
+  onRequest,
+}: {
+  supplier: Supplier;
+  onRequest: (target: RequestTarget) => void;
+}) {
   const status = deriveStatus(supplier.certs);
   const bookable = isBookable(supplier.certs);
+  const goldBand = goldBandActive(supplier.goldBand, supplier.certs);
 
   return (
     <Card
@@ -35,11 +44,12 @@ function SupplierRow({ supplier }: { supplier: Supplier }) {
             </Link>
           </h3>
           {supplier.promoted ? <Pill tone="promoted">▲ Promoted</Pill> : null}
+          {goldBand ? <GoldBandPill /> : null}
           <StatusPill status={status} />
         </div>
         <p className="mt-1.5 text-[13.5px] text-ink-soft">{supplier.description}</p>
-        <p className="mt-1.5 flex flex-wrap gap-x-3.5 text-[13px] text-ink-soft">
-          <span className="font-bold text-gold-deep">{supplier.rating.toFixed(1)} ★</span>
+        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3.5 text-[13px] text-ink-soft">
+          <Rating rating={supplier.rating} count={supplier.ratingCount} size="sm" />
           <span>
             ESG <strong>{supplier.esg}</strong>
           </span>
@@ -50,11 +60,7 @@ function SupplierRow({ supplier }: { supplier: Supplier }) {
         {bookable ? (
           <Button
             variant="ghost"
-            onClick={() =>
-              pushToast(
-                `Quote request sent to ${supplier.name}. Replies will appear in the comparison view.`,
-              )
-            }
+            onClick={() => onRequest({ supplierName: supplier.name, category: supplier.category })}
           >
             Request quote
           </Button>
@@ -80,6 +86,7 @@ export default function Marketplace() {
   const [category, setCategory] = useState<string>('All');
   const [sort, setSort] = useState<SortKey>('rating');
   const [esg, setEsg] = useState<EsgFilter>('all');
+  const [target, setTarget] = useState<RequestTarget | null>(null);
 
   const q = query.trim().toLowerCase();
 
@@ -103,6 +110,7 @@ export default function Marketplace() {
   }, [q, category, sort, esg]);
 
   const hasPromoted = third.some((s) => s.promoted);
+  const hasGoldBand = third.some((s) => goldBandActive(s.goldBand, s.certs));
   const empty = inHouse.length === 0 && third.length === 0;
 
   return (
@@ -158,6 +166,13 @@ export default function Marketplace() {
         ))}
       </div>
 
+      {hasGoldBand ? (
+        <p className="mt-3 text-[12px] text-ink-soft">
+          ◆ Gold Band = GAC’s enhanced annual audit, earned by Premium suppliers — advertising
+          cannot confer it.
+        </p>
+      ) : null}
+
       {/* Results */}
       <div className="mt-6">
         {inHouse.length > 0 ? (
@@ -211,7 +226,7 @@ export default function Marketplace() {
               ) : null}
             </p>
             {third.map((s) => (
-              <SupplierRow key={s.id} supplier={s} />
+              <SupplierRow key={s.id} supplier={s} onRequest={setTarget} />
             ))}
           </>
         ) : null}
@@ -231,6 +246,8 @@ export default function Marketplace() {
           </Card>
         ) : null}
       </div>
+
+      <RequestQuoteModal target={target} onClose={() => setTarget(null)} />
     </div>
   );
 }

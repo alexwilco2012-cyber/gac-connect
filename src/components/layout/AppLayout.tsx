@@ -9,6 +9,7 @@ const NAV = [
   { to: '/app', label: 'Dashboard', end: true },
   { to: '/app/marketplace', label: 'Marketplace' },
   { to: '/app/quotes', label: 'Quotes' },
+  { to: '/app/invoices', label: 'Invoices' },
   { to: '/app/tiers', label: 'Tier Calculator' },
   { to: '/app/svs', label: 'SVS' },
   { to: '/app/certification', label: 'Certification', beta: true },
@@ -30,7 +31,7 @@ export default function AppLayout() {
         {POC_RIBBON}
       </div>
       <header className="sticky top-0 z-50 bg-ink text-white">
-        <div className="mx-auto flex h-[58px] max-w-[1180px] items-center gap-5 px-4 sm:px-6">
+        <div className="mx-auto flex h-[58px] max-w-[1180px] items-center gap-4 px-4 sm:px-6">
           <Wordmark />
           <nav aria-label="Platform" className="flex flex-1 gap-0.5 overflow-x-auto">
             {NAV.map((item) => (
@@ -39,7 +40,7 @@ export default function AppLayout() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `rounded-md px-3 py-2 text-[13.5px] font-semibold whitespace-nowrap no-underline transition-colors ${
+                  `rounded-md px-2.5 py-2 text-[13.5px] font-semibold whitespace-nowrap no-underline transition-colors ${
                     isActive
                       ? 'bg-white/14 text-white shadow-[inset_0_-3px_0_var(--gold)]'
                       : 'text-[#B9C8D6] hover:bg-white/8 hover:text-white'

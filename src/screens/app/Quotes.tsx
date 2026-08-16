@@ -1,24 +1,58 @@
 import { useState } from 'react';
-import { Button } from '../../components/ui/Button';
+import type { ReactNode } from 'react';
+import { Button, ButtonLink } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Modal } from '../../components/ui/Modal';
-import { Pill } from '../../components/ui/Pill';
+import { GoldBandPill, Pill } from '../../components/ui/Pill';
+import { Rating } from '../../components/ui/Rating';
 import { gbp } from '../../lib/format';
-import { ACCEPTANCE_TOAST, QUOTES, REQUEST_QUEUE } from '../../data/quotes';
+import { goldBandActive, isBookable } from '../../lib/svs';
+import { ACCEPTANCE_TOAST, QUOTE_REQUEST, QUOTES, REQUEST_QUEUE } from '../../data/quotes';
 import type { Quote } from '../../data/quotes';
+import { supplierById } from '../../data/suppliers';
 import { useApp } from '../../store/app';
+
+/** What follows acceptance — e-sign, service confirmation, then invoice review (v12 §5). */
+const NEXT_STEPS = [
+  {
+    title: 'Both parties e-sign the per-transaction agreement',
+    body: 'Signed electronically on both sides and stored with a full audit trail.',
+  },
+  {
+    title: 'Service confirmation',
+    body: 'Either party marks the job complete; the other has a window to confirm or dispute.',
+  },
+  {
+    title: 'Invoice review',
+    body: 'The supplier invoice routes to you first: seven days to allocate the billing party and splits, then it matches to GA. Commission is deducted at matching.',
+  },
+];
 
 function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => void }) {
   const acceptedQuoteId = useApp((s) => s.acceptedQuoteId);
   const accepted = acceptedQuoteId === quote.id;
   const anotherAccepted = acceptedQuoteId !== null && !accepted;
+  const supplier = supplierById(quote.supplierId);
+  const goldBand = supplier ? goldBandActive(supplier.goldBand, supplier.certs) : false;
+  // The SVS gate applies in the booking action itself (03 §3.3), here too.
+  const bookable = supplier ? isBookable(supplier.certs) : true;
+
+  const rows: [string, ReactNode][] = [
+    ['Availability', quote.availability],
+    ['Capacity', quote.capacity],
+    ['Rating', <Rating rating={quote.rating} count={quote.ratingCount} size="sm" />],
+    ['ESG score', quote.esg],
+  ];
 
   return (
     <Card className={quote.best ? 'border-[1.5px] border-success' : ''}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <strong className="font-display text-[15px]">{quote.supplierName}</strong>
-        <Pill tone="verified">✓ GAC Verified</Pill>
+        <span className="flex flex-wrap items-center gap-1.5">
+          <Pill tone="verified">✓ GAC Verified</Pill>
+          {goldBand ? <GoldBandPill /> : null}
+        </span>
       </div>
       <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-ink-soft">
         <span
@@ -40,12 +74,7 @@ function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => 
       </p>
       <table className="mt-1.5 w-full border-collapse text-[13px]">
         <tbody>
-          {[
-            ['Availability', quote.availability],
-            ['Capacity', quote.capacity],
-            ['Rating', `${quote.rating.toFixed(1)} ★`],
-            ['ESG score', quote.esg],
-          ].map(([k, v]) => (
+          {rows.map(([k, v]) => (
             <tr key={k} className="border-b border-dashed border-line last:border-b-0">
               <td className="py-1.5 text-ink-soft">{k}</td>
               <td className="py-1.5 text-right font-semibold">{v}</td>
@@ -60,8 +89,14 @@ function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => 
           <Button
             variant={quote.best ? 'primary' : 'ghost'}
             className="w-full"
-            disabled={anotherAccepted}
-            title={anotherAccepted ? 'Another quote has been accepted for this job' : undefined}
+            disabled={anotherAccepted || !bookable}
+            title={
+              !bookable
+                ? 'Blocked by SVS — compliance evidence required'
+                : anotherAccepted
+                  ? 'Another quote has been accepted for this job'
+                  : undefined
+            }
             onClick={() => onAccept(quote)}
           >
             Accept quote
@@ -93,8 +128,11 @@ export default function Quotes() {
         Crane hire — MV Caledonian Star, Aberdeen
       </h1>
       <p className="mt-1 text-[14px] text-ink-soft">
-        3 of 3 suppliers have replied. One reply was parsed automatically from Outlook — no manual
-        logging.
+        3 of 3 suppliers replied inside the deadline. One reply was parsed automatically from
+        Outlook — no manual logging.
+      </p>
+      <p className="mt-1.5 text-[12.5px] text-ink-soft" data-testid="request-meta">
+        {`Sent ${QUOTE_REQUEST.sentAt} · reply-by ${QUOTE_REQUEST.replyBy} (${QUOTE_REQUEST.replyWindowLabel} to reply, set by the client) · needed ${QUOTE_REQUEST.neededBy}`}
       </p>
 
       <div className="mt-6 grid items-start gap-5 lg:grid-cols-[220px_1fr]">
@@ -146,6 +184,44 @@ export default function Quotes() {
               </Button>
             ) : null}
           </div>
+
+          {/* What happens next — the accountability loop behind acceptance */}
+          <Card className="mt-4" data-testid="what-happens-next">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Eyebrow>What happens next</Eyebrow>
+              <ButtonLink to="/app/invoices" variant="ghost" className="!min-h-[36px] !py-1">
+                See invoice review →
+              </ButtonLink>
+            </div>
+            <ol className="mt-3 grid gap-3 md:grid-cols-3">
+              {NEXT_STEPS.map((step, i) => {
+                const current = acceptedQuoteId !== null && i === 2;
+                return (
+                  <li
+                    key={step.title}
+                    aria-current={current ? 'step' : undefined}
+                    className={`list-none rounded-lg border p-3.5 ${
+                      current ? 'border-dashed border-sea bg-sea-soft' : 'border-line'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        aria-hidden="true"
+                        className={`inline-grid h-7 w-7 shrink-0 place-items-center rounded-full font-display text-[12.5px] font-bold ${
+                          current ? 'bg-sea text-white' : 'bg-sea-soft text-sea'
+                        }`}
+                      >
+                        {i + 1}
+                      </span>
+                      {current ? <Pill tone="info">Up next</Pill> : null}
+                    </div>
+                    <p className="mt-2.5 text-[13.5px] font-bold">{step.title}</p>
+                    <p className="mt-1 text-[12.5px] text-ink-soft">{step.body}</p>
+                  </li>
+                );
+              })}
+            </ol>
+          </Card>
         </div>
       </div>
 

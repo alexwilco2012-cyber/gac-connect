@@ -12,6 +12,7 @@ const Dashboard = lazy(() => import('./screens/app/Dashboard'));
 const Marketplace = lazy(() => import('./screens/app/Marketplace'));
 const SupplierProfile = lazy(() => import('./screens/app/SupplierProfile'));
 const Quotes = lazy(() => import('./screens/app/Quotes'));
+const Invoices = lazy(() => import('./screens/app/Invoices'));
 const TierCalculator = lazy(() => import('./screens/app/TierCalculator'));
 const Svs = lazy(() => import('./screens/app/Svs'));
 const Analytics = lazy(() => import('./screens/app/Analytics'));
@@ -47,6 +48,7 @@ export const routes: RouteObject[] = [
           { path: 'marketplace', element: lazily(<Marketplace />) },
           { path: 'marketplace/:supplierId', element: lazily(<SupplierProfile />) },
           { path: 'quotes', element: lazily(<Quotes />) },
+          { path: 'invoices', element: lazily(<Invoices />) },
           { path: 'tiers', element: lazily(<TierCalculator />) },
           { path: 'svs', element: lazily(<Svs />) },
           { path: 'analytics', element: lazily(<Analytics />) },

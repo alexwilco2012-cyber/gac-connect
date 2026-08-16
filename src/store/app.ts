@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persistent, session } from '../lib/storage';
+import type { InvoiceDecision } from '../lib/invoices';
 import type { TierSelection } from '../lib/tier';
 
 /**
@@ -24,6 +25,15 @@ interface AppState {
   acceptedQuoteId: string | null;
   acceptQuote(id: string): void;
   resetQuote(): void;
+
+  // Invoice review — persisted client decisions (allocation → matched to GA)
+  invoiceDecisions: Record<string, InvoiceDecision>;
+  matchInvoice(id: string, allocationId: string): void;
+  resetInvoices(): void;
+
+  // Supplier ratings submitted on job close-out — persisted, keyed by job
+  jobRatings: Record<string, number>;
+  rateJob(jobId: string, stars: number): void;
 
   // Tour — persisted dismissal
   tourDismissed: boolean;
@@ -68,6 +78,26 @@ export const useApp = create<AppState>((set, get) => ({
   resetQuote() {
     persistent.remove('acceptedQuote');
     set({ acceptedQuoteId: null });
+  },
+
+  invoiceDecisions: persistent.get<Record<string, InvoiceDecision>>('invoiceDecisions', {}),
+  matchInvoice(id, allocationId) {
+    const invoiceDecisions = { ...get().invoiceDecisions, [id]: { allocationId } };
+    persistent.set('invoiceDecisions', invoiceDecisions);
+    set({ invoiceDecisions });
+  },
+  resetInvoices() {
+    persistent.remove('invoiceDecisions');
+    persistent.remove('jobRatings');
+    set({ invoiceDecisions: {}, jobRatings: {} });
+  },
+
+  jobRatings: persistent.get<Record<string, number>>('jobRatings', {}),
+  rateJob(jobId, stars) {
+    const clamped = Math.min(5, Math.max(1, Math.round(stars)));
+    const jobRatings = { ...get().jobRatings, [jobId]: clamped };
+    persistent.set('jobRatings', jobRatings);
+    set({ jobRatings });
   },
 
   tourDismissed: persistent.get<boolean>('tourDismissed', false),

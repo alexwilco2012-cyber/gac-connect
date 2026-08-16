@@ -4,27 +4,36 @@ import { Card } from '../../components/ui/Card';
 import { CertChip } from '../../components/ui/CertChip';
 import { Chip } from '../../components/ui/Chip';
 import { Eyebrow } from '../../components/ui/Eyebrow';
-import { StatusPill } from '../../components/ui/Pill';
-import { deriveStatus } from '../../lib/svs';
+import { GoldBandPill, StatusPill } from '../../components/ui/Pill';
+import { Rating } from '../../components/ui/Rating';
+import { deriveStatus, goldBandActive } from '../../lib/svs';
 import type { SupplierStatus } from '../../lib/svs';
+import { GOLD_BAND } from '../../data/goldBand';
 import { SUPPLIERS } from '../../data/suppliers';
 
-type StatusFilter = 'all' | SupplierStatus;
+type SvsFilter = 'all' | SupplierStatus | 'gold-band';
 
-const FILTERS: { key: StatusFilter; label: string }[] = [
+const FILTERS: { key: SvsFilter; label: string }[] = [
   { key: 'all', label: 'All statuses' },
   { key: 'verified', label: 'Verified' },
   { key: 'renewal-due', label: 'Renewal due' },
   { key: 'blocked', label: 'Blocked' },
+  { key: 'gold-band', label: 'Gold Band' },
 ];
 
 export default function Svs() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<StatusFilter>('all');
+  const [filter, setFilter] = useState<SvsFilter>('all');
 
   const rows = useMemo(() => {
-    const withStatus = SUPPLIERS.map((s) => ({ ...s, status: deriveStatus(s.certs) }));
-    return filter === 'all' ? withStatus : withStatus.filter((s) => s.status === filter);
+    const withStatus = SUPPLIERS.map((s) => ({
+      ...s,
+      status: deriveStatus(s.certs),
+      goldBandHeld: goldBandActive(s.goldBand, s.certs),
+    }));
+    if (filter === 'all') return withStatus;
+    if (filter === 'gold-band') return withStatus.filter((s) => s.goldBandHeld);
+    return withStatus.filter((s) => s.status === filter);
   }, [filter]);
 
   return (
@@ -41,7 +50,11 @@ export default function Svs() {
         Peterhead Diving Services — insurance lapsed (booking blocked until evidence uploaded).
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
+      <div
+        className="mt-4 flex flex-wrap gap-2"
+        role="group"
+        aria-label="Filter by status or audit tier"
+      >
         {FILTERS.map((f) => (
           <Chip key={f.key} pressed={filter === f.key} onClick={() => setFilter(f.key)}>
             {f.label}
@@ -95,9 +108,14 @@ export default function Svs() {
                 >
                   {s.esg}
                 </td>
-                <td className="px-3.5 py-3">{s.rating.toFixed(1)} ★</td>
+                <td className="px-3.5 py-3 whitespace-nowrap">
+                  <Rating rating={s.rating} count={s.ratingCount} size="sm" />
+                </td>
                 <td className="px-3.5 py-3">
-                  <StatusPill status={s.status} />
+                  <div className="flex flex-col items-start gap-1.5">
+                    <StatusPill status={s.status} />
+                    {s.goldBandHeld ? <GoldBandPill /> : null}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -109,10 +127,18 @@ export default function Svs() {
         <Eyebrow>What the proprietary SVS adds</Eyebrow>
         <p className="mt-2 text-[14px]">
           Keyword taxonomy across 40+ service categories · supplier self-service portal · automated
-          expiry alerts · live performance ratings fed from completed platform transactions ·
-          built-in ESG scoring · the GAC Verified badge as a visible mark of quality. Owned by GAC,
-          on GAC infrastructure — replacing the third-party licence.
+          expiry alerts · live performance ratings fed from completed platform transactions, each
+          shown with the number of ratings submitted · built-in ESG scoring · the GAC Verified badge
+          as a visible mark of quality · GAC Gold Band as the earned audit tier above it. Owned by
+          GAC — built for us by a third-party developer, now moving to full Group IT maintenance.
+          The platform is what turns it commercial.
         </p>
+      </Card>
+
+      <Card className="mt-4">
+        <Eyebrow>{GOLD_BAND.name}</Eyebrow>
+        <p className="mt-2 text-[14px]">{GOLD_BAND.summary}</p>
+        <p className="mt-2 text-[12.5px] text-ink-soft">{GOLD_BAND.rule}</p>
       </Card>
     </div>
   );

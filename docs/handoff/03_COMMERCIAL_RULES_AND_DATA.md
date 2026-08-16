@@ -22,14 +22,20 @@ const annualSaving = (spendGBP: number, a) => Math.round(spendGBP * tierPct(a) /
 
 **Required unit tests**: none-selected → 0; agency-only → 2; logistics-only → 4; customs-only → 7; agency+logistics → 4; agency+customs → 7; all → 7 and FullStack true; £500k all → 35000; £100k agency → 2000.
 
-## 3.2 Copy facts that must never be contradicted
+## 3.2 Copy facts that must never be contradicted (v12 model, August 2026)
 
-- There is **no platform commission and no booking fee**. Never invent one.
-- The **5% disbursement fee** on third-party services is GAC's *existing* commercial mechanism; the platform's contribution is volume through it. (Mention sparingly; never present as new.)
-- Supplier plans: **Free · Professional £900/yr · Premium £1,800/yr**.
-- **Founder Programme**: first 50 suppliers free for 12 months, then a **25% permanent discount**.
+- **Clients pay nothing to use the platform: no booking fee, no client-side charge.** Client-side mechanics are unchanged (disbursement fees at client-agreed rates, agency fees, customs charges through existing structures). Never describe the disbursement fee as a flat "5%".
+- **Supplier commission** is the one new mechanism: a commission on third-party work won through the platform, **banded by subscription tier — 20% Basic, 15% Professional, 10% Premium** — and **deducted at invoice matching in GA** (no separate collection). Commission replaced supplier rebates; never present rebates as a live mechanism. Copy pattern: *"A supplier who commits more keeps more of each job, and can quote sharper because of it."* Bands live in `src/lib/commission.ts`; the plan cards must carry the same figures (unit-tested).
+- Supplier plans: **Basic (free) · Professional £900/yr · Premium £1,800/yr**.
+- **Founder Programme**: first 50 suppliers, **first year free** (full Professional features) **plus a 5-point commission-band reduction for 24 months**. The old "free for 12 months, then a 25% permanent discount" is retired everywhere.
+- **GAC Gold Band**: an audit tier above standard verification, open to Premium suppliers. **Earned, not bought** — an enhanced audit (documentation, insurance, performance history, site practice) renewed annually; a distinct marque in the marketplace; advertising cannot confer it and lapsed compliance removes it. Rule: `goldBandActive()` in `src/lib/svs.ts` (unit-tested). Mock data: Caledonia Lifting holds it; Silver City Welding (Premium, promoted) has the audit *scheduled* — the contrast is deliberate.
+- **Ratings always carry the number of ratings actually submitted** ("4.9 ★ · 127 ratings"); agents rate the supplier when a job closes, and that feeds the live rating.
+- **Invoice review**: a supplier invoice routes to the client before anything matches; **seven days** to allocate the billing party and apply splits; if the window passes it matches to GA as it stands; changes after matching carry an administrative fee at published rates (no amount is ever quoted); commission is deducted at the moment of matching. Rules in `src/lib/invoices.ts` (unit-tested).
+- **Deadlines**: the client sets the reply-by time on every quote request; the platform advises that very short windows (ten minutes — a taxi, not a crane) rarely draw a full set of replies — more time, better quotes. **Cross-selling**: a medical request suggests crew transfer and a hotel, arranged by the GAC agent. **Hotel**: GAC rate indicative and subject to availability; if full, the agent books an alternative and confirms it on the platform. **Meal allowance**, if selected, follows a sliding scale (illustrative bands in `src/lib/requests.ts`).
+- **2 · 4 · 7 ↔ 24/7**: a light marketing echo of GAC's round-the-clock operation; the tier mechanics in §3.1 are unchanged.
+- **SVS ownership**: the SVS is GAC-owned, built for GAC by a third-party developer, with maintenance moving to Group IT. Never "third-party licence" / "replacing the licence".
 - Promotion products: featured category placement · homepage spotlight · category sponsorship (one sponsor per category per month).
-- **"Promotion changes position, not credentials."** Always labelled; never overrides SVS status.
+- **"Promotion changes position, not credentials."** Always labelled; never overrides SVS status; never confers Gold Band.
 - Beta banner (both beta screens, verbatim skeleton): *"Beta preview · not in current scope. [Certification only:] Offshore certification as a service line is a strategic idea under consideration, not an established offering."*
 
 ## 3.3 SVS rules
@@ -48,22 +54,24 @@ const annualSaving = (spendGBP: number, a) => Math.round(spendGBP * tierPct(a) /
 **Suppliers** (id, category, rating, ESG, flags):
 | Name | Category | Rating | ESG | Flags |
 |---|---|---|---|---|
-| Caledonia Lifting Ltd | Cranes | 4.9 | A | verified |
-| North Sea Crane Co. | Cranes | 4.7 | B | verified |
-| Granite Cranes | Cranes | 4.5 | B | verified |
-| Aberdeen Offshore Medical | Medical | 4.8 | A | verified |
-| Caledonia Scaffolding | Scaffolding | 4.5 | B | verified |
-| Granite NDT Ltd | NDT | 4.6 | B | renewal-due (GWO 21 days) |
-| Peterhead Diving Services | Diving | 4.2 | C | **blocked** (insurance lapsed) |
-| Silver City Welding | Welding | 4.4 | B | verified, **promoted** (Premium) |
-| Quayside Catering Co. | Catering | 4.7 | B | verified |
+| Caledonia Lifting Ltd | Cranes | 4.9 (127 ratings) | A | verified, **Premium, GAC Gold Band held** (audit renewed May 2026) |
+| North Sea Crane Co. | Cranes | 4.7 (84) | B | verified |
+| Granite Cranes | Cranes | 4.5 (46) | B | verified |
+| Aberdeen Offshore Medical | Medical | 4.8 (93) | A | verified |
+| Caledonia Scaffolding | Scaffolding | 4.5 (31) | B | verified |
+| Granite NDT Ltd | NDT | 4.6 (58) | B | renewal-due (GWO 21 days) |
+| Peterhead Diving Services | Diving | 4.2 (19) | C | **blocked** (insurance lapsed) |
+| Silver City Welding | Welding | 4.4 (72) | B | verified, **promoted** (Premium), Gold Band audit *scheduled* |
+| Quayside Catering Co. | Catering | 4.7 (64) | B | verified |
 
 **GAC in-house lines** (always pinned above third-party where relevant): GAC Agency (2% tier) · GAC Logistics (4%) · GAC Customs (7%) · GAC Assets (any tier) · GAC Procurement (any tier). Descriptions: port from reference demo.
 
-**Quote scenario** (crane hire, MV Caledonian Star): North Sea Crane Co. £4,850 / Fri 06:00 / 120t / platform-reply 09:42 · **Caledonia Lifting £4,400 / Fri 06:00 / 130t / parsed-from-Outlook 10:15 / best match** · Granite Cranes £5,100 / Fri 09:00 / 110t / platform-reply 11:03. Acceptance toast: "PO 48211 generated in GAC Agent — billing split 60/40 Northmoor Energy / Solway Marine applied automatically."
+**Quote scenario** (crane hire, MV Caledonian Star; request sent Thu 08:00, reply-by Thu 12:00 — a 4-hour window set by the client — needed Fri 06:00): North Sea Crane Co. £4,850 / Fri 06:00 / 120t / platform-reply 09:42 · **Caledonia Lifting £4,400 / Fri 06:00 / 130t / parsed-from-Outlook 10:15 / best match** · Granite Cranes £5,100 / Fri 09:00 / 110t / platform-reply 11:03. Acceptance toast: "PO 48211 generated in GAC Agent — billing split 60/40 Northmoor Energy / Solway Marine applied automatically."
 
 **Analytics example** (supplier dashboard): 412 profile views (30d) · 38 quote requests · 34% win rate · 2.1h avg response.
 
 **Dashboard KPIs**: 14 active jobs · 6 open quote requests · 52 SVS-verified suppliers · 31 hrs admin saved/month.
+
+**Invoice review scenario** (`src/data/invoices.ts`): INV-4471 Caledonia Lifting £4,400 (crane hire, MV Caledonian Star, PO 48211, received 2 days ago → 5 days left) · INV-4468 Aberdeen Offshore Medical £1,850 (medical cover, MV Caledonian Star, PO 48196, 5 days ago → 2 days left) · INV-4452 Caledonia Scaffolding £2,900 (scaffolding, MV Boreal, PO 48140, 8 days ago → window closed, matched to GA as it stood). Allocation options come from the GA vessel profile (60/40 Browne Energy / Grizzell Marine on MV Caledonian Star; Stronach Subsea 100% on MV Boreal).
 
 All mock data lives in `src/data/*.ts` behind typed interfaces (see 04). A single `src/config/brand.ts` exports `BRAND_NAME` (default "GAC Connect") consumed everywhere the brand renders.

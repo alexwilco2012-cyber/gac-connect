@@ -21,6 +21,14 @@ const STEPS = [
     title: 'The booking becomes the PO',
     body: 'Accept a quote, both parties e-sign, and the purchase order generates in GAC Agent with the client billing split applied from the vessel profile. No re-keying.',
   },
+  {
+    title: 'The invoice comes to you first',
+    body: 'Each supplier invoice routes to you before anything matches: seven days to allocate the billing party and apply splits. Left alone, it matches to GAC Agent as it stands.',
+  },
+  {
+    title: 'The job closes with a rating',
+    body: 'Your agent rates the supplier when the work is done — thirty seconds that feed the live rating every client sees, shown with the number of ratings behind it.',
+  },
 ];
 
 export default function ForClients() {
@@ -36,7 +44,7 @@ export default function ForClients() {
           work before you do. Here is the whole workflow.
         </p>
 
-        <ol className="mt-10 grid gap-4 md:grid-cols-2">
+        <ol className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {STEPS.map((s, i) => (
             <li key={s.title} className="list-none">
               <Card className="h-full">
@@ -67,6 +75,14 @@ export default function ForClients() {
             <p className="mt-3 text-[14.5px] text-ink-soft">
               On £500,000 of GAC service spend, Full Stack saves £35,000 a year. GAC Assets and GAC
               Procurement are included at any tier as added value.
+            </p>
+            <p className="mt-3 text-[14.5px] text-ink-soft">
+              Deadlines are yours to set too: on every quote request you choose the reply-by time,
+              and the platform is honest that a ten-minute window suits a taxi, not a crane.
+            </p>
+            <p className="mt-4 rounded-lg border border-[#E5D89A] bg-gold-soft px-3.5 py-2.5 font-display text-[13px] text-gold-deep">
+              <strong>2 · 4 · 7</strong> — the same digits as the 24/7 operation behind them. The
+              discount is backed by round-the-clock agency, logistics, and customs cover.
             </p>
             <div className="mt-6">
               <ButtonLink to="/app/tiers" variant="primary">

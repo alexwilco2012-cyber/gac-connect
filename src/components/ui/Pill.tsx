@@ -2,7 +2,15 @@ import type { ReactNode } from 'react';
 import type { SupplierStatus } from '../../lib/svs';
 
 export type PillTone =
-  'inhouse' | 'verified' | 'promoted' | 'warn' | 'danger' | 'info' | 'beta' | 'neutral';
+  | 'inhouse'
+  | 'verified'
+  | 'promoted'
+  | 'warn'
+  | 'danger'
+  | 'info'
+  | 'beta'
+  | 'neutral'
+  | 'goldband';
 
 const TONES: Record<PillTone, string> = {
   inhouse: 'bg-gold-soft text-gold-deep border border-[#E5D89A]',
@@ -13,6 +21,8 @@ const TONES: Record<PillTone, string> = {
   info: 'bg-sea-soft text-sea',
   beta: 'bg-gold-bright text-ink font-display',
   neutral: 'bg-paper text-ink-soft border border-line-strong',
+  // Gold Band is a GAC-conferred audit marque — gold as identity, not decoration.
+  goldband: 'bg-ink text-gold-bright border border-gold',
 };
 
 export function Pill({ tone, children }: { tone: PillTone; children: ReactNode }) {
@@ -32,6 +42,11 @@ export function BetaPill() {
       BETA
     </span>
   );
+}
+
+/** The GAC Gold Band marque — only rendered while goldBandActive() holds. */
+export function GoldBandPill() {
+  return <Pill tone="goldband">◆ GAC Gold Band</Pill>;
 }
 
 /** Status pill mapped from an SVS-derived supplier status. */
