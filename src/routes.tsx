@@ -5,21 +5,51 @@ import MarketingLayout from './components/layout/MarketingLayout';
 import { RouteErrorBoundary } from './components/ui/RouteErrorBoundary';
 import Landing from './screens/marketing/Landing';
 
-const ForClients = lazy(() => import('./screens/marketing/ForClients'));
-const ForSuppliers = lazy(() => import('./screens/marketing/ForSuppliers'));
-const About = lazy(() => import('./screens/marketing/About'));
-const Dashboard = lazy(() => import('./screens/app/Dashboard'));
-const Marketplace = lazy(() => import('./screens/app/Marketplace'));
-const SupplierProfile = lazy(() => import('./screens/app/SupplierProfile'));
-const Quotes = lazy(() => import('./screens/app/Quotes'));
-const Invoices = lazy(() => import('./screens/app/Invoices'));
-const TierCalculator = lazy(() => import('./screens/app/TierCalculator'));
-const Svs = lazy(() => import('./screens/app/Svs'));
-const Analytics = lazy(() => import('./screens/app/Analytics'));
-const CertificationBeta = lazy(() => import('./screens/app/CertificationBeta'));
-const BunkersBeta = lazy(() => import('./screens/app/BunkersBeta'));
-const KitchenSink = lazy(() => import('./screens/KitchenSink'));
-const AppLayout = lazy(() => import('./components/layout/AppLayout'));
+/**
+ * Every screen is its own chunk (Vite code-splits on dynamic import), so the
+ * first paint only ships the landing page. The importers are kept in one table
+ * so `prefetchRoutes` can warm the rest once the browser is idle — the first
+ * click on any nav item then renders from cache instead of waiting on a fetch.
+ */
+const importers = {
+  ForClients: () => import('./screens/marketing/ForClients'),
+  ForSuppliers: () => import('./screens/marketing/ForSuppliers'),
+  About: () => import('./screens/marketing/About'),
+  Dashboard: () => import('./screens/app/Dashboard'),
+  Marketplace: () => import('./screens/app/Marketplace'),
+  SupplierProfile: () => import('./screens/app/SupplierProfile'),
+  Quotes: () => import('./screens/app/Quotes'),
+  Invoices: () => import('./screens/app/Invoices'),
+  TierCalculator: () => import('./screens/app/TierCalculator'),
+  Svs: () => import('./screens/app/Svs'),
+  Analytics: () => import('./screens/app/Analytics'),
+  CertificationBeta: () => import('./screens/app/CertificationBeta'),
+  BunkersBeta: () => import('./screens/app/BunkersBeta'),
+  KitchenSink: () => import('./screens/KitchenSink'),
+  AppLayout: () => import('./components/layout/AppLayout'),
+};
+
+const ForClients = lazy(importers.ForClients);
+const ForSuppliers = lazy(importers.ForSuppliers);
+const About = lazy(importers.About);
+const Dashboard = lazy(importers.Dashboard);
+const Marketplace = lazy(importers.Marketplace);
+const SupplierProfile = lazy(importers.SupplierProfile);
+const Quotes = lazy(importers.Quotes);
+const Invoices = lazy(importers.Invoices);
+const TierCalculator = lazy(importers.TierCalculator);
+const Svs = lazy(importers.Svs);
+const Analytics = lazy(importers.Analytics);
+const CertificationBeta = lazy(importers.CertificationBeta);
+const BunkersBeta = lazy(importers.BunkersBeta);
+const KitchenSink = lazy(importers.KitchenSink);
+const AppLayout = lazy(importers.AppLayout);
+
+/** Warm every route chunk. Failures are ignored — a route that fails to
+ *  prefetch simply loads on demand as before. */
+export function prefetchRoutes(): Promise<void> {
+  return Promise.allSettled(Object.values(importers).map((load) => load())).then(() => undefined);
+}
 
 function lazily(el: React.ReactNode) {
   return <Suspense fallback={null}>{el}</Suspense>;

@@ -1,8 +1,17 @@
 name: Deploy to GitHub Pages
 
+# One Pages site, many versions:
+#   main                → the live site        https://alexwilco2012-cyber.github.io/gac-connect/
+#   any other branch    → a preview of it      https://alexwilco2012-cyber.github.io/gac-connect/preview/<branch>/
+#                         (slashes in the branch name become dashes: change/hero → preview/change-hero/)
+# Every push to any branch, and every branch deletion, rebuilds the whole set
+# from what is on GitHub right now — so a deleted branch's preview disappears
+# and main is always built from main. Plain-English guide: docs/WORKFLOW.md.
+
 on:
   push:
-    branches: [main]
+    branches: ['**']
+  delete:
   workflow_dispatch:
 
 permissions:
@@ -14,21 +23,68 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  SITE_URL: https://alexwilco2012-cyber.github.io/gac-connect
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main # the live site is always built from main, whatever triggered the run
+          fetch-depth: 0 # and every other branch is needed for its preview
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
+      # ---- live site (main → root) — same gates as before: tests must pass
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Stage the live site
+        run: |
+          mkdir -p site
+          cp -r dist/. site/
+          {
+            echo "### Deployed"
+            echo
+            echo "- **live** (main) → ${SITE_URL}/"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ---- previews (every other branch → site/preview/<slug>/)
+      # A branch that fails to build is skipped with a warning; the live site
+      # and the other previews still deploy.
+      - name: Build branch previews
+        run: |
+          set -u
+          for ref in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/ | grep -v -E '^origin/(HEAD|main)$' || true); do
+            branch="${ref#origin/}"
+            slug=$(printf '%s' "$branch" | sed -E 's#[^A-Za-z0-9._-]+#-#g')
+            echo "::group::preview: ${branch} → preview/${slug}/"
+            rm -rf /tmp/wt
+            git worktree add --detach /tmp/wt "$ref"
+            if (cd /tmp/wt \
+                && npm ci --no-audit --no-fund \
+                && npm run build:presenter \
+                && npx tsc --noEmit \
+                && npx vite build --base="/gac-connect/preview/${slug}/"); then
+              mkdir -p "site/preview/${slug}"
+              cp -r /tmp/wt/dist/. "site/preview/${slug}/"
+              echo "- \`${branch}\` → ${SITE_URL}/preview/${slug}/" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::Preview build failed for branch '${branch}' — skipped. The live site is unaffected."
+              echo "- \`${branch}\` → **build failed, no preview** (see the log)" >> "$GITHUB_STEP_SUMMARY"
+            fi
+            git worktree remove --force /tmp/wt
+            echo "::endgroup::"
+          done
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
 
   deploy:
     needs: build

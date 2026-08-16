@@ -1,0 +1,71 @@
+  <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Supplier profile" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:13.5px;cursor:pointer;padding:0;" sc-camel-on-click="{{ goMarketplace }}">← Back to marketplace</button>
+      <sc-if value="{{ profFound }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:24px;margin-top:14px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <h1 style="font-size:22px;font-weight:800;letter-spacing:-.01em;margin:0;">{{ profName }}</h1>
+                <sc-if value="{{ profPromoted }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#EFE9FB;color:#5B3FA8;border:1px solid #D9CCF5;">▲ Promoted</span></sc-if>
+                <sc-if value="{{ profGold }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#0A2540;color:#FFC72C;border:1px solid #C9A227;white-space:nowrap;">◆ GAC Gold Band</span></sc-if>
+                <sc-if value="{{ profBlocked }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBEAEA;color:#B91C1C;">✗ Booking blocked</span></sc-if>
+                <sc-if value="{{ profDue }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF0E1;color:#B45309;">⚠ Renewal due</span></sc-if>
+                <sc-if value="{{ profVerified }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></sc-if>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:13px;color:#33475F;">
+                <span><span style="color:#9A7B14;font-weight:700;">{{ profRating }}</span> <span style="color:#33475F;">{{ profRatingCount }}</span></span>
+                <span>ESG <span style="{{ profEsgStyle }}">{{ profEsg }}</span></span>
+                <span>{{ profCat }}</span>
+              </div>
+              <p style="color:#33475F;font-size:14px;margin:10px 0 0;max-width:70ch;">{{ profAbout }}</p>
+              <sc-if value="{{ profPremium }}" hint-placeholder-val="{{ false }}">
+                <p style="color:#9A7B14;font-size:12.5px;font-weight:700;margin:10px 0 0;">Premium partner · enhanced profile with media and case studies</p>
+              </sc-if>
+              <sc-if value="{{ profGold }}" hint-placeholder-val="{{ false }}">
+                <p style="color:#33475F;font-size:12.5px;margin:6px 0 0;max-width:70ch;"><strong style="color:#0A2540;">GAC Gold Band held · {{ profGoldDate }}.</strong> An audit tier above standard verification, open to Premium suppliers — earned through an enhanced annual audit of documentation, insurance, performance history, and site practice, never bought. Advertising cannot confer it, and lapsed compliance removes it.</p>
+              </sc-if>
+              <sc-if value="{{ profGoldScheduled }}" hint-placeholder-val="{{ false }}">
+                <p style="color:#33475F;font-size:12.5px;margin:6px 0 0;max-width:70ch;">Gold Band audit booked, not yet passed — {{ profGoldDate }}. Premium makes a supplier eligible; only the audit confers the marque.</p>
+              </sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+              <button style="{{ profCtaStyle }}" sc-camel-on-click="{{ profCta }}" disabled="{{ profBlocked }}">{{ profCtaLabel }}</button>
+              <sc-if value="{{ profBlocked }}" hint-placeholder-val="{{ false }}">
+                <p style="color:#B91C1C;font-size:12px;margin:0;max-width:26ch;text-align:right;">Booking blocked until current insurance evidence is uploaded. Promotion or plan level cannot override this.</p>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:18px;align-items:start;">
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0 0 10px;">Compliance · SVS record</p>
+            <sc-for list="{{ profCerts }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;">
+                <span style="font-weight:600;">{{ c.label }}</span>
+                <span style="color:#33475F;font-size:12.5px;">{{ c.detail }}</span>
+                <span style="{{ c.chipStyle }}">{{ c.stateLabel }}</span>
+              </div>
+            </sc-for>
+            <p style="color:#33475F;font-size:12px;margin:10px 0 0;">Expiry alerts fire at 90, 30, and 7 days. Any lapsed certificate blocks booking platform-wide.</p>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0 0 10px;">Recent platform activity</p>
+            <sc-for list="{{ profActivity }}" as="a" hint-placeholder-count="2">
+              <div style="display:flex;gap:8px;padding:9px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;">
+                <span style="color:#047857;font-weight:800;">✓</span><span>{{ a }}</span>
+              </div>
+            </sc-for>
+            <p style="color:#33475F;font-size:12px;margin:10px 0 0;">Ratings are fed from completed platform transactions.</p>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ profMissing }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:24px;margin-top:14px;">
+          <p style="margin:0;"><strong>Supplier not found.</strong></p>
+          <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;">The link may be out of date. Browse the marketplace to find every vetted supplier.</p>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>

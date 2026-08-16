@@ -1,0 +1,69 @@
+  <sc-if value="{{ rqOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="Quote request" style="position:fixed;inset:0;background:rgba(10,37,64,.45);display:grid;place-items:center;z-index:91;padding:16px;" sc-camel-on-click="{{ closeRqOverlay }}">
+      <div style="background:#FFFFFF;border-radius:14px;max-width:480px;width:94vw;max-height:calc(100dvh - 32px);overflow-y:auto;padding:24px;">
+        <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Quote request</p>
+        <h2 style="margin:4px 0 0;font-size:19px;">Request a quote — {{ rqName }}</h2>
+        <p style="color:#33475F;font-size:13px;margin:6px 0 0;">{{ rqService }}. Suppliers quote against the deadline you set; the platform tells you what that window is likely to draw.</p>
+        <p style="color:#33475F;font-size:12.5px;margin:12px 0 0;"><strong style="color:#0A2540;">Vessel</strong> MV Caledonian Star · Aberdeen &nbsp;·&nbsp; <strong style="color:#0A2540;">Needed by</strong> Fri 06:00</p>
+
+        <p style="font-size:12.5px;font-weight:600;color:#33475F;margin:14px 0 6px;">Reply-by deadline · set by you</p>
+        <div role="group" aria-label="Reply-by window" style="display:flex;flex-wrap:wrap;gap:6px;">
+          <sc-for list="{{ rqWindows }}" as="w" hint-placeholder-count="6"><button style="{{ w.style }}" aria-pressed="{{ w.pressed }}" sc-camel-on-click="{{ w.on }}">{{ w.label }}</button></sc-for>
+        </div>
+        <p style="{{ rqAdviceStyle }}">{{ rqAdvice }}</p>
+
+        <sc-if value="{{ rqIsHotel }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px;margin-top:14px;">
+            <p style="font-size:12.5px;font-weight:700;margin:0;">Hotel booking terms</p>
+            <p style="font-size:12.5px;color:#33475F;margin:4px 0 0;">{{ rqHotelCaveat }}</p>
+            <div style="border:1px solid #E5EAF1;border-radius:8px;background:#FFFFFF;padding:12px;margin-top:10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                  <span style="font-size:13px;font-weight:600;">Meal allowance for the stay?</span>
+                  <button role="switch" aria-checked="{{ rqMealsAria }}" aria-label="Include meal allowance" style="{{ rqMealTrackStyle }}" sc-camel-on-click="{{ rqToggleMeals }}"><span style="{{ rqMealKnobStyle }}"></span></button>
+                </div>
+                <sc-if value="{{ rqMeals }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;">
+                    <span style="font-size:12.5px;font-weight:600;color:#33475F;">Nights</span>
+                    <sc-for list="{{ rqNightChips }}" as="n" hint-placeholder-count="6"><button style="{{ n.style }}" aria-pressed="{{ n.pressed }}" sc-camel-on-click="{{ n.on }}">{{ n.label }}</button></sc-for>
+                    <p style="font-size:13px;margin:8px 0 0;">Sliding scale: <strong>{{ rqMealPerDay }} per day</strong> · <strong>{{ rqMealTotal }}</strong> for {{ rqNightsLabel }}, per crew member.</p>
+                    <p style="font-size:11.5px;color:#33475F;margin:4px 0 0;">Scale (illustrative, set by client policy): 1 night £30/day · up to 3 nights £25/day · longer stays £20/day</p>
+                  </div>
+                </sc-if>
+              </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ rqHasRelated }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #E5D89A;border-radius:8px;background:#FBF6E3;padding:12px;margin-top:14px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7A6210;margin:0;">You may also need · arranged by your GAC agent</p>
+            <p style="font-size:12.5px;color:#33475F;margin:4px 0 0;">{{ rqRelatedIntro }}</p>
+            <sc-for list="{{ rqRelated }}" as="r" hint-placeholder-count="2">
+              <div style="margin-top:8px;font-size:13px;">
+                <button style="{{ r.style }}" aria-pressed="{{ r.pressed }}" sc-camel-on-click="{{ r.on }}">{{ r.mark }} {{ r.label }}</button> <span style="color:#33475F;">— {{ r.body }}</span>
+                <sc-if value="{{ r.hasCaveat }}" hint-placeholder-val="{{ false }}"><p style="font-size:12px;color:#33475F;margin:4px 0 0 22px;">{{ r.caveat }}</p></sc-if>
+                <sc-if value="{{ r.showMeal }}" hint-placeholder-val="{{ false }}"><div style="margin-left:22px;"><div style="border:1px solid #E5EAF1;border-radius:8px;background:#FFFFFF;padding:12px;margin-top:10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                  <span style="font-size:13px;font-weight:600;">Meal allowance for the stay?</span>
+                  <button role="switch" aria-checked="{{ rqMealsAria }}" aria-label="Include meal allowance" style="{{ rqMealTrackStyle }}" sc-camel-on-click="{{ rqToggleMeals }}"><span style="{{ rqMealKnobStyle }}"></span></button>
+                </div>
+                <sc-if value="{{ rqMeals }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;">
+                    <span style="font-size:12.5px;font-weight:600;color:#33475F;">Nights</span>
+                    <sc-for list="{{ rqNightChips }}" as="n" hint-placeholder-count="6"><button style="{{ n.style }}" aria-pressed="{{ n.pressed }}" sc-camel-on-click="{{ n.on }}">{{ n.label }}</button></sc-for>
+                    <p style="font-size:13px;margin:8px 0 0;">Sliding scale: <strong>{{ rqMealPerDay }} per day</strong> · <strong>{{ rqMealTotal }}</strong> for {{ rqNightsLabel }}, per crew member.</p>
+                    <p style="font-size:11.5px;color:#33475F;margin:4px 0 0;">Scale (illustrative, set by client policy): 1 night £30/day · up to 3 nights £25/day · longer stays £20/day</p>
+                  </div>
+                </sc-if>
+              </div></div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+          <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ closeRq }}">Cancel</button>
+          <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ sendRq }}">Send request</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>

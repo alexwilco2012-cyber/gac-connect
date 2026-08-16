@@ -1,0 +1,52 @@
+  <sc-if value="{{ isQuotes }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Quote comparison" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Quote comparison</p>
+      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Crane hire — MV Caledonian Star, Aberdeen</h1>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;">3 of 3 suppliers have replied. One reply was parsed automatically from Outlook — no manual logging.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:20px;align-items:start;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:stretch;grid-column:1/-1;">
+          <sc-for list="{{ quotesList }}" as="qc" hint-placeholder-count="3">
+            <div style="{{ qc.cardStyle }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                <strong>{{ qc.name }}</strong>
+                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span>
+              </div>
+              <p style="font-size:11.5px;color:#33475F;display:flex;align-items:center;gap:6px;margin:0;"><span style="width:7px;height:7px;border-radius:50%;background:{{ qc.dotColor }};display:inline-block;"></span>{{ qc.src }}</p>
+              <p style="font-size:24px;font-weight:800;margin:0;">{{ qc.price }} <sc-if value="{{ qc.best }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E8F1F7;color:#0E5E8A;vertical-align:middle;">Best match</span></sc-if></p>
+              <div style="font-size:13px;">
+                <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed #E5EAF1;"><span>Availability</span><span style="font-weight:600;">{{ qc.avail }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed #E5EAF1;"><span>Capacity</span><span style="font-weight:600;">{{ qc.capacity }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed #E5EAF1;"><span>Rating</span><span style="font-weight:600;">{{ qc.rating }}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:5px 0;"><span>ESG score</span><span style="font-weight:600;">{{ qc.esg }}</span></div>
+              </div>
+              <button style="{{ qc.actionStyle }}" sc-camel-on-click="{{ qc.onAccept }}" disabled="{{ qc.accepted }}">{{ qc.actionLabel }}</button>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;grid-column:1/-1;">
+          <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0 0 10px;">Request queue</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+            <div style="border:1.5px solid #0E5E8A;border-radius:8px;padding:12px 14px;background:#E8F1F7;">
+              <p style="font-weight:700;font-size:13.5px;margin:0;">Crane hire · MV Caledonian Star</p>
+              <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">3 of 3 replies in · reviewing now</p>
+            </div>
+            <div style="border:1px solid #E5EAF1;border-radius:8px;padding:12px 14px;">
+              <p style="font-weight:700;font-size:13.5px;margin:0;">Medical cover · MV Caledonian Star</p>
+              <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">2 of 3 replies in · due by 17:00</p>
+            </div>
+            <div style="border:1px solid #E5EAF1;border-radius:8px;padding:12px 14px;">
+              <p style="font-weight:700;font-size:13.5px;margin:0;">Scaffolding · MV Caledonian Star</p>
+              <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">Awaiting replies · sent 11:20</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;background:#0A2540;color:#D8E2EC;border-radius:10px;padding:14px 18px;display:flex;gap:18px;align-items:center;font-size:13.5px;flex-wrap:wrap;">
+        <span style="background:rgba(255,255,255,.12);border-radius:6px;padding:3px 8px;font-size:11.5px;font-weight:700;">GA</span>
+        <span style="flex:1;min-width:240px;"><strong style="color:#FFFFFF;">GAC Agent is ready.</strong> On acceptance, a purchase order is generated automatically against MV Caledonian Star with the 60/40 Browne Energy / Grizzell Marine billing split applied from the vessel profile. No re-keying.</span>
+      </div>
+    </main>
+  </sc-if>

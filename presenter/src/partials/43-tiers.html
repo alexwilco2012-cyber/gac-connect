@@ -1,0 +1,55 @@
+  <sc-if value="{{ isTiers }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Tier calculator" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Commercial mechanics</p>
+      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Tier discount calculator</h1>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;">The discount applies to a client’s GAC in-house service charges booked through the platform. It is non-cumulative — the highest single tier the client qualifies for applies.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:22px;align-items:start;">
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:1.5px solid #CBD6E2;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#FFFFFF;">
+            <div><p style="font-weight:700;margin:0;">GAC Agency</p><p style="font-size:12px;color:#33475F;margin:0;">Port calls, vessel support, crew coordination · 2% tier</p></div>
+            <button style="{{ swAgencyStyle }}" aria-pressed="{{ swAgency }}" aria-label="Toggle GAC Agency" sc-camel-on-click="{{ toggleAgency }}"><span style="{{ swAgencyKnob }}"></span></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:1.5px solid #CBD6E2;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#FFFFFF;">
+            <div><p style="font-weight:700;margin:0;">GAC Logistics</p><p style="font-size:12px;color:#33475F;margin:0;">Freight forwarding, warehousing, project cargo · 4% tier</p></div>
+            <button style="{{ swLogisticsStyle }}" aria-pressed="{{ swLogistics }}" aria-label="Toggle GAC Logistics" sc-camel-on-click="{{ toggleLogistics }}"><span style="{{ swLogisticsKnob }}"></span></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:1.5px solid #CBD6E2;border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#FFFFFF;">
+            <div><p style="font-weight:700;margin:0;">GAC Customs</p><p style="font-size:12px;color:#33475F;margin:0;">T1 transit, import/export clearance, documentation · 7% tier</p></div>
+            <button style="{{ swCustomsStyle }}" aria-pressed="{{ swCustoms }}" aria-label="Toggle GAC Customs" sc-camel-on-click="{{ toggleCustoms }}"><span style="{{ swCustomsKnob }}"></span></button>
+          </div>
+          <p style="color:#33475F;font-size:12.5px;margin:4px 2px 0;">GAC Assets and GAC Procurement are included at any tier as added value.</p>
+
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;margin-top:18px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Annual GAC service spend via platform</p>
+              <p style="font-weight:800;font-size:18px;margin:0;">{{ spendLabel }}</p>
+            </div>
+            <input type="range" min="50000" max="2000000" step="25000" value="{{ spend }}" sc-camel-on-change="{{ onSpend }}" aria-label="Annual GAC service spend" style="width:100%;accent-color:#0E5E8A;margin-top:10px;">
+            <div style="display:flex;justify-content:space-between;color:#33475F;font-size:12.5px;"><span>£50k</span><span>£2.0m</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div style="background:#0A2540;color:#FFFFFF;text-align:center;padding:28px 22px;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9FB4C8;margin:0;">Discount tier held</p>
+            <p style="font-size:52px;font-weight:800;line-height:1;margin:10px 0 0;color:{{ bigPctColor }};">{{ tierPctLabel }}</p>
+            <sc-if value="{{ fullStack }}" hint-placeholder-val="{{ false }}">
+              <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF6E3;color:#9A7B14;border:1px solid #E5D89A;margin-top:10px;">★ Full Stack — all three pillars</span>
+            </sc-if>
+            <p style="font-size:22px;font-weight:700;margin:14px 0 0;">{{ saveLabel }}</p>
+            <p style="color:#9FB4C8;font-size:12.5px;margin:10px 0 0;">{{ tierNote }}</p>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;margin-top:14px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Why this works for GAC</p>
+            <p style="margin:8px 0 0;font-size:13.5px;">The discount is a cost; the consolidated service revenue it attracts is the prize. The pass-through stays a fraction of the in-house work it consolidates — that asymmetry is the commercial case.</p>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;margin-top:14px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">The worked example</p>
+            <p style="margin:8px 0 0;font-size:13.5px;">£500,000 of GAC service spend on Full Stack saves <strong>£35,000 a year</strong>. GAC Assets and GAC Procurement are included at any tier; the discount never applies to third-party spend or the existing disbursement arrangement.</p>
+            <p style="margin:10px 0 0;font-size:13px;color:#33475F;">The worked example on this page is <strong>Browne Energy</strong> — the platform's illustrative Full Stack client.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </sc-if>

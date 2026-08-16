@@ -1,0 +1,113 @@
+  <sc-if value="{{ isSuppliers }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="For Suppliers" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">For suppliers</p>
+      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Grow your business on {{ brandName }}</h1>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;">A verified profile puts you in front of every offshore operator GAC serves. Subscriptions and promotion tools control how visible you are.</p>
+
+      <div style="background:#0A2540;color:#FFFFFF;border-radius:10px;padding:22px 24px;display:flex;gap:18px;align-items:center;margin:20px 0;flex-wrap:wrap;">
+        <span style="background:#FFC72C;color:#0A2540;font-family:'Space Grotesk',sans-serif;font-weight:700;border-radius:8px;padding:8px 12px;font-size:13px;white-space:nowrap;">FOUNDER PROGRAMME</span>
+        <p style="flex:1;font-size:14px;color:#D8E2EC;margin:0;min-width:240px;"><strong style="color:#FFFFFF;">The first 50 suppliers join free for the first year</strong> — full Professional features, no charge — and hold a 5-point commission-band reduction for 24 months. Founder suppliers shape the platform and carry the badge to prove it.</p>
+        <button style="background:#C9A227;color:#0A2540;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="background:#B89018;" sc-camel-on-click="{{ founderInterest }}">Register interest</button>
+      </div>
+
+      <h2 style="font-size:18px;margin:8px 0 14px;">Listing plans</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;align-items:stretch;">
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;display:flex;flex-direction:column;">
+          <h3 style="font-size:17px;margin:0;">Basic</h3>
+          <p style="font-size:30px;font-weight:800;margin:8px 0 2px;">£0</p>
+          <p style="font-size:12px;color:#33475F;margin:0;">free, forever</p>
+          <div style="background:#0A2540;color:#FFFFFF;border-radius:8px;padding:8px 12px;margin-top:10px;"><p style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin:0;">20% commission</p><p style="font-size:11.5px;color:#D8E2EC;margin:2px 0 0;">on work won through the platform, deducted at invoice matching</p></div>
+          <ul style="list-style:none;margin:14px 0;padding:0;flex:1;">
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>SVS-verified profile and GAC Verified badge</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Appear in marketplace search</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Receive and respond to quote requests</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Compliance vault with expiry alerts</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;color:#9AA8B8;"><span style="color:#CBD6E2;font-weight:800;">–</span><span>Featured category placement</span></li>
+            <li style="padding:7px 0;font-size:13.5px;display:flex;gap:8px;color:#9AA8B8;"><span style="color:#CBD6E2;font-weight:800;">–</span><span>Performance analytics</span></li>
+          </ul>
+          <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ planFree }}">Start on Basic</button>
+        </div>
+
+        <div style="background:#FFFFFF;border:1.5px solid #C9A227;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;display:flex;flex-direction:column;position:relative;">
+          <span style="position:absolute;top:-11px;right:14px;background:#C9A227;color:#0A2540;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:100px;">Most popular</span>
+          <h3 style="font-size:17px;margin:0;">Professional</h3>
+          <p style="font-size:30px;font-weight:800;margin:8px 0 2px;">£900</p>
+          <p style="font-size:12px;color:#33475F;margin:0;">per year</p>
+          <div style="background:#0A2540;color:#FFFFFF;border-radius:8px;padding:8px 12px;margin-top:10px;"><p style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin:0;">15% commission</p><p style="font-size:11.5px;color:#D8E2EC;margin:2px 0 0;">on work won through the platform, deducted at invoice matching</p></div>
+          <ul style="list-style:none;margin:14px 0;padding:0;flex:1;">
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Everything in Basic</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Enhanced profile: photos, case studies, capability statements</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Featured category placement (2 campaigns / month)</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Performance analytics: views, quote requests, win rate</span></li>
+            <li style="padding:7px 0;font-size:13.5px;display:flex;gap:8px;color:#9AA8B8;"><span style="color:#CBD6E2;font-weight:800;">–</span><span>Homepage spotlight &amp; category sponsorship</span></li>
+          </ul>
+          <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ planPro }}">Choose Professional</button>
+        </div>
+
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;display:flex;flex-direction:column;">
+          <h3 style="font-size:17px;margin:0;">Premium</h3>
+          <p style="font-size:30px;font-weight:800;margin:8px 0 2px;">£1,800</p>
+          <p style="font-size:12px;color:#33475F;margin:0;">per year</p>
+          <div style="background:#0A2540;color:#FFFFFF;border-radius:8px;padding:8px 12px;margin-top:10px;"><p style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin:0;">10% commission</p><p style="font-size:11.5px;color:#D8E2EC;margin:2px 0 0;">on work won through the platform, deducted at invoice matching</p></div>
+          <ul style="list-style:none;margin:14px 0;padding:0;flex:1;">
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Everything in Professional</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Eligible for the GAC Gold Band audit — earned annually, never bought</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Homepage spotlight rotation</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Category sponsorship (own a category for a month)</span></li>
+            <li style="padding:7px 0;border-bottom:1px dashed #E5EAF1;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Promoted placement in relevant searches, always labelled</span></li>
+            <li style="padding:7px 0;font-size:13.5px;display:flex;gap:8px;"><span style="color:#047857;font-weight:800;">✓</span><span>Full analytics with market benchmarking</span></li>
+          </ul>
+          <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ planPremium }}">Choose Premium</button>
+        </div>
+      </div>
+
+      <p style="color:#33475F;font-size:13.5px;margin:14px 0 0;max-width:80ch;">Commission applies only to third-party work won through the platform, and is deducted when the supplier invoice matches in GAC Agent — no separate collection, nothing charged to clients, no booking fee. A supplier who commits more keeps more of each job, and can quote sharper because of it. On a £4,400 crane job: Basic keeps £3,520 · Professional £3,740 · Premium £3,960.</p>
+
+      <h2 style="font-size:18px;margin:28px 0 4px;">Promotion tools</h2>
+      <p style="color:#33475F;font-size:13.5px;margin:0;">Advertising buys visibility, never trust: promoted listings are always labelled, and no promotion overrides SVS compliance status. A blocked supplier cannot advertise its way back into search.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:18px;">
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <h4 style="font-size:14.5px;margin:0;">Featured category placement</h4>
+          <p style="font-size:13px;color:#33475F;margin:6px 0 0;">Your listing pinned to the top of a chosen service category for the campaign period, with the Promoted label.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <h4 style="font-size:14.5px;margin:0;">Homepage spotlight</h4>
+          <p style="font-size:13px;color:#33475F;margin:6px 0 0;">Rotating placement on the client landing view — the first thing operators see when they open the platform.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <h4 style="font-size:14.5px;margin:0;">Category sponsorship</h4>
+          <p style="font-size:13px;color:#33475F;margin:6px 0 0;">Own a category banner for a month: “Cranes — sponsored by Caledonia Lifting.” One sponsor per category.</p>
+        </div>
+      </div>
+
+      <h2 style="font-size:18px;margin:28px 0 4px;">How a promoted listing appears</h2>
+      <div style="border:1.5px dashed #CBD6E2;border-radius:12px;padding:18px;margin-top:14px;background:#FCFDFE;">
+        <p style="font-size:10.5px;color:#8A7FB0;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin:0 0 8px;">Promoted · featured placement</p>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:14px;padding:16px 18px;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);border:1.5px solid #C9BCF0;background:linear-gradient(180deg,#FBFAFF,#FFFFFF 60%);">
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <h3 style="font-size:16px;margin:0;">Silver City Welding</h3>
+              <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#EFE9FB;color:#5B3FA8;border:1px solid #D9CCF5;">▲ Promoted</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span>
+            </div>
+            <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;">Coded welders, onboard fabrication and repair, 24/7 call-out. Premium subscriber — featured in Welding this month.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;font-size:13px;color:#33475F;"><span style="color:#9A7B14;font-weight:700;">4.4 ★</span><span>ESG <span style="font-weight:700;color:#3E7C2F;">B</span></span><span>Welding</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px;">
+            <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ silverQuote }}">Request quote</button>
+          </div>
+        </div>
+        <p style="color:#33475F;font-size:12.5px;margin:10px 0 0;">Promotion changes position, not credentials. Rating, ESG score, and compliance status are always the supplier’s own.</p>
+      </div>
+
+      <h2 style="font-size:18px;margin:28px 0 4px;">Your performance, measured</h2>
+      <p style="color:#33475F;font-size:13.5px;margin:0;">Professional and Premium suppliers see exactly what their presence earns.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-top:18px;">
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="font-size:12px;color:#33475F;margin:0;">Profile views (30 days)</p><p style="font-size:24px;font-weight:800;margin:2px 0 0;">412</p><div style="height:6px;background:#E8F1F7;border-radius:4px;margin-top:10px;overflow:hidden;"><span style="display:block;height:100%;width:72%;background:#0E5E8A;border-radius:4px;"></span></div></div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="font-size:12px;color:#33475F;margin:0;">Quote requests received</p><p style="font-size:24px;font-weight:800;margin:2px 0 0;">38</p><div style="height:6px;background:#E8F1F7;border-radius:4px;margin-top:10px;overflow:hidden;"><span style="display:block;height:100%;width:58%;background:#0E5E8A;border-radius:4px;"></span></div></div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="font-size:12px;color:#33475F;margin:0;">Win rate</p><p style="font-size:24px;font-weight:800;margin:2px 0 0;">34%</p><div style="height:6px;background:#E8F1F7;border-radius:4px;margin-top:10px;overflow:hidden;"><span style="display:block;height:100%;width:34%;background:#0E5E8A;border-radius:4px;"></span></div></div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="font-size:12px;color:#33475F;margin:0;">Avg. response time</p><p style="font-size:24px;font-weight:800;margin:2px 0 0;">2.1 hrs</p><div style="height:6px;background:#E8F1F7;border-radius:4px;margin-top:10px;overflow:hidden;"><span style="display:block;height:100%;width:86%;background:#0E5E8A;border-radius:4px;"></span></div></div>
+      </div>
+      <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;margin-top:16px;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ goAnalytics }}">See the example analytics dashboard</button>
+    </main>
+  </sc-if>

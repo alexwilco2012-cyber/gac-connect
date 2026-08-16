@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en-GB"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAC Connect — Offshore Services · Connected</title>
+<style>html{background:#0A2540}</style>
+@@HEAD@@
+<script src="vendor/dc-runtime.js"></script>
+</head>
+<body>
+
+<!-- Static splash: painted the instant the HTML arrives, removed by
+     Component.componentDidMount() the moment React has rendered the first
+     frame (layout-effect timing, so no frame ever shows both). -->
+<div id="gac-presenter-splash" aria-hidden="true" style="position:fixed;inset:0;z-index:9990;background:#0A2540;display:flex;align-items:center;justify-content:center;">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="1200" height="800" fill="#0A2540"></rect>
+    <text x="600" y="420" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="150" letter-spacing="8" fill="#FFFFFF" text-anchor="middle">GAC</text>
+    <text x="600" y="520" font-family="Arial, Helvetica, sans-serif" font-size="40" letter-spacing="22" fill="#FFC72C" text-anchor="middle">CONNECT</text>
+  </svg>
+</div>
+
+<x-dc>
+<helmet>
+<style>@@INCLUDE:styles/fonts.css@@
+</style>
+<style>
+@@INCLUDE:styles/base.css@@
+</style>
+<style>
+@@INCLUDE:styles/opening.css@@
+</style>
+</helmet>
+<div style="min-height:100vh;background:#FAFBFD;color:#0A2540;font-family:'Segoe UI','Avenir Next','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.5;" data-screen-label="GAC Connect">
+
+@@INCLUDE:partials/10-loader.html@@
+
+@@INCLUDE:partials/20-opening.html@@
+
+@@INCLUDE:partials/30-chrome.html@@
+
+@@INCLUDE:partials/40-home.html@@
+
+@@INCLUDE:partials/41-dashboard.html@@
+
+@@INCLUDE:partials/42-marketplace.html@@
+
+@@INCLUDE:partials/43-tiers.html@@
+
+@@INCLUDE:partials/44-clients.html@@
+
+@@INCLUDE:partials/45-suppliers.html@@
+
+@@INCLUDE:partials/46-about.html@@
+
+@@INCLUDE:partials/47-supplier-profile.html@@
+
+@@INCLUDE:partials/48-quotes.html@@
+
+@@INCLUDE:partials/49-svs.html@@
+
+@@INCLUDE:partials/50-analytics.html@@
+
+@@INCLUDE:partials/51-certification.html@@
+
+@@INCLUDE:partials/52-bunkers.html@@
+
+@@INCLUDE:partials/53-kitchen-sink.html@@
+
+@@INCLUDE:partials/60-footer-drawer.html@@
+@@INCLUDE:partials/70-modal.html@@
+@@INCLUDE:partials/73-request.html@@
+
+@@INCLUDE:partials/71-tour.html@@
+
+@@INCLUDE:partials/72-toast.html@@
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="@@PROPS@@">
+@@INCLUDE:app/data.js@@
+@@INCLUDE:app/component.js@@
+</script>
+
+
+</body></html>

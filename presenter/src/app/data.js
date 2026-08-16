@@ -1,0 +1,85 @@
+/* GAC Connect presenter · demo & business data.
+   Everything the demo shows lives here: tier percentages, marketplace
+   categories, GAC in-house services, the third-party supplier roster
+   (certs drive the SVS blocked/due/verified states), the quote-comparison
+   rows, the guided-tour copy, and the interactive-harbour landing copy.
+   Edit freely; strings are plain UTF-8. Keep '<' out of string literals
+   (write \u003c if ever needed). Figures must match the v12 canonical
+   fact block in README.md. */
+
+const DC_DATA = {};
+
+DC_DATA.TIERS = { agency: 2, logistics: 4, customs: 7 };
+DC_DATA.CATEGORIES = ['All', 'Cranes', 'Medical', 'Scaffolding', 'Diving', 'NDT', 'Welding', 'Catering', 'Hotels', 'Waste', 'Bunkers'];
+
+DC_DATA.INHOUSE = [
+  { id: 'gac-agency', name: 'GAC Agency', cat: 'Agency', tierLabel: '2% tier', esg: 'A', desc: 'Ship’s agent services, port calls, vessel support, crew coordination — your single point of contact.', tags: ['Agency', 'All'] },
+  { id: 'gac-logistics', name: 'GAC Logistics', cat: 'Logistics', tierLabel: '4% tier', esg: 'A', desc: 'Freight forwarding, warehousing, and project cargo, run alongside your agency work.', tags: ['Logistics', 'All'] },
+  { id: 'gac-customs', name: 'GAC Customs', cat: 'Customs', tierLabel: '7% tier', esg: 'A', desc: 'T1 transit, import and export clearance, and customs documentation, handled end-to-end in-house.', tags: ['Customs', 'All'] },
+  { id: 'gac-assets', name: 'GAC Assets', cat: 'Assets', tierLabel: 'Included with any tier', esg: 'A', desc: 'Fender hire, portable cabins, security fencing, and specialist equipment from GAC’s own pool.', tags: ['Assets', 'All'] },
+  { id: 'gac-procurement', name: 'GAC Procurement', cat: 'Procurement', tierLabel: 'Included with any tier', esg: 'A', desc: 'Consolidated purchasing through GAC’s vetted supplier network, from consumables to project spares.', tags: ['Procurement', 'All'] }
+];
+
+DC_DATA.SUPPLIERS = [
+  { id: 'silver-city-welding', name: 'Silver City Welding', cat: 'Welding', rating: 4.4, ratingCount: 72, esg: 'B', promoted: true, premium: true, goldBand: 'scheduled', goldBandDate: 'Audit booked for September 2026', desc: 'Coded welders, onboard fabrication and repair, 24/7 call-out. Featured in Welding this month.', about: 'Coded welding and fabrication house serving Aberdeen harbour and offshore assets. Premium subscriber; promoted placement is always labelled and never affects credentials.', certs: [ { label: 'Coding certs', state: 'ok', detail: 'valid to Mar 2027' }, { label: 'Insurance', state: 'ok', detail: 'valid to Jan 2027' }, { label: 'GWO', state: 'ok', detail: 'valid to Dec 2026' } ], activity: ['Onboard pipework repair — MV Boreal, Peterhead · completed Jun 2026', 'Fabrication call-out — Regent Quay laydown · completed May 2026'], tags: ['Welding', 'All'] },
+  { id: 'caledonia-lifting', name: 'Caledonia Lifting Ltd', cat: 'Cranes', rating: 4.9, ratingCount: 127, esg: 'A', premium: true, goldBand: 'held', goldBandDate: 'Audit renewed May 2026', desc: 'Mobile cranes to 130t, Aberdeen and Peterhead. Same-day mobilisation.', about: 'Family-run lifting contractor with a modern mobile fleet and in-house appointed persons. The best-reviewed crane operator on the platform.', certs: [ { label: 'LOLER', state: 'ok', detail: 'valid to Feb 2027' }, { label: 'Insurance', state: 'ok', detail: 'valid to Jan 2027' }, { label: 'GWO', state: 'ok', detail: 'valid to Nov 2026' } ], activity: ['Crane hire 130t — MV Caledonian Star, Aberdeen · completed Jun 2026', 'Quayside lift plan — Stronach Subsea spread · completed May 2026'], tags: ['Cranes', 'All'] },
+  { id: 'north-sea-crane', name: 'North Sea Crane Co.', cat: 'Cranes', rating: 4.7, ratingCount: 84, esg: 'B', desc: 'Mobile and crawler cranes, lift planning, appointed person services.', about: 'Crawler and mobile crane specialist covering the north-east ports, with full lift-planning and appointed-person cover.', certs: [ { label: 'LOLER', state: 'ok', detail: 'valid to Apr 2027' }, { label: 'Insurance', state: 'ok', detail: 'valid to Dec 2026' }, { label: 'GWO', state: 'ok', detail: 'valid to Mar 2027' } ], activity: ['Crawler crane, 14-day hire — Wilkinson Drilling laydown · completed Jun 2026', 'Tandem lift plan — MV Granite Coast · completed Apr 2026'], tags: ['Cranes', 'All'] },
+  { id: 'granite-cranes', name: 'Granite Cranes', cat: 'Cranes', rating: 4.5, ratingCount: 46, esg: 'B', desc: 'City-centre and harbour crane hire, contract lift specialists.', about: 'Contract-lift specialist with harbour permits held year-round for Aberdeen and Peterhead quaysides.', certs: [ { label: 'LOLER', state: 'ok', detail: 'valid to May 2027' }, { label: 'Insurance', state: 'ok', detail: 'valid to Feb 2027' } ], activity: ['Contract lift — Quayside module, Aberdeen · completed May 2026'], tags: ['Cranes', 'All'] },
+  { id: 'aberdeen-offshore-medical', name: 'Aberdeen Offshore Medical', cat: 'Medical', rating: 4.8, ratingCount: 93, esg: 'A', desc: 'Offshore medics, topside support, OGUK medicals, emergency cover.', about: 'Offshore medic provider with 24/7 topside support and same-week OGUK medical appointments.', certs: [ { label: 'BOSIET', state: 'ok', detail: 'valid to Jun 2027' }, { label: 'HUET', state: 'ok', detail: 'valid to Jun 2027' }, { label: 'Medical certs', state: 'ok', detail: 'valid to Jan 2027' } ], activity: ['Medic cover, 21 days — MV Caledonian Star · completed Jun 2026', 'Topside support retainer — Browne Energy · ongoing', 'Crew-change medicals — Grizzell Marine · ongoing'], tags: ['Medical', 'All'] },
+  { id: 'caledonia-scaffolding', name: 'Caledonia Scaffolding', cat: 'Scaffolding', rating: 4.5, ratingCount: 31, esg: 'B', desc: 'Quayside and onboard access scaffolding, inspection-tagged systems.', about: 'Access scaffolding for quayside and onboard work, with inspection-tagged systems and rapid strike-down.', certs: [ { label: 'Insurance', state: 'ok', detail: 'valid to Mar 2027' }, { label: 'Inspection records', state: 'ok', detail: 'audited Jun 2026' } ], activity: ['Onboard access scaffold — MV Boreal · completed Jun 2026'], tags: ['Scaffolding', 'All'] },
+  { id: 'granite-ndt', name: 'Granite NDT Ltd', cat: 'NDT', rating: 4.6, ratingCount: 58, esg: 'B', desc: 'UT, MPI, and radiographic testing. Offshore-certified technicians.', about: 'Non-destructive testing house with offshore-certified technicians and same-day reporting.', certs: [ { label: 'Insurance', state: 'ok', detail: 'valid to May 2027' }, { label: 'GWO', state: 'due', detail: 'expires in 21 days · 25 Jul 2026' } ], activity: ['Weld inspection programme — Stronach Subsea · completed May 2026'], tags: ['NDT', 'All'] },
+  { id: 'peterhead-diving', name: 'Peterhead Diving Services', cat: 'Diving', rating: 4.2, ratingCount: 19, esg: 'C', desc: 'Inshore commercial diving, hull inspection, prop clearance.', about: 'Inshore diving contractor for hull inspection and propeller clearance work.', certs: [ { label: 'HUET', state: 'ok', detail: 'valid to Apr 2027' }, { label: 'Insurance', state: 'lapsed', detail: 'lapsed 12 May 2026' } ], activity: ['Hull inspection — MV Granite Coast · completed Mar 2026'], tags: ['Diving', 'All'] },
+  { id: 'quayside-catering', name: 'Quayside Catering Co.', cat: 'Catering', rating: 4.7, ratingCount: 64, esg: 'B', desc: 'Crew provisions and fresh catering, Aberdeen harbour delivery.', about: 'Crew provisions and fresh catering delivered to the quayside, seven days a week.', certs: [ { label: 'Food hygiene', state: 'ok', detail: 'rated 5 · Feb 2026' }, { label: 'Insurance', state: 'ok', detail: 'valid to Jan 2027' } ], activity: ['Provisions, 3 calls — MV Caledonian Star · completed Jun 2026'], tags: ['Catering', 'All'] },
+  { id: 'granite-quay-hotel', name: 'Granite Quay Hotel', cat: 'Hotels', rating: 4.6, ratingCount: 88, esg: 'B', desc: 'Crew accommodation five minutes from Regent Quay. 24-hour check-in, quiet rooms for off-signers and crew held ashore. GAC rate indicative and subject to availability — if fully booked, your agent secures an alternative and confirms it on the platform.', about: 'Crew-focused hotel by the harbour with 24-hour check-in and early breakfasts. GAC rate is indicative and subject to availability: if the hotel is fully booked, your agent steps in to secure an alternative and confirms it on the platform. A meal allowance, if selected, follows a sliding scale.', certs: [ { label: 'Insurance', state: 'ok', detail: 'valid to Mar 2027' }, { label: 'Fire safety', state: 'ok', detail: 'certified Jan 2026' }, { label: 'Food hygiene', state: 'ok', detail: 'rated 5 · Apr 2026' } ], activity: ['Crew rooms, 2 nights — MV Caledonian Star off-signers · completed Jun 2026', 'Medical stand-down stay — Browne Energy crew member · completed May 2026'], tags: ['Hotels', 'All'] },
+  { id: 'caledonia-rooms', name: 'Caledonia Rooms', cat: 'Hotels', rating: 4.3, ratingCount: 41, esg: 'C', desc: 'Budget crew rooms near the harbour, early breakfast from 05:00, secure kit storage for transit crews. GAC rate indicative and subject to availability.', about: 'Budget crew rooms a short walk from the quay, with secure kit storage for transit crews. GAC rate is indicative and subject to availability: if fully booked, your agent secures an alternative and confirms it on the platform.', certs: [ { label: 'Insurance', state: 'ok', detail: 'valid to Feb 2027' }, { label: 'Fire safety', state: 'ok', detail: 'certified Nov 2025' } ], activity: ['Transit crew, 1 night — Grizzell Marine crew change · completed Jun 2026'], tags: ['Hotels', 'All'] }
+];
+
+/* Quote-request mechanics — mirrors the live site (lib/requests.ts, data/related.ts). */
+DC_DATA.REPLY_WINDOWS = [
+  { id: '10m', label: '10 minutes', hours: 1 / 6 },
+  { id: '30m', label: '30 minutes', hours: 0.5 },
+  { id: '2h', label: '2 hours', hours: 2 },
+  { id: '4h', label: '4 hours', hours: 4 },
+  { id: 'today', label: 'End of today', hours: 8 },
+  { id: '24h', label: '24 hours', hours: 24 }
+];
+DC_DATA.HOTEL_CAVEAT = 'GAC rate is indicative and subject to availability. If the hotel is fully booked, your agent steps in to secure an alternative and confirms it on the platform.';
+DC_DATA.RELATED_INTRO = {
+  Medical: 'Medical attention ashore usually means getting there and, sometimes, staying over. The platform suggests it; your agent books it inside the existing relationship.',
+  Hotels: 'A crew stay usually needs a run to and from the quay. The platform suggests it; your agent books it inside the existing relationship.'
+};
+DC_DATA.RELATED = {
+  Medical: [
+    { id: 'crew-transfer', label: 'Crew transfer', body: 'Taxi or minibus, quay to clinic and back, arranged by your GAC agent.' },
+    { id: 'hotel', label: 'Hotel accommodation', body: 'Overnight stay for crew held ashore for treatment, medicals, or certificate renewal.', caveat: true, meals: true }
+  ],
+  Hotels: [
+    { id: 'crew-transfer', label: 'Crew transfer', body: 'Taxi or minibus between the quay and the hotel, arranged by your GAC agent.' }
+  ]
+};
+DC_DATA.CATEGORY_SERVICE = { Cranes: 'Crane hire', Medical: 'Medical cover', Scaffolding: 'Access scaffolding', Diving: 'Diving services', NDT: 'NDT inspection', Welding: 'Welding and fabrication', Catering: 'Crew provisions', Hotels: 'Hotel accommodation', Waste: 'Waste collection', Bunkers: 'Bunker coordination' };
+DC_DATA.MEAL_SCALE = [ { upToNights: 1, perDay: 30 }, { upToNights: 3, perDay: 25 }, { upToNights: Infinity, perDay: 20 } ];
+
+DC_DATA.QUOTES = [
+  { name: 'North Sea Crane Co.', price: '£4,850', avail: 'Fri 06:00', capacity: '120t mobile', rating: '4.7 ★ · 84 ratings', esg: 'B', src: 'Replied via platform · 09:42', outlook: false, best: false },
+  { name: 'Caledonia Lifting Ltd', price: '£4,400', avail: 'Fri 06:00', capacity: '130t mobile', rating: '4.9 ★ · 127 ratings', esg: 'A', src: 'Parsed from Outlook reply · 10:15', outlook: true, best: true },
+  { name: 'Granite Cranes', price: '£5,100', avail: 'Fri 09:00', capacity: '110t mobile', rating: '4.5 ★ · 46 ratings', esg: 'B', src: 'Replied via platform · 11:03', outlook: false, best: false }
+];
+
+DC_DATA.TOUR = [
+  { route: 'dashboard', title: 'The agent’s morning', body: 'Arrivals are flagged from GA history and a procurement list is drafted before you pick up the phone. One button sends every quote request.' },
+  { route: 'marketplace', title: 'The marketplace', body: 'GAC’s own service lines are pinned first. Promoted suppliers are always labelled, and a blocked supplier cannot be booked at any price.' },
+  { route: 'quotes', title: 'Quotes, side by side', body: 'Replies land in one comparison view — including replies parsed straight from Outlook. Accepting one generates the PO in GAC Agent.' },
+  { route: 'tiers', title: 'The tier discount', body: 'Non-cumulative: the highest single tier applies. All three pillars is Full Stack — 7%, and £35,000 a year on £500k of GAC spend.' },
+  { route: 'svs', title: 'The SVS', body: 'Compliance gate at the front, expiry early-warning behind it. Lapsed paperwork blocks booking everywhere — promotion cannot override it.' }
+];
+
+/* Interactive harbour landing — copy verbatim from the "GAC Services Landing" handoff (matches the live site). */
+DC_DATA.HARBOUR = {
+  agency: { tag: 'GAC in-house · 2% tier', title: 'GAC Agency', desc: 'Ship’s agent services: port calls, berthing, vessel support, and crew coordination — your single point of contact on the quay.', bullets: ['Port call coordination and berth booking', 'Crew logistics and transfers', 'Husbandry and owner’s protective agency'], cta: 'See tier savings', route: 'tiers', fact: 'Agency is the 2% tier pillar. Add Logistics and Customs and the client reaches Full Stack — 7%.' },
+  logistics: { tag: 'GAC in-house · 4% tier', title: 'GAC Logistics', desc: 'Freight forwarding, warehousing, and project cargo — run alongside your agency work, not in a separate silo.', bullets: ['Freight forwarding, road and sea', 'Quayside warehousing and laydown', 'Project cargo and heavy-lift moves'], cta: 'See tier savings', route: 'tiers', fact: 'Logistics is the 4% tier pillar — the lorry on this quay is one leg of a door-to-deck chain.' },
+  customs: { tag: 'GAC in-house · 7% tier', title: 'GAC Customs', desc: 'T1 transit, import and export clearance, and customs documentation — handled end-to-end in-house.', bullets: ['T1 transit documents', 'Import / export clearance', 'Documentation with a full audit trail'], cta: 'See tier savings', route: 'tiers', fact: 'Customs is the top tier pillar at 7% — the single biggest consolidation lever a client holds.' },
+  assets: { tag: 'GAC in-house · included at any tier', title: 'GAC Assets', desc: 'Fender hire, portable cabins, security fencing, and specialist equipment from GAC’s own pool — the crane’s whole toolbox.', bullets: ['Lifting and quayside equipment', 'Portable cabins and fencing', 'Fenders and marine hardware'], cta: 'Browse the marketplace', route: 'marketplace', fact: 'Assets and Procurement are included at any tier — added value on top of the discount, not part of the maths.' },
+  procurement: { tag: 'GAC in-house · included at any tier', title: 'GAC Procurement', desc: 'Consolidated purchasing through GAC’s vetted supplier network — from consumables to project spares, one warehouse door.', bullets: ['Consolidated purchasing', 'Vetted supplier network', 'Consumables to project spares'], cta: 'Browse the marketplace', route: 'marketplace', fact: 'Every predicted procurement list on the dashboard is fulfilled through this pillar.' },
+  marketplace: { tag: '40+ vetted categories', title: 'The Offshore Marketplace', desc: 'Cranes, medics, scaffolding, diving, NDT, catering — every third-party supplier passes the Supplier Vetting System before a client ever sees them.', bullets: ['40+ service categories, SVS-vetted', 'Quotes compared side by side', 'Lapsed compliance blocks booking — always'], cta: 'Browse the marketplace', route: 'marketplace', fact: 'The platform out there is where marketplace services get delivered — found, vetted, and booked in one place.' }
+};

@@ -27,3 +27,13 @@ dist
 playwright-report
 test-results
 .claude-scratch
+
+# Presenter: generated outputs (source of truth is presenter/src — run `npm run build:presenter`)
+public/presenter.html
+public/presenter/
+presenter/dist/
+presenter/dev.html
+presenter/__pycache__/
+# Presenter: large local-only reference builds (git history is the record now)
+presenter/reference/presenter*.html
+presenter/reference/*.standalone.html

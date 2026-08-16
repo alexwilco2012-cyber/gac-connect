@@ -4,8 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run build:presenter",
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build:presenter": "node presenter/run-build.mjs",
+    "build": "npm run build:presenter && tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

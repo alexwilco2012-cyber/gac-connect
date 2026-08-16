@@ -1,0 +1,43 @@
+  <sc-if value="{{ isClients }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="For Clients" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">For clients</p>
+      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">From two hours of calls to fifteen minutes of review</h1>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:70ch;">The platform runs the workflow your agent already follows — it just removes the phone tag, the re-keying, and the guesswork.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:22px;">
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#0E5E8A;font-size:15px;margin:0;">01</p>
+          <h3 style="font-size:15.5px;margin:8px 0 0;">Arrival flagged</h3>
+          <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;">GA already knows the vessel, the port call, and what it needed last time. The platform flags the arrival and drafts the list.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#0E5E8A;font-size:15px;margin:0;">02</p>
+          <h3 style="font-size:15.5px;margin:8px 0 0;">List pre-filled</h3>
+          <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;">SVS-verified suppliers are pre-matched to every line. Nothing unvetted ever reaches the request.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#0E5E8A;font-size:15px;margin:0;">03</p>
+          <h3 style="font-size:15.5px;margin:8px 0 0;">Quotes in one click</h3>
+          <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;">One send issues every request. Replies populate the comparison view — including replies parsed from Outlook.</p>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#0E5E8A;font-size:15px;margin:0;">04</p>
+          <h3 style="font-size:15.5px;margin:8px 0 0;">Booking becomes the PO</h3>
+          <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;">Acceptance generates the purchase order in GAC Agent, with the billing split applied from the vessel profile. No re-keying.</p>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:18px;">
+        <div style="background:#0A2540;color:#FFFFFF;border-radius:10px;padding:24px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);">
+          <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#FFC72C;margin:0;">Consolidation pays</p>
+          <p style="font-size:14px;color:#D8E2EC;margin:10px 0 0;">Clients that book GAC Agency, Logistics, and Customs together hold the Full Stack tier: <strong style="color:#FFFFFF;">7% off GAC service charges booked through the platform</strong>. On £500,000 of annual GAC spend, that is £35,000 a year. Non-cumulative — the highest single tier applies.</p>
+          <button style="background:none;border:1.5px solid rgba(255,255,255,.4);color:#FFFFFF;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;margin-top:16px;" style-hover="border-color:#FFFFFF;" sc-camel-on-click="{{ goTiers }}">Open the tier calculator</button>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:24px;">
+          <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">The ESG angle</p>
+          <p style="font-size:14px;color:#33475F;margin:10px 0 0;">Every listing carries an ESG grade and every booking leaves a record — so supplier scoring feeds your decarbonisation reporting instead of another spreadsheet.</p>
+          <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:13.5px;cursor:pointer;padding:0;margin-top:14px;text-align:left;" sc-camel-on-click="{{ goMarketplace }}">See ESG grades in the marketplace →</button>
+        </div>
+      </div>
+    </main>
+  </sc-if>

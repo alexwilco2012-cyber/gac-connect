@@ -1,0 +1,30 @@
+{
+  "brandName": {
+    "editor": "text",
+    "default": "GAC Connect",
+    "tsType": "string",
+    "section": "Brand"
+  },
+  "presenter": {
+    "editor": "boolean",
+    "default": true,
+    "tsType": "boolean",
+    "section": "Behaviour"
+  },
+  "loader": {
+    "editor": "boolean",
+    "default": true,
+    "tsType": "boolean",
+    "section": "Behaviour"
+  },
+  "startScreen": {
+    "editor": "enum",
+    "options": [
+      "home",
+      "dashboard"
+    ],
+    "default": "home",
+    "tsType": "string",
+    "section": "Behaviour"
+  }
+}

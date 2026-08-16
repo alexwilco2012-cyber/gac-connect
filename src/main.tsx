@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { routes } from './routes';
+import { routes, prefetchRoutes } from './routes';
 import { session } from './lib/storage';
 import './styles/tokens.css';
 
@@ -30,3 +30,15 @@ createRoot(document.getElementById('root')!).render(
     <RouterProvider router={router} />
   </StrictMode>,
 );
+
+/**
+ * Warm the other screens once the first paint is done and the browser is idle
+ * (during the entrance animation on a first visit), so the first click on each
+ * nav item is instant instead of waiting on a chunk fetch. Falls back to a
+ * short timer where requestIdleCallback is missing (Safari, jsdom).
+ */
+const idle: (cb: () => void) => void =
+  typeof window.requestIdleCallback === 'function'
+    ? (cb) => window.requestIdleCallback(cb, { timeout: 4000 })
+    : (cb) => window.setTimeout(cb, 1500);
+idle(() => void prefetchRoutes());

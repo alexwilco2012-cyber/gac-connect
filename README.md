@@ -22,19 +22,37 @@ agents rate suppliers on job close-out — every rating shown carries the number
 
 ```bash
 npm install
-npm run dev        # local dev server
-npm test           # vitest — tier/SVS/marketplace/commission/invoice/request unit tests
-npm run e2e        # playwright — ten smoke journeys (installs Chromium once)
-npm run lint       # eslint + prettier
-npm run build      # production build (Pages base path aware)
+npm run dev              # local dev server (builds the presenter into public/ first)
+npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request unit tests
+npm run e2e              # playwright — ten smoke journeys (installs Chromium once)
+npm run lint             # eslint + prettier
+npm run build            # production build (Pages base path aware) — presenter + tsc + vite
+npm run build:presenter  # presenter only (Python 3 required) → public/presenter.html + public/presenter/
 ```
 
-## Deploy
+## Two surfaces
 
-Pushes to `main` run CI (lint, unit tests, build, Playwright smokes, brand-string guard) and
-deploy `dist/` to GitHub Pages via `.github/workflows/deploy.yml`. Repo setting: **Pages →
-Source → GitHub Actions**. Deep links survive refresh through the `404.html` SPA shim. To ship
-under a custom domain, add a `CNAME` file to `public/` and change `base` in `vite.config.ts`.
+- **The platform** — `src/`, Vite + React. Every screen is its own chunk; the first visit loads
+  the landing page only and the rest is prefetched while the browser is idle.
+- **The presenter** (`/presenter.html`, the pitch opener with the embedded platform demo) —
+  `presenter/`, a modular source tree (`src/partials/` one file per screen, `src/app/` for data
+  and behaviour, `src/styles/`) assembled by `presenter/build.py` into a small HTML page plus
+  separate, cacheable files under `/presenter/` (runtime, React, fonts). Its outputs are
+  generated at build time and gitignored. See `presenter/README.md`.
+
+## Deploy, versions and previews
+
+Every push to any branch runs CI (lint, unit tests, build, Playwright smokes, brand-string
+guard) and the deploy workflow, which publishes **`main` as the live site** and **every other
+branch as a preview** at `/preview/<branch>/` (slashes → dashes) — one Pages deployment, many
+versions. Delete a branch and its preview is gone on the next publish; merge it and it is live.
+Every merge to `main` is a saved version that can be restored. The owner's guide is
+[`docs/WORKFLOW.md`](docs/WORKFLOW.md); the rules for editors are in `CLAUDE.md`.
+
+Repo setting: **Pages → Source → GitHub Actions**. Deep links survive refresh through the
+`404.html` SPA shim (preview-aware). To ship under a custom domain, add a `CNAME` file to
+`public/`, change `base` in `vite.config.ts`, and update the preview base in
+`.github/workflows/deploy.yml` and `public/404.html`.
 
 To rebrand the entire site, change `BRAND_NAME` in `src/config/brand.ts` — it is the only
 place the brand string is written (CI enforces this with a grep).

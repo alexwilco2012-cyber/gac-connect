@@ -14,12 +14,25 @@ This repo builds **GAC Connect**, a standalone offshore-services marketplace fro
 ## Commands
 
 ```bash
-npm run dev        # local
-npm test           # vitest
-npm run e2e        # playwright smokes
-npm run lint       # eslint + prettier check
-npm run build      # production build (Pages base path aware)
+npm run dev              # local (builds the presenter into public/ first via predev)
+npm test                 # vitest
+npm run e2e              # playwright smokes
+npm run lint             # eslint + prettier check
+npm run build            # presenter + tsc + vite production build (Pages base path aware)
+npm run build:presenter  # presenter only → public/presenter.html + public/presenter/ (needs Python 3)
 ```
+
+## Two surfaces, one repo
+
+- **Platform** — `src/` (Vite + React). Screens are lazy chunks; `prefetchRoutes()` warms them on idle.
+- **Presenter** — `presenter/` (modular source: `src/partials/` one per screen, `src/app/{data,component}.js`, `src/styles/`; `build.py` assembles it). Its site output (`public/presenter.html` + `public/presenter/`) is **generated and gitignored** — never edit or commit it; edit `presenter/src/` and rebuild. The single-file bundle `presenter/dist/presenter.html` is the offline/download copy only. Read `presenter/README.md` before touching it. The published URL `…/gac-connect/presenter.html` must never move (printed QR).
+
+## Branch workflow (owner-facing rules — see `docs/WORKFLOW.md`)
+
+- `main` **is the live site**. Every push to any branch triggers CI and a Pages deploy that publishes `main` at the root and **every other branch as a preview** at `/preview/<branch-with-slashes-as-dashes>/`.
+- **Default: work on a branch.** Name it `change/<slug>`; push; hand the owner the preview URL (`https://alexwilco2012-cyber.github.io/gac-connect/preview/change-<slug>/`, presenter at `…/presenter.html` under it) and one line on what to look at. Merge to `main` only when the owner says so ("make it live"); delete the branch when they say "bin it". Go straight to `main` only when the owner explicitly asks ("straight to live") or for a hotfix they've asked for.
+- Merges into `main` are fast-forward or plain merges with a conventional-commit message; never force-push `main`; never rewrite history. Rollbacks are `git revert` (new commit), so every live version stays recoverable.
+- The deploy builds previews with `vite build --base=/gac-connect/preview/<slug>/`; anything that assumes the base path is `/gac-connect/` must use `import.meta.env.BASE_URL` (router does) or relative URLs (presenter does).
 
 ## Workflow
 

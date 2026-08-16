@@ -1,0 +1,6 @@
+  <div role="status" aria-live="polite" style="position:fixed;bottom:26px;left:50%;transform:{{ toastTransform }};opacity:{{ toastOpacity }};transition:all .35s ease;background:#0A2540;color:#FFFFFF;border-radius:10px;padding:14px 20px;font-size:14px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);z-index:100;max-width:560px;text-align:center;pointer-events:none;">
+    <sc-if value="{{ toastHasTag }}" hint-placeholder-val="{{ false }}">
+      <span style="background:#C9A227;color:#0A2540;border-radius:5px;padding:1px 7px;font-weight:800;font-size:11.5px;margin-right:8px;">{{ toastTag }}</span>
+    </sc-if>
+    <span>{{ toastMsg }}</span>
+  </div>

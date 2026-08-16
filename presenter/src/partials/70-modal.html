@@ -1,0 +1,15 @@
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="Per-transaction agreement" style="position:fixed;inset:0;background:rgba(10,37,64,.45);display:grid;place-items:center;z-index:90;" sc-camel-on-click="{{ closeModalOverlay }}">
+      <div style="background:#FFFFFF;border-radius:14px;max-width:460px;width:92vw;padding:26px;">
+        <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Per-transaction agreement</p>
+        <h2 style="margin:4px 0 0;font-size:19px;">Accept quote — {{ modalSupplier }}</h2>
+        <p style="color:#33475F;font-size:13.5px;margin:10px 0 0;">Scope: 1 × mobile crane, MV Caledonian Star, Aberdeen, Fri 06:00–18:00. Price: <strong>{{ modalPrice }}</strong>. Terms incorporated by reference from the platform Terms of Use. Both parties sign electronically; the agreement is stored with a full audit trail.</p>
+        <div style="border-bottom:2px solid #0A2540;margin:22px 0 6px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;padding:0 4px 2px;">Alex Wilkinson</div>
+        <p style="color:#33475F;font-size:12.5px;margin:0;">Signed on behalf of client · supplier countersignature requested automatically</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+          <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ closeModal }}">Cancel</button>
+          <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ confirmBooking }}">Sign &amp; book</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>

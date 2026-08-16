@@ -5,30 +5,47 @@
     <title>GAC Connect</title>
     <script>
       // GitHub Pages serves this for unknown paths. Re-encode the path into a
-      // query string and bounce to index.html, which restores it (see index.html).
-      // pathSegmentsToKeep = 1 because the site lives under /<repo-name>/.
-      var pathSegmentsToKeep = 1;
+      // query string and bounce to the app's index.html, which restores it
+      // (see index.html). Segments to keep before the route:
+      //   1 for the live site         /gac-connect/<route>
+      //   3 for a branch preview      /gac-connect/preview/<branch>/<route>
+      // (see docs/WORKFLOW.md for how previews are published).
       var l = window.location;
-      l.replace(
-        l.protocol +
-          '//' +
-          l.hostname +
-          (l.port ? ':' + l.port : '') +
-          l.pathname
-            .split('/')
-            .slice(0, 1 + pathSegmentsToKeep)
-            .join('/') +
-          '/?/' +
-          l.pathname
-            .slice(1)
-            .split('/')
-            .slice(pathSegmentsToKeep)
-            .join('/')
-            .replace(/&/g, '~and~') +
-          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-          l.hash,
-      );
+      var pathSegmentsToKeep = /^\/gac-connect\/preview\/[^/]+\//.test(l.pathname) ? 3 : 1;
+      var route = l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/');
+      if (route) {
+        l.replace(
+          l.protocol +
+            '//' +
+            l.hostname +
+            (l.port ? ':' + l.port : '') +
+            l.pathname
+              .split('/')
+              .slice(0, 1 + pathSegmentsToKeep)
+              .join('/') +
+            '/?/' +
+            route.replace(/&/g, '~and~') +
+            (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+            l.hash,
+        );
+      } else {
+        // Nothing to restore (e.g. a preview whose branch has been deleted):
+        // say so instead of redirecting in a loop.
+        document.addEventListener('DOMContentLoaded', function () {
+          document.getElementById('gone').hidden = false;
+        });
+      }
     </script>
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0a2540; color: #fff; font: 15px/1.5 Inter, system-ui, sans-serif; }
+      main { text-align: center; padding: 24px; }
+      a { color: #ffc72c; }
+    </style>
   </head>
-  <body></body>
+  <body>
+    <main id="gone" hidden>
+      <p>This page is not published (if it was a preview, its branch has probably been removed).</p>
+      <p><a href="/gac-connect/">Go to the live site</a></p>
+    </main>
+  </body>
 </html>

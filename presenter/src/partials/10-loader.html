@@ -1,0 +1,50 @@
+  <sc-if value="{{ loaderShown }}" hint-placeholder-val="{{ false }}">
+    <div sc-camel-on-click="{{ hideLoader }}" title="Click to skip" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,#0F2D4F 0%,#06132B 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;cursor:pointer;transition:opacity .8s cubic-bezier(.7,0,.3,1);opacity:{{ loaderOpacity }};" data-screen-label="Loader">
+      <span style="position:absolute;top:18px;right:22px;z-index:4;color:rgba(255,255,255,.4);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;">Click to skip</span>
+      <div style="position:absolute;inset:0;pointer-events:none;display:grid;place-items:center;z-index:0;opacity:0;animation:lwmIn 1.4s .1s ease-out forwards;">
+        <svg sc-camel-view-box="0 0 800 320" style="width:140vmin;height:auto;color:rgba(255,199,44,.045);" aria-hidden="true"><text x="400" y="230" text-anchor="middle" fill="currentColor" letter-spacing="0.04em" style="font-family:'Space Grotesk',sans-serif;font-size:260px;font-weight:700;">{{ brandMainUpper }}</text></svg>
+      </div>
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,199,44,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,199,44,.06) 1px,transparent 1px);background-size:60px 60px;-webkit-mask-image:radial-gradient(ellipse 60% 60% at 50% 45%,#000 0%,transparent 80%);mask-image:radial-gradient(ellipse 60% 60% at 50% 45%,#000 0%,transparent 80%);opacity:0;animation:lgIn 1.2s .2s cubic-bezier(.4,0,.2,1) forwards;"></div>
+      <div style="position:absolute;top:45%;left:50%;width:700px;height:700px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,199,44,.15) 0%,transparent 60%);border-radius:50%;opacity:0;animation:lgIn 1.5s .5s ease-out forwards;"></div>
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+        {{ loaderMark }}
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:1.3rem;letter-spacing:.58em;text-indent:.58em;color:#FFC72C;margin-top:.5rem;opacity:0;animation:subIn .8s 2.4s cubic-bezier(.4,0,.2,1) forwards;">{{ brandSubUpper }}</div>
+        <div style="font-weight:400;font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:1.4rem;opacity:0;animation:tagIn .6s 2.8s ease forwards;">Offshore Services · Connected</div>
+      </div>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:130px;pointer-events:none;">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(11,30,61,.5) 60%,#0A2540 100%);"></div>
+        <svg style="position:absolute;inset:0;opacity:.55;width:100%;height:100%;" sc-camel-view-box="0 0 1200 130" sc-camel-preserve-aspect-ratio="none" aria-hidden="true">
+          <path d="M0 70 Q60 60 120 70 T240 70 T360 70 T480 70 T600 70 T720 70 T840 70 T960 70 T1080 70 T1200 70 V130 H0 Z" fill="#0A2540"></path>
+          <path d="M0 90 Q60 82 120 90 T240 90 T360 90 T480 90 T600 90 T720 90 T840 90 T960 90 T1080 90 T1200 90" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.2"></path>
+          <path d="M0 110 Q60 104 120 110 T240 110 T360 110 T480 110 T600 110 T720 110 T840 110 T960 110 T1080 110 T1200 110" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"></path>
+        </svg>
+        <div style="position:absolute;bottom:56px;width:180px;transform:translateX(-220px);animation:vesselCross 4s .8s cubic-bezier(.4,.05,.6,.95) forwards;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35));">
+          <svg sc-camel-view-box="0 0 200 90" aria-hidden="true">
+            <g style="animation:bob 2.6s ease-in-out infinite;transform-origin:center;">
+              <path d="M6 56 L22 72 L160 72 L182 56 L182 48 L6 48 Z" fill="#FFFFFF"></path>
+              <rect x="6" y="52" width="176" height="4" fill="#FFC72C"></rect>
+              <rect x="38" y="34" width="22" height="14" fill="#3B82F6"></rect>
+              <rect x="64" y="34" width="22" height="14" fill="#FFC72C"></rect>
+              <rect x="90" y="34" width="22" height="14" fill="#FFFFFF" stroke="#0A2540" stroke-width=".8"></rect>
+              <path d="M120 48 L120 18 L160 18 L172 28 L172 48 Z" fill="#FFFFFF"></path>
+              <rect x="124" y="22" width="44" height="5" fill="#0A2540"></rect>
+              <rect x="126" y="23" width="6" height="3" fill="#FFC72C"></rect>
+              <rect x="136" y="23" width="6" height="3" fill="#FFC72C"></rect>
+              <rect x="146" y="23" width="6" height="3" fill="#FFC72C"></rect>
+              <rect x="156" y="23" width="6" height="3" fill="#FFC72C"></rect>
+              <line x1="146" y1="18" x2="146" y2="2" stroke="#FFFFFF" stroke-width="1.2"></line>
+              <circle cx="146" cy="2" r="2" fill="#FFC72C"></circle>
+              <rect x="108" y="22" width="4" height="26" fill="#FFC72C"></rect>
+              <line x1="110" y1="22" x2="78" y2="2" stroke="#FFC72C" stroke-width="2.6"></line>
+              <circle cx="30" cy="60" r="1.5" fill="#0A2540"></circle>
+              <circle cx="44" cy="60" r="1.5" fill="#0A2540"></circle>
+              <circle cx="58" cy="60" r="1.5" fill="#0A2540"></circle>
+              <circle cx="72" cy="60" r="1.5" fill="#0A2540"></circle>
+            </g>
+            <path d="M178 60 Q186 58 194 60 Q190 64 178 64 Z" fill="rgba(255,255,255,.5)"></path>
+          </svg>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);width:220px;height:2px;background:rgba(255,199,44,.15);border-radius:2px;overflow:hidden;z-index:3;" style-after="content:'';position:absolute;top:0;left:0;height:100%;width:0;background:linear-gradient(90deg,transparent,#FFC72C,transparent);animation:barFill 4s cubic-bezier(.4,0,.2,1) forwards;"></div>
+    </div>
+  </sc-if>

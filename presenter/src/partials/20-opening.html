@@ -1,0 +1,406 @@
+  <sc-if value="{{ presOn }}" hint-placeholder-val="{{ false }}">
+    <div class="adv" role="region" aria-label="Advantage opening" sc-camel-on-click="{{ advStageClick }}" style="opacity:1;opacity:{{ advOp }};pointer-events:auto;pointer-events:{{ advPe }};" data-screen-label="Advantage opening">
+      <div class="glow g1"></div>
+      <div class="glow g2"></div>
+
+      <svg class="waves" sc-camel-view-box="0 0 1200 120" sc-camel-preserve-aspect-ratio="none" aria-hidden="true">
+        <path d="M0,64 C150,24 300,104 460,64 C620,24 760,100 920,62 C1040,34 1130,88 1200,60 L1200,120 L0,120 Z" fill="rgba(14,94,138,.18)"/>
+        <path d="M0,84 C180,54 340,110 520,80 C700,50 860,108 1030,78 C1100,66 1160,84 1200,76 L1200,120 L0,120 Z" fill="rgba(255,199,44,.05)"/>
+      </svg>
+
+      <header class="hdr">
+        <div class="wordmark"><b>GAC</b> <span>CONNECT</span><small>OFFSHORE SERVICES · CONNECTED</small></div>
+        <div class="counter">{{ advCounter }}</div>
+      </header>
+
+      <!-- ══════════════ SLIDE 1 · CHESS ══════════════ -->
+      <section class="{{ advCls1 }}" role="group" aria-label="Slide 1 of 4 — chess" aria-hidden="{{ advHid1 }}" data-screen-label="Slide 1 — Chess">
+        <div class="kicker">Imagine<span class="sep">·</span>01</div>
+        <h1>
+          <span class="l1">Imagine playing a game of chess,</span>
+          <span class="l2">and you can see your opponent’s next three moves.</span>
+        </h1>
+        <div class="illu">
+          <svg class="chess" sc-camel-view-box="0 0 900 430" aria-hidden="true">
+            <defs>
+              <g id="pcPawn">
+                <path d="M -15 0 L 15 0 L 13 -6 L -13 -6 Z"/>
+                <path d="M -8 -6 C -6 -16 -5 -24 -4 -30 L 4 -30 C 5 -24 6 -16 8 -6 Z"/>
+                <circle cx="0" cy="-37" r="7"/>
+              </g>
+              <g id="pcRook">
+                <path d="M -15 0 L 15 0 L 13 -6 L -13 -6 Z"/>
+                <path d="M -9 -6 L -7 -30 L -11 -30 L -11 -44 L -6 -44 L -6 -38 L -2.5 -38 L -2.5 -44 L 2.5 -44 L 2.5 -38 L 6 -38 L 6 -44 L 11 -44 L 11 -30 L 7 -30 L 9 -6 Z"/>
+              </g>
+              <g id="pcKnight">
+                <path d="M -15 0 L 15 0 L 13 -6 L -13 -6 Z"/>
+                <path d="M -9 -6 C -8.6 -11 -8.2 -16 -8 -21 Q -14 -23 -20 -28 L -22 -29 L -21.5 -30.5 L -23 -31 L -23 -33.5 Q -22.5 -35 -21 -35.2 C -17 -37.5 -13 -40 -10 -42.5 L -8.5 -51 L -4.5 -44.5 L -2.5 -46 L -0.5 -50 L 2.5 -43 C 5 -40.5 7 -36 7.5 -31 C 8.5 -23 9 -15 9 -6 Z"/>
+              </g>
+              <g id="pcBishop">
+                <path d="M -15 0 L 15 0 L 13 -6 L -13 -6 Z"/>
+                <path d="M -7 -24 L 7 -24 L 9 -6 L -9 -6 Z"/>
+                <path d="M 0 -46 C 7 -40 9 -32 6 -24 L -6 -24 C -9 -32 -7 -40 0 -46 Z"/>
+                <circle cx="0" cy="-49" r="3"/>
+              </g>
+              <g id="pcQueen">
+                <path d="M -15 0 L 15 0 L 13 -6 L -13 -6 Z"/>
+                <path d="M -8 -6 L -6 -20 L 6 -20 L 8 -6 Z"/>
+                <path d="M -11 -20 L -8 -40 L -4 -26 L 0 -44 L 4 -26 L 8 -40 L 11 -20 Z"/>
+                <circle cx="-8" cy="-42" r="2.5"/><circle cx="0" cy="-46" r="2.5"/><circle cx="8" cy="-42" r="2.5"/>
+              </g>
+              <g id="pcKing">
+                <path d="M -15 0 L 15 0 L 13 -6 L -13 -6 Z"/>
+                <path d="M -8 -6 L -6 -22 L -7 -34 L 7 -34 L 6 -22 L 8 -6 Z"/>
+                <rect x="-2" y="-48" width="4" height="14" rx="1"/>
+                <rect x="-7" y="-43" width="14" height="4" rx="1"/>
+              </g>
+              <pattern id="chk" x="140" y="62" width="80" height="80" sc-camel-pattern-units="userSpaceOnUse">
+                <rect width="40" height="40" class="sq-a"/><rect x="40" y="40" width="40" height="40" class="sq-a"/>
+              </pattern>
+            </defs>
+
+            <!-- board -->
+            <rect x="140" y="62" width="320" height="320" rx="6" class="sq-b"/>
+            <rect x="140" y="62" width="320" height="320" rx="6" fill="url(#chk)"/>
+            <rect x="140" y="62" width="320" height="320" rx="6" fill="none" stroke="rgba(143,166,188,.35)" stroke-width="1.2"/>
+            <text x="177" y="379" text-anchor="end" class="coord">a</text><text x="217" y="379" text-anchor="end" class="coord">b</text><text x="257" y="379" text-anchor="end" class="coord">c</text><text x="297" y="379" text-anchor="end" class="coord">d</text><text x="337" y="379" text-anchor="end" class="coord">e</text><text x="377" y="379" text-anchor="end" class="coord">f</text><text x="417" y="379" text-anchor="end" class="coord">g</text><text x="457" y="379" text-anchor="end" class="coord">h</text><text x="143" y="72.5" class="coord">8</text><text x="143" y="112.5" class="coord">7</text><text x="143" y="152.5" class="coord">6</text><text x="143" y="192.5" class="coord">5</text><text x="143" y="232.5" class="coord">4</text><text x="143" y="272.5" class="coord">3</text><text x="143" y="312.5" class="coord">2</text><text x="143" y="352.5" class="coord">1</text>
+            <text x="140" y="48" class="svglabel" fill="#8FA6BC">THEM</text>
+            <text x="140" y="404" class="svglabel" fill="#FFC72C">YOU</text>
+
+            <!-- pieces -->
+            <g class="them"><use href="#pcRook" class="pc-them" transform="translate(160,96) scale(0.6)"/><use href="#pcKnight" class="pc-them" transform="translate(200,96) scale(0.6)"/><use href="#pcBishop" class="pc-them" transform="translate(240,96) scale(0.6)"/><use href="#pcQueen" class="pc-them" transform="translate(280,96) scale(0.6)"/><use href="#pcKing" class="pc-them" transform="translate(320,96) scale(0.6)"/><use href="#pcBishop" class="pc-them" transform="translate(360,96) scale(0.6)"/><use href="#pcKnight" class="pc-them" transform="translate(400,96) scale(0.6)"/><use href="#pcRook" class="pc-them" transform="translate(440,96) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(160,136) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(200,136) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(240,136) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(280,136) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(360,136) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(400,136) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(440,136) scale(0.6)"/><use href="#pcPawn" class="pc-them" transform="translate(320,216) scale(0.6)"/></g>
+            <g class="you"><use href="#pcRook" class="pc-you" transform="translate(160,376) scale(0.6)"/><use href="#pcKnight" class="pc-you" transform="translate(200,376) scale(0.6)"/><use href="#pcBishop" class="pc-you" transform="translate(240,376) scale(0.6)"/><use href="#pcQueen" class="pc-you" transform="translate(280,376) scale(0.6)"/><use href="#pcKing" class="pc-you" transform="translate(320,376) scale(0.6)"/><use href="#pcBishop" class="pc-you" transform="translate(360,376) scale(0.6)"/><use href="#pcRook" class="pc-you" transform="translate(440,376) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(160,336) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(200,336) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(240,336) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(280,336) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(360,336) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(400,336) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(440,336) scale(0.6)"/><use href="#pcPawn" class="pc-you" transform="translate(320,256) scale(0.6)"/><use href="#pcKnight" class="pc-you" transform="translate(360,296) scale(0.6)"/></g>
+
+            <!-- predicted moves -->
+            <g class="m1">
+              <path class="mv-line" sc-camel-path-length="100" d="M180,98 L180,162 L212,162"/>
+              <path class="mv-head tb" d="M212,156 L220,162 L212,168 Z"/>
+              <g class="mv-ghost"><use href="#pcKnight" transform="translate(240,176) scale(0.6)"/></g>
+              <g class="mv-badge tb"><circle cx="258" cy="144" r="8.5" fill="#FFC72C"/><text x="258" y="147.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0A2540" style="font-family:Inter,ui-sans-serif,sans-serif">1</text></g>
+              <g class="prow">
+                <rect x="510" y="120" width="250" height="46" rx="10" fill="rgba(234,242,248,.05)" stroke="rgba(255,199,44,.32)" stroke-width="1.2"/>
+                <circle cx="534" cy="143" r="9" fill="#FFC72C"/>
+                <text x="534" y="146.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0A2540" style="font-family:Inter,ui-sans-serif,sans-serif">1</text>
+                <use href="#pcKnight" transform="translate(568,159) scale(.5)" fill="#EAF2F8"/>
+                <text x="592" y="139" class="svgtiny" fill="#EAF2F8" style="font-size:9.5px;letter-spacing:.22em">KNIGHT</text>
+                <text x="592" y="155" class="svgtiny" fill="#FFC72C">b8</text>
+                <path d="M611,152 L623,152 M619,148.5 L623,152 L619,155.5" fill="none" stroke="#FFC72C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <text x="629" y="155" class="svgtiny" fill="#FFC72C">c6</text>
+              </g>
+            </g>
+            <g class="m2">
+              <path class="mv-line" sc-camel-path-length="100" d="M400,98 L400,162 L388,162"/>
+              <path class="mv-head tb" d="M388,156 L380,162 L388,168 Z"/>
+              <g class="mv-ghost"><use href="#pcKnight" transform="translate(360,176) scale(0.6)"/></g>
+              <g class="mv-badge tb"><circle cx="378" cy="144" r="8.5" fill="#FFC72C"/><text x="378" y="147.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0A2540" style="font-family:Inter,ui-sans-serif,sans-serif">2</text></g>
+              <g class="prow">
+                <rect x="510" y="180" width="250" height="46" rx="10" fill="rgba(234,242,248,.05)" stroke="rgba(255,199,44,.32)" stroke-width="1.2"/>
+                <circle cx="534" cy="203" r="9" fill="#FFC72C"/>
+                <text x="534" y="206.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0A2540" style="font-family:Inter,ui-sans-serif,sans-serif">2</text>
+                <use href="#pcKnight" transform="translate(568,219) scale(.5)" fill="#EAF2F8"/>
+                <text x="592" y="199" class="svgtiny" fill="#EAF2F8" style="font-size:9.5px;letter-spacing:.22em">KNIGHT</text>
+                <text x="592" y="215" class="svgtiny" fill="#FFC72C">g8</text>
+                <path d="M611,212 L623,212 M619,208.5 L623,212 L619,215.5" fill="none" stroke="#FFC72C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <text x="629" y="215" class="svgtiny" fill="#FFC72C">f6</text>
+              </g>
+            </g>
+            <g class="m3">
+              <path class="mv-line" sc-camel-path-length="100" d="M350,92 L269,173"/>
+              <path class="mv-head tb" d="M261,181 L270.9,178.1 L263.8,171.1 Z"/>
+              <g class="mv-ghost"><use href="#pcBishop" transform="translate(240,216) scale(0.6)"/></g>
+              <g class="mv-badge tb"><circle cx="258" cy="184" r="8.5" fill="#FFC72C"/><text x="258" y="187.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0A2540" style="font-family:Inter,ui-sans-serif,sans-serif">3</text></g>
+              <g class="prow">
+                <rect x="510" y="240" width="250" height="46" rx="10" fill="rgba(234,242,248,.05)" stroke="rgba(255,199,44,.32)" stroke-width="1.2"/>
+                <circle cx="534" cy="263" r="9" fill="#FFC72C"/>
+                <text x="534" y="266.4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0A2540" style="font-family:Inter,ui-sans-serif,sans-serif">3</text>
+                <use href="#pcBishop" transform="translate(568,279) scale(.5)" fill="#EAF2F8"/>
+                <text x="592" y="259" class="svgtiny" fill="#EAF2F8" style="font-size:9.5px;letter-spacing:.22em">BISHOP</text>
+                <text x="592" y="275" class="svgtiny" fill="#FFC72C">f8</text>
+                <path d="M611,272 L623,272 M619,268.5 L623,272 L619,275.5" fill="none" stroke="#FFC72C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <text x="629" y="275" class="svgtiny" fill="#FFC72C">c5</text>
+              </g>
+            </g>
+
+            <!-- panel header -->
+            <g transform="translate(510,56) scale(.8)" fill="none" stroke="#FFC72C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></g>
+            <text x="538" y="70" class="svglabel" fill="#FFC72C">YOUR VIEW</text>
+            <text x="510" y="92" class="svgtiny" fill="#8FA6BC">PREDICTED · THREE MOVES AHEAD</text>
+
+            <!-- their view -->
+            <g class="pfoot">
+              <rect x="510" y="318" width="250" height="44" rx="10" fill="none" stroke="rgba(143,166,188,.35)" stroke-width="1.2" stroke-dasharray="4 3"/>
+              <g transform="translate(524,331) scale(.75)" fill="none" stroke="#8FA6BC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><path d="M3 3 L21 21"/></g>
+              <text x="552" y="337" class="svgtiny" fill="#8FA6BC" style="font-size:9.5px;letter-spacing:.22em">THEIR VIEW</text>
+              <text x="552" y="352" class="svgtiny" fill="rgba(143,166,188,.75)">STILL DECIDING</text>
+            </g>
+          </svg>
+        </div>
+        <div class="chip">
+          <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FFC72C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          They’re still thinking. You’ve already answered.
+        </div>
+      </section>
+
+      <!-- ══════════════ SLIDE 2 · F1 ══════════════ -->
+      <section class="{{ advCls2 }}" role="group" aria-label="Slide 2 of 4 — Formula 1" aria-hidden="{{ advHid2 }}" data-screen-label="Slide 2 — F1">
+        <div class="kicker">Imagine<span class="sep">·</span>02</div>
+        <h1>
+          <span class="l1">Imagine starting an F1 race,</span>
+          <span class="l2">and you get a 30-second head start.</span>
+        </h1>
+        <div class="illu">
+          <svg class="f1" sc-camel-view-box="0 0 900 430" aria-hidden="true">
+            <defs>
+              <g id="f1car">
+                <rect x="-38" y="-17" width="13" height="8" rx="2.5"/>
+                <rect x="-38" y="9" width="13" height="8" rx="2.5"/>
+                <rect x="16" y="-16" width="11" height="7" rx="2.5"/>
+                <rect x="16" y="9" width="11" height="7" rx="2.5"/>
+                <rect x="-48" y="-13" width="5" height="26" rx="1"/>
+                <path d="M -44 -5 L -20 -7 L -2 -7 C 6 -6 14 -4 24 -3 L 40 -1.5 L 40 1.5 L 24 3 C 14 4 6 6 -2 7 L -20 7 L -44 5 Z"/>
+                <rect x="34" y="-12" width="4.5" height="24" rx="1"/>
+                <circle cx="-10" cy="0" r="4.5"/>
+              </g>
+            </defs>
+
+            <!-- track -->
+            <rect x="40" y="205" width="820" height="160" fill="rgba(234,242,248,.035)"/>
+            <line x1="40" y1="205" x2="860" y2="205" stroke="rgba(14,94,138,.55)" stroke-width="2"/>
+            <line x1="40" y1="365" x2="860" y2="365" stroke="rgba(14,94,138,.55)" stroke-width="2"/>
+            <line class="lane" x1="60" y1="285" x2="850" y2="285"/>
+
+            <!-- start line checkers -->
+            <g fill="rgba(234,242,248,.30)">
+              <rect x="206" y="205" width="9" height="10"/><rect x="215" y="215" width="9" height="10"/><rect x="206" y="225" width="9" height="10"/><rect x="215" y="235" width="9" height="10"/><rect x="206" y="245" width="9" height="10"/><rect x="215" y="255" width="9" height="10"/><rect x="206" y="265" width="9" height="10"/><rect x="215" y="275" width="9" height="10"/><rect x="206" y="285" width="9" height="10"/><rect x="215" y="295" width="9" height="10"/><rect x="206" y="305" width="9" height="10"/><rect x="215" y="315" width="9" height="10"/><rect x="206" y="325" width="9" height="10"/><rect x="215" y="335" width="9" height="10"/><rect x="206" y="345" width="9" height="10"/><rect x="215" y="355" width="9" height="10"/>
+            </g>
+
+            <!-- grid slots + rivals held -->
+            <text x="128" y="190" text-anchor="middle" class="svglabel" fill="#8FA6BC">THE FIELD</text>
+            <g stroke="rgba(143,166,188,.5)" stroke-width="2" fill="none">
+              <path d="M 172 227 L 144 227 L 144 263 L 172 263"/>
+              <path d="M 152 267 L 124 267 L 124 303 L 152 303"/>
+              <path d="M 172 307 L 144 307 L 144 343 L 172 343"/>
+            </g>
+            <g fill="#33475E">
+              <use href="#f1car" transform="translate(118,245) scale(.9)"/>
+              <use href="#f1car" transform="translate(98,285) scale(.9)"/>
+              <use href="#f1car" transform="translate(118,325) scale(.9)"/>
+            </g>
+
+            <!-- start light gantry -->
+            <line x1="320" y1="112" x2="320" y2="205" stroke="rgba(143,166,188,.5)" stroke-width="3"/>
+            <rect x="252" y="66" width="136" height="46" rx="10" fill="#0A1B33" stroke="rgba(143,166,188,.45)" stroke-width="1.5"/>
+            <circle class="lt lt1" cx="272" cy="89" r="9"/>
+            <circle class="lt lt2" cx="296" cy="89" r="9"/>
+            <circle class="lt lt3" cx="320" cy="89" r="9"/>
+            <circle class="lt lt4" cx="344" cy="89" r="9"/>
+            <circle class="lt lt5" cx="368" cy="89" r="9"/>
+
+            <!-- your car: launches early -->
+            <g transform="translate(258,285)">
+              <g class="car-go">
+                <g class="streaks" stroke-linecap="round">
+                  <line x1="-150" y1="-9" x2="-58" y2="-9" stroke="rgba(255,199,44,.55)" stroke-width="2.5"/>
+                  <line x1="-126" y1="0" x2="-52" y2="0" stroke="rgba(255,199,44,.8)" stroke-width="3"/>
+                  <line x1="-150" y1="9" x2="-58" y2="9" stroke="rgba(255,199,44,.55)" stroke-width="2.5"/>
+                </g>
+                <use href="#f1car" fill="#FFC72C"/>
+                <text x="0" y="-32" text-anchor="middle" class="svglabel" fill="#FFC72C">YOU</text>
+              </g>
+            </g>
+
+            <!-- +30s chip -->
+            <g class="t30 tb">
+              <rect x="618" y="150" width="168" height="36" rx="18" fill="rgba(255,199,44,.1)" stroke="#FFC72C" stroke-width="1.3"/>
+              <circle cx="642" cy="168" r="8" fill="none" stroke="#FFC72C" stroke-width="1.6"/>
+              <line x1="642" y1="168" x2="642" y2="162.5" stroke="#FFC72C" stroke-width="1.6" stroke-linecap="round"/>
+              <line x1="642" y1="168" x2="646" y2="170.5" stroke="#FFC72C" stroke-width="1.6" stroke-linecap="round"/>
+              <rect x="639.5" y="156.5" width="5" height="2.5" rx="1" fill="#FFC72C"/>
+              <text x="660" y="173" class="svglabel" fill="#FFC72C" style="letter-spacing:.18em">+30 SECONDS</text>
+            </g>
+          </svg>
+        </div>
+        <div class="chip">
+          <svg width="14" height="14" sc-camel-view-box="0 0 14 14" fill="none"><path d="M2 7 H10 M7 3 L11 7 L7 11" stroke="#FFC72C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          The lights are still red for everyone else. You’re already gone.
+        </div>
+      </section>
+
+      <!-- ══════════════ SLIDE 3 · HYROX ══════════════ -->
+      <section class="{{ advCls3 }}" role="group" aria-label="Slide 3 of 4 — Hyrox" aria-hidden="{{ advHid3 }}" data-screen-label="Slide 3 — Hyrox">
+        <div class="kicker">Imagine<span class="sep">·</span>03</div>
+        <h1>
+          <span class="l1">Imagine racing the HYROX championship,</span>
+          <span class="l2">and you don’t have to do two of the stations.</span>
+        </h1>
+        <div class="illu">
+          <svg class="hy" sc-camel-view-box="0 0 900 430" aria-hidden="true">
+            <g class="tiles">
+              <!-- 01 SKI ERG -->
+              <g class="tile-g tb">
+                <rect x="47" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.05)" stroke="rgba(143,166,188,.3)" stroke-width="1.2"/>
+                <text x="57" y="130" class="svgtiny" fill="#8FA6BC">01</text>
+                <g transform="translate(93,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" fill="none">
+                  <line x1="-9" y1="-15" x2="9" y2="-15"/><line x1="-5" y1="-15" x2="-5" y2="5"/><line x1="5" y1="-15" x2="5" y2="5"/>
+                  <rect x="-9" y="5" width="7" height="4" rx="2" fill="#FFC72C" stroke="none"/><rect x="2" y="5" width="7" height="4" rx="2" fill="#FFC72C" stroke="none"/>
+                </g>
+                <text x="93" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">SKI ERG</text>
+              </g>
+              <!-- 02 SLED PUSH (skipped) -->
+              <g class="tile-g tb">
+                <rect x="149" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.03)" stroke="rgba(255,199,44,.45)" stroke-width="1.2" stroke-dasharray="5 4"/>
+                <g opacity=".35">
+                  <text x="159" y="130" class="svgtiny" fill="#8FA6BC">02</text>
+                  <g transform="translate(195,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" fill="none">
+                    <rect x="-13" y="-4" width="16" height="11" rx="2"/><line x1="-15" y1="10" x2="11" y2="10"/><line x1="8" y1="-13" x2="8" y2="7"/><line x1="13" y1="-13" x2="13" y2="7"/>
+                  </g>
+                  <text x="195" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">SLED PUSH</text>
+                </g>
+                <g transform="translate(195,166) rotate(-10)"><g class="stamp s1 tb">
+                  <rect x="-49" y="-12" width="98" height="24" rx="5" fill="#FFC72C"/>
+                  <text x="0" y="4" text-anchor="middle" class="svgtiny" fill="#0A2540" style="font-weight:800">DONE FOR YOU</text>
+                </g></g>
+              </g>
+              <!-- 03 SLED PULL -->
+              <g class="tile-g tb">
+                <rect x="251" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.05)" stroke="rgba(143,166,188,.3)" stroke-width="1.2"/>
+                <text x="261" y="130" class="svgtiny" fill="#8FA6BC">03</text>
+                <g transform="translate(297,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                  <rect x="0" y="-3" width="14" height="10" rx="2"/><path d="M -14 -9 L -7 -4 L -14 1 L -7 4 L 0 2"/>
+                </g>
+                <text x="297" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">SLED PULL</text>
+              </g>
+              <!-- 04 BURPEES -->
+              <g class="tile-g tb">
+                <rect x="353" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.05)" stroke="rgba(143,166,188,.3)" stroke-width="1.2"/>
+                <text x="363" y="130" class="svgtiny" fill="#8FA6BC">04</text>
+                <g transform="translate(399,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" fill="none">
+                  <path d="M 0 -14 L 0 -6 M -3.5 -9 L 0 -5.5 L 3.5 -9" stroke="#FFC72C"/>
+                  <circle cx="-10" cy="6" r="3.2"/><line x1="-6" y1="6" x2="10" y2="6"/><line x1="4" y1="6" x2="9" y2="10"/>
+                </g>
+                <text x="399" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">BURPEES</text>
+              </g>
+              <!-- 05 ROWING -->
+              <g class="tile-g tb">
+                <rect x="455" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.05)" stroke="rgba(143,166,188,.3)" stroke-width="1.2"/>
+                <text x="465" y="130" class="svgtiny" fill="#8FA6BC">05</text>
+                <g transform="translate(501,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" fill="none">
+                  <line x1="-14" y1="7" x2="14" y2="7"/><circle cx="-11" cy="2" r="4"/><rect x="-1" y="2" width="9" height="5" rx="1.5"/><line x1="-7" y1="1" x2="7" y2="-7" stroke="#FFC72C"/>
+                </g>
+                <text x="501" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">ROWING</text>
+              </g>
+              <!-- 06 CARRY -->
+              <g class="tile-g tb">
+                <rect x="557" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.05)" stroke="rgba(143,166,188,.3)" stroke-width="1.2"/>
+                <text x="567" y="130" class="svgtiny" fill="#8FA6BC">06</text>
+                <g transform="translate(603,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" fill="none">
+                  <path d="M -11 -1 A 4.5 4.5 0 0 1 -3 -1"/><circle cx="-7" cy="5" r="4.5"/>
+                  <path d="M 3 -1 A 4.5 4.5 0 0 1 11 -1"/><circle cx="7" cy="5" r="4.5"/>
+                </g>
+                <text x="603" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">CARRY</text>
+              </g>
+              <!-- 07 LUNGES (skipped) -->
+              <g class="tile-g tb">
+                <rect x="659" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.03)" stroke="rgba(255,199,44,.45)" stroke-width="1.2" stroke-dasharray="5 4"/>
+                <g opacity=".35">
+                  <text x="669" y="130" class="svgtiny" fill="#8FA6BC">07</text>
+                  <g transform="translate(705,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+                    <circle cx="0" cy="-12" r="3.2"/><line x1="0" y1="-8.5" x2="0" y2="-1"/>
+                    <path d="M 0 -1 L 8 4 L 8 10"/><path d="M 0 -1 L -8 6 L -14 10"/>
+                  </g>
+                  <text x="705" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">LUNGES</text>
+                </g>
+                <g transform="translate(705,166) rotate(-10)"><g class="stamp s2 tb">
+                  <rect x="-49" y="-12" width="98" height="24" rx="5" fill="#FFC72C"/>
+                  <text x="0" y="4" text-anchor="middle" class="svgtiny" fill="#0A2540" style="font-weight:800">DONE FOR YOU</text>
+                </g></g>
+              </g>
+              <!-- 08 WALL BALLS -->
+              <g class="tile-g tb">
+                <rect x="761" y="110" width="92" height="118" rx="12" fill="rgba(234,242,248,.05)" stroke="rgba(143,166,188,.3)" stroke-width="1.2"/>
+                <text x="771" y="130" class="svgtiny" fill="#8FA6BC">08</text>
+                <g transform="translate(807,168)" stroke="#EAF2F8" stroke-width="1.8" stroke-linecap="round" fill="none">
+                  <circle cx="8" cy="-10" r="4" stroke="#FFC72C"/><circle cx="-8" cy="8" r="4.5" fill="#EAF2F8" stroke="none"/>
+                  <path d="M -8 2 Q 0 -14 4 -8" stroke-dasharray="2.5 3"/>
+                </g>
+                <text x="807" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">WALL BALLS</text>
+              </g>
+            </g>
+
+            <!-- route -->
+            <path class="route-base" sc-camel-path-length="100" d="M30,310 L163,310 Q195,256 227,310 L673,310 Q705,256 737,310 L858,310" fill="none" stroke="rgba(234,242,248,.28)" stroke-width="2"/>
+            <path class="arc a1" sc-camel-path-length="100" d="M163,310 Q195,256 227,310" fill="none" stroke="#FFC72C" stroke-width="2.5" stroke-dasharray="100" stroke-linecap="round"/>
+            <path class="arc a2" sc-camel-path-length="100" d="M673,310 Q705,256 737,310" fill="none" stroke="#FFC72C" stroke-width="2.5" stroke-dasharray="100" stroke-linecap="round"/>
+            <g class="node tb"><circle cx="93" cy="310" r="4" fill="#1B7DB3"/></g>
+            <g class="node tb"><circle cx="297" cy="310" r="4" fill="#1B7DB3"/></g>
+            <g class="node tb"><circle cx="399" cy="310" r="4" fill="#1B7DB3"/></g>
+            <g class="node tb"><circle cx="501" cy="310" r="4" fill="#1B7DB3"/></g>
+            <g class="node tb"><circle cx="603" cy="310" r="4" fill="#1B7DB3"/></g>
+            <g class="node tb"><circle cx="807" cy="310" r="4" fill="#1B7DB3"/></g>
+
+            <!-- finish flag -->
+            <line x1="858" y1="310" x2="858" y2="272" stroke="rgba(143,166,188,.6)" stroke-width="2"/>
+            <g>
+              <rect x="858" y="272" width="8" height="8" fill="#EAF2F8"/><rect x="866" y="272" width="8" height="8" fill="rgba(143,166,188,.4)"/>
+              <rect x="858" y="280" width="8" height="8" fill="rgba(143,166,188,.4)"/><rect x="866" y="280" width="8" height="8" fill="#EAF2F8"/>
+            </g>
+
+            <!-- runner -->
+            <circle class="runner" r="6" fill="#FFC72C" style="filter:drop-shadow(0 0 6px rgba(255,199,44,.9))"/>
+          </svg>
+        </div>
+        <div class="chip">
+          <svg width="14" height="14" sc-camel-view-box="0 0 14 14" fill="none"><path d="M2 7.5 L5.5 11 L12 3.5" stroke="#FFC72C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Eight stations on the course. You only race six.
+        </div>
+      </section>
+
+      <!-- ══════════════ SLIDE 4 · CLOSER ══════════════ -->
+      <section class="{{ advCls4 }}" role="group" aria-label="Slide 4 of 4 — GAC Connect" aria-hidden="{{ advHid4 }}" data-screen-label="Slide 4 — Closer">
+        <div class="kicker">GAC Connect<span class="sep">·</span>The Point</div>
+        <h1>
+          <span class="l1">GAC Connect is exactly this.</span>
+          <span class="l2">We have the advantage. Let’s take it.</span>
+        </h1>
+        <div class="tagline">Offshore services · Found, vetted, booked</div>
+        <div class="recap">
+          <div class="rcard">
+            <div class="ric">
+              <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FFC72C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3>Moves they can’t see</h3>
+            <p>Predictive procurement, quote comparison and a vetted supplier network show you the whole board while competitors still source by phone list.</p>
+          </div>
+          <div class="rcard">
+            <div class="ric">
+              <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none"><circle cx="12" cy="13.5" r="8" stroke="#FFC72C" stroke-width="1.8"/><path d="M12 13.5 V8.5 M12 13.5 L15.5 15.5" stroke="#FFC72C" stroke-width="1.8" stroke-linecap="round"/><rect x="9.5" y="1.5" width="5" height="2.6" rx="1.2" fill="#FFC72C"/></svg>
+            </div>
+            <h3>A head start, built in</h3>
+            <p>Runs on GAC Agent and Microsoft Outlook, the tools where the work already lives. We’re moving before the lights go out.</p>
+          </div>
+          <div class="rcard">
+            <div class="ric">
+              <svg width="22" height="22" sc-camel-view-box="0 0 24 24" fill="none"><rect x="2.5" y="4" width="19" height="16" rx="4" stroke="#FFC72C" stroke-width="1.8"/><path d="M7.5 12 L10.8 15.3 L16.8 8.8" stroke="#FFC72C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3>Stations we skip</h3>
+            <p>Agency, Logistics and Customs are in-house. Whole legs of the race are already ours, with client discounts up to 7%.</p>
+          </div>
+        </div>
+        <div class="cta-wrap">
+          <button type="button" class="cta" ref="{{ ctaRef }}" sc-camel-on-click="{{ advEnter }}">
+            Enter the platform
+            <svg width="17" height="17" sc-camel-view-box="0 0 17 17" fill="none" aria-hidden="true"><path d="M3 8.5 H13 M9 4 L13.5 8.5 L9 13" stroke="#231A02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="cta-note">LIVE PROOF OF CONCEPT · FP03 CAPITAL APPROVAL</div>
+        </div>
+      </section>
+
+      <footer class="ftr">
+        <div class="conf">GAC UK &amp; IRELAND · FP03 · CONFIDENTIAL</div>
+        <div class="hint"><kbd>Click</kbd> or <kbd>→</kbd> to continue · <kbd>Esc</kbd> to skip</div>
+      </footer>
+      <nav class="dots" aria-label="Slides">
+        <sc-for list="{{ advDots }}" as="d" hint-placeholder-count="4"><button type="button" class="{{ d.cls }}" aria-label="{{ d.label }}" sc-camel-on-click="{{ d.go }}"></button></sc-for>
+      </nav>
+    </div>
+  </sc-if>

@@ -1,0 +1,104 @@
+  <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Dashboard" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <sc-if value="{{ showTourPrompt }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#E8F1F7;border:1px solid #CFE2EE;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;">
+          <p style="margin:0;font-size:13.5px;flex:1;min-width:200px;"><strong>First time here?</strong> A five-stop tour covers the morning workflow in under a minute.</p>
+          <div style="display:flex;gap:8px;">
+            <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ startTour }}">Start the tour</button>
+            <button style="background:none;border:none;color:#33475F;font-weight:600;font-size:13px;cursor:pointer;" sc-camel-on-click="{{ dismissTourPrompt }}">Dismiss</button>
+          </div>
+        </div>
+      </sc-if>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ todayLabel }} · Aberdeen</p>
+          <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Morning, Alex</h1>
+          <p style="color:#33475F;margin:4px 0 0;font-size:14px;">2 vessels arriving in the next 24 hours. 1 procurement list ready to send.</p>
+        </div>
+        <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ openDrawer }}">Open Outlook add-in preview</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-top:20px;">
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="color:#33475F;font-size:12.5px;margin:0;">Active jobs</p><p style="font-size:26px;font-weight:800;margin:2px 0 0;">14</p><p style="font-size:12px;font-weight:700;color:#047857;margin:2px 0 0;">+3 this week</p></div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="color:#33475F;font-size:12.5px;margin:0;">Open quote requests</p><p style="font-size:26px;font-weight:800;margin:2px 0 0;">6</p><p style="font-size:12px;font-weight:700;color:#047857;margin:2px 0 0;">2 replies awaiting review</p></div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="color:#33475F;font-size:12.5px;margin:0;">SVS-verified suppliers</p><p style="font-size:26px;font-weight:800;margin:2px 0 0;">52</p><p style="font-size:12px;font-weight:700;color:#047857;margin:2px 0 0;">4 onboarding</p></div>
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;"><p style="color:#33475F;font-size:12.5px;margin:0;">Admin time saved (mo.)</p><p style="font-size:26px;font-weight:800;margin:2px 0 0;">31 hrs</p><p style="font-size:12px;font-weight:700;color:#047857;margin:2px 0 0;">vs manual workflow</p></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;margin-top:18px;align-items:start;">
+        <div style="display:grid;gap:18px;">
+          <div style="background:linear-gradient(180deg,#E8F1F7,#FFFFFF 70%);border:1px solid #CFE2EE;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+              <div>
+                <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Predictive procurement · from GA history</p>
+                <h2 style="font-size:18px;margin:4px 0 0;">MV Caledonian Star — Aberdeen, ETA 08:00 tomorrow</h2>
+              </div>
+              <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E8F1F7;color:#0E5E8A;">GA vessel profile loaded</span>
+            </div>
+            <p style="color:#33475F;font-size:13.5px;margin:8px 0 0;">This vessel typically requires the following on a call to Aberdeen. SVS-verified suppliers are pre-selected for each.</p>
+            <ul style="list-style:none;margin:10px 0;padding:0;">
+              <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #CBD6E2;font-size:14px;gap:8px;"><span><strong>Crane hire</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
+              <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #CBD6E2;font-size:14px;gap:8px;"><span><strong>Medical cover</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
+              <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px;gap:8px;"><span><strong>Scaffolding</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
+            </ul>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <button style="{{ sendBtnStyle }}" sc-camel-on-click="{{ sendQuoteRequests }}" disabled="{{ sent }}">{{ sendLabel }}</button>
+              <span style="color:#33475F;font-size:12.5px;">9 emails · replies will populate the comparison view automatically</span>
+            </div>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Arrivals &amp; departures</p>
+            <div style="margin-top:12px;display:grid;gap:14px;">
+              <div style="border-left:4px solid #0E5E8A;padding-left:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <div><strong>MV Caledonian Star</strong> · Browne Energy / Grizzell Marine (60/40)<br><span style="color:#33475F;font-size:12.5px;">Aberdeen · ETA Fri 08:00 · Berth: Regent Quay</span></div>
+                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E8F1F7;color:#0E5E8A;">Procurement list ready</span>
+              </div>
+              <div style="border-left:4px solid #0E5E8A;padding-left:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <div><strong>MV Boreal</strong> · Wilkinson Drilling<br><span style="color:#33475F;font-size:12.5px;">Peterhead · ETA Fri 14:30 · Berth: Smith Quay</span></div>
+                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF0E1;color:#B45309;">2 certs expiring on booked supplier</span>
+              </div>
+              <div style="border-left:4px solid #0E5E8A;padding-left:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <div><strong>MV Granite Coast</strong> · Stronach Subsea<br><span style="color:#33475F;font-size:12.5px;">Aberdeen · ETD Sat 06:00 · Customs: T1 in progress</span></div>
+                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">All documents complete</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;gap:18px;">
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Client consolidation · Browne Energy</p>
+            <svg sc-camel-view-box="0 0 240 150" role="img" aria-label="Four pillars and a roof diagram showing GAC service consolidation" style="display:block;margin:6px auto 2px;width:240px;max-width:100%;">
+              <polygon points="120,8 12,52 228,52" fill="{{ roofFill }}" stroke="{{ roofStroke }}" stroke-width="1" style="transition:fill .4s,stroke .4s;"></polygon>
+              <text x="120" y="42" text-anchor="middle" fill="#0A2540" style="font-size:10px;font-weight:800;letter-spacing:.08em;">{{ brandUpper }}</text>
+              <rect x="22" y="62" width="38" height="62" rx="3" fill="{{ p1Fill }}" style="transition:fill .35s;"></rect>
+              <rect x="74" y="62" width="38" height="62" rx="3" fill="{{ p2Fill }}" style="transition:fill .35s;"></rect>
+              <rect x="126" y="62" width="38" height="62" rx="3" fill="{{ p3Fill }}" style="transition:fill .35s;"></rect>
+              <rect x="178" y="62" width="38" height="62" rx="3" fill="{{ p4Fill }}" style="transition:fill .35s;"></rect>
+              <text x="41" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">AGENCY</text>
+              <text x="93" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">LOGISTICS</text>
+              <text x="145" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">CUSTOMS</text>
+              <text x="197" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">PROCURE</text>
+            </svg>
+            <div style="text-align:center;margin-top:8px;">
+              <sc-if value="{{ fullStack }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF6E3;color:#9A7B14;border:1px solid #E5D89A;">★ Full Stack client</span>
+              </sc-if>
+              <p style="font-size:34px;font-weight:800;letter-spacing:-.02em;margin:2px 0 0;color:{{ pctColor }};">{{ tierPctLabel }}</p>
+              <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">{{ dashTierLine }}</p>
+            </div>
+            <div style="height:1px;background:#E5EAF1;margin:14px 0;"></div>
+            <p style="color:#33475F;font-size:12.5px;margin:0;">The tier is non-cumulative: clients hold the highest single tier they qualify for. This widget follows the <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;padding:0;" sc-camel-on-click="{{ goTiers }}">Tier Calculator</button> live.</p>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Compliance watch · SVS</p>
+            <p style="margin:10px 0 0;font-size:14px;"><strong>Granite NDT Ltd</strong> — GWO expires in 21 days. Renewal reminder sent automatically.</p>
+            <p style="margin:8px 0 0;font-size:14px;"><strong>Peterhead Diving Services</strong> — insurance certificate lapsed. <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBEAEA;color:#B91C1C;">✗ Blocked from booking</span></p>
+            <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;margin-top:12px;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ goSvs }}">Open SVS</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </sc-if>

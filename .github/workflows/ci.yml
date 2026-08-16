@@ -1,9 +1,11 @@
 name: CI
 
+# Runs on every branch: main gets its gate as before, and a change branch gets
+# a red/green signal next to its preview (see docs/WORKFLOW.md).
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches: ['**']
+  workflow_dispatch:
 
 jobs:
   quality:
