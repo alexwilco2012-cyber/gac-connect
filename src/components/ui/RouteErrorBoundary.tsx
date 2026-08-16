@@ -17,12 +17,21 @@ export function RouteErrorBoundary() {
         is a proof of concept running entirely in your browser.
       </p>
       {detail ? <p className="text-sm text-ink-soft">Detail: {detail}</p> : null}
-      <Link
-        to="/app"
-        className="rounded-lg bg-sea px-4 py-2 text-sm font-bold text-white hover:bg-[#0B4C70]"
-      >
-        Back to the dashboard
-      </Link>
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="cursor-pointer rounded-lg bg-sea px-4 py-2 text-sm font-bold text-white hover:bg-[#0B4C70]"
+        >
+          Reload
+        </button>
+        <Link
+          to="/app"
+          className="rounded-lg border-[1.5px] border-line-strong bg-white px-4 py-2 text-sm font-bold text-sea hover:border-sea"
+        >
+          Back to the dashboard
+        </Link>
+      </div>
     </main>
   );
 }
