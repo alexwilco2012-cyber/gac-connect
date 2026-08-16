@@ -1,0 +1,6 @@
+# The presenter's dc-runtime loads React with Subresource Integrity hashes that
+# are computed over the exact bytes of these files. Never let git rewrite their
+# line endings (a CRLF checkout would change the hash and React would refuse to
+# load). Fonts are binary.
+presenter/vendor/*.js -text
+presenter/assets/fonts/*.woff2 binary

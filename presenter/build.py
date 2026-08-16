@@ -34,6 +34,7 @@ are optional local aids for the single-file bundle.
 import argparse
 import base64
 import gzip
+import hashlib
 import html as htmllib
 import json
 import os
@@ -59,9 +60,16 @@ SITE_PATHS = {  # source-tree prefix -> URL prefix relative to presenter.html
 }
 # Fetched before the runtime asks for them: React (loaded by dc-runtime via
 # window.__resources) and the two faces used above the fold. Fonts must carry
-# `crossorigin` on the preload or the browser fetches them twice.
+# `crossorigin` on the preload or the browser fetches them twice. The React
+# preloads must carry the SAME integrity + crossorigin the runtime puts on its
+# script tags, or the browser refuses to reuse them ("integrity mismatch").
 SITE_PRELOAD_SCRIPTS = ["vendor/react.production.min.js", "vendor/react-dom.production.min.js"]
 SITE_PRELOAD_FONTS = ["assets/fonts/space-grotesk-latin.woff2", "assets/fonts/inter-variable.woff2"]
+# dc-runtime.js pins React with these constants (grep'd at build time so a
+# vendor file that no longer matches -- e.g. a CRLF checkout -- fails the
+# build here, with a clear message, instead of failing silently in the browser).
+RUNTIME_SRI = {"vendor/react.production.min.js": "REACT_SRI",
+               "vendor/react-dom.production.min.js": "REACT_DOM_SRI"}
 # Last promoted (browser-checked + deployed) build. --verify diffs against it,
 # --promote refreshes it. reference/presenter_6.original.html is the v12
 # monolith kept for history and is no longer a verify target.
@@ -158,6 +166,22 @@ def site_path(src_path: str) -> str:
     raise SystemExit(f"build: no site mapping for asset {src_path!r} (add it to SITE_PATHS)")
 
 
+def sri(src_path: str) -> str:
+    """sha384 integrity of a vendor file, checked against the constant dc-runtime uses."""
+    digest = base64.b64encode(hashlib.sha384((ROOT / src_path).read_bytes()).digest()).decode("ascii")
+    value = "sha384-" + digest
+    const = RUNTIME_SRI.get(src_path)
+    if const:
+        m = re.search(r'%s = "([^"]+)"' % const, read(ROOT / "vendor" / "dc-runtime.js"))
+        if not m:
+            raise SystemExit(f"build: {const} not found in vendor/dc-runtime.js")
+        if m.group(1) != value:
+            raise SystemExit(f"build: {src_path} does not match {const} in dc-runtime.js "
+                             f"({value} vs {m.group(1)}) -- the file's bytes changed (line endings?); "
+                             "React would fail its integrity check in the browser")
+    return value
+
+
 def resources_script(react: str, react_dom: str) -> str:
     """The window.__resources hook dc-runtime reads to find React (instead of unpkg)."""
     return ('<script>window.__resources = { reactUmd: "%s", reactDomUmd: "%s" };</script>'
@@ -194,7 +218,8 @@ def compose_template(mode: str) -> str:
             doc = doc.replace(a["path"], site_path(a["path"]))
         head = ['<link rel="icon" type="image/svg+xml" href="favicon.svg">']
         for p in SITE_PRELOAD_SCRIPTS:
-            head.append('<link rel="preload" as="script" href="%s">' % site_path(p))
+            head.append('<link rel="preload" as="script" href="%s" integrity="%s" crossorigin="anonymous">'
+                        % (site_path(p), sri(p)))
         for p in SITE_PRELOAD_FONTS:
             head.append('<link rel="preload" as="font" type="font/woff2" href="%s" crossorigin>' % site_path(p))
         head.append(resources_script(site_path("vendor/react.production.min.js"),
