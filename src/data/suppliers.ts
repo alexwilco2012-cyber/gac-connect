@@ -25,6 +25,8 @@ export interface Supplier {
   goldBand?: GoldBandState;
   /** When the Gold Band audit was last renewed (held) or is booked (scheduled). */
   goldBandDate?: string;
+  /** Booking terms shown with the listing — e.g. a hotel's availability caveat. */
+  bookingNote?: string;
   /** Fictional recent activity for the profile page. */
   recentJobs: string[];
 }
@@ -38,6 +40,7 @@ export const CATEGORIES = [
   'NDT',
   'Welding',
   'Catering',
+  'Hotels',
   'Waste',
   'Bunkers',
 ] as const;
@@ -176,6 +179,39 @@ export const SUPPLIERS: Supplier[] = [
     certs: fullCerts(['Insurance', 'Food hygiene certificates']),
     plan: 'free',
     recentJobs: ['Crew provisions — MV Caledonian Star'],
+  },
+  {
+    id: 'granite-quay-hotel',
+    name: 'Granite Quay Hotel',
+    category: 'Hotels',
+    description:
+      'Crew accommodation five minutes from Regent Quay. 24-hour check-in, quiet rooms for off-signers and crew held ashore.',
+    rating: 4.6,
+    ratingCount: 88,
+    esg: 'B',
+    certs: fullCerts(['Insurance', 'Fire safety certificate', 'Food hygiene certificates']),
+    plan: 'professional',
+    bookingNote:
+      'GAC rate is indicative and subject to availability. If the hotel is fully booked, your agent steps in to secure an alternative and confirms it on the platform.',
+    recentJobs: [
+      'Crew rooms, 2 nights — MV Caledonian Star off-signers',
+      'Medical stand-down stay — Browne Energy crew member',
+    ],
+  },
+  {
+    id: 'caledonia-rooms',
+    name: 'Caledonia Rooms',
+    category: 'Hotels',
+    description:
+      'Budget crew rooms near the harbour, early breakfast from 05:00, secure kit storage for transit crews.',
+    rating: 4.3,
+    ratingCount: 41,
+    esg: 'C',
+    certs: fullCerts(['Insurance', 'Fire safety certificate']),
+    plan: 'free',
+    bookingNote:
+      'GAC rate is indicative and subject to availability. If the hotel is fully booked, your agent steps in to secure an alternative and confirms it on the platform.',
+    recentJobs: ['Transit crew, 1 night — Grizzell Marine crew change'],
   },
 ];
 

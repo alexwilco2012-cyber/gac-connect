@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { CATEGORY_SERVICE, relatedServicesFor } from '../data/related';
+import {
+  CATEGORY_SERVICE,
+  HOTEL_AVAILABILITY_CAVEAT,
+  RELATED_INTRO,
+  relatedServicesFor,
+} from '../data/related';
 import { VESSELS } from '../data/vessels';
 import { gbp } from '../lib/format';
 import {
@@ -24,8 +29,9 @@ import { Toggle } from './ui/Toggle';
  *    what a very short window will draw (a taxi, yes; a crane, no);
  *  · related services are suggested alongside the request (the medical example:
  *    transfer and hotel), for the GAC agent to arrange;
- *  · a hotel is quoted subject to availability, and if the client wants a meal
- *    allowance it follows a sliding scale.
+ *  · a hotel — whether booked directly from the Hotels category or added to a
+ *    medical request — is quoted subject to availability, and if the client
+ *    wants a meal allowance it follows a sliding scale.
  */
 
 export interface RequestTarget {
@@ -43,6 +49,63 @@ const ADVICE_TONE = {
 } as const;
 
 const NIGHT_OPTIONS = [1, 2, 3, 4, 5, 7] as const;
+
+/** Meal-allowance toggle + nights + the sliding scale (shared by the hotel booking and the medical cross-sell). */
+function MealAllowance({
+  meals,
+  setMeals,
+  nights,
+  setNights,
+}: {
+  meals: boolean;
+  setMeals: (v: boolean) => void;
+  nights: number;
+  setNights: (n: number) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-line bg-white p-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[13px] font-semibold">Meal allowance for the stay?</span>
+        <Toggle pressed={meals} onToggle={() => setMeals(!meals)} label="Include meal allowance" />
+      </div>
+      {meals ? (
+        <div className="mt-2.5" data-testid="meal-scale">
+          <label className="text-[12.5px] font-semibold text-ink-soft">
+            Nights
+            <select
+              value={nights}
+              onChange={(e) => setNights(Number(e.target.value))}
+              className="ml-2 min-h-[34px] rounded-lg border-[1.5px] border-line-strong bg-white px-2 py-1 text-[13px] font-semibold text-ink"
+            >
+              {NIGHT_OPTIONS.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="mt-2 text-[13px]">
+            Sliding scale: <strong>{gbp(mealAllowancePerDay(nights))} per day</strong> ·{' '}
+            <strong>{gbp(mealAllowanceTotal(nights))}</strong> for {nights}{' '}
+            {nights === 1 ? 'night' : 'nights'}, per crew member.
+          </p>
+          <p className="mt-1 text-[11.5px] text-ink-soft">
+            Scale (illustrative, set by client policy):{' '}
+            {MEAL_ALLOWANCE_SCALE.map((b, i) => {
+              const label =
+                b.upToNights === 1
+                  ? '1 night'
+                  : Number.isFinite(b.upToNights)
+                    ? `up to ${b.upToNights} nights`
+                    : 'longer stays';
+              return `${i ? ' · ' : ''}${label} ${gbp(b.perDayGBP)}/day`;
+            })}
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function RequestQuoteModal({
   target,
@@ -82,23 +145,30 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
   const hotelChosen = suggestions.some((s) => s.offersMealAllowance && related[s.id]);
   const chosenCount = suggestions.filter((s) => related[s.id]).length;
 
+  const isHotel = target.category === 'Hotels';
   const serviceLabel = target.service ?? CATEGORY_SERVICE[target.category] ?? target.category;
   const who = target.supplierName ?? `${target.category} suppliers`;
   const vessel = VESSELS.find((v) => v.id === vesselId) ?? VESSELS[0]!;
+  const mealLine = `meal allowance ${gbp(mealAllowancePerDay(nights))}/day, ${nights} ${
+    nights === 1 ? 'night' : 'nights'
+  }`;
 
   function send() {
     const parts = [
-      `Quote request sent to ${who} — ${serviceLabel}, ${vessel.name}.`,
+      `${isHotel ? 'Booking request' : 'Quote request'} sent to ${who} — ${serviceLabel}, ${vessel.name}.`,
       `Reply-by window: ${window_.label}.`,
     ];
+    if (isHotel) {
+      parts.push(
+        `Rate indicative and subject to availability — your agent confirms the booking on the platform${
+          meals ? ` (${mealLine})` : ''
+        }.`,
+      );
+    }
     if (chosenCount > 0) {
       parts.push(
         `${chosenCount} related ${chosenCount === 1 ? 'service' : 'services'} passed to your GAC agent${
-          hotelChosen && meals
-            ? ` (meal allowance ${gbp(mealAllowancePerDay(nights))}/day, ${nights} ${
-                nights === 1 ? 'night' : 'nights'
-              })`
-            : ''
+          hotelChosen && meals ? ` (${mealLine})` : ''
         }.`,
       );
     }
@@ -174,16 +244,34 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
         </p>
       </fieldset>
 
+      {/* Hotel booking terms — availability caveat and meal allowance on the booking itself */}
+      {isHotel ? (
+        <fieldset
+          className="mt-4 rounded-lg border border-line bg-paper p-3"
+          data-testid="hotel-terms"
+        >
+          <legend className="px-1 text-[12.5px] font-bold">Hotel booking terms</legend>
+          <p className="text-[12.5px] text-ink-soft">{HOTEL_AVAILABILITY_CAVEAT}</p>
+          <div className="mt-2.5">
+            <MealAllowance
+              meals={meals}
+              setMeals={setMeals}
+              nights={nights}
+              setNights={setNights}
+            />
+          </div>
+        </fieldset>
+      ) : null}
+
       {/* Related services — cross-sell, arranged by the GAC agent */}
       {suggestions.length > 0 ? (
         <fieldset className="mt-4 rounded-lg border border-[#E5D89A] bg-gold-soft p-3">
           <legend className="px-1 text-[11px] font-extrabold tracking-[0.14em] text-gold-deep uppercase">
             You may also need · arranged by your GAC agent
           </legend>
-          <p className="mt-1 text-[12.5px] text-ink-soft">
-            Medical attention ashore usually means getting there and, sometimes, staying over. The
-            platform suggests it; your agent books it inside the existing relationship.
-          </p>
+          {RELATED_INTRO[target.category] ? (
+            <p className="mt-1 text-[12.5px] text-ink-soft">{RELATED_INTRO[target.category]}</p>
+          ) : null}
           <ul className="mt-2 space-y-2">
             {suggestions.map((s) => (
               <li key={s.id}>
@@ -204,52 +292,13 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
                   </span>
                 </label>
                 {s.offersMealAllowance && related[s.id] ? (
-                  <div className="mt-2 ml-6 rounded-lg border border-line bg-white p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-[13px] font-semibold">
-                        Meal allowance for the stay?
-                      </span>
-                      <Toggle
-                        pressed={meals}
-                        onToggle={() => setMeals(!meals)}
-                        label="Include meal allowance"
-                      />
-                    </div>
-                    {meals ? (
-                      <div className="mt-2.5" data-testid="meal-scale">
-                        <label className="text-[12.5px] font-semibold text-ink-soft">
-                          Nights
-                          <select
-                            value={nights}
-                            onChange={(e) => setNights(Number(e.target.value))}
-                            className="ml-2 min-h-[34px] rounded-lg border-[1.5px] border-line-strong bg-white px-2 py-1 text-[13px] font-semibold text-ink"
-                          >
-                            {NIGHT_OPTIONS.map((n) => (
-                              <option key={n} value={n}>
-                                {n}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <p className="mt-2 text-[13px]">
-                          Sliding scale: <strong>{gbp(mealAllowancePerDay(nights))} per day</strong>{' '}
-                          · <strong>{gbp(mealAllowanceTotal(nights))}</strong> for {nights}{' '}
-                          {nights === 1 ? 'night' : 'nights'}, per crew member.
-                        </p>
-                        <p className="mt-1 text-[11.5px] text-ink-soft">
-                          Scale (illustrative, set by client policy):{' '}
-                          {MEAL_ALLOWANCE_SCALE.map((b, i) => {
-                            const label =
-                              b.upToNights === 1
-                                ? '1 night'
-                                : Number.isFinite(b.upToNights)
-                                  ? `up to ${b.upToNights} nights`
-                                  : 'longer stays';
-                            return `${i ? ' · ' : ''}${label} ${gbp(b.perDayGBP)}/day`;
-                          })}
-                        </p>
-                      </div>
-                    ) : null}
+                  <div className="mt-2 ml-6">
+                    <MealAllowance
+                      meals={meals}
+                      setMeals={setMeals}
+                      nights={nights}
+                      setNights={setNights}
+                    />
                   </div>
                 ) : null}
               </li>

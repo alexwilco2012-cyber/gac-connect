@@ -130,6 +130,11 @@ export default function SupplierProfile() {
           <Card>
             <Eyebrow>Capability</Eyebrow>
             <p className="mt-2 text-[14.5px]">{supplier.description}</p>
+            {supplier.bookingNote ? (
+              <p className="mt-2 rounded-lg border border-line bg-paper px-3 py-2 text-[12.5px] text-ink-soft">
+                <strong className="text-ink">Booking terms.</strong> {supplier.bookingNote}
+              </p>
+            ) : null}
             {supplier.plan !== 'free' ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 {['Case studies', 'Capability statement', 'Photo gallery'].map((m) => (

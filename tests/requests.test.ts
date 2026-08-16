@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { relatedServicesFor } from '../src/data/related';
+import { HOTEL_AVAILABILITY_CAVEAT, relatedServicesFor } from '../src/data/related';
+import { CATEGORIES, SUPPLIERS } from '../src/data/suppliers';
+import { isBookable } from '../src/lib/svs';
 import {
   deadlineAdvice,
   mealAllowancePerDay,
@@ -59,5 +61,25 @@ describe('Meal allowance sliding scale', () => {
     expect(mealAllowanceTotal(3)).toBe(75);
     expect(mealAllowanceTotal(5, 2)).toBe(200);
     expect(mealAllowanceTotal(0)).toBe(30);
+  });
+});
+
+describe('Hotels are a standalone marketplace category, not only a medical add-on', () => {
+  it('Hotels is a category with bookable suppliers carrying the availability caveat', () => {
+    expect(CATEGORIES).toContain('Hotels');
+    const hotels = SUPPLIERS.filter((s) => s.category === 'Hotels');
+    expect(hotels.length).toBeGreaterThanOrEqual(2);
+    for (const h of hotels) {
+      expect(h.bookingNote).toBe(HOTEL_AVAILABILITY_CAVEAT);
+      expect(isBookable(h.certs)).toBe(true);
+    }
+  });
+
+  it('a hotel request suggests the crew transfer; the medical hotel add-on shares the same caveat', () => {
+    expect(relatedServicesFor('Hotels').map((r) => r.id)).toEqual(['crew-transfer']);
+    const medicalHotel = relatedServicesFor('Medical').find((r) => r.id === 'hotel')!;
+    expect(medicalHotel.availabilityCaveat).toBe(HOTEL_AVAILABILITY_CAVEAT);
+    expect(HOTEL_AVAILABILITY_CAVEAT).toMatch(/subject to availability/);
+    expect(HOTEL_AVAILABILITY_CAVEAT).toMatch(/agent steps in/);
   });
 });

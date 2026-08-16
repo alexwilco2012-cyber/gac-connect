@@ -228,3 +228,28 @@ test('9 · Gold Band shows only where earned; ratings carry counts; plans carry 
   await expect(page.getByTestId('keeps-premium')).toHaveText('£3,960');
   await expect(page.getByText(/first year/).first()).toBeVisible();
 });
+
+test('10 · hotels are a standalone category with the availability caveat and meal scale', async ({
+  page,
+}) => {
+  await page.goto('/app/marketplace');
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: 'Hotels', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Granite Quay Hotel' })).toBeVisible();
+  await expect(page.getByTestId('booking-note').first()).toContainText('subject to availability');
+
+  await page.getByRole('button', { name: 'Request quote' }).first().click();
+  const dialog = page.getByRole('dialog', { name: /Request a quote — Granite Quay Hotel/ });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByTestId('hotel-terms')).toContainText('agent steps in');
+  await dialog.getByRole('switch', { name: 'Include meal allowance' }).click();
+  await expect(dialog.getByTestId('meal-scale')).toContainText('£30 per day');
+  // The crew transfer is suggested alongside; no second hotel is offered.
+  await expect(dialog.getByRole('checkbox', { name: /Crew transfer/ })).toBeVisible();
+  await expect(dialog.getByRole('checkbox', { name: /Hotel accommodation/ })).toHaveCount(0);
+
+  await dialog.getByRole('button', { name: 'Send request' }).click();
+  await expect(page.getByText(/Booking request sent to Granite Quay Hotel/)).toBeVisible();
+  await expect(page.getByText(/subject to availability/).last()).toBeVisible();
+});

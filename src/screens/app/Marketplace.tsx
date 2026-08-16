@@ -48,6 +48,11 @@ function SupplierRow({
           <StatusPill status={status} />
         </div>
         <p className="mt-1.5 text-[13.5px] text-ink-soft">{supplier.description}</p>
+        {supplier.bookingNote ? (
+          <p className="mt-1 text-[12px] text-ink-soft" data-testid="booking-note">
+            {supplier.bookingNote}
+          </p>
+        ) : null}
         <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3.5 text-[13px] text-ink-soft">
           <Rating rating={supplier.rating} count={supplier.ratingCount} size="sm" />
           <span>

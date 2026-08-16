@@ -16,7 +16,26 @@ export interface RelatedService {
   offersMealAllowance?: boolean;
 }
 
+/** The hotel booking terms — shared by the Hotels category and the medical cross-sell. */
+export const HOTEL_AVAILABILITY_CAVEAT =
+  'GAC rate is indicative and subject to availability. If the hotel is fully booked, your agent steps in to secure an alternative and confirms it on the platform.';
+
+/** Intro line for the related-services block, per category. */
+export const RELATED_INTRO: Record<string, string> = {
+  Medical:
+    'Medical attention ashore usually means getting there and, sometimes, staying over. The platform suggests it; your agent books it inside the existing relationship.',
+  Hotels:
+    'A crew stay usually needs a run to and from the quay. The platform suggests it; your agent books it inside the existing relationship.',
+};
+
 export const RELATED_SERVICES: Record<string, RelatedService[]> = {
+  Hotels: [
+    {
+      id: 'crew-transfer',
+      label: 'Crew transfer',
+      body: 'Taxi or minibus between the quay and the hotel, arranged by your GAC agent.',
+    },
+  ],
   Medical: [
     {
       id: 'crew-transfer',
@@ -27,8 +46,7 @@ export const RELATED_SERVICES: Record<string, RelatedService[]> = {
       id: 'hotel',
       label: 'Hotel accommodation',
       body: 'Overnight stay for crew held ashore for treatment, medicals, or certificate renewal.',
-      availabilityCaveat:
-        'GAC rate is indicative and subject to availability. If the hotel is fully booked, your agent steps in to secure an alternative and confirms it on the platform.',
+      availabilityCaveat: HOTEL_AVAILABILITY_CAVEAT,
       offersMealAllowance: true,
     },
   ],
@@ -43,6 +61,7 @@ export const CATEGORY_SERVICE: Record<string, string> = {
   NDT: 'NDT inspection',
   Welding: 'Welding and fabrication',
   Catering: 'Crew provisions',
+  Hotels: 'Hotel accommodation',
   Waste: 'Waste collection',
   Bunkers: 'Bunker coordination',
 };

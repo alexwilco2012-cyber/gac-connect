@@ -24,7 +24,7 @@ agents rate suppliers on job close-out — every rating shown carries the number
 npm install
 npm run dev        # local dev server
 npm test           # vitest — tier/SVS/marketplace/commission/invoice/request unit tests
-npm run e2e        # playwright — nine smoke journeys (installs Chromium once)
+npm run e2e        # playwright — ten smoke journeys (installs Chromium once)
 npm run lint       # eslint + prettier
 npm run build      # production build (Pages base path aware)
 ```
@@ -45,7 +45,7 @@ Lighthouse (headless Chromium, lab): **Performance ≈ 95** (FCP 1.5 s · LCP 1.
 CLS 0 — Speed Index alone is elevated because the signature loader animation plays during the
 trace), **Accessibility: all audits pass**, **Best Practices: all audits pass**. The local
 runner nulled the category aggregates, so the performance figure is computed from the audited
-metric scores using Lighthouse's published weights. 65 unit tests and 9 Playwright smoke
+metric scores using Lighthouse's published weights. 67 unit tests and 10 Playwright smoke
 journeys run green; deep links survive refresh via the 404 shim (verified live).
 
 ## Architecture in five lines
