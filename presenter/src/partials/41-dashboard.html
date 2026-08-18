@@ -100,12 +100,12 @@
           </div>
 
           <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="dashboard-crew">
-            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · launches</p>
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · transfers</p>
             <p style="margin:10px 0 0;font-size:14px;">{{ dashCrewLine }}</p>
-            <p style="color:#33475F;font-size:12.5px;margin:8px 0 0;">Crew to a vessel at anchor? The Launches tab shows each launch’s capacity and whether freight is included.</p>
+            <p style="color:#33475F;font-size:12.5px;margin:8px 0 0;">Give us the flight number and the taxi and the launch are timed to it — capacity and freight for every launch, port by port.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
               <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ goCrew }}">Open crew change</button>
-              <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ goLaunches }}">Plan a launch run</button>
+              <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ goTransfers }}" data-testid="dashboard-transfers">Plan transfers</button>
             </div>
           </div>
         </div>

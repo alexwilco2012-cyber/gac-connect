@@ -1,10 +1,13 @@
-/* Launches — presenter mirror of the site's Launches screen (17 Aug review).
+/* Launches panel — presenter mirror of the site's LaunchesPanel (17 Aug review;
+   owner's follow-up: there is no Launches tab, the panel lives inside Crew
+   change › Transfers, under the flight-timed planner and the taxis — see
+   partials/56-crew-change.html, which binds everything this module returns).
    Feature module: registers state / bindings / Escape handling with the core
    Component via Component._features (see component.js "feature-module
    extension points"). Data it needs lives here too, so app/data.js stays the
    v12 baseline.
 
-   Mirrors src/screens/app/Launches.tsx, src/components/LaunchRequestModal.tsx
+   Mirrors src/components/LaunchesPanel.tsx, src/components/LaunchRequestModal.tsx
    and src/lib/launches.ts (the fit / runs / summary rules are ported verbatim
    below). Launch operators themselves come from the shared roster
    (this.SUPPLIERS, entries carrying a .launch block). Plan-a-run state is not

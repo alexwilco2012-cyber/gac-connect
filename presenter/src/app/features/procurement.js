@@ -68,13 +68,14 @@ const PR_CHANDLER_NAME = 'Granite Ship Chandlers';
 /* Illustrative demo prices per line id; added lines take the fallback. Nothing here is a real Compass price. */
 const PR_PRICES_GBP = { 'engine-room': 1240, provisions: 2150, 'deck-stores': 860, 'bonded-stores': 540, 'galley-gas': 190 };
 const PR_PRICE_FALLBACK_GBP = 250;
-/* Illustrative only. Compass's actual rate is set by Compass, not by this platform. */
-const PR_MARKUP_PCT = 10;
+/* There is no mark-up on the client's paperwork (17 Aug review, owner's follow-up):
+   Compass prices every line through its own network and the client sees those
+   prices and one total — nothing about Compass's cost base or margin is surfaced. */
 const PR_RULES = [
   { step: '1', title: 'The list goes straight to Compass by email', body: 'You build the list here; the platform composes the email and sends it to Compass, GAC’s own procurement branch. No separate purchase orders, no phoning round.' },
   { step: '2', title: 'Compass supplies from its own stock and network', body: 'Compass works the list line by line and supplies what it can directly.' },
   { step: '3', title: 'If Compass cannot assist on a line, it sources it — and pays', body: 'A ship chandler, for example. Compass places the order and pays the chandler itself. The chandler is Compass’s supplier, not yours.' },
-  { step: '4', title: 'You are invoiced via Compass, under GAC, with a mark-up', body: 'One invoice, from GAC, covering every line. No third-party paperwork; GAC accountable for the whole basket.' }
+  { step: '4', title: 'You are invoiced via Compass, under GAC', body: 'One invoice, from GAC, covering every line. No third-party paperwork; GAC accountable for the whole basket.' }
 ];
 const PR_SIMULATION_NOTICE = 'Illustrative — Compass replies are simulated in this proof of concept. No email is sent and every price is a demo figure.';
 
@@ -152,16 +153,14 @@ function prRouteLines(lines) {
 function prSourceLabel(source) {
   return source === 'compass' ? 'Supplied by Compass' : 'Cannot assist — routed to a third-party chandler · ' + PR_CHANDLER_NAME;
 }
-function prMarkupAmount(subtotal) { return Math.round((subtotal * PR_MARKUP_PCT) / 100); }
-function prMarkupTotal(subtotal) { return Math.round(subtotal + prMarkupAmount(subtotal)); }
 function prIllustrativePrice(lineId) { return Object.prototype.hasOwnProperty.call(PR_PRICES_GBP, lineId) ? PR_PRICES_GBP[lineId] : PR_PRICE_FALLBACK_GBP; }
 /* The client-facing invoice: one line per item — no source column, the chandler never appears on the client's paperwork. */
 function prInvoiceLines(request) {
   return request.lines.map((l) => ({ id: l.id, qty: l.qty, description: l.description, priceGBP: prIllustrativePrice(l.id) }));
 }
+/* Sum of the line prices — the figure the client pays (lib/procurement.ts invoiceTotals). */
 function prInvoiceTotals(lines) {
-  const subtotal = lines.reduce((sum, l) => sum + l.priceGBP, 0);
-  return { subtotal: subtotal, markup: prMarkupAmount(subtotal), total: prMarkupTotal(subtotal) };
+  return { total: lines.reduce((sum, l) => sum + l.priceGBP, 0) };
 }
 function prVesselFor(request) { return PR_VESSELS.find((v) => v.id === request.vesselId) || PR_VESSELS[0]; }
 /* "PR-1042 — MV Caledonian Star, Aberdeen — needed Fri 08:00" */
@@ -254,7 +253,7 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
         case 'chandler-paid': return chandlerLines.length > 0
           ? 'Compass pays ' + PR_CHANDLER_NAME + ' directly. The chandler’s invoice goes to Compass — never to you.'
           : 'No third-party lines on this request — nothing for Compass to settle.';
-        case 'invoiced': return 'One invoice, from GAC via Compass, covering every line with Compass’s mark-up applied. No third-party paperwork.';
+        case 'invoiced': return 'One invoice, from GAC via Compass, covering every line at Compass’s prices. No third-party paperwork.';
         default: return '';
       }
     };
@@ -386,13 +385,10 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
         if (next === PR_FINAL_STAGE) prFocus('pres-compass-invoice');
       },
 
-      /* the one invoice, from GAC */
+      /* the one invoice, from GAC — Compass's line prices and one total, nothing else */
       prShowInvoice: stage === PR_FINAL_STAGE,
       prInvoiceTo: vessel.operatorLine + ' · ' + vessel.name,
       prInvoiceRows: invoiceRows,
-      prSubtotal: this._gbp(totals.subtotal),
-      prMarkupLabel: 'Compass mark-up · illustrative ' + PR_MARKUP_PCT + '%',
-      prMarkup: this._gbp(totals.markup),
       prTotal: this._gbp(totals.total),
 
       /* Compass strip */

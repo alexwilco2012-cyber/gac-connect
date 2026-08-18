@@ -1,8 +1,8 @@
   <sc-if value="{{ isCrew }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Crew change" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
-      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · hotels, immigration, letters</p>
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · hotels, transfers, immigration, letters</p>
       <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Everything a crew change needs, in one place</h1>
-      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Rooms for crew held ashore, the immigration paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a repatriation letter for each off-signer. The platform holds the templates, you fill them in, GAC endorses or routes them and sends them back — one letter per crew member, always.</p>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a repatriation letter for each off-signer. The platform holds the templates, you fill them in, GAC endorses or routes them and sends them back — one letter per crew member, always.</p>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:20px;">
         <sc-for list="{{ ccFlow }}" as="f" hint-placeholder-count="3">
@@ -14,7 +14,7 @@
       </div>
 
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;" role="group" aria-label="Crew change sections" data-testid="crew-sections">
-        <sc-for list="{{ ccSections }}" as="s" hint-placeholder-count="4">
+        <sc-for list="{{ ccSections }}" as="s" hint-placeholder-count="5">
           <button style="{{ s.style }}" sc-camel-on-click="{{ s.on }}" aria-pressed="{{ s.pressed }}">{{ s.label }}</button>
         </sc-for>
       </div>
@@ -49,6 +49,206 @@
               </sc-for>
             </div>
             <p style="color:#33475F;font-size:12.5px;margin:12px 0 0;">Both hotels are also listed under the <strong>Hotels</strong> chip in the <button style="background:none;border:none;padding:0;font-size:12.5px;font-weight:700;color:#0E5E8A;cursor:pointer;font-family:inherit;" sc-camel-on-click="{{ goMarketplace }}">Marketplace</button>, with the same booking terms. A crew stay usually needs a run to and from the quay — your GAC agent arranges the transfer.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ ccIsTransfers }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-transfers">
+
+            <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="flight-planner">
+              <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                <div>
+                  <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Flight-timed transport</p>
+                  <h3 style="font-size:17px;font-weight:700;margin:4px 0 0;">Give us the flight. We time the taxi and the launch to it.</h3>
+                </div>
+                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;letter-spacing:.02em;background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;">Illustrative</span>
+              </div>
+              <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;max-width:760px;">{{ trIntro }}</p>
+
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;" role="group" aria-label="Direction">
+                <sc-for list="{{ trDirections }}" as="d" hint-placeholder-count="2">
+                  <button type="button" style="{{ d.style }}" aria-pressed="{{ d.pressed }}" sc-camel-on-click="{{ d.on }}" data-testid="{{ d.testId }}">{{ d.label }} <span style="font-weight:400;opacity:.8;">{{ d.hint }}</span></button>
+                </sc-for>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px;">
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Flight number
+                  <input type="text" value="{{ trFlightNo }}" sc-camel-on-change="{{ onTrFlightNo }}" data-testid="flight-no" aria-describedby="flight-suggestions" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                </label>
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Crew travelling
+                  <input type="{{ 'number' }}" min="1" step="1" sc-camel-input-mode="numeric" value="{{ trPax }}" sc-camel-on-change="{{ onTrPax }}" sc-camel-on-blur="{{ onTrPaxBlur }}" data-testid="flight-pax" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                </label>
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Port
+                  <sc-raw-select value="{{ trPort }}" sc-camel-on-change="{{ onTrPort }}" data-testid="flight-port" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                    <sc-for list="{{ trPorts }}" as="p" hint-placeholder-count="2"><option value="{{ p.value }}">{{ p.label }}</option></sc-for>
+                  </sc-raw-select>
+                </label>
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Launch to the vessel
+                  <sc-raw-select value="{{ trLaunchId }}" sc-camel-on-change="{{ onTrLaunch }}" data-testid="flight-launch" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                    <option value="">None — vessel alongside</option>
+                    <sc-for list="{{ trLaunchOptions }}" as="o" hint-placeholder-count="2"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                  </sc-raw-select>
+                </label>
+              </div>
+              <p id="flight-suggestions" style="color:#33475F;font-size:12px;margin:6px 0 0;">Demo flights the simulated feed knows: <sc-for list="{{ trSuggestions }}" as="f" hint-placeholder-count="2"><span>{{ f.sep }}<button type="button" style="background:none;border:none;padding:0;font-size:12px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;" sc-camel-on-click="{{ f.on }}">{{ f.flight }}</button>{{ f.tail }}</span></sc-for></p>
+
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px;">
+                <button type="button" style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ trTrack }}" data-testid="track-flight">Track flight</button>
+                <sc-if value="{{ trHasStatus }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ trToggleDelay }}" data-testid="simulate-delay">{{ trDelayBtnLabel }}</button>
+                </sc-if>
+                <span style="color:#33475F;font-size:12px;">{{ trFeedNote }}</span>
+              </div>
+
+              <sc-if value="{{ trNotFound }}" hint-placeholder-val="{{ false }}">
+                <p role="alert" data-testid="flight-not-found" style="border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ trNotFoundText }}</p>
+              </sc-if>
+
+              <sc-if value="{{ trHasStatus }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px;">
+                  <div style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:14px;" data-testid="flight-status" data-phase="{{ trPhase }}">
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                      <strong style="font-size:16px;">{{ trFlight }}</strong>
+                      <span style="{{ trPhaseStyle }}">{{ trPhaseLabel }}</span>
+                    </div>
+                    <p style="font-size:13px;margin:4px 0 0;">{{ trRoute }}</p>
+                    <sc-raw-table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;">
+                      <sc-raw-tbody>
+                        <sc-raw-tr style="border-bottom:1px dashed #E5EAF1;">
+                          <sc-raw-td style="padding:4px 0;color:#33475F;">{{ trScheduledLabel }}</sc-raw-td>
+                          <sc-raw-td style="padding:4px 0;text-align:right;font-weight:600;">{{ trScheduled }}</sc-raw-td>
+                        </sc-raw-tr>
+                        <sc-raw-tr>
+                          <sc-raw-td style="padding:4px 0;color:#33475F;">Live estimate</sc-raw-td>
+                          <sc-raw-td style="padding:4px 0;text-align:right;font-weight:600;" data-testid="flight-estimate">{{ trEstimated }}<sc-if value="{{ trHasDelay }}" hint-placeholder-val="{{ false }}"><span style="margin-left:6px;font-size:12px;font-weight:600;color:#B45309;">{{ trDelayText }}</span></sc-if></sc-raw-td>
+                        </sc-raw-tr>
+                      </sc-raw-tbody>
+                    </sc-raw-table>
+                  </div>
+                  <div style="border:1px solid #E5EAF1;border-radius:8px;padding:14px;" data-testid="transfer-plan">
+                    <p style="font-size:12.5px;font-weight:700;margin:0;">Transport, timed to the flight</p>
+                    <ol style="list-style:none;padding:0;margin:8px 0 0;display:grid;gap:6px;">
+                      <sc-for list="{{ trLegs }}" as="l" hint-placeholder-count="5">
+                        <li style="{{ l.style }}">
+                          <span><span aria-hidden="true" style="display:inline-grid;place-items:center;width:20px;height:20px;margin-right:8px;border-radius:50%;background:#E8F1F7;color:#0E5E8A;font-size:11px;font-weight:700;">{{ l.n }}</span>{{ l.label }}<sc-if value="{{ l.hasNote }}" hint-placeholder-val="{{ false }}"><span style="margin-left:6px;font-size:12px;color:#33475F;">{{ l.note }}</span></sc-if></span>
+                          <strong style="white-space:nowrap;" data-testid="{{ l.testId }}">{{ l.time }}</strong>
+                        </li>
+                      </sc-for>
+                    </ol>
+                    <p style="color:#33475F;font-size:12.5px;margin:10px 0 0;">Taxi: <strong style="color:#0A2540;">{{ trTaxiName }}</strong><sc-if value="{{ trHasLaunch }}" hint-placeholder-val="{{ false }}"> · Launch: <strong style="color:#0A2540;">{{ trLaunchName }}</strong> {{ trLaunchDetail }}</sc-if></p>
+                    <div style="margin-top:12px;">
+                      <button type="button" style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ trSend }}" data-testid="send-transport">Send transport request</button>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div data-testid="taxis" style="margin-top:24px;">
+              <h3 style="font-size:17px;font-weight:700;margin:0;">Taxis and minibuses</h3>
+              <p style="color:#33475F;font-size:13.5px;margin:4px 0 0;max-width:720px;">Airport, hotel, and quay runs. Airport pickups hold the tracked flight, so a delay moves the pickup — not the crew.</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:12px;">
+                <sc-for list="{{ ccTaxis }}" as="t" hint-placeholder-count="2">
+                  <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="{{ t.testId }}" data-status="{{ t.status }}">
+                    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;">
+                      <div>
+                        <h4 style="font-size:16px;font-weight:700;margin:0;"><button style="background:none;border:none;padding:0;font-size:16px;font-weight:700;color:#0A2540;cursor:pointer;font-family:inherit;text-align:left;" style-hover="color:#0E5E8A;text-decoration:underline;" sc-camel-on-click="{{ t.onOpen }}" title="View supplier profile">{{ t.name }}</button></h4>
+                        <p style="font-size:12.5px;margin:2px 0 0;"><span style="color:#9A7B14;font-weight:700;">{{ t.ratingLabel }}</span> <span style="color:#33475F;">{{ t.ratingCountLabel }}</span></p>
+                      </div>
+                      <span style="{{ t.statusStyle }}">{{ t.statusLabel }}</span>
+                    </div>
+                    <p style="color:#33475F;font-size:13px;margin:8px 0 0;">{{ t.desc }}</p>
+                    <sc-if value="{{ t.hasFacts }}" hint-placeholder-val="{{ false }}">
+                      <ul style="list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;padding:0;">
+                        <sc-for list="{{ t.facts }}" as="f" hint-placeholder-count="3"><li style="border:1px solid #E5EAF1;background:#FAFBFD;border-radius:6px;padding:2px 8px;font-size:12px;color:#33475F;">{{ f.label }} <strong style="color:#0A2540;">{{ f.value }}</strong></li></sc-for>
+                      </ul>
+                    </sc-if>
+                    <sc-if value="{{ t.hasNote }}" hint-placeholder-val="{{ false }}">
+                      <p style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:8px 12px;font-size:12.5px;color:#33475F;margin:10px 0 0;">{{ t.bookingNote }}</p>
+                    </sc-if>
+                    <div style="margin-top:14px;">
+                      <sc-if value="{{ t.bookable }}" hint-placeholder-val="{{ false }}">
+                        <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ t.onBook }}" aria-label="{{ t.actionAria }}" data-testid="{{ t.bookTestId }}">Request taxi</button>
+                      </sc-if>
+                      <sc-if value="{{ t.blocked }}" hint-placeholder-val="{{ false }}">
+                        <button style="background:#FFFFFF;color:#9AA8B8;border:1.5px solid #E5EAF1;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:not-allowed;font-family:inherit;" disabled="{{ true }}" title="Blocked by SVS — compliance evidence required">Unavailable</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div data-testid="launches-panel" style="margin-top:24px;">
+              <h3 style="font-size:17px;font-weight:700;margin:0;">Launches from the quay</h3>
+              <p style="color:#33475F;margin:4px 0 0;font-size:13.5px;max-width:720px;">Launch operators run crew, stores, and light freight out to vessels at anchor or working inshore. Every operator is SVS-vetted; the two things you need at a glance are the launch’s maximum capacity and whether freight is included in the run.</p>
+              <p style="color:#33475F;margin:4px 0 0;font-size:12px;">Ports, capacities, transit times, and availability shown here are illustrative.</p>
+
+              <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;margin-top:16px;" data-testid="plan-run">
+                <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Plan a run</p>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-top:8px;">
+                  <label style="display:block;flex:1 1 200px;min-width:0;font-size:12.5px;font-weight:600;color:#33475F;">Port
+                    <sc-raw-select value="{{ planPort }}" sc-camel-on-change="{{ onPlanPort }}" data-testid="plan-port" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                      <sc-for list="{{ planPorts }}" as="p" hint-placeholder-count="2"><option value="{{ p.value }}">{{ p.label }}</option></sc-for>
+                    </sc-raw-select>
+                  </label>
+                  <label style="display:block;flex:1 1 200px;min-width:0;font-size:12.5px;font-weight:600;color:#33475F;">Passengers needed
+                    <input type="{{ 'number' }}" min="1" step="1" sc-camel-input-mode="numeric" value="{{ planPaxText }}" sc-camel-on-change="{{ onPlanPax }}" sc-camel-on-blur="{{ onPlanPaxBlur }}" data-testid="plan-passengers" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                  </label>
+                  <div style="display:flex;flex:0 0 auto;align-items:center;gap:12px;min-height:40px;padding-bottom:4px;">
+                    <span style="font-size:13px;font-weight:600;">Freight to go out?</span>
+                    <button type="button" role="switch" aria-checked="{{ planFreightAria }}" aria-label="Freight to go out" style="{{ planFreightTrack }}" sc-camel-on-click="{{ togglePlanFreight }}"><span style="{{ planFreightKnob }}"></span></button>
+                  </div>
+                </div>
+                <p style="border-left:4px solid #0E5E8A;background:#E8F1F7;border-radius:8px;padding:8px 12px;font-size:13px;color:#0A2540;margin:12px 0 0;" data-testid="plan-summary" aria-live="polite">{{ planSummary }}</p>
+              </div>
+
+              <sc-for list="{{ portSections }}" as="p" hint-placeholder-count="2">
+                <section style="margin-top:24px;" aria-labelledby="launches-{{ p.slug }}">
+                  <h2 id="launches-{{ p.slug }}" style="font-size:17px;font-weight:700;margin:0;">{{ p.heading }}</h2>
+                  <sc-if value="{{ p.hasNote }}" hint-placeholder-val="{{ false }}"><p style="color:#33475F;margin:4px 0 0;font-size:13.5px;max-width:720px;">{{ p.note }}</p></sc-if>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(max(320px,calc(50% - 12px)),1fr));gap:16px;margin-top:12px;align-items:stretch;">
+                    <sc-for list="{{ p.launches }}" as="s" hint-placeholder-count="2">
+                      <div style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="launch-{{ s.id }}" data-fit="{{ s.fit }}">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                          <h3 style="font-size:16px;font-weight:700;margin:0;"><button style="background:none;border:none;padding:0;font-size:16px;font-weight:700;color:#0A2540;cursor:pointer;font-family:inherit;text-align:left;" style-hover="color:#0E5E8A;text-decoration:underline;" sc-camel-on-click="{{ s.onOpen }}" title="View supplier profile">{{ s.name }}</button></h3>
+                          <span style="{{ s.statusStyle }}">{{ s.statusLabel }}</span>
+                          <span data-testid="fit-{{ s.id }}"><span style="{{ s.fitStyle }}">{{ s.fitLabel }}</span></span>
+                        </div>
+                        <p style="display:flex;flex-wrap:wrap;align-items:baseline;gap:0 14px;font-size:13px;color:#33475F;margin:6px 0 0;">
+                          <span style="font-size:12.5px;"><span style="color:#9A7B14;font-weight:700;">{{ s.ratingLabel }}</span> <span style="color:#33475F;">{{ s.ratingCountLabel }}</span></span>
+                          <span>Launch <strong style="color:#0A2540;">{{ s.vesselName }}</strong></span>
+                        </p>
+                        <p style="color:#33475F;font-size:13px;margin:6px 0 0;">{{ s.desc }}</p>
+                        <sc-raw-table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;">
+                          <sc-raw-tbody>
+                            <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="4">
+                              <sc-raw-tr style="border-bottom:1px dashed #E5EAF1;">
+                                <sc-raw-td style="padding:6px 12px 6px 0;vertical-align:top;color:#33475F;">{{ r.k }}</sc-raw-td>
+                                <sc-raw-td style="padding:6px 0;text-align:right;font-weight:600;">{{ r.v }}</sc-raw-td>
+                              </sc-raw-tr>
+                            </sc-for>
+                            <sc-raw-tr>
+                              <sc-raw-td sc-camel-col-span="2" style="padding:6px 0;font-size:12px;color:#33475F;">{{ s.freightNote }}</sc-raw-td>
+                            </sc-raw-tr>
+                          </sc-raw-tbody>
+                        </sc-raw-table>
+                        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:16px;">
+                          <sc-if value="{{ s.bookable }}" hint-placeholder-val="{{ false }}"><button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;min-height:40px;font-family:inherit;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ s.onRequest }}" data-testid="request-{{ s.id }}">Request launch</button></sc-if>
+                          <sc-if value="{{ s.blocked }}" hint-placeholder-val="{{ false }}"><button style="background:#FFFFFF;color:#9AA8B8;border:1.5px solid #E5EAF1;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:not-allowed;white-space:nowrap;min-height:40px;font-family:inherit;" disabled="{{ true }}" title="Blocked by SVS — compliance evidence required">Unavailable</button></sc-if>
+                          <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;padding:0;font-family:inherit;" sc-camel-on-click="{{ s.onOpen }}">View profile →</button>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </section>
+              </sc-for>
+
+              <div style="margin-top:24px;background:#0A2540;color:#D8E2EC;border-radius:10px;padding:14px 18px;display:flex;gap:16px;align-items:center;font-size:13.5px;flex-wrap:wrap;">
+                <span style="background:rgba(255,255,255,.12);border-radius:6px;padding:3px 8px;font-size:11.5px;font-weight:700;">GA</span>
+                <span style="flex:1;min-width:240px;">A launch run is booked like any other marketplace service — quote, e-sign, PO in GAC Agent, invoice review — and the operator’s capacity and freight terms travel with the booking.</span>
+              </div>
+            </div>
           </div>
         </sc-if>
 

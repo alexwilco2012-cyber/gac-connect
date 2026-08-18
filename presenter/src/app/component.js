@@ -20,6 +20,9 @@ class Component extends DCLogic {
     this.state = {
       route: parsed.route || (this.props.startScreen ?? 'home'),
       profileId: parsed.profileId,
+      /* sub-section the hash asked for ('#/launches' → crew-change 'transfers');
+         the owning feature module reads it and clears it once the user picks another */
+      routeSection: parsed.section || null,
       loader: loaderWanted ? 'visible' : 'gone',
       chip: 'All', query: '', sort: 'featured', esgOnly: false,
       svsFilter: 'all',
@@ -37,8 +40,8 @@ class Component extends DCLogic {
          slide, advOp/advPe drive the fade-out into the platform. */
       presOn: presWanted, advSlide: 0, advOp: '1', advPe: 'auto'
     };
-    /* Feature modules (app/features/*.js — Launches, Procurement, Crew change,
-       added after the 17 Aug review) contribute their own initial state. */
+    /* Feature modules (app/features/*.js — the launches panel, Procurement,
+       Crew change, added after the 17 Aug review) contribute their own initial state. */
     Object.assign(this.state, this._featureState());
 
     this._goCache = {};
@@ -83,11 +86,17 @@ class Component extends DCLogic {
   /* ---------- routing ---------- */
   _parseHash() {
     const h = (typeof location !== 'undefined' ? location.hash : '').replace(/^#\/?/, '');
-    if (!h) return { route: '', profileId: null };
+    if (!h) return { route: '', profileId: null, section: null };
     const parts = h.split('/');
-    if (parts[0] === 'supplier' && parts[1]) return { route: 'supplier', profileId: parts[1] };
-    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'launches', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
-    return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null };
+    if (parts[0] === 'supplier' && parts[1]) return { route: 'supplier', profileId: parts[1], section: null };
+    /* '#/crew-change/<section>' mirrors the site's ?section= deep link; there is
+       no Launches tab any more (17 Aug review follow-up), so the old '#/launches'
+       opens Crew change on its Transfers section, as the site's /app/launches
+       redirect does. The crew-change module reads state.routeSection. */
+    if (parts[0] === 'launches') return { route: 'crew-change', profileId: null, section: 'transfers' };
+    if (parts[0] === 'crew-change' && parts[1]) return { route: 'crew-change', profileId: null, section: parts[1] };
+    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null, section: null };
   }
   nav(r) {
     if (typeof location !== 'undefined') {
@@ -109,7 +118,7 @@ class Component extends DCLogic {
     if (splash) splash.remove();
     this._onHash = () => {
       const p = this._parseHash();
-      this.setState({ route: p.route || (this.props.startScreen ?? 'home'), profileId: p.profileId });
+      this.setState({ route: p.route || (this.props.startScreen ?? 'home'), profileId: p.profileId, routeSection: p.section || null });
       window.scrollTo({ top: 0 });
     };
     window.addEventListener('hashchange', this._onHash);
@@ -382,11 +391,12 @@ class Component extends DCLogic {
     const brandSubUpper = bParts.slice(1).join(' ').toUpperCase() || 'CONNECT';
     const route = st.route;
 
-    const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'launches', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     const isPlatform = platformRoutes.includes(route);
 
-    /* nav — eleven platform items after the 17 Aug review, so the padding is
-       tight (mirrors the site's AppLayout) and the tier screen is "Tiers" */
+    /* nav — ten platform items after the 17 Aug review (launches live inside
+       Crew change › Transfers, not on a tab), so the padding is tight (mirrors
+       the site's AppLayout) and the tier screen is "Tiers" */
     const mk = (label, r, beta) => ({
       label: label, beta: !!beta, pressed: (route === r || (r === 'marketplace' && route === 'supplier')) ? 'true' : 'false',
       go: this._go(r),
@@ -394,7 +404,7 @@ class Component extends DCLogic {
         ((route === r || (r === 'marketplace' && route === 'supplier')) ? 'color:#FFFFFF;background:rgba(255,255,255,.14);box-shadow:inset 0 -3px 0 #C9A227;' : 'color:#B9C8D6;')
     });
     const navItems = isPlatform
-      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Launches', 'launches'), mk('Procurement', 'procurement'), mk('Crew change', 'crew-change'), mk('Quotes', 'quotes'), mk('Tiers', 'tiers'), mk('SVS', 'svs'), mk('Analytics', 'analytics'), mk('Certification', 'certification', true), mk('Bunkers', 'bunkers', true)]
+      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Procurement', 'procurement'), mk('Crew change', 'crew-change'), mk('Quotes', 'quotes'), mk('Tiers', 'tiers'), mk('SVS', 'svs'), mk('Analytics', 'analytics'), mk('Certification', 'certification', true), mk('Bunkers', 'bunkers', true)]
       : [mk('Home', 'home'), mk('For Clients', 'clients'), mk('For Suppliers', 'suppliers'), mk('About', 'about')];
 
     /* marketplace */
@@ -604,12 +614,12 @@ class Component extends DCLogic {
       isDashboard: route === 'dashboard', isMarketplace: route === 'marketplace', isProfile: route === 'supplier',
       isQuotes: route === 'quotes', isTiers: route === 'tiers', isSvs: route === 'svs', isAnalytics: route === 'analytics',
       isCert: route === 'certification', isBunkers: route === 'bunkers', isKitchen: route === 'kitchen-sink',
-      isLaunches: route === 'launches', isProcurement: route === 'procurement', isCrew: route === 'crew-change',
+      isProcurement: route === 'procurement', isCrew: route === 'crew-change',
       navItems: navItems,
       goHome: this._go('home'), goClients: this._go('clients'), goSuppliers: this._go('suppliers'), goAbout: this._go('about'),
       goDashboard: this._go('dashboard'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'),
       goTiers: this._go('tiers'), goSvs: this._go('svs'), goAnalytics: this._go('analytics'), goKitchen: this._go('kitchen-sink'),
-      goLaunches: this._go('launches'), goProcurement: this._go('procurement'), goCrew: this._go('crew-change'),
+      goProcurement: this._go('procurement'), goCrew: this._go('crew-change'),
       /* dashboard crew-change card line — a default the crew-change module overrides with a live count */
       dashCrewLine: 'No letters in progress. Hotels, immigration, LOI and repatriation-letter templates live in one place.',
 

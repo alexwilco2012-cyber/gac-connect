@@ -69,8 +69,10 @@ the transfers section: taxis + the launches panel; `54-launches` is retired),
 
 ### Feature modules (17 Aug review screens)
 
-The screens added after v12 — Launches, Procurement, Crew change — live as
-**feature modules** in `src/app/features/<name>.js`, included after
+The screens added after v12 — Procurement, Crew change, and the launches panel
+that Crew change › Transfers embeds (`launches.js` still owns plan-a-run, the
+per-port cards and the launch-request modal; `56-crew-change.html` binds them) —
+live as **feature modules** in `src/app/features/<name>.js`, included after
 `component.js` in the x-dc script. Each module owns its data, state, bindings
 and Escape handling and registers them with the core:
 
@@ -84,7 +86,10 @@ and Escape handling and registers them with the core:
 
 `component.js` merges them through `_featureState()`, `_featureVals(st)` and
 `_featureEscape()` and knows nothing else about them; routes and nav entries
-for the three screens are the only core edits. Add a screen = a partial + a
+for the two screens are the only core edits, plus one generic hook: `_parseHash`
+turns `#/crew-change/<section>` (and the retired `#/launches`, which is
+`#/crew-change/transfers`) into `state.routeSection`, which the crew-change
+module shows until the user picks another chip. Add a screen = a partial + a
 module + one route/nav line. `build.py` runs the same forbidden-sequence guard
 over `app/features/*.js` as over the core files.
 
@@ -166,11 +171,11 @@ Subsea, Wilkinson Drilling.
 
 17 Aug review additions (mirror the site, `docs/handoff/03 §3.2`): FLT and
 crane prices cover the booked window only — overrun not included, subject to
-change, supplier T&Cs included; Launches tab (capacity + freight included, per
-port); Procurement via Compass (email → Compass supplies or sources from a
-chandler and pays them → invoiced via Compass under GAC with an illustrative,
-the client never sees or hears of a mark-up — Compass's prices, one total);
-Crew change (hotels; Transfers = taxis + launches + flight-timed transport with
-a simulated flight-status feed; immigration; LOI endorsed by GAC as agents;
-repat letter endorsed by UK Border Force). Simulated steps say so. There is no
+change, supplier T&Cs included; Procurement via Compass (email → Compass
+supplies or sources through its network and pays the chandler → invoiced via
+Compass under GAC; the client never sees or hears of a mark-up — Compass's
+prices, one total); Crew change (hotels; Transfers = taxis + the launches panel
+(capacity + freight included, per port) + flight-timed transport with a
+simulated flight-status feed; immigration; LOI endorsed by GAC as agents; repat
+letter endorsed by UK Border Force). Simulated steps say so. There is no
 Launches tab — `#/launches` opens Crew change on Transfers.
