@@ -1,6 +1,281 @@
   <sc-if value="{{ isCrew }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Crew change" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
-      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change</p>
-      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Crew change</h1>
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · hotels, immigration, letters</p>
+      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Everything a crew change needs, in one place</h1>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Rooms for crew held ashore, the immigration paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a repatriation letter for each off-signer. The platform holds the templates, you fill them in, GAC endorses or routes them and sends them back — one letter per crew member, always.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:20px;">
+        <sc-for list="{{ ccFlow }}" as="f" hint-placeholder-count="3">
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <p style="font-size:13.5px;font-weight:700;margin:0;">{{ f.title }}</p>
+            <p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ f.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;" role="group" aria-label="Crew change sections" data-testid="crew-sections">
+        <sc-for list="{{ ccSections }}" as="s" hint-placeholder-count="4">
+          <button style="{{ s.style }}" sc-camel-on-click="{{ s.on }}" aria-pressed="{{ s.pressed }}">{{ s.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="margin-top:16px;" data-testid="crew-section" data-section="{{ ccSectionId }}">
+        <h2 style="font-size:19px;font-weight:700;margin:0;">{{ ccSectionLabel }}</h2>
+        <p style="color:#33475F;font-size:13.5px;margin:2px 0 12px;" data-testid="section-summary">{{ ccSectionSummary }}</p>
+
+        <sc-if value="{{ ccIsHotels }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-hotels">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
+              <sc-for list="{{ ccHotels }}" as="h" hint-placeholder-count="2">
+                <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="{{ h.testId }}" data-status="{{ h.status }}">
+                  <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;">
+                    <div>
+                      <h3 style="font-size:17px;font-weight:700;margin:0;"><button style="background:none;border:none;padding:0;font-size:17px;font-weight:700;color:#0A2540;cursor:pointer;font-family:inherit;text-align:left;" style-hover="color:#0E5E8A;text-decoration:underline;" sc-camel-on-click="{{ h.onOpen }}" title="View supplier profile">{{ h.name }}</button></h3>
+                      <p style="font-size:12.5px;margin:2px 0 0;"><span style="color:#9A7B14;font-weight:700;">{{ h.ratingLabel }}</span> <span style="color:#33475F;">{{ h.ratingCountLabel }}</span></p>
+                    </div>
+                    <span style="{{ h.statusStyle }}">{{ h.statusLabel }}</span>
+                  </div>
+                  <p style="color:#33475F;font-size:13px;margin:8px 0 0;">{{ h.desc }}</p>
+                  <p style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:8px 12px;font-size:12.5px;color:#33475F;margin:10px 0 0;">{{ h.caveat }}</p>
+                  <div style="margin-top:14px;">
+                    <sc-if value="{{ h.bookable }}" hint-placeholder-val="{{ false }}">
+                      <button style="{{ h.actionStyle }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ h.onBook }}" aria-label="{{ h.actionAria }}" data-testid="{{ h.bookTestId }}">{{ h.actionLabel }}</button>
+                    </sc-if>
+                    <sc-if value="{{ h.blocked }}" hint-placeholder-val="{{ false }}">
+                      <button style="{{ h.actionStyle }}" disabled="{{ h.blocked }}" title="{{ h.actionTitle }}" aria-label="{{ h.actionAria }}" data-testid="{{ h.bookTestId }}">{{ h.actionLabel }}</button>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <p style="color:#33475F;font-size:12.5px;margin:12px 0 0;">Both hotels are also listed under the <strong>Hotels</strong> chip in the <button style="background:none;border:none;padding:0;font-size:12.5px;font-weight:700;color:#0E5E8A;cursor:pointer;font-family:inherit;" sc-camel-on-click="{{ goMarketplace }}">Marketplace</button>, with the same booking terms. A crew stay usually needs a run to and from the quay — your GAC agent arranges the transfer.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ ccIsImmigration }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-immigration" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;">
+            <div style="flex:1.4 1 360px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+              <p style="font-size:13.5px;font-weight:700;margin:0;">Before any letter goes out — your checklist</p>
+              <ul style="list-style:none;padding:0;margin:10px 0 0;display:grid;gap:10px;">
+                <sc-for list="{{ ccChecklist }}" as="c" hint-placeholder-count="6">
+                  <li style="display:flex;gap:10px;font-size:13px;">
+                    <span aria-hidden="true" style="color:#047857;font-weight:700;margin-top:1px;">✓</span>
+                    <span><strong>{{ c.title }}</strong><span style="display:block;color:#33475F;">{{ c.body }}</span></span>
+                  </li>
+                </sc-for>
+              </ul>
+            </div>
+            <div style="flex:1 1 260px;display:grid;gap:16px;">
+              <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <p style="font-size:13.5px;font-weight:700;margin:0;">LOI, never OKTB</p>
+                <p style="color:#33475F;font-size:13px;margin:6px 0 0;" data-testid="loi-not-oktb">{{ ccLoiNotOktb }}</p>
+              </div>
+              <div style="background:#0A2540;color:#FFFFFF;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <p style="font-size:13.5px;font-weight:700;margin:0;">Informs, not advises</p>
+                <p style="color:#D8E2EC;font-size:13px;margin:6px 0 0;" data-testid="informs-not-advises">{{ ccInformsNotAdvises }}</p>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ ccIsLoi }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-loi" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;">
+            <div style="flex:1.5 1 420px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+              <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                <div>
+                  <p style="font-size:13.5px;font-weight:700;margin:0;">Immigration Support Letter (LOI) — template</p>
+                  <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">One crew member per letter. Details as printed in the passport.</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                  <span aria-hidden="true">Visa national?</span>
+                  <button role="switch" aria-checked="{{ ccLoiVisaAria }}" aria-label="Visa national" style="{{ ccLoiVisaTrack }}" sc-camel-on-click="{{ ccLoiToggleVisa }}"><span style="{{ ccLoiVisaKnob }}"></span></button>
+                </div>
+              </div>
+              <p id="loi-illustrative" data-testid="loi-illustrative" style="border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
+              <sc-if value="{{ ccLoiNotRequired }}" hint-placeholder-val="{{ false }}">
+                <p data-testid="loi-not-required" style="border-left:4px solid #0E5E8A;border-radius:8px;background:#E8F1F7;color:#0E5E8A;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ ccLoiNotRequiredNote }}</p>
+              </sc-if>
+              <form style="margin-top:16px;" sc-camel-on-submit="{{ ccLoiSubmit }}" aria-describedby="loi-illustrative">
+                <fieldset style="border:0;padding:0;margin:0;min-width:0;" disabled="{{ ccLoiFieldsDisabled }}">
+                  <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Crew member and travel details</legend>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
+                    <sc-for list="{{ ccLoiFieldsA }}" as="f" hint-placeholder-count="6">
+                      <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">{{ f.label }}<input type="text" value="{{ f.value }}" placeholder="{{ f.placeholder }}" sc-camel-on-change="{{ f.on }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;"></label>
+                    </sc-for>
+                    <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Vessel
+                      <sc-raw-select value="{{ ccLoiVessel }}" sc-camel-on-change="{{ onCcLoiVessel }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                        <option value="caledonian-star">MV Caledonian Star · Aberdeen</option>
+                        <option value="boreal">MV Boreal · Peterhead</option>
+                        <option value="granite-coast">MV Granite Coast · Aberdeen</option>
+                      </sc-raw-select>
+                    </label>
+                    <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Port of joining
+                      <sc-raw-select value="{{ ccLoiPort }}" sc-camel-on-change="{{ onCcLoiPort }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                        <option value="Aberdeen">Aberdeen</option>
+                        <option value="Peterhead">Peterhead</option>
+                        <option value="Montrose">Montrose</option>
+                      </sc-raw-select>
+                    </label>
+                    <sc-for list="{{ ccLoiFieldsB }}" as="f" hint-placeholder-count="2">
+                      <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">{{ f.label }}<input type="text" value="{{ f.value }}" placeholder="{{ f.placeholder }}" sc-camel-on-change="{{ f.on }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;"></label>
+                    </sc-for>
+                  </div>
+                </fieldset>
+                <sc-if value="{{ ccLoiHasProblems }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" data-testid="loi-errors" style="border-left:4px solid #B91C1C;border-radius:8px;background:#FBEAEA;color:#B91C1C;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">Please complete: {{ ccLoiProblems }}.</p>
+                </sc-if>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;">
+                  <button type="submit" style="{{ ccLoiSubmitStyle }}" disabled="{{ ccLoiSubmitDisabled }}" data-testid="loi-submit">Submit LOI request</button>
+                  <span style="color:#33475F;font-size:12.5px;">GAC checks, endorses as agents, and returns the letter.</span>
+                </div>
+              </form>
+            </div>
+            <div style="flex:1 1 260px;display:grid;gap:16px;">
+              <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <p style="font-size:13.5px;font-weight:700;margin:0;">What happens next</p>
+                <ol style="list-style:none;padding:0;margin:8px 0 0;display:grid;gap:8px;font-size:13px;">
+                  <sc-for list="{{ ccLoiStages }}" as="s" hint-placeholder-count="4">
+                    <li style="display:flex;gap:10px;">
+                      <span style="display:grid;place-items:center;width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#E8F1F7;color:#0E5E8A;font-size:11px;font-weight:700;">{{ s.n }}</span>
+                      <span><strong>{{ s.label }}</strong><span style="display:block;color:#33475F;">{{ s.note }}</span></span>
+                    </li>
+                  </sc-for>
+                </ol>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <p style="font-size:13.5px;font-weight:700;margin:0;">LOI, never OKTB</p>
+                <p style="color:#33475F;font-size:12.5px;margin:6px 0 0;">{{ ccLoiNotOktb }}</p>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ ccIsRepat }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-repat" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;">
+            <div style="flex:1.5 1 420px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+              <p style="font-size:13.5px;font-weight:700;margin:0;">Disembarkation / repatriation letter — template</p>
+              <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">One crew member per letter. Details as printed in the passport.</p>
+              <p id="repat-illustrative" data-testid="repat-illustrative" style="border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
+              <form style="margin-top:16px;" sc-camel-on-submit="{{ ccRepatSubmit }}" aria-describedby="repat-illustrative">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
+                  <sc-for list="{{ ccRepatFieldsA }}" as="f" hint-placeholder-count="5">
+                    <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">{{ f.label }}<input type="text" value="{{ f.value }}" placeholder="{{ f.placeholder }}" sc-camel-on-change="{{ f.on }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;"></label>
+                  </sc-for>
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Vessel
+                    <sc-raw-select value="{{ ccRepatVessel }}" sc-camel-on-change="{{ onCcRepatVessel }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                      <option value="caledonian-star">MV Caledonian Star · Aberdeen</option>
+                      <option value="boreal">MV Boreal · Peterhead</option>
+                      <option value="granite-coast">MV Granite Coast · Aberdeen</option>
+                    </sc-raw-select>
+                  </label>
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Disembarkation port
+                    <sc-raw-select value="{{ ccRepatPort }}" sc-camel-on-change="{{ onCcRepatPort }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                      <option value="Aberdeen">Aberdeen</option>
+                      <option value="Peterhead">Peterhead</option>
+                      <option value="Montrose">Montrose</option>
+                    </sc-raw-select>
+                  </label>
+                  <sc-for list="{{ ccRepatFieldsB }}" as="f" hint-placeholder-count="1">
+                    <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">{{ f.label }}<input type="text" value="{{ f.value }}" placeholder="{{ f.placeholder }}" sc-camel-on-change="{{ f.on }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;"></label>
+                  </sc-for>
+                </div>
+
+                <fieldset style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:14px;margin:16px 0 0;min-width:0;" data-testid="repat-question">
+                  <legend style="padding:0 4px;font-size:12.5px;font-weight:700;">{{ ccRepatQuestion }}</legend>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+                    <sc-for list="{{ ccRepatYesNo }}" as="o" hint-placeholder-count="2">
+                      <button type="button" style="{{ o.style }}" aria-pressed="{{ o.pressed }}" sc-camel-on-click="{{ o.on }}">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </fieldset>
+
+                <fieldset style="border:0;padding:0;margin:16px 0 0;min-width:0;">
+                  <legend style="font-size:12.5px;font-weight:600;color:#33475F;padding:0;">Repatriation flights (up to three)</legend>
+                  <div style="display:grid;gap:8px;margin-top:4px;">
+                    <sc-for list="{{ ccRepatFlights }}" as="f" hint-placeholder-count="3">
+                      <input type="text" value="{{ f.value }}" placeholder="{{ f.placeholder }}" aria-label="{{ f.label }}" sc-camel-on-change="{{ f.on }}" style="display:block;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                    </sc-for>
+                  </div>
+                </fieldset>
+
+                <sc-if value="{{ ccRepatHasProblems }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" data-testid="repat-errors" style="border-left:4px solid #B91C1C;border-radius:8px;background:#FBEAEA;color:#B91C1C;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">Please complete: {{ ccRepatProblems }}.</p>
+                </sc-if>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;">
+                  <button type="submit" style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="background:#0B4C70;" data-testid="repat-submit">Submit repatriation letter request</button>
+                  <span style="color:#33475F;font-size:12.5px;">GAC prepares it, UK Border Force endorses it, GAC returns it.</span>
+                </div>
+              </form>
+            </div>
+            <div style="flex:1 1 260px;display:grid;gap:16px;">
+              <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <p style="font-size:13.5px;font-weight:700;margin:0;">Written leave to enter</p>
+                <p style="color:#33475F;font-size:12.5px;margin:6px 0 0;" data-testid="repat-intro">{{ ccRepatIntro }}</p>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <p style="font-size:13.5px;font-weight:700;margin:0;">What happens next</p>
+                <ol style="list-style:none;padding:0;margin:8px 0 0;display:grid;gap:8px;font-size:13px;">
+                  <sc-for list="{{ ccRepatStages }}" as="s" hint-placeholder-count="5">
+                    <li style="display:flex;gap:10px;">
+                      <span style="display:grid;place-items:center;width:20px;height:20px;flex-shrink:0;border-radius:50%;background:#E8F1F7;color:#0E5E8A;font-size:11px;font-weight:700;">{{ s.n }}</span>
+                      <span><strong>{{ s.label }}</strong><span style="display:block;color:#33475F;">{{ s.note }}</span></span>
+                    </li>
+                  </sc-for>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <section style="margin-top:32px;" aria-labelledby="crew-requests-heading">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+          <div>
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ ccRequestsCount }}</p>
+            <h2 id="crew-requests-heading" style="font-size:19px;font-weight:700;margin:2px 0 0;">Letters in progress and returned</h2>
+          </div>
+          <p style="color:#33475F;font-size:12.5px;margin:0;" data-testid="crew-requests-summary">{{ ccRequestsSummary }}</p>
+        </div>
+
+        <div style="display:grid;gap:16px;margin-top:12px;" data-testid="crew-requests">
+          <sc-for list="{{ ccRequests }}" as="r" hint-placeholder-count="2">
+            <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="{{ r.testId }}" data-kind="{{ r.kind }}" data-stage="{{ r.stage }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                <div style="min-width:0;">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;letter-spacing:.02em;background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;">{{ r.kindLabel }}</span>
+                    <span style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#33475F;">{{ r.meta }}</span>
+                  </div>
+                  <h3 style="font-size:17px;font-weight:700;margin:4px 0 0;" data-testid="crew-name">{{ r.name }}</h3>
+                  <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ r.line }}</p>
+                </div>
+                <div style="max-width:100%;" data-testid="crew-stage"><span style="{{ r.stageStyle }}">{{ r.stageLabel }}</span></div>
+              </div>
+              <ol style="display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:12px 0 0;" aria-label="Progress" data-testid="stage-tracker">
+                <sc-for list="{{ r.tracker }}" as="t" hint-placeholder-count="4">
+                  <li style="{{ t.style }}" data-stage-state="{{ t.state }}"><span aria-hidden="true" style="margin-right:4px;">{{ t.mark }}</span>{{ t.label }}<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">{{ t.sr }}</span></li>
+                </sc-for>
+              </ol>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
+                <sc-if value="{{ r.hasAction }}" hint-placeholder-val="{{ false }}">
+                  <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ r.onAdvance }}" data-testid="crew-advance">{{ r.actionLabel }}</button>
+                </sc-if>
+                <sc-if value="{{ r.terminal }}" hint-placeholder-val="{{ false }}">
+                  <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ r.onDownload }}" data-testid="crew-download">Download letter</button>
+                </sc-if>
+                <span style="color:#33475F;font-size:12.5px;">{{ r.note }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:16px;background:#0A2540;color:#D8E2EC;border-radius:10px;padding:14px 18px;display:flex;gap:16px;align-items:center;font-size:13.5px;flex-wrap:wrap;">
+          <span style="background:rgba(255,255,255,.12);border-radius:6px;padding:3px 8px;font-size:11.5px;font-weight:700;">GA</span>
+          <span style="flex:1;min-width:240px;">Every letter is tied to the port call in GAC Agent, so the vessel, port and dates on the letter match the call — and the endorsed copy sits with the job, not in an inbox.</span>
+          <sc-if value="{{ ccHasRequests }}" hint-placeholder-val="{{ false }}">
+            <button style="background:transparent;color:#FFFFFF;border:1.5px solid rgba(255,255,255,.45);border-radius:8px;padding:6px 14px;min-height:36px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;" style-hover="border-color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ ccReset }}" data-testid="reset-crew-change">Reset demo</button>
+          </sc-if>
+        </div>
+      </section>
     </main>
   </sc-if>

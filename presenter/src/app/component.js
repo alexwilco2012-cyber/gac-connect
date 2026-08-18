@@ -148,6 +148,26 @@ class Component extends DCLogic {
     if (this.state.loader === 'visible') this._loaderTimer = setTimeout(() => this._hideLoader(), 4800);
     this._selfTest();
   }
+  componentDidUpdate() {
+    /* Dialog focus parity with the site's Modal: when any [role=dialog] appears,
+       move focus to its first control (remembering what had focus); when the
+       last dialog goes, give focus back. Runs after every commit, so it costs
+       one querySelector; it never steals focus while a dialog is already open. */
+    const dlg = document.querySelector('[role="dialog"]');
+    if (!dlg) {
+      if (this._dlgOpen) {
+        this._dlgOpen = false;
+        const back = this._dlgReturn; this._dlgReturn = null;
+        if (back && document.contains(back) && typeof back.focus === 'function') back.focus();
+      }
+      return;
+    }
+    if (this._dlgOpen) return;
+    this._dlgOpen = true;
+    this._dlgReturn = document.activeElement;
+    const first = dlg.querySelector('input:not([type="hidden"]),select,textarea,button:not([disabled]),[tabindex]:not([tabindex="-1"])');
+    if (first && !dlg.contains(document.activeElement)) first.focus();
+  }
   componentWillUnmount() {
     window.removeEventListener('hashchange', this._onHash);
     window.removeEventListener('keydown', this._onKey);
@@ -590,8 +610,10 @@ class Component extends DCLogic {
       goDashboard: this._go('dashboard'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'),
       goTiers: this._go('tiers'), goSvs: this._go('svs'), goAnalytics: this._go('analytics'), goKitchen: this._go('kitchen-sink'),
       goLaunches: this._go('launches'), goProcurement: this._go('procurement'), goCrew: this._go('crew-change'),
+      /* dashboard crew-change card line — a default the crew-change module overrides with a live count */
+      dashCrewLine: 'No letters in progress. Hotels, immigration, LOI and repatriation-letter templates live in one place.',
 
-      /* feature modules (app/features/*.js) — their bindings ride alongside */
+      /* feature modules (app/features/*.js) — their bindings ride alongside and win over the defaults above */
       ...this._featureVals(st),
 
       /* interactive harbour (landing hero) */
@@ -631,8 +653,6 @@ class Component extends DCLogic {
         this._routeTimer = setTimeout(() => this.nav('quotes'), 1500);
       },
       showTourPrompt: route === 'dashboard' && !st.tourDismissed && st.tourStep === null,
-      /* crew-change card line — the crew-change feature module overrides this with a live count */
-      dashCrewLine: 'No letters in progress. Hotels, immigration, LOI and repatriation-letter templates live in one place.',
 
       /* pillars widget (bound live to calculator state) */
       p1Fill: calc.agency ? '#0E5E8A' : '#D7DFE8',
@@ -736,6 +756,7 @@ class Component extends DCLogic {
       /* quote-request modal */
       rqOpen: !!rq,
       rqName: rq ? rq.name : '',
+      rqDialogLabel: rq ? 'Request a quote — ' + rq.name : 'Quote request',
       rqService: rq ? (this.CATEGORY_SERVICE[rq.cat] || rq.cat) : '',
       rqIsHotel: !!(rq && rq.cat === 'Hotels'),
       rqIsOverrun: !!(rq && this._isOverrunCat(rq.cat)),

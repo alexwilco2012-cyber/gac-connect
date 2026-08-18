@@ -1,6 +1,234 @@
   <sc-if value="{{ isProcurement }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Procurement" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
-      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Procurement</p>
-      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Procurement</h1>
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Procurement · via Compass</p>
+      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Send the list to Compass. One invoice comes back.</h1>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Your procurement list goes by email straight to Compass, GAC’s own procurement branch. Compass supplies what it can from its own stock and network. Where it cannot assist on a line, it sources it — a ship chandler, for example — and pays that supplier itself. You are then invoiced via Compass, under GAC, with a mark-up.</p>
+      <p data-testid="procurement-illustrative" style="display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:760px;margin:8px 0 0;border:1px solid #E5EAF1;border-radius:8px;background:#FFFFFF;padding:6px 12px;font-size:12.5px;color:#33475F;"><span style="{{ prPillNeutral }}">Illustrative</span><span>{{ prNotice }}</span></p>
+
+      <div data-testid="how-it-works" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px;">
+        <sc-for list="{{ prRules }}" as="r" hint-placeholder-count="4">
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <span aria-hidden="true" style="display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#E8F1F7;color:#0E5E8A;font-size:13px;font-weight:700;">{{ r.step }}</span>
+            <p style="font-size:13.5px;font-weight:700;margin:8px 0 0;"><span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Step {{ r.step }}: </span>{{ r.title }}</p>
+            <p style="font-size:12.5px;color:#33475F;margin:4px 0 0;">{{ r.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:24px;align-items:flex-start;">
+        <div style="flex:1.35 1 380px;min-width:0;display:grid;gap:20px;">
+          <div id="procurement-request" data-testid="procurement-request" data-stage="{{ prStage }}" tabindex="-1" role="region" aria-labelledby="procurement-request-title" style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+              <div>
+                <p style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#33475F;margin:0;">{{ prRef }} · Procurement request</p>
+                <h2 id="procurement-request-title" style="font-size:17px;font-weight:700;margin:2px 0 0;">{{ prVesselTitle }}</h2>
+                <p style="font-size:13px;color:#33475F;margin:2px 0 0;">{{ prSubline }}</p>
+              </div>
+              <span style="{{ prStagePillStyle }}">{{ prStagePillLabel }}</span>
+            </div>
+
+            <sc-if value="{{ prIsDraft }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px;">
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Vessel
+                  <sc-raw-select value="{{ prVesselId }}" sc-camel-on-change="{{ prOnVessel }}" data-testid="request-vessel" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                    <option value="caledonian-star">MV Caledonian Star · Aberdeen</option>
+                    <option value="boreal">MV Boreal · Peterhead</option>
+                    <option value="granite-coast">MV Granite Coast · Aberdeen</option>
+                  </sc-raw-select>
+                </label>
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Delivery point
+                  <input type="text" value="{{ prDeliveryPoint }}" sc-camel-on-change="{{ prOnDelivery }}" data-testid="request-delivery" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                </label>
+                <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Needed by
+                  <input type="text" value="{{ prNeededBy }}" sc-camel-on-change="{{ prOnNeededBy }}" data-testid="request-needed-by" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                </label>
+              </div>
+            </sc-if>
+            <sc-if value="{{ prIsLocked }}" hint-placeholder-val="{{ false }}">
+              <sc-raw-table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;">
+                <sc-raw-tbody>
+                  <sc-raw-tr style="border-bottom:1px dashed #E5EAF1;"><sc-raw-td style="padding:6px 12px 6px 0;color:#33475F;">Vessel</sc-raw-td><sc-raw-td style="padding:6px 0;text-align:right;font-weight:600;">{{ prVesselTitle }}</sc-raw-td></sc-raw-tr>
+                  <sc-raw-tr style="border-bottom:1px dashed #E5EAF1;"><sc-raw-td style="padding:6px 12px 6px 0;color:#33475F;">Delivery point</sc-raw-td><sc-raw-td style="padding:6px 0;text-align:right;font-weight:600;">{{ prDeliveryPoint }}</sc-raw-td></sc-raw-tr>
+                  <sc-raw-tr><sc-raw-td style="padding:6px 12px 6px 0;color:#33475F;">Needed by</sc-raw-td><sc-raw-td style="padding:6px 0;text-align:right;font-weight:600;">{{ prNeededBy }}</sc-raw-td></sc-raw-tr>
+                </sc-raw-tbody>
+              </sc-raw-table>
+            </sc-if>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;">
+              <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Lines · {{ prLineCount }}</p>
+              <sc-if value="{{ prIsDraft }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#33475F;">Nothing is priced on your side — Compass prices the basket</span></sc-if>
+            </div>
+
+            <sc-if value="{{ prNoLines }}" hint-placeholder-val="{{ false }}">
+              <p data-testid="lines-empty" style="margin:8px 0 0;border:1px dashed #CBD6E2;border-radius:8px;padding:12px;font-size:13px;color:#33475F;">No lines yet. Add at least one line to send the request.</p>
+            </sc-if>
+            <sc-if value="{{ prHasLines }}" hint-placeholder-val="{{ false }}">
+              <ul data-testid="request-lines" style="list-style:none;margin:8px 0 0;padding:0;">
+                <sc-for list="{{ prLines }}" as="l" hint-placeholder-count="5">
+                  <li data-testid="procurement-line" data-line-id="{{ l.id }}" data-source="{{ l.source }}" style="padding:8px 0;border-top:1px dashed #E5EAF1;">
+                    <sc-if value="{{ l.editable }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                        <div style="flex:1 1 200px;min-width:0;">
+                          <label for="{{ l.descId }}" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ l.descLabel }}</label>
+                          <input id="{{ l.descId }}" type="text" value="{{ l.description }}" sc-camel-on-change="{{ l.onDesc }}" style="display:block;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                        </div>
+                        <div style="flex:0 1 160px;min-width:120px;">
+                          <label for="{{ l.qtyId }}" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ l.qtyLabel }}</label>
+                          <input id="{{ l.qtyId }}" type="text" value="{{ l.qty }}" sc-camel-on-change="{{ l.onQty }}" placeholder="Qty" style="display:block;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                        </div>
+                        <button type="button" data-testid="{{ l.removeTestId }}" aria-label="{{ l.removeLabel }}" sc-camel-on-click="{{ l.onRemove }}" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 12px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;white-space:nowrap;" style-hover="border-color:#0E5E8A;">Remove</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ l.locked }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:13.5px;">
+                        <span><strong>{{ l.description }}</strong><span style="color:#33475F;"> · {{ l.qty }}</span></span>
+                        <span style="{{ l.pillStyle }}">{{ l.pillLabel }}</span>
+                      </div>
+                    </sc-if>
+                  </li>
+                </sc-for>
+              </ul>
+            </sc-if>
+
+            <sc-if value="{{ prIsDraft }}" hint-placeholder-val="{{ false }}">
+              <form sc-camel-on-submit="{{ prAddLine }}" style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin-top:12px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px;">
+                <label style="display:block;flex:1 1 200px;min-width:0;font-size:12.5px;font-weight:600;color:#33475F;">Add a line
+                  <input id="add-line-description" type="text" value="{{ prNewDesc }}" sc-camel-on-change="{{ prOnNewDesc }}" placeholder="e.g. Chart corrections, folio 12" data-testid="add-line-description" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                </label>
+                <label style="display:block;flex:0 1 160px;min-width:120px;font-size:12.5px;font-weight:600;color:#33475F;">Quantity
+                  <input type="text" value="{{ prNewQty }}" sc-camel-on-change="{{ prOnNewQty }}" placeholder="1" data-testid="add-line-qty" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                </label>
+                <button type="submit" data-testid="add-line" disabled="{{ prAddDisabled }}" style="{{ prAddBtnStyle }}">Add line</button>
+              </form>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;">
+                <button type="button" data-testid="send-to-compass" disabled="{{ prSendDisabled }}" sc-camel-on-click="{{ prSend }}" style="{{ prSendBtnStyle }}">Send to Compass</button>
+                <span style="font-size:12.5px;color:#33475F;">{{ prSendHint }}</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ prShowEmail }}" hint-placeholder-val="{{ false }}">
+            <div id="pres-compass-email" tabindex="-1" data-testid="compass-email" role="region" aria-label="Email sent to Compass" style="border-radius:10px;">
+              <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
+                  <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Email · sent to Compass</p>
+                  <span data-testid="compass-email-sent" style="font-size:12px;color:#33475F;">{{ prSentLabel }}</span>
+                </div>
+                <dl style="display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:4px;font-size:13px;margin:12px 0 0;">
+                  <dt style="color:#33475F;">To</dt>
+                  <dd style="margin:0;"><span style="font-weight:600;">{{ prEmailTo }}</span> <span style="color:#33475F;">(illustrative address)</span></dd>
+                  <dt style="color:#33475F;">From</dt>
+                  <dd style="margin:0;font-weight:600;">{{ prEmailFrom }}</dd>
+                  <dt style="color:#33475F;">Subject</dt>
+                  <dd style="margin:0;font-weight:600;" data-testid="compass-email-subject">{{ prEmailSubject }}</dd>
+                </dl>
+                <pre data-testid="compass-email-body" style="margin:12px 0 0;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px 14px;font-family:inherit;font-size:13px;line-height:1.55;white-space:pre-wrap;">{{ prEmailBody }}</pre>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="flex:1 1 300px;min-width:0;display:grid;gap:20px;">
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
+              <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Status · Compass</p>
+              <span style="font-size:12px;color:#33475F;">{{ prStatusLabel }}</span>
+            </div>
+            <ol data-testid="compass-timeline" data-stage="{{ prStage }}" style="list-style:none;margin:12px 0 0;padding:0;">
+              <sc-for list="{{ prTimeline }}" as="t" hint-placeholder-count="5">
+                <li data-stage="{{ t.key }}" data-status="{{ t.status }}" aria-current="{{ t.ariaCurrent }}" style="{{ t.liStyle }}">
+                  <sc-if value="{{ t.notLast }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position:absolute;top:24px;bottom:0;left:11px;width:1px;background:#E5EAF1;"></span></sc-if>
+                  <span aria-hidden="true" style="{{ t.markerStyle }}">{{ t.markerGlyph }}</span>
+                  <div style="min-width:0;flex:1;">
+                    <p style="{{ t.labelStyle }}">{{ t.label }}<sc-if value="{{ t.isCurrent }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"> (current)</span></sc-if><sc-if value="{{ t.hasTime }}" hint-placeholder-val="{{ false }}"><span style="margin-left:8px;font-size:12px;font-weight:600;color:#33475F;">{{ t.time }}</span></sc-if></p>
+                    <sc-if value="{{ t.notPending }}" hint-placeholder-val="{{ false }}"><p style="font-size:12.5px;color:#33475F;margin:2px 0 0;">{{ t.note }}</p></sc-if>
+                    <sc-if value="{{ t.showReplies }}" hint-placeholder-val="{{ false }}">
+                      <ul data-testid="compass-reply-lines" style="list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px;">
+                        <sc-for list="{{ prReplyLines }}" as="rl" hint-placeholder-count="5">
+                          <li data-source="{{ rl.source }}" style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:6px 10px;font-size:12.5px;">
+                            <strong>{{ rl.description }}</strong>
+                            <span style="display:block;color:#33475F;">{{ rl.sourceLabel }}</span>
+                          </li>
+                        </sc-for>
+                      </ul>
+                    </sc-if>
+                  </div>
+                </li>
+              </sc-for>
+            </ol>
+            <sc-if value="{{ prHasNext }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;border-top:1px dashed #E5EAF1;padding-top:12px;">
+                <button type="button" data-testid="simulate-next" sc-camel-on-click="{{ prAdvance }}" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;">{{ prNextLabel }}</button>
+                <span style="font-size:12px;color:#33475F;">Illustrative — stands in for Compass’s side of the exchange</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ prShowInvoice }}" hint-placeholder-val="{{ false }}">
+            <div id="pres-compass-invoice" tabindex="-1" data-testid="compass-invoice" role="region" aria-label="Invoice from GAC via Compass" style="border-radius:10px;">
+              <div style="background:#FFFFFF;border:1.5px solid #047857;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;">
+                  <div>
+                    <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Invoice · illustrative</p>
+                    <h2 style="font-size:17px;font-weight:700;margin:4px 0 0;">GAC — via Compass</h2>
+                  </div>
+                  <span style="{{ prPillVerified }}">One invoice</span>
+                </div>
+                <dl style="display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:4px;font-size:13px;margin:12px 0 0;">
+                  <dt style="color:#33475F;">From</dt>
+                  <dd style="margin:0;font-weight:600;">GAC — via Compass</dd>
+                  <dt style="color:#33475F;">To</dt>
+                  <dd style="margin:0;font-weight:600;">{{ prInvoiceTo }}</dd>
+                  <dt style="color:#33475F;">Reference</dt>
+                  <dd style="margin:0;font-weight:600;">{{ prRef }}</dd>
+                </dl>
+                <sc-raw-table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;">
+                  <sc-raw-thead>
+                    <sc-raw-tr style="text-align:left;font-size:11.5px;letter-spacing:.02em;color:#33475F;text-transform:uppercase;">
+                      <sc-raw-th scope="col" style="padding:6px 12px 6px 0;font-weight:600;text-align:left;">Line</sc-raw-th>
+                      <sc-raw-th scope="col" style="padding:6px 0;font-weight:600;text-align:right;">Price</sc-raw-th>
+                    </sc-raw-tr>
+                  </sc-raw-thead>
+                  <sc-raw-tbody>
+                    <sc-for list="{{ prInvoiceRows }}" as="ir" hint-placeholder-count="5">
+                      <sc-raw-tr style="border-top:1px dashed #E5EAF1;">
+                        <sc-raw-td style="padding:6px 12px 6px 0;">{{ ir.description }} <span style="color:#33475F;">· {{ ir.qty }}</span></sc-raw-td>
+                        <sc-raw-td style="padding:6px 0;text-align:right;font-weight:600;white-space:nowrap;">{{ ir.price }}</sc-raw-td>
+                      </sc-raw-tr>
+                    </sc-for>
+                  </sc-raw-tbody>
+                  <sc-raw-tfoot>
+                    <sc-raw-tr style="border-top:1px solid #E5EAF1;">
+                      <sc-raw-td style="padding:6px 12px 6px 0;color:#33475F;">Subtotal</sc-raw-td>
+                      <sc-raw-td data-testid="invoice-subtotal" style="padding:6px 0;text-align:right;font-weight:600;">{{ prSubtotal }}</sc-raw-td>
+                    </sc-raw-tr>
+                    <sc-raw-tr>
+                      <sc-raw-td style="padding:6px 12px 6px 0;color:#33475F;">{{ prMarkupLabel }}</sc-raw-td>
+                      <sc-raw-td data-testid="invoice-markup" style="padding:6px 0;text-align:right;font-weight:600;">{{ prMarkup }}</sc-raw-td>
+                    </sc-raw-tr>
+                    <sc-raw-tr style="border-top:1px solid #0A2540;">
+                      <sc-raw-td style="padding:8px 12px 8px 0;font-weight:700;">Total</sc-raw-td>
+                      <sc-raw-td data-testid="invoice-total" style="padding:8px 0;text-align:right;font-size:18px;font-weight:700;">{{ prTotal }}</sc-raw-td>
+                    </sc-raw-tr>
+                  </sc-raw-tfoot>
+                </sc-raw-table>
+                <p style="font-size:12px;color:#33475F;margin:8px 0 0;">Mark-up shown is illustrative — Compass’s rate is set by Compass, not by this platform. Every price above is a demo figure.</p>
+                <ul style="margin:12px 0 0;padding-left:20px;font-size:13px;display:grid;gap:4px;">
+                  <li>The chandler was paid by Compass. You see one invoice, from GAC.</li>
+                  <li>One supplier relationship, one invoice, GAC accountable for the whole basket.</li>
+                </ul>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;background:#0A2540;color:#D8E2EC;border-radius:10px;padding:14px 18px;display:flex;gap:16px;align-items:center;font-size:13.5px;flex-wrap:wrap;">
+        <span style="background:rgba(255,255,255,.12);border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;">Compass</span>
+        <span style="flex:1;min-width:240px;">One supplier relationship. One invoice. GAC accountable for the whole basket — the chandler is Compass’s supplier, never yours.</span>
+        <sc-if value="{{ prDirty }}" hint-placeholder-val="{{ false }}">
+          <button type="button" data-testid="reset-procurement" sc-camel-on-click="{{ prReset }}" style="display:inline-flex;align-items:center;justify-content:center;min-height:36px;background:rgba(255,255,255,.05);color:#FFFFFF;border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:4px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);">Reset demo</button>
+        </sc-if>
+      </div>
     </main>
   </sc-if>
