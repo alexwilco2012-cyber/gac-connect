@@ -1,6 +1,6 @@
   <sc-if value="{{ isCrew }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Crew change" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
-      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · hotels, transfers, immigration, letters</p>
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · hotels, taxis, launches, immigration, letters</p>
       <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Everything a crew change needs, in one place</h1>
       <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a repatriation letter for each off-signer. The platform holds the templates, you fill them in, GAC endorses or routes them and sends them back — one letter per crew member, always.</p>
 
@@ -14,8 +14,8 @@
       </div>
 
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;" role="group" aria-label="Crew change sections" data-testid="crew-sections">
-        <sc-for list="{{ ccSections }}" as="s" hint-placeholder-count="5">
-          <button style="{{ s.style }}" sc-camel-on-click="{{ s.on }}" aria-pressed="{{ s.pressed }}">{{ s.label }}</button>
+        <sc-for list="{{ ccSections }}" as="s" hint-placeholder-count="6">
+          <button id="{{ s.chipId }}" style="{{ s.style }}" sc-camel-on-click="{{ s.on }}" aria-pressed="{{ s.pressed }}">{{ s.label }}</button>
         </sc-for>
       </div>
 
@@ -52,8 +52,8 @@
           </div>
         </sc-if>
 
-        <sc-if value="{{ ccIsTransfers }}" hint-placeholder-val="{{ false }}">
-          <div data-testid="section-transfers">
+        <sc-if value="{{ ccIsTaxis }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-taxis">
 
             <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="flight-planner">
               <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
@@ -90,6 +90,7 @@
                   </sc-raw-select>
                 </label>
               </div>
+              <p style="color:#33475F;font-size:12px;margin:6px 0 0;" data-testid="taxis-launch-pointer">{{ trLaunchPointer }} <button type="button" style="background:none;border:none;padding:0;font-size:12px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;" sc-camel-on-click="{{ openLaunches }}" data-testid="open-launches">Open Launches</button></p>
               <p id="flight-suggestions" style="color:#33475F;font-size:12px;margin:6px 0 0;">Demo flights the simulated feed knows: <sc-for list="{{ trSuggestions }}" as="f" hint-placeholder-count="2"><span>{{ f.sep }}<button type="button" style="background:none;border:none;padding:0;font-size:12px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;" sc-camel-on-click="{{ f.on }}">{{ f.flight }}</button>{{ f.tail }}</span></sc-for></p>
 
               <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px;">
@@ -146,7 +147,7 @@
 
             <div data-testid="taxis" style="margin-top:24px;">
               <h3 style="font-size:17px;font-weight:700;margin:0;">Taxis and minibuses</h3>
-              <p style="color:#33475F;font-size:13.5px;margin:4px 0 0;max-width:720px;">Airport, hotel, and quay runs. Airport pickups hold the tracked flight, so a delay moves the pickup — not the crew.</p>
+              <p style="color:#33475F;font-size:13.5px;margin:4px 0 0;max-width:720px;">Airport pickups hold the tracked flight, so a delay moves the pickup — not the crew.</p>
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:12px;">
                 <sc-for list="{{ ccTaxis }}" as="t" hint-placeholder-count="2">
                   <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="{{ t.testId }}" data-status="{{ t.status }}">
@@ -178,11 +179,16 @@
                 </sc-for>
               </div>
             </div>
+          </div>
+        </sc-if>
 
-            <div data-testid="launches-panel" style="margin-top:24px;">
+        <sc-if value="{{ ccIsLaunches }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-launches">
+            <div data-testid="launches-panel">
               <h3 style="font-size:17px;font-weight:700;margin:0;">Launches from the quay</h3>
               <p style="color:#33475F;margin:4px 0 0;font-size:13.5px;max-width:720px;">Launch operators run crew, stores, and light freight out to vessels at anchor or working inshore. Every operator is SVS-vetted; the two things you need at a glance are the launch’s maximum capacity and whether freight is included in the run.</p>
               <p style="color:#33475F;margin:4px 0 0;font-size:12px;">Ports, capacities, transit times, and availability shown here are illustrative.</p>
+              <p style="color:#33475F;margin:4px 0 0;font-size:12px;" data-testid="launches-taxi-pointer">{{ ccLaunchesTaxiPointer }} <button type="button" style="background:none;border:none;padding:0;font-size:12px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;" sc-camel-on-click="{{ openTaxis }}" data-testid="open-taxis">Open Taxis</button></p>
 
               <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;margin-top:16px;" data-testid="plan-run">
                 <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Plan a run</p>

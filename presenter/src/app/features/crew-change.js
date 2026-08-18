@@ -1,28 +1,66 @@
 /* Crew change — presenter mirror of the site's Crew change screen (17 Aug review;
-   owner's follow-up: Transfers — taxis, launches and flight-timed transport —
-   sit inside it, there is no Launches tab). Feature module: registers state /
+   owner's follow-up: taxis and launches are sections in their own right, and each
+   points at the other — the flight-timed planner sits with the taxis because it is
+   the airport run that hangs off the flight). Feature module: registers state /
    bindings / Escape handling with the core Component via Component._features
    (see component.js "feature-module extension points"). Data it needs lives
    here too, so app/data.js stays the v12 baseline. Mirrors
    src/screens/app/CrewChange.tsx, src/lib/crewChange.ts, src/lib/transfers.ts,
    src/data/crewChange.ts and src/store/crewChange.ts — copy verbatim, rules
-   ported verbatim. The launches panel inside Transfers is bound by
+   ported verbatim. The launches panel on the Launches section is bound by
    features/launches.js. All data on this screen is illustrative and fictional.
 
-   Deep link: the core maps '#/crew-change/<section>' (and the old '#/launches',
-   which is '#/crew-change/transfers') to route 'crew-change' with
-   state.routeSection = '<section>' (component.js _parseHash); this module
-   shows that section until the user picks another chip, then clears it. */
+   Deep link: the core maps '#/crew-change/<section>' (and '#/launches', which is
+   '#/crew-change/launches') to route 'crew-change' with state.routeSection =
+   '<section>' (component.js _parseHash); this module resolves that name — retired
+   ids included — and shows it. Picking a chip or following a cross-link rewrites
+   the hash in place rather than pushing, so the section survives a reload or a
+   shared link and Back still leaves the screen (site: setParams replace). */
 
 /* ---------- copy tables (src/data/crewChange.ts) ---------- */
 const CC_SECTIONS = [
   { id: 'hotels', label: 'Hotels', summary: 'Rooms for crew held ashore — off-signers, transit crews, medical stand-downs.' },
-  { id: 'transfers', label: 'Transfers · taxis and launches', summary: 'Taxis between the airport, the hotel, and the quay, and launches out to the vessel — timed to the crew member’s flight when you give us the flight number.' },
+  { id: 'taxis', label: 'Taxis', summary: 'Airport, hotel and quay runs, timed to the crew member’s tracked flight when you give us the flight number.' },
+  { id: 'launches', label: 'Launches', summary: 'Crew, stores and light freight out to vessels at anchor — capacity and whether freight is included, launch by launch, port by port.' },
   { id: 'immigration', label: 'Immigration', summary: 'What your GAC agent needs before any letter goes out, and what GAC does not do.' },
   { id: 'loi', label: 'LOI (on-signers)', summary: 'Immigration Support Letter for a visa-national crew member joining through the UK — issued and signed by GAC as agents.' },
   { id: 'repat', label: 'Repat letters (off-signers)', summary: 'Disembarkation / repatriation letter for a crew member leaving through the UK — prepared by GAC, endorsed by UK Border Force.' }
 ];
-const CC_TRANSFERS_INTRO = 'Give us the flight number and the platform tracks the flight and times the transport to it: the taxi meets the crew at arrivals, the launch leaves the quay when they get there, and a delay moves the whole chain — no phone calls.';
+/* Section ids that have been renamed. A link minted before taxis and launches
+   were split ('#/crew-change/transfers') still lands somewhere sensible instead
+   of silently dropping the visitor on Hotels (site: RETIRED_CREW_SECTIONS). */
+const CC_RETIRED_SECTIONS = { transfers: 'taxis' };
+const CC_DEFAULT_SECTION = 'hotels';
+function ccIsSectionId(v) { return !!v && CC_SECTIONS.some((s) => s.id === v); }
+/* The section a hash asks for: current id, retired id, or the default. */
+function ccResolveSection(v) {
+  if (ccIsSectionId(v)) return v;
+  if (v && CC_RETIRED_SECTIONS[v]) return CC_RETIRED_SECTIONS[v];
+  return CC_DEFAULT_SECTION;
+}
+/* The hash is where the section lives, exactly as ?section= is on the site, so a
+   reload or a shared link reopens the section the visitor is looking at. Two
+   rules come with that, both taken from CrewChange.tsx:
+     · the write replaces, never pushes — setParams(next, { replace: true }) —
+       otherwise every chip click stacks a history entry and Back walks back
+       through the sections instead of leaving the screen;
+     · it must not scroll: the site only scrolls to the top on a pathname change
+       (App.tsx), and a section swap is not one.
+   history.replaceState satisfies both — it rewrites the hash in place and fires
+   no hashchange, so the core's scroll-to-top does not run. The caller sets
+   state.routeSection alongside it, which is what actually re-renders. */
+function ccWriteHash(id) {
+  if (typeof history === 'undefined' || !history.replaceState) return;
+  const target = '#/' + (id === CC_DEFAULT_SECTION ? 'crew-change' : 'crew-change/' + id);
+  if (typeof location !== 'undefined' && location.hash === target) return;
+  try { history.replaceState(null, '', target); } catch (e) {}
+}
+/* Taxis section — copy for the flight-timed planner. */
+const CC_TAXIS_INTRO = 'Give us the flight number and the platform tracks the flight and times the transport to it: the taxi meets the crew at arrivals, the launch leaves the quay when they get there, and a delay moves the whole chain — no phone calls.';
+/* Taxis → Launches: the planner times the launch leg, the operators live elsewhere. */
+const CC_TAXIS_LAUNCH_POINTER = 'The planner times the launch leg with the taxi. The launch operators themselves — capacity, freight and port notes — are under Launches.';
+/* Launches → Taxis: the reciprocal pointer, so a run can be hung off the flight. */
+const CC_LAUNCHES_TAXI_POINTER = 'A run can be timed to the crew member’s tracked flight — the planner under Taxis times the taxi and the launch to the same flight.';
 
 /* ---------- flight-timed transfers (src/lib/transfers.ts, verbatim) ----------
    There is no live feed in this proof of concept: trTrackFlight looks a flight up
@@ -35,10 +73,14 @@ const TR_DEMO_FLIGHTS = {
   ZZ131: { flight: 'ZZ131', route: 'Aberdeen → London Heathrow', scheduled: '19:25', direction: 'departing' }
 };
 const TR_FLIGHT_FEED_NOTE = 'Illustrative — flight status is simulated here. In production the estimate comes from a live flight-status feed (Skyscanner-style, or the airport’s own status API) and the transport re-times itself.';
+/* Ports a taxi run can serve. Taxis stand on their own (owner's follow-up): they
+   cover every port the letters cover plus the launch ports, so the planner is not
+   limited to the two ports that happen to have a launch (site: TRANSFER_PORTS). */
+const TR_TRANSFER_PORTS = ['Aberdeen', 'Peterhead', 'Montrose', 'Macduff'];
 /* Timing rules, in minutes. Illustrative but sensible; a production platform reads them from client policy. */
 const TR_BUFFERS = {
   bagsAndImmigrationMin: 40,
-  taxiMin: { Aberdeen: 25, Macduff: 75 },
+  taxiMin: { Aberdeen: 25, Peterhead: 55, Montrose: 60, Macduff: 75 },
   quayHandoverMin: 20,
   checkInBeforeDepartureMin: 120,
   simulatedDelayMin: 40
@@ -132,7 +174,12 @@ function trLaunchPorts(list) {
   trLaunchSuppliers(list).forEach((s) => { if (!ports.includes(s.launch.port)) ports.push(s.launch.port); });
   return ports;
 }
+/* Ports the letters cover in this proof of concept. */
 const CC_PORTS = ['Aberdeen', 'Peterhead', 'Montrose'];
+/* Taxis run to every port the crew change covers; launches only to some of them. */
+function ccTaxiPorts(launchPorts) {
+  return TR_TRANSFER_PORTS.filter((p) => CC_PORTS.includes(p) || launchPorts.includes(p));
+}
 const CC_VESSELS = [
   { id: 'caledonian-star', name: 'MV Caledonian Star', port: 'Aberdeen' },
   { id: 'boreal', name: 'MV Boreal', port: 'Peterhead' },
@@ -332,19 +379,20 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
   state() {
     const raw = this._get(CC_KEY_REQUESTS, []);
     const launches = trLaunchSuppliers(this.SUPPLIERS);
-    const ports = trLaunchPorts(this.SUPPLIERS);
+    const taxiPorts = ccTaxiPorts(trLaunchPorts(this.SUPPLIERS));
     return {
-      ccSection: 'hotels',
+      /* No section key of its own: state.routeSection mirrors the hash and is the
+         one source of truth for which section shows (site: the ?section= param). */
       ccLoi: Object.assign({}, CC_LOI_DEMO_FORM),
       ccLoiProblems: [],
       ccRepat: Object.assign({}, CC_REPAT_DEMO_FORM, { flights: CC_REPAT_DEMO_FORM.flights.slice() }),
       ccRepatProblems: [],
       ccRequests: Array.isArray(raw) ? raw.filter(ccIsCrewRequest) : [],
-      /* flight-timed planner (Transfers) — not persisted, same as the site's FlightPlanner state */
+      /* flight-timed planner (Taxis) — not persisted, same as the site's FlightPlanner state */
       trDirection: 'arriving',
       trFlightNo: 'ZZ 417',
       trPax: '6',
-      trPort: ports[0] || 'Aberdeen',
+      trPort: taxiPorts[0] || 'Aberdeen',
       trLaunchId: launches.length ? launches[0].id : '',
       trTracked: null,
       trNotFound: null,
@@ -354,9 +402,34 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
 
   vals(st) {
     const self = this;
-    /* '#/launches' (and any future hash-requested section) wins until the user picks a chip. */
-    const wanted = st.routeSection && CC_SECTIONS.some((s) => s.id === st.routeSection) ? st.routeSection : null;
-    const section = CC_SECTIONS.find((s) => s.id === (wanted || st.ccSection)) || CC_SECTIONS[0];
+    /* The section comes from the hash ('#/launches', '#/crew-change/taxis', the
+       retired '#/crew-change/transfers') and from nothing else; a hash with no
+       section ('#/crew-change') means the default, as a bare /app/crew-change does
+       on the site. */
+    const wanted = ccResolveSection(st.routeSection);
+    const section = CC_SECTIONS.find((s) => s.id === wanted) || CC_SECTIONS[0];
+    /* A retired id in the hash resolved to a live section: tidy the address bar on
+       the next tick so what is shared next is the current name (site: CrewChange.tsx
+       rewrites ?section=). The rewritten hash resolves to itself, so this settles
+       after one pass. */
+    if (st.routeSection && st.routeSection !== wanted) {
+      setTimeout(() => {
+        if (self.state.routeSection !== st.routeSection) return;
+        ccWriteHash(wanted);
+        self.setState({ routeSection: wanted });
+      }, 0);
+    }
+    /* Switching section: rewrite the hash in place, then re-render on the new
+       routeSection (site: setSection). With moveFocus, send focus to the
+       destination's chip — a cross-link swaps the whole section body out from
+       under the button that was clicked, and the chip stays mounted and carries
+       aria-pressed, which announces where the visitor has landed (site:
+       CrewChange.tsx setSection(id, true)). */
+    const goSection = (id, moveFocus) => {
+      ccWriteHash(id);
+      self.setState({ routeSection: id });
+      if (moveFocus) setTimeout(() => { const el = document.getElementById('crew-chip-' + id); if (el) el.focus(); }, 0);
+    };
 
     /* --- helpers bound to the instance --- */
     const setLoi = (patch) => self.setState({ ccLoi: Object.assign({}, self.state.ccLoi, patch) });
@@ -395,14 +468,15 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
 
     /* --- section strip --- */
     const ccSections = CC_SECTIONS.map((s) => ({
-      label: s.label, pressed: s.id === section.id ? 'true' : 'false',
+      label: s.label, chipId: 'crew-chip-' + s.id,
+      pressed: s.id === section.id ? 'true' : 'false',
       style: CC_CHIP + (s.id === section.id ? CC_CHIP_ON : CC_CHIP_OFF),
-      on: () => self.setState({ ccSection: s.id, routeSection: null })
+      on: () => goSection(s.id)
     }));
 
-    /* --- transfers: flight-timed planner (CrewChange.tsx FlightPlanner) --- */
+    /* --- taxis: flight-timed planner (CrewChange.tsx FlightPlanner) --- */
     const launches = trLaunchSuppliers(self.SUPPLIERS);
-    const launchPorts = trLaunchPorts(self.SUPPLIERS);
+    const taxiPorts = ccTaxiPorts(trLaunchPorts(self.SUPPLIERS));
     const taxis = self.SUPPLIERS.filter((s) => s.cat === 'Taxis');
     const launchesHere = launches.filter((l) => l.launch.port === st.trPort);
     const trLaunchSup = st.trLaunchId === '' ? null : (launchesHere.find((l) => l.id === st.trLaunchId) || null);
@@ -433,7 +507,7 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       style: 'display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:13px;padding-bottom:6px;' + (i === trPlan.legs.length - 1 ? '' : 'border-bottom:1px dashed #E5EAF1;')
     })) : [];
 
-    /* --- transfers: taxis (CrewChange.tsx TaxisSection) — request opens the shared quote-request modal --- */
+    /* --- taxis: the operator cards (CrewChange.tsx TaxiOperators) — request opens the shared quote-request modal --- */
     const ccTaxis = taxis.map((t) => {
       const status = self.deriveStatus(t);
       const blocked = status === 'blocked';
@@ -571,15 +645,18 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       /* section strip */
       ccSections: ccSections,
       ccSectionId: section.id, ccSectionLabel: section.label, ccSectionSummary: section.summary,
-      ccIsHotels: section.id === 'hotels', ccIsTransfers: section.id === 'transfers', ccIsImmigration: section.id === 'immigration',
-      ccIsLoi: section.id === 'loi', ccIsRepat: section.id === 'repat',
-      /* dashboard "Plan transfers" — open Crew change straight on the Transfers section (site: ?section=transfers);
-         the hash carries the section, so a plain "Open crew change" afterwards still lands on Hotels, as on the site */
-      goTransfers: self._go('crew-change/transfers'),
+      ccIsHotels: section.id === 'hotels', ccIsTaxis: section.id === 'taxis', ccIsLaunches: section.id === 'launches',
+      ccIsImmigration: section.id === 'immigration', ccIsLoi: section.id === 'loi', ccIsRepat: section.id === 'repat',
+      /* dashboard "Plan taxis" / "Book a launch" — open Crew change straight on that
+         section (site: ?section=taxis / ?section=launches). The hash is the only
+         record of the section, so a plain "Open crew change" ('#/crew-change',
+         no section) afterwards lands on Hotels, as a bare /app/crew-change does. */
+      goTaxis: self._go('crew-change/taxis'),
+      goLaunches: self._go('crew-change/launches'),
       /* hotels */
       ccHotels: ccHotels,
-      /* transfers — flight-timed planner */
-      trIntro: CC_TRANSFERS_INTRO,
+      /* taxis — flight-timed planner */
+      trIntro: CC_TAXIS_INTRO,
       trDirections: TR_DIRECTIONS.map((d) => ({
         label: d.label, hint: '· ' + d.hint, testId: 'direction-' + d.id,
         pressed: st.trDirection === d.id ? 'true' : 'false',
@@ -591,7 +668,7 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       trPax: st.trPax,
       onTrPax: (e) => self.setState({ trPax: e.target.value }),
       onTrPaxBlur: () => { const t = String(Math.max(1, Math.floor(Number(self.state.trPax) || 1))); if (t !== self.state.trPax) self.setState({ trPax: t }); },
-      trPorts: launchPorts.map((p) => ({ value: p, label: p })),
+      trPorts: taxiPorts.map((p) => ({ value: p, label: p })),
       trPort: st.trPort,
       onTrPort: (e) => {
         const port = e.target.value;
@@ -630,7 +707,14 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
         ? '(' + trLaunchSup.launch.vesselName + ', max ' + trLaunchSup.launch.maxPassengers + ' passengers' + (trPaxN > trLaunchSup.launch.maxPassengers ? ' — ' + trPaxN + ' needs more than one run' : '') + ')'
         : '',
       trSend: trSend,
-      /* transfers — taxis */
+      /* the two pointers — each section names the other rather than duplicating it
+         (site: TAXIS_LAUNCH_POINTER / LAUNCHES_TAXI_POINTER, both with a button
+         that switches section and leaves focus on the destination chip) */
+      trLaunchPointer: CC_TAXIS_LAUNCH_POINTER,
+      openLaunches: () => goSection('launches', true),
+      ccLaunchesTaxiPointer: CC_LAUNCHES_TAXI_POINTER,
+      openTaxis: () => goSection('taxis', true),
+      /* taxis — the operator cards */
       ccTaxis: ccTaxis,
       /* immigration */
       ccChecklist: CC_CHECKLIST, ccLoiNotOktb: CC_LOI_NOT_OKTB, ccInformsNotAdvises: CC_INFORMS_NOT_ADVISES,

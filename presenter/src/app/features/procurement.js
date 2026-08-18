@@ -2,38 +2,40 @@
    (17 Aug review). Feature module: registers state / bindings / Escape handling
    with the core Component via Component._features (see component.js
    "feature-module extension points"). Ports src/lib/procurement.ts (stages,
-   routing, email, invoice maths), src/data/procurement.ts (default request,
+   email, invoice maths), src/data/procurement.ts (default request,
    copy tables, demo prices) and src/store/procurement.ts (what is persisted,
    send / advance / reset semantics) so the demo behaves exactly like the site.
    Storage keys are prefixed 'pres.' so they never collide with the site's own
    stores on the same origin. Everything numeric here is illustrative. */
 
 /* ── stage machine (lib/procurement.ts) ── */
-const PR_STAGES = ['draft', 'sent', 'sourcing', 'replied', 'chandler-paid', 'invoiced'];
+const PR_STAGES = ['draft', 'sent', 'sourcing', 'confirmed', 'invoiced'];
 const PR_FINAL_STAGE = 'invoiced';
 const PR_TIMELINE_STAGES = PR_STAGES.filter((s) => s !== 'draft');
 const PR_STAGE_LABELS = {
   draft: 'Draft — not yet sent',
   sent: 'Sent to Compass',
   sourcing: 'Compass sourcing',
-  replied: 'Compass reply: supplied / routed',
-  'chandler-paid': 'Compass pays the chandler',
+  confirmed: 'Compass confirms the list',
   invoiced: 'Invoiced via Compass — under GAC'
 };
 /* Label of the simulate button that advances FROM this stage. */
 const PR_SIMULATE_LABELS = {
   sent: 'Simulate: Compass starts sourcing',
-  sourcing: 'Simulate: Compass replies',
-  replied: 'Simulate: chandler paid',
-  'chandler-paid': 'Simulate: invoice raised via Compass'
+  sourcing: 'Simulate: Compass confirms supply',
+  confirmed: 'Simulate: invoice raised via Compass'
 };
+/* Every line on the list is supplied by Compass — there is no second source to
+   distinguish, so one shared string covers the whole list (owner's follow-up to
+   the 17 Aug review). The card header pill and the per-line pills both read it,
+   so the two can never drift apart (lib/procurement.ts LINE_CONFIRMATION). */
+const PR_LINE_CONFIRMATION = 'Confirmed by Compass';
 /* Header pill for the request card, per stage (screens/app/Procurement.tsx). */
 const PR_STAGE_PILL = {
   draft: { tone: 'neutral', label: 'Draft · ready to send' },
   sent: { tone: 'info', label: 'With Compass' },
   sourcing: { tone: 'info', label: 'With Compass · sourcing' },
-  replied: { tone: 'info', label: 'Compass replied' },
-  'chandler-paid': { tone: 'info', label: 'Chandler paid by Compass' },
+  confirmed: { tone: 'info', label: PR_LINE_CONFIRMATION },
   invoiced: { tone: 'verified', label: '✓ Invoiced via Compass' }
 };
 
@@ -61,10 +63,6 @@ const PR_DEFAULT_REQUEST = {
 const PR_COMPASS_ADDRESS = 'procurement@compass.example';
 /* The platform user who raises the request. */
 const PR_SENDER = { name: 'A. Wilkinson', org: 'Aberdeen Agency' };
-/* Lines Compass cannot assist on in the demo — routed to a third-party chandler, which Compass pays. */
-const PR_CANNOT_ASSIST_IDS = ['bonded-stores', 'galley-gas'];
-/* Fictional third-party chandler for the routed lines. */
-const PR_CHANDLER_NAME = 'Granite Ship Chandlers';
 /* Illustrative demo prices per line id; added lines take the fallback. Nothing here is a real Compass price. */
 const PR_PRICES_GBP = { 'engine-room': 1240, provisions: 2150, 'deck-stores': 860, 'bonded-stores': 540, 'galley-gas': 190 };
 const PR_PRICE_FALLBACK_GBP = 250;
@@ -73,11 +71,11 @@ const PR_PRICE_FALLBACK_GBP = 250;
    prices and one total — nothing about Compass's cost base or margin is surfaced. */
 const PR_RULES = [
   { step: '1', title: 'The list goes straight to Compass by email', body: 'You build the list here; the platform composes the email and sends it to Compass, GAC’s own procurement branch. No separate purchase orders, no phoning round.' },
-  { step: '2', title: 'Compass supplies from its own stock and network', body: 'Compass works the list line by line and supplies what it can directly.' },
-  { step: '3', title: 'If Compass cannot assist on a line, it sources it — and pays', body: 'A ship chandler, for example. Compass places the order and pays the chandler itself. The chandler is Compass’s supplier, not yours.' },
-  { step: '4', title: 'You are invoiced via Compass, under GAC', body: 'One invoice, from GAC, covering every line. No third-party paperwork; GAC accountable for the whole basket.' }
+  { step: '2', title: 'Compass sources and supplies the whole list', body: 'Compass works the list line by line, from its own stock and its own supply network.' },
+  { step: '3', title: 'Compass confirms the list back to you', body: 'Every line comes back confirmed by Compass — one point of contact, nobody else to chase.' },
+  { step: '4', title: 'You are invoiced via Compass, under GAC', body: 'One invoice, from GAC, covering every line. One relationship, and GAC accountable for the whole basket.' }
 ];
-const PR_SIMULATION_NOTICE = 'Illustrative — Compass replies are simulated in this proof of concept. No email is sent and every price is a demo figure.';
+const PR_SIMULATION_NOTICE = 'Illustrative — the Compass side is simulated in this proof of concept. No email is sent and every price is a demo figure.';
 
 /* ── persistence keys (store/procurement.ts, presenter-prefixed) ── */
 const PR_KEY_REQUEST = 'pres.procurement.request';
@@ -121,15 +119,23 @@ function prReadRequest(get) {
   }
   return Object.assign(prCloneDefault(), stored, { lines: stored.lines.map((l) => ({ id: l.id, qty: l.qty, description: l.description })) });
 }
+/* The stage the visitor left the demo at. A stored name that is no longer part of
+   the flow — an earlier visit, or a hand-edited entry — starts the demo over at
+   the draft rather than leaving the screen on a stage that no longer exists. */
 function prReadStage(get) {
   const stored = get(PR_KEY_STAGE, 'draft');
   return typeof stored === 'string' && PR_STAGES.includes(stored) ? stored : 'draft';
 }
-function prReadStageTimes(get) {
+/* Timestamps for the stages reached so far. Anything the current stage has not
+   reached is dropped, so a stage list that has changed since the last visit
+   cannot leave a stray time against a step that has not happened. */
+function prReadStageTimes(get, stage) {
   const stored = get(PR_KEY_TIMES, {});
   if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
   const out = {};
-  Object.keys(stored).forEach((k) => { if (PR_STAGES.includes(k) && typeof stored[k] === 'string') out[k] = stored[k]; });
+  Object.keys(stored).forEach((k) => {
+    if (PR_STAGES.includes(k) && typeof stored[k] === 'string' && prStageReached(stage, k)) out[k] = stored[k];
+  });
   return out;
 }
 function prRemove(k) { try { localStorage.removeItem('gac-connect:' + k); } catch (e) {} }
@@ -146,15 +152,9 @@ function prStageStatus(current, stage) {
   if (s === c) return 'current';
   return 'pending';
 }
-/* Compass supplies every line it can; exactly the cannot-assist ids are routed to a third-party chandler. */
-function prRouteLines(lines) {
-  return lines.map((l) => Object.assign({}, l, { source: PR_CANNOT_ASSIST_IDS.includes(l.id) ? 'chandler' : 'compass' }));
-}
-function prSourceLabel(source) {
-  return source === 'compass' ? 'Supplied by Compass' : 'Cannot assist — routed to a third-party chandler · ' + PR_CHANDLER_NAME;
-}
 function prIllustrativePrice(lineId) { return Object.prototype.hasOwnProperty.call(PR_PRICES_GBP, lineId) ? PR_PRICES_GBP[lineId] : PR_PRICE_FALLBACK_GBP; }
-/* The client-facing invoice: one line per item — no source column, the chandler never appears on the client's paperwork. */
+/* The client-facing invoice: one line per item, from GAC via Compass. No source
+   column — every line is Compass's own supply, under GAC. */
 function prInvoiceLines(request) {
   return request.lines.map((l) => ({ id: l.id, qty: l.qty, description: l.description, priceGBP: prIllustrativePrice(l.id) }));
 }
@@ -179,7 +179,7 @@ function prComposeEmail(request, brandName) {
     '',
     lineList,
     '',
-    'Where Compass cannot assist on a line, please source it and invoice via Compass under GAC as usual.',
+    'Please confirm supply against each line and invoice via Compass under GAC as usual.',
     '',
     'Regards,',
     PR_SENDER.name + ' · ' + PR_SENDER.org,
@@ -203,10 +203,12 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
 
 (Component._features = Component._features || []).push({
   state() {
+    const get = (k, d) => this._get(k, d);
+    const stage = prReadStage(get);
     return {
-      prRequest: prReadRequest((k, d) => this._get(k, d)),
-      prStage: prReadStage((k, d) => this._get(k, d)),
-      prStageTimes: prReadStageTimes((k, d) => this._get(k, d)),
+      prRequest: prReadRequest(get),
+      prStage: stage,
+      prStageTimes: prReadStageTimes(get, stage),
       prNewDesc: '',
       prNewQty: ''
     };
@@ -218,8 +220,6 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
     const stageTimes = st.prStageTimes || {};
     const draft = stage === 'draft';
     const vessel = prVesselFor(request);
-    const routed = prRouteLines(request.lines);
-    const chandlerLines = routed.filter((l) => l.source === 'chandler');
     const brandName = (this.props.brandName ?? 'GAC Connect').trim() || 'GAC Connect';
     const email = prComposeEmail(request, brandName);
     const sentAt = stageTimes.sent;
@@ -244,26 +244,25 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       patchRequest({ lines: this.state.prRequest.lines.concat([{ id: id, description: desc, qty: qty.trim() || '1' }]) });
     };
 
-    /* Copy under each reached timeline stage. */
+    /* Copy under each reached timeline stage. These say what has happened to this
+       request; the "How it works" cards say what Compass does in general, so no
+       sentence is repeated between the two. */
     const stageNote = (s) => {
       switch (s) {
-        case 'sent': return 'The platform composed the email and sent it to Compass. Nothing else for you to do — Compass takes it from here.';
-        case 'sourcing': return 'Compass works the list line by line: its own stock and network first.';
-        case 'replied': return 'Compass replies per line. Where it cannot assist, it has already placed the order with a third-party chandler.';
-        case 'chandler-paid': return chandlerLines.length > 0
-          ? 'Compass pays ' + PR_CHANDLER_NAME + ' directly. The chandler’s invoice goes to Compass — never to you.'
-          : 'No third-party lines on this request — nothing for Compass to settle.';
-        case 'invoiced': return 'One invoice, from GAC via Compass, covering every line at Compass’s prices. No third-party paperwork.';
+        case 'sent': return 'Your list went to Compass by email. Nothing else for you to do — Compass takes it from here.';
+        case 'sourcing': return 'Your list is in hand at Compass now — nothing sits with you while it is being worked.';
+        case 'confirmed': return 'Compass has confirmed the list back — all ' + n + ' ' + linesWord + ' covered, each marked confirmed on your request.';
+        case 'invoiced': return 'The invoice is raised: every line at Compass’s prices, on one document under GAC.';
         default: return '';
       }
     };
 
-    const lines = routed.map((l, i) => {
-      const linePill = prStageReached(stage, 'replied')
-        ? { style: prPill(l.source === 'compass' ? 'verified' : 'info'), label: l.source === 'compass' ? 'Compass' : 'Chandler · via Compass' }
+    const lines = request.lines.map((l, i) => {
+      const linePill = prStageReached(stage, 'confirmed')
+        ? { style: prPill('verified'), label: PR_LINE_CONFIRMATION }
         : { style: prPill('neutral'), label: stage === 'sent' ? 'With Compass' : 'Being sourced' };
       return {
-        id: l.id, description: l.description, qty: l.qty, source: l.source,
+        id: l.id, description: l.description, qty: l.qty,
         editable: draft, locked: !draft,
         descId: 'line-desc-' + l.id, qtyId: 'line-qty-' + l.id,
         descLabel: 'Line ' + (i + 1) + ' description', qtyLabel: 'Line ' + (i + 1) + ' quantity',
@@ -289,12 +288,12 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
         labelStyle: 'font-size:13.5px;font-weight:700;margin:0;' + (status === 'pending' ? 'color:#33475F;' : 'color:#0A2540;'),
         liStyle: 'position:relative;display:flex;gap:12px;list-style:none;margin:0;padding:0 0 ' + (last ? '0' : '16px') + ';',
         hasTime: !!at, time: at ? prTimeOf(at) : '',
-        note: status !== 'pending' ? stageNote(s) : '',
-        showReplies: s === 'replied' && status !== 'pending'
+        /* The per-line confirmation lives on the request card, against the line
+           the client wrote; the timeline carries the count so the same words are
+           not announced twice per line. */
+        note: status !== 'pending' ? stageNote(s) : ''
       };
     });
-
-    const replyLines = routed.map((l) => ({ description: l.description, source: l.source, sourceLabel: prSourceLabel(l.source) }));
 
     const invoiceRows = invLines.map((l) => ({ description: l.description, qty: l.qty, price: this._gbp(l.priceGBP) }));
 
@@ -355,7 +354,7 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
         this.setState({ prStage: 'sent', prStageTimes: times });
         const v = prVesselFor(cur.prRequest);
         const count = cur.prRequest.lines.length;
-        this.toastMsg(cur.prRequest.ref + ' sent to Compass — ' + count + ' ' + (count === 1 ? 'line' : 'lines') + ', ' + v.name + ', needed ' + cur.prRequest.neededBy + '. Compass sources every line; you see one invoice, from GAC.');
+        this.toastMsg(cur.prRequest.ref + ' sent to Compass — ' + count + ' ' + (count === 1 ? 'line' : 'lines') + ', ' + v.name + ', needed ' + cur.prRequest.neededBy + '. Compass sources and supplies every line; you see one invoice, from GAC.');
         prFocus('pres-compass-email');
       },
 
@@ -370,7 +369,6 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       /* timeline */
       prStatusLabel: draft ? 'Not sent yet' : PR_STAGE_LABELS[stage],
       prTimeline: timeline,
-      prReplyLines: replyLines,
       prHasNext: !!nextLabel,
       prNextLabel: nextLabel,
       prAdvance: () => {

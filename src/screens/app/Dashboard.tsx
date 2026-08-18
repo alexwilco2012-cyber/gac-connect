@@ -319,7 +319,7 @@ export default function Dashboard() {
               <Button
                 variant="ghost"
                 onClick={() => navigate('/app/crew-change?section=taxis')}
-                data-testid="dashboard-transfers"
+                data-testid="dashboard-taxis"
               >
                 Plan taxis
               </Button>

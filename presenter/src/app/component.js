@@ -20,8 +20,9 @@ class Component extends DCLogic {
     this.state = {
       route: parsed.route || (this.props.startScreen ?? 'home'),
       profileId: parsed.profileId,
-      /* sub-section the hash asked for ('#/launches' → crew-change 'transfers');
-         the owning feature module reads it and clears it once the user picks another */
+      /* sub-section the hash asked for ('#/launches' → crew-change 'launches');
+         the owning feature module reads it, and keeps it and the hash in step
+         when the user picks another (it rewrites the hash in place) */
       routeSection: parsed.section || null,
       loader: loaderWanted ? 'visible' : 'gone',
       chip: 'All', query: '', sort: 'featured', esgOnly: false,
@@ -91,9 +92,11 @@ class Component extends DCLogic {
     if (parts[0] === 'supplier' && parts[1]) return { route: 'supplier', profileId: parts[1], section: null };
     /* '#/crew-change/<section>' mirrors the site's ?section= deep link; there is
        no Launches tab any more (17 Aug review follow-up), so the old '#/launches'
-       opens Crew change on its Transfers section, as the site's /app/launches
-       redirect does. The crew-change module reads state.routeSection. */
-    if (parts[0] === 'launches') return { route: 'crew-change', profileId: null, section: 'transfers' };
+       opens Crew change on its Launches section, as the site's /app/launches
+       redirect does. Retired section names ('#/crew-change/transfers', minted
+       before taxis and launches were split) are passed through as written and
+       resolved by the crew-change module, which reads state.routeSection. */
+    if (parts[0] === 'launches') return { route: 'crew-change', profileId: null, section: 'launches' };
     if (parts[0] === 'crew-change' && parts[1]) return { route: 'crew-change', profileId: null, section: parts[1] };
     const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null, section: null };
@@ -394,9 +397,9 @@ class Component extends DCLogic {
     const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     const isPlatform = platformRoutes.includes(route);
 
-    /* nav — ten platform items after the 17 Aug review (launches live inside
-       Crew change › Transfers, not on a tab), so the padding is tight (mirrors
-       the site's AppLayout) and the tier screen is "Tiers" */
+    /* nav — ten platform items after the 17 Aug review (launches are a section of
+       Crew change, not a tab), so the padding is tight (mirrors the site's
+       AppLayout) and the tier screen is "Tiers" */
     const mk = (label, r, beta) => ({
       label: label, beta: !!beta, pressed: (route === r || (r === 'marketplace' && route === 'supplier')) ? 'true' : 'false',
       go: this._go(r),

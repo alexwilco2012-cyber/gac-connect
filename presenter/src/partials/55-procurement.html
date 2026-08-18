@@ -2,7 +2,7 @@
     <main data-screen-label="Procurement" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
       <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Procurement · via Compass</p>
       <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Send the list to Compass. One invoice comes back.</h1>
-      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Your procurement list goes by email straight to Compass, GAC’s own procurement branch. Compass supplies what it can from its own stock and network. Where it cannot assist on a line, it sources it through its network — a ship chandler, for example — and pays that supplier itself. You are then invoiced via Compass, under GAC.</p>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Your procurement list goes by email straight to Compass, GAC’s own procurement branch. Compass sources and supplies every line on it, from its own stock and its own supply network, and confirms the list back to you. You are then invoiced via Compass, under GAC — one invoice, one relationship.</p>
       <p data-testid="procurement-illustrative" style="display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:760px;margin:8px 0 0;border:1px solid #E5EAF1;border-radius:8px;background:#FFFFFF;padding:6px 12px;font-size:12.5px;color:#33475F;"><span style="{{ prPillNeutral }}">Illustrative</span><span>{{ prNotice }}</span></p>
 
       <div data-testid="how-it-works" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px;">
@@ -65,7 +65,7 @@
             <sc-if value="{{ prHasLines }}" hint-placeholder-val="{{ false }}">
               <ul data-testid="request-lines" style="list-style:none;margin:8px 0 0;padding:0;">
                 <sc-for list="{{ prLines }}" as="l" hint-placeholder-count="5">
-                  <li data-testid="procurement-line" data-line-id="{{ l.id }}" data-source="{{ l.source }}" style="padding:8px 0;border-top:1px dashed #E5EAF1;">
+                  <li data-testid="procurement-line" data-line-id="{{ l.id }}" style="padding:8px 0;border-top:1px dashed #E5EAF1;">
                     <sc-if value="{{ l.editable }}" hint-placeholder-val="{{ false }}">
                       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
                         <div style="flex:1 1 200px;min-width:0;">
@@ -135,23 +135,13 @@
               <span style="font-size:12px;color:#33475F;">{{ prStatusLabel }}</span>
             </div>
             <ol data-testid="compass-timeline" data-stage="{{ prStage }}" style="list-style:none;margin:12px 0 0;padding:0;">
-              <sc-for list="{{ prTimeline }}" as="t" hint-placeholder-count="5">
+              <sc-for list="{{ prTimeline }}" as="t" hint-placeholder-count="4">
                 <li data-stage="{{ t.key }}" data-status="{{ t.status }}" aria-current="{{ t.ariaCurrent }}" style="{{ t.liStyle }}">
                   <sc-if value="{{ t.notLast }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position:absolute;top:24px;bottom:0;left:11px;width:1px;background:#E5EAF1;"></span></sc-if>
                   <span aria-hidden="true" style="{{ t.markerStyle }}">{{ t.markerGlyph }}</span>
                   <div style="min-width:0;flex:1;">
                     <p style="{{ t.labelStyle }}">{{ t.label }}<sc-if value="{{ t.isCurrent }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;"> (current)</span></sc-if><sc-if value="{{ t.hasTime }}" hint-placeholder-val="{{ false }}"><span style="margin-left:8px;font-size:12px;font-weight:600;color:#33475F;">{{ t.time }}</span></sc-if></p>
                     <sc-if value="{{ t.notPending }}" hint-placeholder-val="{{ false }}"><p style="font-size:12.5px;color:#33475F;margin:2px 0 0;">{{ t.note }}</p></sc-if>
-                    <sc-if value="{{ t.showReplies }}" hint-placeholder-val="{{ false }}">
-                      <ul data-testid="compass-reply-lines" style="list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px;">
-                        <sc-for list="{{ prReplyLines }}" as="rl" hint-placeholder-count="5">
-                          <li data-source="{{ rl.source }}" style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:6px 10px;font-size:12.5px;">
-                            <strong>{{ rl.description }}</strong>
-                            <span style="display:block;color:#33475F;">{{ rl.sourceLabel }}</span>
-                          </li>
-                        </sc-for>
-                      </ul>
-                    </sc-if>
                   </div>
                 </li>
               </sc-for>
@@ -206,8 +196,8 @@
                 </sc-raw-table>
                 <p style="font-size:12px;color:#33475F;margin:8px 0 0;">Prices are Compass’s, through its network. Every figure above is a demo figure.</p>
                 <ul style="margin:12px 0 0;padding-left:20px;font-size:13px;display:grid;gap:4px;">
-                  <li>The chandler was paid by Compass. You see one invoice, from GAC.</li>
-                  <li>One supplier relationship, one invoice, GAC accountable for the whole basket.</li>
+                  <li>Compass sourced and supplied every line. You see one invoice, from GAC.</li>
+                  <li>No separate supplier invoice to reconcile — the whole list sits on this one document.</li>
                 </ul>
               </div>
             </div>
@@ -217,7 +207,7 @@
 
       <div style="margin-top:20px;background:#0A2540;color:#D8E2EC;border-radius:10px;padding:14px 18px;display:flex;gap:16px;align-items:center;font-size:13.5px;flex-wrap:wrap;">
         <span style="background:rgba(255,255,255,.12);border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;">Compass</span>
-        <span style="flex:1;min-width:240px;">One supplier relationship. One invoice. GAC accountable for the whole basket — the chandler is Compass’s supplier, never yours.</span>
+        <span style="flex:1;min-width:240px;">One supplier relationship. One invoice. Compass sources and supplies the whole list, and GAC is accountable for the basket.</span>
         <sc-if value="{{ prDirty }}" hint-placeholder-val="{{ false }}">
           <button type="button" data-testid="reset-procurement" sc-camel-on-click="{{ prReset }}" style="display:inline-flex;align-items:center;justify-content:center;min-height:36px;background:rgba(255,255,255,.05);color:#FFFFFF;border:1.5px solid rgba(255,255,255,.3);border-radius:8px;padding:4px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);">Reset demo</button>
         </sc-if>

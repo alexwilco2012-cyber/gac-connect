@@ -1,7 +1,8 @@
 /* Launches panel — presenter mirror of the site's LaunchesPanel (17 Aug review;
-   owner's follow-up: there is no Launches tab, the panel lives inside Crew
-   change › Transfers, under the flight-timed planner and the taxis — see
-   partials/56-crew-change.html, which binds everything this module returns).
+   owner's follow-up: there is no Launches tab, the panel is the Launches section
+   of Crew change, standing next to Taxis rather than stacked under it — see
+   partials/56-crew-change.html, which binds everything this module returns; the
+   pointer back to the Taxis planner is bound by features/crew-change.js).
    Feature module: registers state / bindings / Escape handling with the core
    Component via Component._features (see component.js "feature-module
    extension points"). Data it needs lives here too, so app/data.js stays the

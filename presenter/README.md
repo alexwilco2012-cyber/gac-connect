@@ -63,14 +63,14 @@ slides shown before the platform — see below), `30-chrome` (header/nav),
 `40-…56-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
 certification, bunkers, kitchen-sink, procurement, crew-change — which holds
-the transfers section: taxis + the launches panel; `54-launches` is retired),
-`60-footer-drawer`, `70-modal`, `73-request`, `74-launch-request`, `71-tour`,
-`72-toast`.
+all six crew-change sections, Taxis (planner + operators) and Launches (the
+panel) among them; `54-launches` is retired), `60-footer-drawer`, `70-modal`,
+`73-request`, `74-launch-request`, `71-tour`, `72-toast`.
 
 ### Feature modules (17 Aug review screens)
 
 The screens added after v12 — Procurement, Crew change, and the launches panel
-that Crew change › Transfers embeds (`launches.js` still owns plan-a-run, the
+that Crew change › Launches embeds (`launches.js` still owns plan-a-run, the
 per-port cards and the launch-request modal; `56-crew-change.html` binds them) —
 live as **feature modules** in `src/app/features/<name>.js`, included after
 `component.js` in the x-dc script. Each module owns its data, state, bindings
@@ -88,8 +88,12 @@ and Escape handling and registers them with the core:
 `_featureEscape()` and knows nothing else about them; routes and nav entries
 for the two screens are the only core edits, plus one generic hook: `_parseHash`
 turns `#/crew-change/<section>` (and the retired `#/launches`, which is
-`#/crew-change/transfers`) into `state.routeSection`, which the crew-change
-module shows until the user picks another chip. Add a screen = a partial + a
+`#/crew-change/launches`) into `state.routeSection`, which the crew-change
+module resolves — retired names such as `transfers` included — and shows.
+`routeSection` is the only record of which section is open, so picking a chip
+or following a cross-link rewrites the hash in place (`history.replaceState`:
+no history entry, no `hashchange`, so no scroll to the top) and a hash with no
+section means the default one, exactly as `?section=` behaves on the site. Add a screen = a partial + a
 module + one route/nav line. `build.py` runs the same forbidden-sequence guard
 over `app/features/*.js` as over the core files.
 
