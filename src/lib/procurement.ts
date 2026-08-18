@@ -1,35 +1,25 @@
 import { BRAND_NAME } from '../config/brand';
 import {
-  CANNOT_ASSIST_IDS,
-  CHANDLER_NAME,
   COMPASS_ADDRESS,
   ILLUSTRATIVE_LINE_PRICE_FALLBACK_GBP,
   ILLUSTRATIVE_PRICES_GBP,
   SENDER,
 } from '../data/procurement';
-import type { ProcurementLine, ProcurementRequest } from '../data/procurement';
+import type { ProcurementRequest } from '../data/procurement';
 import { VESSELS } from '../data/vessels';
 
 /**
  * Procurement via Compass — the rules behind the working example (17 Aug
- * review, point 4). A request moves through a fixed set of stages: the
- * client sends the list to Compass by email; Compass sources it; Compass
- * replies line by line (supplied, or routed to a third-party chandler that
- * Compass pays); the client is invoiced via Compass, under GAC, at Compass's
- * prices. The chandler never invoices the client and never appears on the
- * client's paperwork. Everything numeric here is illustrative.
+ * review, point 4). A request moves through a fixed set of stages: the client
+ * sends the list to Compass by email; Compass sources it from its own stock
+ * and supply network; Compass confirms the list back; the client is invoiced
+ * via Compass, under GAC, at Compass's prices. One list, one supplier, one
+ * invoice. Everything numeric here is illustrative.
  */
 
 // ── Stage machine ────────────────────────────────────────────────────────
 
-export const STAGES = [
-  'draft',
-  'sent',
-  'sourcing',
-  'replied',
-  'chandler-paid',
-  'invoiced',
-] as const;
+export const STAGES = ['draft', 'sent', 'sourcing', 'confirmed', 'invoiced'] as const;
 
 export type Stage = (typeof STAGES)[number];
 
@@ -42,17 +32,15 @@ const STAGE_LABELS: Record<Stage, string> = {
   draft: 'Draft — not yet sent',
   sent: 'Sent to Compass',
   sourcing: 'Compass sourcing',
-  replied: 'Compass reply: supplied / routed',
-  'chandler-paid': 'Compass pays the chandler',
+  confirmed: 'Compass confirms the list',
   invoiced: 'Invoiced via Compass — under GAC',
 };
 
 /** Label of the simulate button that advances FROM this stage. */
 const SIMULATE_LABELS: Partial<Record<Stage, string>> = {
   sent: 'Simulate: Compass starts sourcing',
-  sourcing: 'Simulate: Compass replies',
-  replied: 'Simulate: chandler paid',
-  'chandler-paid': 'Simulate: invoice raised via Compass',
+  sourcing: 'Simulate: Compass confirms supply',
+  confirmed: 'Simulate: invoice raised via Compass',
 };
 
 export function stageIndex(stage: Stage): number {
@@ -93,34 +81,14 @@ export function simulateLabel(stage: Stage): string | null {
   return SIMULATE_LABELS[stage] ?? null;
 }
 
-// ── Line routing ─────────────────────────────────────────────────────────
-
-export type LineSource = 'compass' | 'chandler';
-
-export interface RoutedLine extends ProcurementLine {
-  source: LineSource;
-}
+// ── Line supply ──────────────────────────────────────────────────────────
 
 /**
- * Compass supplies every line it can; exactly the ids in `cannotAssistIds`
- * are routed to a third-party chandler (which Compass pays).
+ * Every line on the list is supplied by Compass — there is no second source
+ * to distinguish, so one shared string covers the whole list (owner's
+ * follow-up to the 17 Aug review).
  */
-export function routeLines(
-  lines: readonly ProcurementLine[],
-  cannotAssistIds: readonly string[] = CANNOT_ASSIST_IDS,
-): RoutedLine[] {
-  return lines.map((l) => ({
-    ...l,
-    source: cannotAssistIds.includes(l.id) ? 'chandler' : 'compass',
-  }));
-}
-
-/** Human line for the Compass reply on one routed line. */
-export function sourceLabel(source: LineSource, chandler = CHANDLER_NAME): string {
-  return source === 'compass'
-    ? 'Supplied by Compass'
-    : `Cannot assist — routed to a third-party chandler · ${chandler}`;
-}
+export const LINE_CONFIRMATION = 'Confirmed by Compass';
 
 // ── Invoice ──────────────────────────────────────────────────────────────
 
@@ -145,7 +113,7 @@ export function illustrativePrice(lineId: string): number {
 
 /**
  * The client-facing invoice: one line per item, from GAC via Compass. No
- * source column — the chandler never appears on the client's paperwork.
+ * source column — every line is Compass's own supply, under GAC.
  */
 export function invoiceLines(request: ProcurementRequest): InvoiceLine[] {
   return request.lines.map((l) => ({
@@ -195,7 +163,7 @@ export function composeEmail(request: ProcurementRequest): ComposedEmail {
     '',
     lineList,
     '',
-    'Where Compass cannot assist on a line, please source it and invoice via Compass under GAC as usual.',
+    'Please confirm supply against each line and invoice via Compass under GAC as usual.',
     '',
     'Regards,',
     `${SENDER.name} · ${SENDER.org}`,

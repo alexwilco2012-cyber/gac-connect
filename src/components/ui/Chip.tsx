@@ -1,15 +1,21 @@
+import type { Ref } from 'react';
+
 /** Category chip — pressed state is ink (02 §components). */
 export function Chip({
   pressed,
   onClick,
   children,
+  ref,
 }: {
   pressed: boolean;
   onClick: () => void;
   children: string;
+  /** Optional — lets a screen move focus to a chip after switching section. */
+  ref?: Ref<HTMLButtonElement>;
 }) {
   return (
     <button
+      ref={ref}
       type="button"
       aria-pressed={pressed}
       onClick={onClick}

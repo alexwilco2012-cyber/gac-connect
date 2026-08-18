@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { DEFAULT_REQUEST } from '../data/procurement';
 import type { ProcurementLine, ProcurementRequest } from '../data/procurement';
-import { isFinalStage, nextStage, STAGES } from '../lib/procurement';
+import { isFinalStage, nextStage, STAGES, stageReached } from '../lib/procurement';
 import type { Stage } from '../lib/procurement';
 import { persistent } from '../lib/storage';
 
@@ -72,19 +72,31 @@ export function readRequest(): ProcurementRequest {
   return { ...cloneDefault(), ...(r as unknown as ProcurementRequest) };
 }
 
-export function readStage(): Stage {
-  const stored = persistent.get<unknown>(KEY_STAGE, 'draft');
-  return typeof stored === 'string' && (STAGES as readonly string[]).includes(stored)
-    ? (stored as Stage)
-    : 'draft';
+function isStage(value: unknown): value is Stage {
+  return typeof value === 'string' && (STAGES as readonly string[]).includes(value);
 }
 
-export function readStageTimes(): StageTimes {
+/**
+ * The stage the visitor left the demo at. A stored name that is no longer part
+ * of the flow — an earlier visit, or a hand-edited entry — starts the demo over
+ * at the draft rather than leaving the screen on a stage that no longer exists.
+ */
+export function readStage(): Stage {
+  const stored = persistent.get<unknown>(KEY_STAGE, 'draft');
+  return isStage(stored) ? stored : 'draft';
+}
+
+/**
+ * Timestamps for the stages reached so far. Anything the current stage has not
+ * reached is dropped, so a stage list that has changed since the last visit
+ * cannot leave a stray time against a step that has not happened.
+ */
+export function readStageTimes(stage: Stage = readStage()): StageTimes {
   const stored = persistent.get<unknown>(KEY_TIMES, {});
   if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
   const out: StageTimes = {};
   for (const [k, v] of Object.entries(stored as Record<string, unknown>)) {
-    if ((STAGES as readonly string[]).includes(k) && typeof v === 'string') out[k as Stage] = v;
+    if (isStage(k) && typeof v === 'string' && stageReached(stage, k)) out[k] = v;
   }
   return out;
 }
@@ -105,10 +117,12 @@ export const useProcurement = create<ProcurementState>((set, get) => {
     saveRequest({ ...get().request, ...patch });
   }
 
+  const hydratedStage = readStage();
+
   return {
     request: readRequest(),
-    stage: readStage(),
-    stageTimes: readStageTimes(),
+    stage: hydratedStage,
+    stageTimes: readStageTimes(hydratedStage),
 
     setLines(lines) {
       patchRequest({ lines });

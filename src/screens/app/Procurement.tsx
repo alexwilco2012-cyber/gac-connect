@@ -5,21 +5,15 @@ import { Card } from '../../components/ui/Card';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Pill } from '../../components/ui/Pill';
 import type { PillTone } from '../../components/ui/Pill';
-import {
-  CHANDLER_NAME,
-  DEFAULT_REQUEST,
-  PROCUREMENT_RULES,
-  SIMULATION_NOTICE,
-} from '../../data/procurement';
+import { DEFAULT_REQUEST, PROCUREMENT_RULES, SIMULATION_NOTICE } from '../../data/procurement';
 import { VESSELS } from '../../data/vessels';
 import { gbp } from '../../lib/format';
 import {
   composeEmail,
   invoiceLines,
   invoiceTotals,
-  routeLines,
+  LINE_CONFIRMATION,
   simulateLabel,
-  sourceLabel,
   stageLabel,
   stageReached,
   stageStatus,
@@ -33,12 +27,12 @@ import { canSend, useProcurement } from '../../store/procurement';
 /**
  * Procurement via Compass — a working example of the flow raised on 17 Aug
  * (point 4). The client builds a list; the platform emails it straight to
- * Compass, GAC's procurement branch; Compass supplies what it can and, where
- * it cannot assist, sources the line from a third party (a ship chandler)
- * and pays them; the client is invoiced via Compass, under GAC, with a
- * one invoice, no third-party paperwork. There is no mail server
- * behind this proof of concept: the email is composed and shown, and the
- * Compass side is advanced by "Simulate" buttons, and says so on screen.
+ * Compass, GAC's own procurement branch; Compass sources and supplies every
+ * line from its own stock and supply network, and confirms the list back; the
+ * client is invoiced via Compass, under GAC — one invoice, one relationship.
+ * There is no mail server behind this proof of concept: the email is composed
+ * and shown, the Compass side is advanced by "Simulate" buttons, and the
+ * screen says so.
  */
 
 const INPUT =
@@ -49,8 +43,9 @@ const STAGE_PILL: Record<Stage, { tone: PillTone; label: string }> = {
   draft: { tone: 'neutral', label: 'Draft · ready to send' },
   sent: { tone: 'info', label: 'With Compass' },
   sourcing: { tone: 'info', label: 'With Compass · sourcing' },
-  replied: { tone: 'info', label: 'Compass replied' },
-  'chandler-paid': { tone: 'info', label: 'Chandler paid by Compass' },
+  // The header pill and the per-line pills read from the one exported string,
+  // so the two can never drift apart.
+  confirmed: { tone: 'info', label: LINE_CONFIRMATION },
   invoiced: { tone: 'verified', label: '✓ Invoiced via Compass' },
 };
 
@@ -85,8 +80,6 @@ export default function Procurement() {
 
   const vessel = VESSELS.find((v) => v.id === request.vesselId) ?? VESSELS[0]!;
   const draft = stage === 'draft';
-  const routed = routeLines(request.lines);
-  const chandlerLines = routed.filter((l) => l.source === 'chandler');
   const email = composeEmail(request);
   const sentAt = stageTimes.sent;
   const lines = invoiceLines(request);
@@ -94,6 +87,8 @@ export default function Procurement() {
   const nextLabel = simulateLabel(stage);
   const dirty = !draft || JSON.stringify(request) !== JSON.stringify(DEFAULT_REQUEST);
   const pill = STAGE_PILL[stage];
+  const lineCount = request.lines.length;
+  const lineWord = lineCount === 1 ? 'line' : 'lines';
 
   // Keyboard users land on what just appeared: the composed email after Send,
   // the invoice after the last simulate (whose button unmounts).
@@ -116,14 +111,12 @@ export default function Procurement() {
     focusNext.current = 'email';
     send();
     pushToast(
-      `${request.ref} sent to Compass — ${request.lines.length} ${
-        request.lines.length === 1 ? 'line' : 'lines'
-      }, ${vessel.name}, needed ${request.neededBy}. Compass sources every line; you see one invoice, from GAC.`,
+      `${request.ref} sent to Compass — ${lineCount} ${lineWord}, ${vessel.name}, needed ${request.neededBy}. Compass sources and supplies every line; you see one invoice, from GAC.`,
     );
   }
 
   function onAdvance() {
-    if (stage === 'chandler-paid') focusNext.current = 'invoice';
+    if (stage === 'confirmed') focusNext.current = 'invoice';
     advance();
   }
 
@@ -142,21 +135,21 @@ export default function Procurement() {
     newDescRef.current?.focus();
   }
 
-  /** Copy under each reached timeline stage. */
+  /**
+   * Copy under each reached timeline stage. These say what has happened to
+   * this request; the "How it works" cards say what Compass does in general,
+   * so no sentence is repeated between the two.
+   */
   function stageNote(s: Stage): string {
     switch (s) {
       case 'sent':
-        return 'The platform composed the email and sent it to Compass. Nothing else for you to do — Compass takes it from here.';
+        return 'Your list went to Compass by email. Nothing else for you to do — Compass takes it from here.';
       case 'sourcing':
-        return 'Compass works the list line by line: its own stock and network first.';
-      case 'replied':
-        return 'Compass replies per line. Where it cannot assist, it has already placed the order with a third-party chandler.';
-      case 'chandler-paid':
-        return chandlerLines.length > 0
-          ? `Compass pays ${CHANDLER_NAME} directly. The chandler’s invoice goes to Compass — never to you.`
-          : 'No third-party lines on this request — nothing for Compass to settle.';
+        return 'Your list is in hand at Compass now — nothing sits with you while it is being worked.';
+      case 'confirmed':
+        return `Compass has confirmed the list back — all ${lineCount} ${lineWord} covered, each marked confirmed on your request.`;
       case 'invoiced':
-        return 'One invoice, from GAC via Compass, covering every line at Compass’s prices. No third-party paperwork.';
+        return 'The invoice is raised: every line at Compass’s prices, on one document under GAC.';
       default:
         return '';
     }
@@ -170,9 +163,9 @@ export default function Procurement() {
       </h1>
       <p className="mt-1 max-w-[760px] text-[14px] text-ink-soft">
         Your procurement list goes by email straight to Compass, GAC’s own procurement branch.
-        Compass supplies what it can from its own stock and network. Where it cannot assist on a
-        line, it sources it through its network — a ship chandler, for example — and pays that
-        supplier itself. You are then invoiced via Compass, under GAC.
+        Compass sources and supplies every line on it, from its own stock and its own supply
+        network, and confirms the list back to you. You are then invoiced via Compass, under GAC —
+        one invoice, one relationship.
       </p>
       <p
         className="mt-2 inline-flex max-w-[760px] flex-wrap items-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] text-ink-soft"
@@ -226,9 +219,7 @@ export default function Procurement() {
                 <p className="mt-0.5 text-[13px] text-ink-soft">
                   {draft
                     ? 'Drafted from the vessel’s call — edit the lines, then send.'
-                    : `Sent ${timeOf(sentAt ?? '')} · ${request.lines.length} ${
-                        request.lines.length === 1 ? 'line' : 'lines'
-                      } · locked while Compass works it`}
+                    : `Sent ${timeOf(sentAt ?? '')} · ${lineCount} ${lineWord} · locked while Compass works it`}
                 </p>
               </div>
               <Pill tone={pill.tone}>{pill.label}</Pill>
@@ -292,7 +283,7 @@ export default function Procurement() {
 
             {/* Lines */}
             <div className="mt-4 flex items-center justify-between gap-3">
-              <Eyebrow>Lines · {request.lines.length}</Eyebrow>
+              <Eyebrow>Lines · {lineCount}</Eyebrow>
               {draft ? (
                 <span className="text-[12px] text-ink-soft">
                   Nothing is priced on your side — Compass prices the basket
@@ -300,7 +291,7 @@ export default function Procurement() {
               ) : null}
             </div>
 
-            {request.lines.length === 0 ? (
+            {lineCount === 0 ? (
               <p
                 className="mt-2 rounded-lg border border-dashed border-line-strong px-3 py-3 text-[13px] text-ink-soft"
                 data-testid="lines-empty"
@@ -309,13 +300,12 @@ export default function Procurement() {
               </p>
             ) : (
               <ul className="mt-2 divide-y divide-dashed divide-line" data-testid="request-lines">
-                {routed.map((l, i) => (
+                {request.lines.map((l, i) => (
                   <li
                     key={l.id}
                     className="py-2"
                     data-testid="procurement-line"
                     data-line-id={l.id}
-                    data-source={l.source}
                   >
                     {draft ? (
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_160px_auto]">
@@ -360,10 +350,8 @@ export default function Procurement() {
                           <strong>{l.description}</strong>
                           <span className="text-ink-soft"> · {l.qty}</span>
                         </span>
-                        {stageReached(stage, 'replied') ? (
-                          <Pill tone={l.source === 'compass' ? 'verified' : 'info'}>
-                            {l.source === 'compass' ? 'Compass' : 'Chandler · via Compass'}
-                          </Pill>
+                        {stageReached(stage, 'confirmed') ? (
+                          <Pill tone="verified">{LINE_CONFIRMATION}</Pill>
                         ) : (
                           <Pill tone="neutral">
                             {stage === 'sent' ? 'With Compass' : 'Being sourced'}
@@ -426,7 +414,7 @@ export default function Procurement() {
                 <span className="text-[12.5px] text-ink-soft">
                   {sendable
                     ? 'The platform composes the email and shows it here — nothing to type'
-                    : request.lines.length === 0
+                    : lineCount === 0
                       ? 'Add at least one line to send'
                       : 'Every line needs a description before it can go to Compass'}
                 </span>
@@ -523,22 +511,11 @@ export default function Procurement() {
                           </span>
                         ) : null}
                       </p>
+                      {/* The per-line confirmation lives on the request card, against
+                          the line the client wrote; the timeline carries the count so
+                          the same words are not announced twice per line. */}
                       {status !== 'pending' ? (
                         <p className="mt-0.5 text-[12.5px] text-ink-soft">{stageNote(s)}</p>
-                      ) : null}
-                      {s === 'replied' && status !== 'pending' ? (
-                        <ul className="mt-2 space-y-1.5" data-testid="compass-reply-lines">
-                          {routed.map((l) => (
-                            <li
-                              key={l.id}
-                              className="rounded-lg border border-line bg-paper px-2.5 py-1.5 text-[12.5px]"
-                              data-source={l.source}
-                            >
-                              <strong>{l.description}</strong>
-                              <span className="block text-ink-soft">{sourceLabel(l.source)}</span>
-                            </li>
-                          ))}
-                        </ul>
                       ) : null}
                     </div>
                   </li>
@@ -625,9 +602,10 @@ export default function Procurement() {
                   Prices are Compass’s, through its network. Every figure above is a demo figure.
                 </p>
                 <ul className="mt-3 list-disc space-y-1 pl-5 text-[13px]">
-                  <li>The chandler was paid by Compass. You see one invoice, from GAC.</li>
+                  <li>Compass sourced and supplied every line. You see one invoice, from GAC.</li>
                   <li>
-                    One supplier relationship, one invoice, GAC accountable for the whole basket.
+                    No separate supplier invoice to reconcile — the whole list sits on this one
+                    document.
                   </li>
                 </ul>
               </Card>
@@ -640,8 +618,8 @@ export default function Procurement() {
       <div className="mt-5 flex flex-wrap items-center gap-4 rounded-brand bg-ink px-4.5 py-3.5 text-[13.5px] text-[#D8E2EC]">
         <span className="rounded-md bg-white/12 px-2 py-0.5 text-[11.5px] font-bold">Compass</span>
         <span className="flex-1">
-          One supplier relationship. One invoice. GAC accountable for the whole basket — the
-          chandler is Compass’s supplier, never yours.
+          One supplier relationship. One invoice. Compass sources and supplies the whole list, and
+          GAC is accountable for the basket.
         </span>
         {dirty ? (
           <Button

@@ -1,12 +1,11 @@
 /**
  * Procurement via Compass — the working example from the 17 Aug review.
- * A client's list goes by email straight to Compass, GAC's procurement
- * branch. Compass supplies what it can from its own stock and network; where
- * it cannot assist on a line it sources it (a ship chandler, for example) and
- * pays that supplier itself. The client is invoiced via Compass, under GAC,
- * one invoice, no third-party paperwork. Everything here is
- * fictional and illustrative — there is no mail server behind the proof of
- * concept, and every price is a demo figure.
+ * A client's list goes by email straight to Compass, GAC's own procurement
+ * branch. Compass sources and supplies every line itself, from its own stock
+ * and supply network. The client is invoiced via Compass, under GAC — one
+ * invoice, one relationship. Everything here is fictional and illustrative:
+ * there is no mail server behind the proof of concept, and every price is a
+ * demo figure.
  */
 
 export interface ProcurementLine {
@@ -68,15 +67,6 @@ export const COMPASS_ADDRESS = 'procurement@compass.example';
 export const SENDER = { name: 'A. Wilkinson', org: 'Aberdeen Agency' } as const;
 
 /**
- * Lines Compass cannot assist on in the demo — routed to a third-party
- * chandler, which Compass pays; the client never sees the chandler on paper.
- */
-export const CANNOT_ASSIST_IDS: readonly string[] = ['bonded-stores', 'galley-gas'];
-
-/** Fictional third-party chandler for the routed lines. */
-export const CHANDLER_NAME = 'Granite Ship Chandlers';
-
-/**
  * Illustrative demo prices per line, keyed by line id. Lines the user adds
  * take the fallback. Nothing here is a real Compass price.
  */
@@ -99,21 +89,21 @@ export const PROCUREMENT_RULES = [
   },
   {
     step: '2',
-    title: 'Compass supplies from its own stock and network',
-    body: 'Compass works the list line by line and supplies what it can directly.',
+    title: 'Compass sources and supplies the whole list',
+    body: 'Compass works the list line by line, from its own stock and its own supply network.',
   },
   {
     step: '3',
-    title: 'If Compass cannot assist on a line, it sources it — and pays',
-    body: 'A ship chandler, for example. Compass places the order and pays the chandler itself. The chandler is Compass’s supplier, not yours.',
+    title: 'Compass confirms the list back to you',
+    body: 'Every line comes back confirmed by Compass — one point of contact, nobody else to chase.',
   },
   {
     step: '4',
     title: 'You are invoiced via Compass, under GAC',
-    body: 'One invoice, from GAC, covering every line. No third-party paperwork; GAC accountable for the whole basket.',
+    body: 'One invoice, from GAC, covering every line. One relationship, and GAC accountable for the whole basket.',
   },
 ] as const;
 
 /** Copy for the illustrative notice — the Compass side is simulated. */
 export const SIMULATION_NOTICE =
-  'Illustrative — Compass replies are simulated in this proof of concept. No email is sent and every price is a demo figure.';
+  'Illustrative — the Compass side is simulated in this proof of concept. No email is sent and every price is a demo figure.';

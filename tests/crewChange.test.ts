@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   CREW_PORTS,
   CREW_SECTIONS,
+  DEFAULT_CREW_SECTION,
   ILLUSTRATIVE_NOTICE,
   LOI_DEMO_FORM,
   REPAT_DEMO_FORM,
+  resolveCrewSection,
   STAGE_NOTES,
 } from '../src/data/crewChange';
 import { VESSELS } from '../src/data/vessels';
@@ -223,15 +225,34 @@ describe('Crew change — repatriation-letter validation', () => {
   });
 });
 
+describe('Crew change — sections a URL can ask for', () => {
+  it('a retired id lands on the section that replaced it, not on the default', () => {
+    // Links minted before taxis and launches were split still work.
+    expect(resolveCrewSection('transfers')).toBe('taxis');
+  });
+
+  it('current ids pass through; anything else falls back to the default', () => {
+    for (const s of CREW_SECTIONS) expect(resolveCrewSection(s.id)).toBe(s.id);
+    expect(resolveCrewSection('nonsense')).toBe(DEFAULT_CREW_SECTION);
+    expect(resolveCrewSection(null)).toBe(DEFAULT_CREW_SECTION);
+    expect(resolveCrewSection('')).toBe(DEFAULT_CREW_SECTION);
+    expect(DEFAULT_CREW_SECTION).toBe('hotels');
+  });
+});
+
 describe('Crew change — data guardrails', () => {
-  it('five sections (transfers holds taxis and launches), three ports, demo vessels from the canonical set', () => {
+  it('six sections (taxis and launches stand apart), three ports, demo vessels from the canonical set', () => {
     expect(CREW_SECTIONS.map((s) => s.id)).toEqual([
       'hotels',
-      'transfers',
+      'taxis',
+      'launches',
       'immigration',
       'loi',
       'repat',
     ]);
+    // Every section carries its own one-line summary, and none of them shout.
+    expect(CREW_SECTIONS.filter((s) => s.summary.trim() === '')).toEqual([]);
+    expect(CREW_SECTIONS.filter((s) => /!/.test(`${s.label} ${s.summary}`))).toEqual([]);
     expect(CREW_PORTS).toEqual(['Aberdeen', 'Peterhead', 'Montrose']);
     expect(VESSELS.some((v) => v.id === LOI_DEMO_FORM.vesselId)).toBe(true);
     expect(VESSELS.some((v) => v.id === REPAT_DEMO_FORM.vesselId)).toBe(true);

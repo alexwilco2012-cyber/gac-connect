@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { LaunchesPanel } from '../../components/LaunchesPanel';
@@ -17,9 +17,10 @@ import {
   CREW_SECTIONS,
   DEFAULT_CREW_SECTION,
   ILLUSTRATIVE_NOTICE,
-  isCrewSectionId,
+  resolveCrewSection,
   IMMIGRATION_CHECKLIST,
   INFORMS_NOT_ADVISES,
+  LAUNCHES_TAXI_POINTER,
   LOI_DEMO_FORM,
   LOI_NOT_OKTB,
   LOI_NOT_REQUIRED_NOTE,
@@ -27,7 +28,8 @@ import {
   REPAT_INTRO,
   REPAT_QUESTION,
   STAGE_NOTES,
-  TRANSFERS_INTRO,
+  TAXIS_INTRO,
+  TAXIS_LAUNCH_POINTER,
 } from '../../data/crewChange';
 import type { CrewSectionId } from '../../data/crewChange';
 import { SUPPLIERS } from '../../data/suppliers';
@@ -53,17 +55,21 @@ import {
   planTransfers,
   trackFlight,
   TRANSFER_BUFFERS,
+  TRANSFER_PORTS,
 } from '../../lib/transfers';
 import type { Direction, FlightStatus } from '../../lib/transfers';
 import { useApp } from '../../store/app';
 import { useCrewChange } from '../../store/crewChange';
 
 /**
- * Crew change — hotels, immigration guidance, and the two letter templates
- * (LOI for on-signers, repatriation letter for off-signers). The client fills
- * a template in; GAC endorses the LOI as agents, or routes the repatriation
- * letter to UK Border Force, and returns it. One letter per crew member.
- * All data on this screen is illustrative.
+ * Crew change — hotels, taxis, launches, immigration guidance, and the two
+ * letter templates (LOI for on-signers, repatriation letter for off-signers).
+ * The client fills a template in; GAC endorses the LOI as agents, or routes the
+ * repatriation letter to UK Border Force, and returns it. One letter per crew
+ * member. Taxis and launches are sections in their own right (17 Aug review,
+ * owner's follow-up: taxis are not just the tail of a launch booking), and each
+ * points at the other — the flight-timed planner sits with the taxis because it
+ * is the airport run that hangs off the flight. All data here is illustrative.
  */
 
 const INPUT =
@@ -74,6 +80,10 @@ const HOTELS = SUPPLIERS.filter((s) => s.category === 'Hotels');
 const TAXIS = SUPPLIERS.filter((s) => s.category === 'Taxis');
 const LAUNCHES = launchSuppliers(SUPPLIERS);
 const LAUNCH_PORTS = launchPorts(SUPPLIERS);
+/** Taxis run to every port the crew change covers; launches only to some of them. */
+const TAXI_PORTS: readonly string[] = TRANSFER_PORTS.filter(
+  (p) => (CREW_PORTS as readonly string[]).includes(p) || LAUNCH_PORTS.includes(p),
+);
 
 const PORT_SET = new Set<string>(CREW_PORTS);
 
@@ -238,7 +248,7 @@ function HotelsSection({ onRequest }: { onRequest: (t: RequestTarget) => void })
   );
 }
 
-/* ------------------------------------------------------------- Transfers */
+/* ----------------------------------------------------------------- Taxis */
 
 const DIRECTIONS: { id: Direction; label: string; hint: string }[] = [
   { id: 'arriving', label: 'On-signers arriving', hint: 'flight lands → taxi → quay → launch' },
@@ -259,12 +269,12 @@ const PHASE_LABEL = {
 } as const;
 
 /** Flight-timed planner: flight number → tracked status → taxi and launch timings. */
-function FlightPlanner() {
+function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
   const pushToast = useApp((s) => s.pushToast);
   const [direction, setDirection] = useState<Direction>('arriving');
   const [flightNo, setFlightNo] = useState('ZZ 417');
   const [pax, setPax] = useState('6');
-  const [port, setPort] = useState(LAUNCH_PORTS[0] ?? 'Aberdeen');
+  const [port, setPort] = useState<string>(TAXI_PORTS[0] ?? 'Aberdeen');
   const [launchId, setLaunchId] = useState<string>(LAUNCHES[0]?.id ?? '');
   const [tracked, setTracked] = useState<FlightStatus | null>(null);
   const [notFound, setNotFound] = useState<string | null>(null);
@@ -324,7 +334,7 @@ function FlightPlanner() {
         </div>
         <Pill tone="neutral">Illustrative</Pill>
       </div>
-      <p className="mt-1.5 max-w-[760px] text-[13.5px] text-ink-soft">{TRANSFERS_INTRO}</p>
+      <p className="mt-1.5 max-w-[760px] text-[13.5px] text-ink-soft">{TAXIS_INTRO}</p>
 
       <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Direction">
         {DIRECTIONS.map((d) => (
@@ -385,7 +395,7 @@ function FlightPlanner() {
             className={INPUT}
             data-testid="flight-port"
           >
-            {LAUNCH_PORTS.map((p) => (
+            {TAXI_PORTS.map((p) => (
               <option key={p} value={p}>
                 {p}
               </option>
@@ -409,6 +419,17 @@ function FlightPlanner() {
           </select>
         </label>
       </div>
+      <p className="mt-1.5 text-[12px] text-ink-soft" data-testid="taxis-launch-pointer">
+        {TAXIS_LAUNCH_POINTER}{' '}
+        <button
+          type="button"
+          onClick={onOpenLaunches}
+          className="cursor-pointer border-none bg-transparent p-0 font-semibold text-sea underline"
+          data-testid="open-launches"
+        >
+          Open Launches
+        </button>
+      </p>
       <p id="flight-suggestions" className="mt-1.5 text-[12px] text-ink-soft">
         Demo flights the simulated feed knows:{' '}
         {suggestions.map((f, i) => (
@@ -538,13 +559,12 @@ function FlightPlanner() {
   );
 }
 
-function TaxisSection({ onRequest }: { onRequest: (t: RequestTarget) => void }) {
+function TaxiOperators({ onRequest }: { onRequest: (t: RequestTarget) => void }) {
   return (
     <div data-testid="taxis" className="mt-6">
       <h3 className="font-display text-[17px] font-bold">Taxis and minibuses</h3>
       <p className="mt-1 max-w-[720px] text-[13.5px] text-ink-soft">
-        Airport, hotel, and quay runs. Airport pickups hold the tracked flight, so a delay moves the
-        pickup — not the crew.
+        Airport pickups hold the tracked flight, so a delay moves the pickup — not the crew.
       </p>
       <div className="mt-3 grid gap-4 md:grid-cols-2">
         {TAXIS.map((t) => {
@@ -609,14 +629,33 @@ function TaxisSection({ onRequest }: { onRequest: (t: RequestTarget) => void }) 
   );
 }
 
-function TransfersSection({ onRequest }: { onRequest: (t: RequestTarget) => void }) {
+/**
+ * Taxis — the flight-timed planner and the taxi operators. The planner lives
+ * here because it is the airport run that hangs off the crew member's flight;
+ * the launch leg it times is an option inside it, and the operators sit next
+ * door under Launches.
+ */
+function TaxisSection({
+  onRequest,
+  onOpenLaunches,
+}: {
+  onRequest: (t: RequestTarget) => void;
+  onOpenLaunches: () => void;
+}) {
   return (
-    <div data-testid="section-transfers">
-      <FlightPlanner />
-      <TaxisSection onRequest={onRequest} />
-      <div className="mt-6">
-        <LaunchesPanel />
-      </div>
+    <div data-testid="section-taxis">
+      <FlightPlanner onOpenLaunches={onOpenLaunches} />
+      <TaxiOperators onRequest={onRequest} />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- Launches */
+
+function LaunchesSection({ onOpenTaxis }: { onOpenTaxis: () => void }) {
+  return (
+    <div data-testid="section-launches">
+      <LaunchesPanel flightNote={LAUNCHES_TAXI_POINTER} onOpenTaxis={onOpenTaxis} />
     </div>
   );
 }
@@ -1113,17 +1152,39 @@ function RequestsList() {
 /* ----------------------------------------------------------------- Screen */
 
 export default function CrewChange() {
-  // The active section lives in the URL (?section=transfers) so the dashboard,
-  // the old /app/launches route, and a shared link can open straight onto it.
+  // The active section lives in the URL (?section=taxis, ?section=launches …)
+  // so the dashboard, the old /app/launches route, and a shared link can open
+  // straight onto it.
   const [params, setParams] = useSearchParams();
   const fromUrl = params.get('section');
-  const section: CrewSectionId = isCrewSectionId(fromUrl) ? fromUrl : DEFAULT_CREW_SECTION;
-  const setSection = (id: CrewSectionId) => {
+  const section: CrewSectionId = resolveCrewSection(fromUrl);
+  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  // A cross-link swaps the whole section body out from under the button that
+  // was clicked, so send focus to the destination's chip — it stays mounted and
+  // carries aria-pressed, which announces where the visitor has landed.
+  const focusChipNext = useRef<CrewSectionId | null>(null);
+
+  const setSection = (id: CrewSectionId, moveFocus = false) => {
+    if (moveFocus) focusChipNext.current = id;
     const next = new URLSearchParams(params);
     if (id === DEFAULT_CREW_SECTION) next.delete('section');
     else next.set('section', id);
     setParams(next, { replace: true });
   };
+
+  // A retired id in the URL (?section=transfers) resolved to a live section:
+  // tidy the address bar so what is shared next is the current name.
+  useEffect(() => {
+    if (fromUrl !== null && fromUrl !== section) setSection(section);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromUrl, section]);
+
+  useEffect(() => {
+    const want = focusChipNext.current;
+    if (!want) return;
+    focusChipNext.current = null;
+    chipRefs.current[want]?.focus();
+  }, [section]);
   const [target, setTarget] = useState<RequestTarget | null>(null);
   // Drafts live here so switching section (say, to the checklist) keeps them.
   const loi = useTemplateState<LoiForm>(LOI_DEMO_FORM);
@@ -1132,7 +1193,7 @@ export default function CrewChange() {
 
   return (
     <div className="screen-enter">
-      <Eyebrow>Crew change · hotels, transfers, immigration, letters</Eyebrow>
+      <Eyebrow>Crew change · hotels, taxis, launches, immigration, letters</Eyebrow>
       <h1 className="mt-1 font-display text-2xl font-bold">
         Everything a crew change needs, in one place
       </h1>
@@ -1159,7 +1220,14 @@ export default function CrewChange() {
         data-testid="crew-sections"
       >
         {CREW_SECTIONS.map((s) => (
-          <Chip key={s.id} pressed={section === s.id} onClick={() => setSection(s.id)}>
+          <Chip
+            key={s.id}
+            ref={(el) => {
+              chipRefs.current[s.id] = el;
+            }}
+            pressed={section === s.id}
+            onClick={() => setSection(s.id)}
+          >
             {s.label}
           </Chip>
         ))}
@@ -1171,7 +1239,12 @@ export default function CrewChange() {
           {active.summary}
         </p>
         {section === 'hotels' ? <HotelsSection onRequest={setTarget} /> : null}
-        {section === 'transfers' ? <TransfersSection onRequest={setTarget} /> : null}
+        {section === 'taxis' ? (
+          <TaxisSection onRequest={setTarget} onOpenLaunches={() => setSection('launches', true)} />
+        ) : null}
+        {section === 'launches' ? (
+          <LaunchesSection onOpenTaxis={() => setSection('taxis', true)} />
+        ) : null}
         {section === 'immigration' ? <ImmigrationSection /> : null}
         {section === 'loi' ? <LoiSection state={loi} /> : null}
         {section === 'repat' ? <RepatSection state={repat} /> : null}

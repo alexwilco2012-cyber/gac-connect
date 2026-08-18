@@ -23,12 +23,15 @@ import { SUPPLIERS } from '../data/suppliers';
 
 /**
  * Launches panel — crew, stores, and light freight out to vessels at anchor or
- * working inshore (17 Aug review). Lives inside Crew change › Transfers
- * (owner's follow-up: launches belong with taxis and the crew's flights, not
- * on a tab of their own). Every operator is SVS-vetted like the rest of the
- * marketplace; what this panel adds is the two facts a client needs before
- * booking a run: the launch's maximum capacity and whether freight is
+ * working inshore (17 Aug review). Lives inside Crew change, on its own
+ * Launches section (owner's follow-up: taxis and launches are separate
+ * sub-headings, not one transfers pile). Every operator is SVS-vetted like the
+ * rest of the marketplace; what this panel adds is the two facts a client needs
+ * before booking a run: the launch's maximum capacity and whether freight is
  * included. Ports are examples (Aberdeen, Macduff); figures are illustrative.
+ *
+ * `flightNote` and `onOpenTaxis` are the pointer back to the Taxis section,
+ * where the planner times a run to the crew member's tracked flight.
  */
 
 const FIT_TONE: Record<RunFit, PillTone> = {
@@ -128,7 +131,13 @@ function LaunchCard({
   );
 }
 
-export function LaunchesPanel() {
+export function LaunchesPanel({
+  flightNote,
+  onOpenTaxis,
+}: {
+  flightNote?: string;
+  onOpenTaxis?: () => void;
+}) {
   const [port, setPort] = useState(PORTS[0] ?? 'Aberdeen');
   const [paxText, setPaxText] = useState(String(DEFAULT_PAX));
   const [needsFreight, setNeedsFreight] = useState(true);
@@ -148,6 +157,24 @@ export function LaunchesPanel() {
       <p className="mt-1 text-[12px] text-ink-soft">
         Ports, capacities, transit times, and availability shown here are illustrative.
       </p>
+      {flightNote ? (
+        <p className="mt-1 text-[12px] text-ink-soft" data-testid="launches-taxi-pointer">
+          {flightNote}
+          {onOpenTaxis ? (
+            <>
+              {' '}
+              <button
+                type="button"
+                onClick={onOpenTaxis}
+                className="cursor-pointer border-none bg-transparent p-0 font-semibold text-sea underline"
+                data-testid="open-taxis"
+              >
+                Open Taxis
+              </button>
+            </>
+          ) : null}
+        </p>
+      ) : null}
 
       {/* Plan a run — the live check against capacity and freight */}
       <Card className="mt-4" data-testid="plan-run">

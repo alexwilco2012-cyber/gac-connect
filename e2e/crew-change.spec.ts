@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * Crew change — hotels, immigration, LOI and repatriation-letter templates
- * (17 Aug 2026 review). The client fills a template in; GAC endorses the LOI as
+ * Crew change — hotels, taxis, launches, immigration, LOI and repatriation-letter
+ * templates (17 Aug 2026 review; taxis and launches are separate sections since
+ * the owner's follow-up). The client fills a template in; GAC endorses the LOI as
  * agents, or routes the repatriation letter to UK Border Force, and returns it.
  */
 
@@ -22,8 +23,9 @@ test('crew change: sections, hotels, LOI and repat pipelines, persistence, reset
     page.getByRole('heading', { name: 'Everything a crew change needs, in one place' }),
   ).toBeVisible();
 
-  // The four section controls, keyboard-operable with aria-pressed.
+  // Six section controls, keyboard-operable with aria-pressed.
   const sections = page.getByTestId('crew-sections');
+  await expect(sections.getByRole('button')).toHaveCount(6);
   const hotelsChip = sections.getByRole('button', { name: 'Hotels', exact: true });
   const immigrationChip = sections.getByRole('button', { name: 'Immigration', exact: true });
   const loiChip = sections.getByRole('button', { name: 'LOI (on-signers)', exact: true });
@@ -169,19 +171,20 @@ test('crew change: every form control is labelled', async ({ page }) => {
   }
 });
 
-test('crew change › transfers: taxis, launches, and transport timed to the tracked flight', async ({
+test('crew change › taxis: the planner times the transport to the tracked flight', async ({
   page,
 }) => {
-  await page.goto('/app/crew-change?section=transfers');
+  await page.goto('/app/crew-change?section=taxis');
   await page.keyboard.press('Escape');
 
   // The section opens from the URL and the chip strip reflects it.
-  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'transfers');
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'taxis');
   await expect(
-    page
-      .getByTestId('crew-sections')
-      .getByRole('button', { name: 'Transfers · taxis and launches', exact: true }),
+    page.getByTestId('crew-sections').getByRole('button', { name: 'Taxis', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('section-taxis')).toBeVisible();
+  // Taxis stand alone: the launches panel is not stacked underneath them.
+  await expect(page.getByTestId('launches-panel')).toHaveCount(0);
 
   // Flight-timed planner: the demo flight tracks, the plan lists every leg.
   const planner = page.getByTestId('flight-planner');
@@ -238,12 +241,35 @@ test('crew change › transfers: taxis, launches, and transport timed to the tra
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
 
-  // Launches live here too, with the plan-a-run card.
+  // The pointer switches sections rather than duplicating the operators here.
+  await expect(page.getByTestId('taxis-launch-pointer')).toContainText('under Launches');
+  await page.getByTestId('open-launches').click();
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'launches');
+  await expect(page).toHaveURL(/section=launches/);
+});
+
+test('crew change › launches: capacity and freight, on a section of its own', async ({ page }) => {
+  await page.goto('/app/crew-change?section=launches');
+  await page.keyboard.press('Escape');
+
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'launches');
+  await expect(
+    page.getByTestId('crew-sections').getByRole('button', { name: 'Launches', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('section-launches')).toBeVisible();
   await expect(page.getByTestId('launches-panel')).toBeVisible();
   await expect(page.getByTestId('plan-run')).toBeVisible();
   await expect(page.getByTestId('launch-deveron-launch-services')).toContainText('Deveron Lass');
+  // The planner is not duplicated here — it belongs with the taxis.
+  await expect(page.getByTestId('flight-planner')).toHaveCount(0);
 
-  // The nav no longer carries a Launches tab; the marketplace still lists taxis and launches.
+  // Reciprocal pointer back to the flight-timed planner.
+  await expect(page.getByTestId('launches-taxi-pointer')).toContainText('tracked flight');
+  await page.getByTestId('open-taxis').click();
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'taxis');
+  await expect(page.getByTestId('flight-planner')).toBeVisible();
+
+  // The nav no longer carries a Launches tab; the marketplace still lists the taxis.
   await expect(
     page
       .getByRole('navigation', { name: 'Platform' })
@@ -254,4 +280,32 @@ test('crew change › transfers: taxis, launches, and transport timed to the tra
   await page.getByRole('button', { name: 'Taxis', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Regent Quay Cars' })).toBeVisible();
   await expect(page.getByTestId('listing-facts').first()).toContainText('flight-tracked');
+});
+
+test('crew change: a link minted before taxis and launches were split still lands right', async ({
+  page,
+}) => {
+  await page.goto('/app/crew-change?section=transfers');
+  await page.keyboard.press('Escape');
+
+  // The retired id resolves to Taxis and the address bar is tidied to match.
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'taxis');
+  await expect(page).toHaveURL(/\?section=taxis$/);
+  await expect(page.getByTestId('flight-planner')).toBeVisible();
+
+  // Cross-links move between the two sections and leave focus on the destination chip.
+  await page.getByTestId('open-launches').click();
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'launches');
+  await expect(
+    page.getByTestId('crew-sections').getByRole('button', { name: 'Launches', exact: true }),
+  ).toBeFocused();
+  await page.getByTestId('open-taxis').click();
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'taxis');
+  await expect(
+    page.getByTestId('crew-sections').getByRole('button', { name: 'Taxis', exact: true }),
+  ).toBeFocused();
+
+  // Taxis serve the letter ports too, not only the ports that have a launch.
+  const ports = await page.getByTestId('flight-port').locator('option').allTextContents();
+  expect(ports).toEqual(['Aberdeen', 'Peterhead', 'Montrose', 'Macduff']);
 });

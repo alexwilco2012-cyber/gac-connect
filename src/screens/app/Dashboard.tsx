@@ -289,9 +289,9 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          {/* Crew change and launches — the crew side of the call (17 Aug review) */}
+          {/* Crew change — the crew side of the call (17 Aug review) */}
           <Card data-testid="dashboard-crew">
-            <Eyebrow>Crew change · transfers</Eyebrow>
+            <Eyebrow>Crew change · taxis and launches</Eyebrow>
             <p className="mt-2.5 text-[14px]">
               {lettersInProgress === 0 ? (
                 <>
@@ -308,8 +308,9 @@ export default function Dashboard() {
               )}
             </p>
             <p className="mt-2 text-[12.5px] text-ink-soft">
-              Give us the flight number and the taxi and the launch are timed to it — capacity and
-              freight for every launch, port by port.
+              Taxis are timed to the crew member’s tracked flight, so a delay moves the pickup.
+              Launches are booked separately, with capacity and freight shown for each one, port by
+              port.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button variant="ghost" onClick={() => navigate('/app/crew-change')}>
@@ -317,10 +318,17 @@ export default function Dashboard() {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => navigate('/app/crew-change?section=transfers')}
+                onClick={() => navigate('/app/crew-change?section=taxis')}
                 data-testid="dashboard-transfers"
               >
-                Plan transfers
+                Plan taxis
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/app/crew-change?section=launches')}
+                data-testid="dashboard-launches"
+              >
+                Book a launch
               </Button>
             </div>
           </Card>

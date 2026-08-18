@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  CANNOT_ASSIST_IDS,
-  CHANDLER_NAME,
   COMPASS_ADDRESS,
   DEFAULT_REQUEST,
   ILLUSTRATIVE_PRICES_GBP,
@@ -15,10 +13,9 @@ import {
   invoiceLines,
   invoiceTotals,
   isFinalStage,
+  LINE_CONFIRMATION,
   nextStage,
-  routeLines,
   simulateLabel,
-  sourceLabel,
   stageLabel,
   stageReached,
   STAGES,
@@ -26,11 +23,11 @@ import {
   TIMELINE_STAGES,
 } from '../src/lib/procurement';
 import type { Stage } from '../src/lib/procurement';
-import { useProcurement } from '../src/store/procurement';
+import { readStage, readStageTimes, useProcurement } from '../src/store/procurement';
 
 describe('Procurement via Compass — stage machine', () => {
-  it('runs draft → sent → sourcing → replied → chandler-paid → invoiced', () => {
-    expect(STAGES).toEqual(['draft', 'sent', 'sourcing', 'replied', 'chandler-paid', 'invoiced']);
+  it('runs draft → sent → sourcing → confirmed → invoiced', () => {
+    expect(STAGES).toEqual(['draft', 'sent', 'sourcing', 'confirmed', 'invoiced']);
     let s: Stage = 'draft';
     const walked: Stage[] = [s];
     for (let i = 0; i < STAGES.length - 1; i++) {
@@ -48,62 +45,68 @@ describe('Procurement via Compass — stage machine', () => {
   });
 
   it('the timeline is every stage after the draft, in order', () => {
-    expect(TIMELINE_STAGES).toEqual(['sent', 'sourcing', 'replied', 'chandler-paid', 'invoiced']);
+    expect(TIMELINE_STAGES).toEqual(['sent', 'sourcing', 'confirmed', 'invoiced']);
   });
 
   it('labels name the Compass flow', () => {
     expect(stageLabel('sent')).toBe('Sent to Compass');
     expect(stageLabel('sourcing')).toBe('Compass sourcing');
-    expect(stageLabel('replied')).toBe('Compass reply: supplied / routed');
-    expect(stageLabel('chandler-paid')).toBe('Compass pays the chandler');
+    expect(stageLabel('confirmed')).toBe('Compass confirms the list');
     expect(stageLabel('invoiced')).toBe('Invoiced via Compass — under GAC');
   });
 
   it('reached / status derive from the order', () => {
-    expect(stageReached('replied', 'sent')).toBe(true);
-    expect(stageReached('replied', 'replied')).toBe(true);
-    expect(stageReached('replied', 'invoiced')).toBe(false);
-    expect(stageStatus('replied', 'sent')).toBe('done');
-    expect(stageStatus('replied', 'replied')).toBe('current');
-    expect(stageStatus('replied', 'chandler-paid')).toBe('pending');
+    expect(stageReached('confirmed', 'sent')).toBe(true);
+    expect(stageReached('confirmed', 'confirmed')).toBe(true);
+    expect(stageReached('confirmed', 'invoiced')).toBe(false);
+    expect(stageStatus('confirmed', 'sent')).toBe('done');
+    expect(stageStatus('confirmed', 'confirmed')).toBe('current');
+    expect(stageStatus('confirmed', 'invoiced')).toBe('pending');
   });
 
   it('a simulate button exists for every stage between sent and the invoice, and nowhere else', () => {
     expect(simulateLabel('draft')).toBeNull();
     expect(simulateLabel('invoiced')).toBeNull();
-    for (const s of ['sent', 'sourcing', 'replied', 'chandler-paid'] as const) {
+    for (const s of ['sent', 'sourcing', 'confirmed'] as const) {
       expect(simulateLabel(s)).toMatch(/^Simulate: /);
     }
+    // Three clicks take a sent request to the invoice.
+    expect(TIMELINE_STAGES.filter((s) => simulateLabel(s) !== null)).toHaveLength(3);
   });
 });
 
-describe('Procurement via Compass — routing lines', () => {
-  it('marks exactly the cannot-assist ids as chandler, everything else Compass', () => {
-    const routed = routeLines(DEFAULT_REQUEST.lines, ['bonded-stores', 'galley-gas']);
-    const chandler = routed.filter((l) => l.source === 'chandler').map((l) => l.id);
-    const compass = routed.filter((l) => l.source === 'compass').map((l) => l.id);
-    expect(chandler).toEqual(['bonded-stores', 'galley-gas']);
-    expect(compass).toEqual(['engine-room', 'provisions', 'deck-stores']);
-    // Order and count preserved.
-    expect(routed.map((l) => l.id)).toEqual(DEFAULT_REQUEST.lines.map((l) => l.id));
+describe('Procurement via Compass — Compass supplies the whole list', () => {
+  it('no client-facing string leaks a third-party supplier', () => {
+    // Compass is GAC's own supply operation: the client's view carries one
+    // supplier, start to finish (owner's follow-up to the 17 Aug review).
+    const copy = [
+      JSON.stringify(PROCUREMENT_RULES),
+      SIMULATION_NOTICE,
+      LINE_CONFIRMATION,
+      ...STAGES.map(stageLabel),
+      ...STAGES.map((s) => simulateLabel(s) ?? ''),
+      composeEmail(DEFAULT_REQUEST).body,
+    ].join(' ');
+    expect(copy).not.toMatch(/chandler/i);
+    expect(copy).not.toMatch(/third[- ]party/i);
+    expect(copy).not.toMatch(/cannot assist/i);
   });
 
-  it('defaults to the demo cannot-assist ids, which all exist on the default request', () => {
-    const ids = DEFAULT_REQUEST.lines.map((l) => l.id);
-    for (const id of CANNOT_ASSIST_IDS) expect(ids).toContain(id);
-    const routed = routeLines(DEFAULT_REQUEST.lines);
-    expect(routed.filter((l) => l.source === 'chandler')).toHaveLength(CANNOT_ASSIST_IDS.length);
+  it('every line carries the same Compass confirmation — there is nowhere else for one to go', () => {
+    expect(LINE_CONFIRMATION).toBe('Confirmed by Compass');
+    expect(LINE_CONFIRMATION).toMatch(/Compass/);
   });
 
-  it('a user-added line is supplied by Compass unless told otherwise', () => {
-    const routed = routeLines([{ id: 'x1', qty: '1', description: 'Chart folio' }]);
-    expect(routed[0]!.source).toBe('compass');
-  });
-
-  it('the chandler is named in the reply line, and Compass on its own lines', () => {
-    expect(sourceLabel('compass')).toBe('Supplied by Compass');
-    expect(sourceLabel('chandler')).toContain('routed to a third-party chandler');
-    expect(sourceLabel('chandler')).toContain(CHANDLER_NAME);
+  it('the "how it works" strip is four steps, ending at one invoice under GAC', () => {
+    expect(PROCUREMENT_RULES).toHaveLength(4);
+    expect(PROCUREMENT_RULES.map((r) => r.step)).toEqual(['1', '2', '3', '4']);
+    expect(PROCUREMENT_RULES[3]!.title).toContain('invoiced via Compass, under GAC');
+    const copy = PROCUREMENT_RULES.map((r) => `${r.title} ${r.body}`).join(' ');
+    expect(copy).not.toMatch(/!/);
+    // Nothing is claimed beyond what the owner said: Compass sources, supplies
+    // and confirms the list, and the client is invoiced under GAC. No delivery
+    // promise rides along with it.
+    expect(copy).not.toMatch(/deliver/i);
   });
 });
 
@@ -117,13 +120,13 @@ describe('Procurement via Compass — the one invoice', () => {
     expect(copy.toLowerCase()).not.toMatch(/mark-?up|margin/);
   });
 
-  it('one invoice line per request line, illustrative prices, no chandler on the paperwork', () => {
+  it('one invoice line per request line, illustrative prices, no source column', () => {
     const lines = invoiceLines(DEFAULT_REQUEST);
     expect(lines).toHaveLength(DEFAULT_REQUEST.lines.length);
     for (const l of lines) {
       expect(l.priceGBP).toBe(ILLUSTRATIVE_PRICES_GBP[l.id]);
       expect(Object.keys(l)).not.toContain('source');
-      expect(JSON.stringify(l)).not.toContain(CHANDLER_NAME);
+      expect(JSON.stringify(l)).not.toMatch(/chandler/i);
     }
   });
 
@@ -223,7 +226,14 @@ describe('Procurement via Compass — the store', () => {
     s.send();
     expect(useProcurement.getState().stage).toBe('sent');
     expect(typeof useProcurement.getState().stageTimes.sent).toBe('string');
-    for (let i = 0; i < 10; i++) s.advance();
+    // Three simulated steps: sourcing, confirmed, invoiced.
+    s.advance();
+    expect(useProcurement.getState().stage).toBe('sourcing');
+    s.advance();
+    expect(useProcurement.getState().stage).toBe('confirmed');
+    s.advance();
+    expect(useProcurement.getState().stage).toBe('invoiced');
+    for (let i = 0; i < 5; i++) s.advance();
     expect(useProcurement.getState().stage).toBe('invoiced');
     expect(useProcurement.getState().stageTimes.invoiced).toBeDefined();
   });
@@ -247,5 +257,38 @@ describe('Procurement via Compass — the store', () => {
     expect(useProcurement.getState().request.lines).toHaveLength(0);
     s.send();
     expect(useProcurement.getState().stage).toBe('draft');
+  });
+
+  it('hydrates a stage stored by an earlier visit, and starts over when it no longer exists', () => {
+    // 'replied' and 'chandler-paid' were stages of the older flow; a visitor
+    // who left the demo part-way through one must land on a usable screen.
+    for (const stored of ['replied', 'chandler-paid', 'nonsense', '', '42']) {
+      window.localStorage.setItem('gac-connect:procurement.stage', JSON.stringify(stored));
+      expect(readStage(), stored).toBe('draft');
+    }
+    window.localStorage.setItem('gac-connect:procurement.stage', '"sourcing"');
+    expect(readStage()).toBe('sourcing');
+    window.localStorage.removeItem('gac-connect:procurement.stage');
+    expect(readStage()).toBe('draft');
+  });
+
+  it('drops stage times the current stage has not reached, and unknown stage names', () => {
+    window.localStorage.setItem(
+      'gac-connect:procurement.stageTimes',
+      JSON.stringify({
+        sent: '2026-08-18T09:41:00.000Z',
+        replied: '2026-08-18T09:44:00.000Z',
+        'chandler-paid': '2026-08-18T09:45:00.000Z',
+        invoiced: '2026-08-18T09:46:00.000Z',
+        sourcing: 12,
+      }),
+    );
+    const times = readStageTimes('sourcing');
+    expect(Object.keys(times)).toEqual(['sent']);
+    expect(times.sent).toBe('2026-08-18T09:41:00.000Z');
+    // A draft — the fallback for a stage that no longer exists — shows no times.
+    expect(readStageTimes('draft')).toEqual({});
+    window.localStorage.setItem('gac-connect:procurement.stageTimes', '"not an object"');
+    expect(readStageTimes('invoiced')).toEqual({});
   });
 });

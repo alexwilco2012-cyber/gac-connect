@@ -7,7 +7,7 @@ import { VESSELS } from './vessels';
  * details, and the screen tells the user not to enter real ones.
  */
 
-export type CrewSectionId = 'hotels' | 'transfers' | 'immigration' | 'loi' | 'repat';
+export type CrewSectionId = 'hotels' | 'taxis' | 'launches' | 'immigration' | 'loi' | 'repat';
 
 export interface CrewSection {
   id: CrewSectionId;
@@ -23,10 +23,16 @@ export const CREW_SECTIONS: CrewSection[] = [
     summary: 'Rooms for crew held ashore — off-signers, transit crews, medical stand-downs.',
   },
   {
-    id: 'transfers',
-    label: 'Transfers · taxis and launches',
+    id: 'taxis',
+    label: 'Taxis',
     summary:
-      'Taxis between the airport, the hotel, and the quay, and launches out to the vessel — timed to the crew member’s flight when you give us the flight number.',
+      'Airport, hotel and quay runs, timed to the crew member’s tracked flight when you give us the flight number.',
+  },
+  {
+    id: 'launches',
+    label: 'Launches',
+    summary:
+      'Crew, stores and light freight out to vessels at anchor — capacity and whether freight is included, launch by launch, port by port.',
   },
   {
     id: 'immigration',
@@ -70,15 +76,37 @@ export const CREW_FLOW = [
   },
 ] as const;
 
-/** Transfers section — copy for the flight-timed planner. */
-export const TRANSFERS_INTRO =
+/** Taxis section — copy for the flight-timed planner. */
+export const TAXIS_INTRO =
   'Give us the flight number and the platform tracks the flight and times the transport to it: the taxi meets the crew at arrivals, the launch leaves the quay when they get there, and a delay moves the whole chain — no phone calls.';
+
+/** Taxis → Launches: the planner times the launch leg, the operators live elsewhere. */
+export const TAXIS_LAUNCH_POINTER =
+  'The planner times the launch leg with the taxi. The launch operators themselves — capacity, freight and port notes — are under Launches.';
+
+/** Launches → Taxis: the reciprocal pointer, so a run can be hung off the flight. */
+export const LAUNCHES_TAXI_POINTER =
+  'A run can be timed to the crew member’s tracked flight — the planner under Taxis times the taxi and the launch to the same flight.';
 
 /** Which section the screen opens on when the URL carries no ?section=. */
 export const DEFAULT_CREW_SECTION: CrewSectionId = 'hotels';
 
 export function isCrewSectionId(v: string | null | undefined): v is CrewSectionId {
   return !!v && CREW_SECTIONS.some((s) => s.id === v);
+}
+
+/**
+ * Section ids that have been renamed. A link minted before taxis and launches
+ * were split (`?section=transfers`) still lands somewhere sensible instead of
+ * silently dropping the visitor on Hotels.
+ */
+export const RETIRED_CREW_SECTIONS: Record<string, CrewSectionId> = { transfers: 'taxis' };
+
+/** The section a URL asks for: current id, retired id, or the default. */
+export function resolveCrewSection(v: string | null | undefined): CrewSectionId {
+  if (isCrewSectionId(v)) return v;
+  if (v && RETIRED_CREW_SECTIONS[v]) return RETIRED_CREW_SECTIONS[v];
+  return DEFAULT_CREW_SECTION;
 }
 
 /** Immigration guidance — the checklist the client works through first. */

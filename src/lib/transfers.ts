@@ -15,6 +15,13 @@ import type { LaunchDetails } from '../data/suppliers';
  * or an airline/airport status API); the timing rules below do not change.
  */
 
+/**
+ * Ports a taxi run can serve. Taxis stand on their own (owner's follow-up):
+ * they cover every port the letters cover plus the launch ports, so the
+ * planner is not limited to the two ports that happen to have a launch.
+ */
+export const TRANSFER_PORTS = ['Aberdeen', 'Peterhead', 'Montrose', 'Macduff'] as const;
+
 export type Direction = 'arriving' | 'departing';
 
 export type FlightPhase = 'scheduled' | 'in-air' | 'delayed' | 'landed';
@@ -72,8 +79,8 @@ export const FLIGHT_FEED_NOTE =
 export const TRANSFER_BUFFERS = {
   /** Landing → bags, immigration, out to the taxi. */
   bagsAndImmigrationMin: 40,
-  /** Airport ↔ quay by road (Aberdeen airport to the harbour, or Macduff). */
-  taxiMin: { Aberdeen: 25, Macduff: 75 } as Record<string, number>,
+  /** Airport ↔ quay by road, from Aberdeen airport. Illustrative. */
+  taxiMin: { Aberdeen: 25, Peterhead: 55, Montrose: 60, Macduff: 75 } as Record<string, number>,
   /** Quay handover, kit onto the launch. */
   quayHandoverMin: 20,
   /** Off-signers: be at the airport this long before departure. */

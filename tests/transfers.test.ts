@@ -8,6 +8,7 @@ import {
   planTransfers,
   trackFlight,
   TRANSFER_BUFFERS,
+  TRANSFER_PORTS,
 } from '../src/lib/transfers';
 
 /** Flight-timed transfers (17 Aug review follow-up): taxis and launches timed to the tracked flight. */
@@ -90,6 +91,17 @@ describe('transfer plans', () => {
     // 17:10 departure → at airport 15:10 → taxi 14:45 → quay 14:25 → launch leaves 14:00
     expect(plan.legs.map((l) => l.time)).toEqual(['14:00', '14:25', '14:45', '15:10', '17:10']);
     expect(plan.summary).toContain('taxi 14:45');
+  });
+
+  it('taxis reach every port the crew change covers, not just the launch ports', () => {
+    // Taxis stand on their own (owner's follow-up), so the road times cover the
+    // letter ports as well as the two ports that happen to have a launch.
+    expect(TRANSFER_PORTS).toEqual(['Aberdeen', 'Peterhead', 'Montrose', 'Macduff']);
+    for (const p of TRANSFER_PORTS) expect(TRANSFER_BUFFERS.taxiMin[p]).toBeGreaterThan(0);
+    // Peterhead: land 13:55 → taxi 14:35 → 55 min by road → quay 15:30.
+    const plan = planTransfers(trackFlight('ZZ417')!, 'Peterhead', null);
+    expect(plan.legs[2]!.time).toBe('15:30');
+    expect(plan.legs[2]!.label).toBe('Arrive at the quay, Peterhead');
   });
 
   it('Macduff uses the longer road leg', () => {
