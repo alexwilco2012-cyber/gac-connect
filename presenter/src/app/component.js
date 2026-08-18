@@ -37,8 +37,30 @@ class Component extends DCLogic {
          slide, advOp/advPe drive the fade-out into the platform. */
       presOn: presWanted, advSlide: 0, advOp: '1', advPe: 'auto'
     };
+    /* Feature modules (app/features/*.js — Launches, Procurement, Crew change,
+       added after the 17 Aug review) contribute their own initial state. */
+    Object.assign(this.state, this._featureState());
 
     this._goCache = {};
+  }
+
+  /* ---------- feature-module extension points ----------
+     Each module in app/features/ extends Component.prototype after this class
+     is defined (the runtime returns Component after the whole script runs).
+     They register themselves in FEATURES so the core stays unaware of them:
+       state()     → initial state keys
+       vals(st)    → renderVals bindings
+       escape()    → true if Escape closed something the module owns
+     Nothing here references a specific feature. */
+  get FEATURES() { return Component._features || (Component._features = []); }
+  _featureState() {
+    return this.FEATURES.reduce((acc, f) => Object.assign(acc, f.state ? f.state.call(this) : {}), {});
+  }
+  _featureVals(st) {
+    return this.FEATURES.reduce((acc, f) => Object.assign(acc, f.vals ? f.vals.call(this, st) : {}), {});
+  }
+  _featureEscape() {
+    return this.FEATURES.some((f) => f.escape ? f.escape.call(this) : false);
   }
 
   /* ---------- storage adapter ---------- */
@@ -64,7 +86,7 @@ class Component extends DCLogic {
     if (!h) return { route: '', profileId: null };
     const parts = h.split('/');
     if (parts[0] === 'supplier' && parts[1]) return { route: 'supplier', profileId: parts[1] };
-    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'launches', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null };
   }
   nav(r) {
@@ -93,7 +115,8 @@ class Component extends DCLogic {
     window.addEventListener('hashchange', this._onHash);
     this._onKey = (e) => {
       if (e.key === 'Escape') {
-        if (this.state.rq) this.setState({ rq: null });
+        if (this._featureEscape()) { /* a feature module closed its own modal */ }
+        else if (this.state.rq) this.setState({ rq: null });
         else if (this.state.modal) this.setState({ modal: null });
         else if (this.state.drawerOpen) this.setState({ drawerOpen: false });
         else if (this.state.tourStep !== null) this._skipTour();
@@ -325,18 +348,19 @@ class Component extends DCLogic {
     const brandSubUpper = bParts.slice(1).join(' ').toUpperCase() || 'CONNECT';
     const route = st.route;
 
-    const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'launches', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     const isPlatform = platformRoutes.includes(route);
 
-    /* nav */
+    /* nav — eleven platform items after the 17 Aug review, so the padding is
+       tight (mirrors the site's AppLayout) and the tier screen is "Tiers" */
     const mk = (label, r, beta) => ({
       label: label, beta: !!beta, pressed: (route === r || (r === 'marketplace' && route === 'supplier')) ? 'true' : 'false',
       go: this._go(r),
-      style: 'background:none;border:none;padding:8px 12px;border-radius:6px;font-weight:600;font-size:13.5px;white-space:nowrap;cursor:pointer;font-family:inherit;' +
+      style: 'background:none;border:none;padding:8px 8px;border-radius:6px;font-weight:600;font-size:13px;white-space:nowrap;cursor:pointer;font-family:inherit;' +
         ((route === r || (r === 'marketplace' && route === 'supplier')) ? 'color:#FFFFFF;background:rgba(255,255,255,.14);box-shadow:inset 0 -3px 0 #C9A227;' : 'color:#B9C8D6;')
     });
     const navItems = isPlatform
-      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Quotes', 'quotes'), mk('Tier Calculator', 'tiers'), mk('SVS', 'svs'), mk('Analytics', 'analytics'), mk('Certification', 'certification', true), mk('Bunkers', 'bunkers', true)]
+      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Launches', 'launches'), mk('Procurement', 'procurement'), mk('Crew change', 'crew-change'), mk('Quotes', 'quotes'), mk('Tiers', 'tiers'), mk('SVS', 'svs'), mk('Analytics', 'analytics'), mk('Certification', 'certification', true), mk('Bunkers', 'bunkers', true)]
       : [mk('Home', 'home'), mk('For Clients', 'clients'), mk('For Suppliers', 'suppliers'), mk('About', 'about')];
 
     /* marketplace */
@@ -539,10 +563,15 @@ class Component extends DCLogic {
       isDashboard: route === 'dashboard', isMarketplace: route === 'marketplace', isProfile: route === 'supplier',
       isQuotes: route === 'quotes', isTiers: route === 'tiers', isSvs: route === 'svs', isAnalytics: route === 'analytics',
       isCert: route === 'certification', isBunkers: route === 'bunkers', isKitchen: route === 'kitchen-sink',
+      isLaunches: route === 'launches', isProcurement: route === 'procurement', isCrew: route === 'crew-change',
       navItems: navItems,
       goHome: this._go('home'), goClients: this._go('clients'), goSuppliers: this._go('suppliers'), goAbout: this._go('about'),
       goDashboard: this._go('dashboard'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'),
       goTiers: this._go('tiers'), goSvs: this._go('svs'), goAnalytics: this._go('analytics'), goKitchen: this._go('kitchen-sink'),
+      goLaunches: this._go('launches'), goProcurement: this._go('procurement'), goCrew: this._go('crew-change'),
+
+      /* feature modules (app/features/*.js) — their bindings ride alongside */
+      ...this._featureVals(st),
 
       /* interactive harbour (landing hero) */
       hbListVis: !st.hbSel,

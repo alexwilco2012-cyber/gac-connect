@@ -16,4 +16,7 @@
   .harbour-bob { transform-origin: 50% center; animation: harbourBob 4.5s ease-in-out infinite; }
   .harbour-flick, .harbour-flick-late { transform-box: fill-box; transform-origin: 50% center; animation: harbourFlick 1.6s ease-in-out infinite; }
   .harbour-flick-late { animation-delay: .4s; }
+  /* Eleven platform nav items (17 Aug review): the persona name yields below 1400px so the nav never scrolls. */
+  .gac-persona-name { display: none; }
+  @media (min-width: 1400px) { .gac-persona-name { display: inline; } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

@@ -149,7 +149,10 @@ def check_script_sources() -> None:
     Checked on the raw files (not the assembled extraction) so an embedded
     '</script>' cannot truncate what this guard sees. The HTML tokenizer ends a
     script element at '</script' in any case, whatever the type attribute."""
-    for rel in ("app/data.js", "app/component.js"):
+    sources = ["app/data.js", "app/component.js"]
+    # Feature modules (one per screen added after v12) ride in the same script.
+    sources += sorted(p.relative_to(SRC).as_posix() for p in (SRC / "app" / "features").glob("*.js"))
+    for rel in sources:
         content = read(SRC / rel).lower()
         for bad in ("</script", "<!--"):
             if bad in content:
