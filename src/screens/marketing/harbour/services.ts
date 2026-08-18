@@ -117,9 +117,9 @@ export const HARBOUR_SERVICES: Record<ServiceId, HarbourService> = {
       'Vetted supplier network',
       'Consumables to project spares',
     ],
-    cta: 'Browse the marketplace',
-    to: '/app/marketplace',
-    fact: 'Every predicted procurement list on the dashboard is fulfilled through this pillar.',
+    cta: 'Send a list to Compass',
+    to: '/app/procurement',
+    fact: 'Every predicted procurement list on the dashboard goes to Compass through this pillar — one invoice, from GAC.',
   },
   marketplace: {
     id: 'marketplace',

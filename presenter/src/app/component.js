@@ -396,7 +396,11 @@ class Component extends DCLogic {
     const inhouseList = this.INHOUSE.filter(match).map((s) => ({
       name: s.name, desc: s.desc, cat: s.cat, esg: s.esg, esgStyle: this._esgStyle(s.esg), tierLabel: s.tierLabel,
       cardStyle: 'display:grid;grid-template-columns:1fr auto;gap:14px;padding:16px 18px;margin-bottom:12px;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);border:1.5px solid #C9A227;background:linear-gradient(180deg,#FFFDF4,#FFFFFF 60%);',
-      onAction: () => this.toastMsg('Request sent to your GAC agent — surfaced inside the existing relationship, not a new queue.')
+      /* Procurement has its own working example (the Compass flow) — mirrors the site */
+      actionLabel: s.id === 'gac-procurement' ? 'Send a list to Compass' : 'Engage service',
+      onAction: s.id === 'gac-procurement'
+        ? this._go('procurement')
+        : () => this.toastMsg('Request sent to your GAC agent — surfaced inside the existing relationship, not a new queue.')
     }));
 
     let third = this.SUPPLIERS.filter(match).slice().sort(sorter);
@@ -627,6 +631,8 @@ class Component extends DCLogic {
         this._routeTimer = setTimeout(() => this.nav('quotes'), 1500);
       },
       showTourPrompt: route === 'dashboard' && !st.tourDismissed && st.tourStep === null,
+      /* crew-change card line — the crew-change feature module overrides this with a live count */
+      dashCrewLine: 'No letters in progress. Hotels, immigration, LOI and repatriation-letter templates live in one place.',
 
       /* pillars widget (bound live to calculator state) */
       p1Fill: calc.agency ? '#0E5E8A' : '#D7DFE8',

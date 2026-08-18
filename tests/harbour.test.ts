@@ -25,7 +25,7 @@ describe('interactive harbour services (design handoff)', () => {
     expect(HARBOUR_SERVICES.logistics.to).toBe('/app/tiers');
     expect(HARBOUR_SERVICES.customs.to).toBe('/app/tiers');
     expect(HARBOUR_SERVICES.assets.to).toBe('/app/marketplace');
-    expect(HARBOUR_SERVICES.procurement.to).toBe('/app/marketplace');
+    expect(HARBOUR_SERVICES.procurement.to).toBe('/app/procurement');
     expect(HARBOUR_SERVICES.marketplace.to).toBe('/app/marketplace');
   });
 
