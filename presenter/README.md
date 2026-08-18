@@ -62,7 +62,8 @@ shown when the opening is off), `20-opening` (the Advantage opening: four
 slides shown before the platform — see below), `30-chrome` (header/nav),
 `40-…56-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
-certification, bunkers, kitchen-sink, launches, procurement, crew-change),
+certification, bunkers, kitchen-sink, procurement, crew-change — which holds
+the transfers section: taxis + the launches panel; `54-launches` is retired),
 `60-footer-drawer`, `70-modal`, `73-request`, `74-launch-request`, `71-tour`,
 `72-toast`.
 
@@ -168,5 +169,8 @@ crane prices cover the booked window only — overrun not included, subject to
 change, supplier T&Cs included; Launches tab (capacity + freight included, per
 port); Procurement via Compass (email → Compass supplies or sources from a
 chandler and pays them → invoiced via Compass under GAC with an illustrative,
-labelled mark-up); Crew change (hotels, immigration, LOI endorsed by GAC as
-agents, repat letter endorsed by UK Border Force). Simulated steps say so.
+the client never sees or hears of a mark-up — Compass's prices, one total);
+Crew change (hotels; Transfers = taxis + launches + flight-timed transport with
+a simulated flight-status feed; immigration; LOI endorsed by GAC as agents;
+repat letter endorsed by UK Border Force). Simulated steps say so. There is no
+Launches tab — `#/launches` opens Crew change on Transfers.

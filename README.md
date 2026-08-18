@@ -11,12 +11,13 @@ verification sits **GAC Gold Band**, an earned annual-audit tier for Premium sup
 invoices route to the client first with a seven-day window to allocate billing parties and splits
 before they match in GAC Agent, and agents rate suppliers on job close-out — every rating shown
 carries the number submitted. From the 17 August review: FLT and crane prices cover the booked
-window only (overrun not included, subject to change, supplier T&Cs included); a **Launches** tab
-shows each crew launch's capacity and whether freight is included, port by port; **Procurement**
-is a working example of the Compass flow (list emailed straight to Compass, GAC's procurement
-branch, which supplies or sources from a chandler, pays them, and invoices via Compass under GAC
-with a mark-up — one invoice); and **Crew change** gathers hotels, immigration guidance, and the
-LOI / repatriation-letter templates that GAC endorses, or UK Border Force endorses, and returns.
+window only (overrun not included, subject to change, supplier T&Cs included); **Procurement** is
+a working example of the Compass flow (list emailed straight to Compass, GAC's procurement
+branch, which supplies or sources through its network, pays the chandler, and invoices via
+Compass under GAC — one invoice at Compass's prices); and **Crew change** gathers hotels,
+**transfers** (taxis and launches — capacity and freight-included per launch, port by port — timed
+to the crew's tracked flight), immigration guidance, and the LOI / repatriation-letter templates
+that GAC endorses, or UK Border Force endorses, and returns.
 
 **Live:** https://alexwilco2012-cyber.github.io/gac-connect/
 
@@ -30,8 +31,8 @@ LOI / repatriation-letter templates that GAC endorses, or UK Border Force endors
 ```bash
 npm install
 npm run dev              # local dev server (builds the presenter into public/ first)
-npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request/terms/launches/procurement/crew-change unit tests
-npm run e2e              # playwright — 21 journeys across six specs (installs Chromium once)
+npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request/terms/launches/transfers/procurement/crew-change unit tests
+npm run e2e              # playwright — 22 journeys across six specs (installs Chromium once)
 npm run lint             # eslint + prettier
 npm run build            # production build (Pages base path aware) — presenter + tsc + vite
 npm run build:presenter  # presenter only (Python 3 required) → public/presenter.html + public/presenter/
@@ -70,7 +71,7 @@ Lighthouse (headless Chromium, lab): **Performance ≈ 95** (FCP 1.5 s · LCP 1.
 CLS 0 — Speed Index alone is elevated because the signature loader animation plays during the
 trace), **Accessibility: all audits pass**, **Best Practices: all audits pass**. The local
 runner nulled the category aggregates, so the performance figure is computed from the audited
-metric scores using Lighthouse's published weights. 150 unit tests and 21 Playwright
+metric scores using Lighthouse's published weights. 160 unit tests and 22 Playwright
 journeys run green; deep links survive refresh via the 404 shim (verified live).
 
 ## Architecture in five lines
@@ -78,5 +79,5 @@ journeys run green; deep links survive refresh via the 404 shim (verified live).
 1. **Vite + React 18 + TypeScript (strict) + Tailwind 4**, tokens defined once in `src/styles/tokens.css` as CSS custom properties and mirrored into the Tailwind theme.
 2. **React Router** with Pages-safe deep links; screens lazy-load per route; marketing shell and platform shell are nested layouts.
 3. **Zustand + a storage adapter** (`src/lib/storage.ts`): all persistence goes through one interface, so a real backend replaces localStorage without touching UI code.
-4. **Business logic lives in `src/lib`** (`tier.ts`, `svs.ts`, `marketplace.ts`, `commission.ts`, `invoices.ts`, `requests.ts`, `launches.ts`, `procurement.ts`, `crewChange.ts`; hire terms in `src/data/serviceTerms.ts`) with the mandatory rule tests in `tests/` — the UI only renders what the lib computes.
+4. **Business logic lives in `src/lib`** (`tier.ts`, `svs.ts`, `marketplace.ts`, `commission.ts`, `invoices.ts`, `requests.ts`, `launches.ts`, `transfers.ts`, `procurement.ts`, `crewChange.ts`; hire terms in `src/data/serviceTerms.ts`) with the mandatory rule tests in `tests/` — the UI only renders what the lib computes.
 5. **Mock data is typed and canonical** (`src/data/*.ts`), fictional names only, governed by the handoff package in `docs/handoff/` — `07_GUARDRAILS_CONFIDENTIALITY.md` overrides everything.
