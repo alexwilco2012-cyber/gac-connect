@@ -220,16 +220,23 @@ export default function Marketplace() {
                   <p className="mt-1.5 text-[13px] font-bold text-gold-deep">{line.tierLabel}</p>
                 </div>
                 <div className="flex items-start">
-                  <Button
-                    variant="gold"
-                    onClick={() =>
-                      pushToast(
-                        'Request sent to your GAC agent — surfaced inside the existing relationship, not a new queue.',
-                      )
-                    }
-                  >
-                    Engage service
-                  </Button>
+                  {line.id === 'gac-procurement' ? (
+                    // Procurement has its own working example — the Compass flow.
+                    <ButtonLink to="/app/procurement" variant="gold">
+                      Send a list to Compass
+                    </ButtonLink>
+                  ) : (
+                    <Button
+                      variant="gold"
+                      onClick={() =>
+                        pushToast(
+                          'Request sent to your GAC agent — surfaced inside the existing relationship, not a new queue.',
+                        )
+                      }
+                    >
+                      Engage service
+                    </Button>
+                  )}
                 </div>
               </Card>
             ))}

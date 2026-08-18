@@ -89,12 +89,13 @@ function LaunchForm({
       }${runs > 1 ? ` (${runs} runs)` : ''}`,
     ];
     if (freight) {
+      // The qualifier stays inside the bracket so the sentence reads as one clause:
+      // "freight (1 pallet, quoted separately)" rather than a second dash.
       const detail = freightDetail.trim();
-      parts.push(
-        `freight${detail ? ` (${detail})` : ''}${
-          launch.freightIncluded ? '' : ' — quoted separately'
-        }`,
+      const qualifiers = [detail, launch.freightIncluded ? '' : 'quoted separately'].filter(
+        Boolean,
       );
+      parts.push(`freight${qualifiers.length ? ` (${qualifiers.join(', ')})` : ''}`);
     }
     parts.push(`${launch.port} ${outTime.trim()}–${returnTime.trim()}`);
     pushToast(`${parts.join(', ')}. Reply-by window: ${window_.label}.`);
@@ -138,6 +139,9 @@ function LaunchForm({
             inputMode="numeric"
             value={paxText}
             onChange={(e) => setPaxText(e.target.value)}
+            onBlur={() => {
+              if (String(pax) !== paxText) setPaxText(String(pax));
+            }}
             className={FIELD}
             data-testid="launch-passengers"
             aria-describedby={overLimit ? 'launch-over-limit' : undefined}

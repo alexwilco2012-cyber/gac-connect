@@ -176,6 +176,11 @@ export default function Launches() {
               inputMode="numeric"
               value={paxText}
               onChange={(e) => setPaxText(e.target.value)}
+              // What is shown is what is computed: a blank or 0 field settles on the
+              // minimum once the user leaves it, instead of silently reading as 1.
+              onBlur={() => {
+                if (String(pax) !== paxText) setPaxText(String(pax));
+              }}
               className={FIELD}
               data-testid="plan-passengers"
             />
@@ -202,9 +207,10 @@ export default function Launches() {
       {PORTS.map((p) => {
         const launches = launchesAt(SUPPLIERS, p);
         const note = LAUNCH_PORT_NOTES[p];
+        const slug = p.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         return (
-          <section key={p} className="mt-8" aria-labelledby={`launches-${p}`}>
-            <h2 id={`launches-${p}`} className="font-display text-[19px] font-bold">
+          <section key={p} className="mt-8" aria-labelledby={`launches-${slug}`}>
+            <h2 id={`launches-${slug}`} className="font-display text-[19px] font-bold">
               Launches from {p}
             </h2>
             {note ? <p className="mt-1 max-w-[720px] text-[13.5px] text-ink-soft">{note}</p> : null}

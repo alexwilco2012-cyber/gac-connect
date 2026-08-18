@@ -29,7 +29,7 @@ import {
 } from '../../lib/procurement';
 import type { Stage, StageStatus } from '../../lib/procurement';
 import { useApp } from '../../store/app';
-import { useProcurement } from '../../store/procurement';
+import { canSend, useProcurement } from '../../store/procurement';
 
 /**
  * Procurement via Compass — a working example of the flow raised on 17 Aug
@@ -110,8 +110,10 @@ export default function Procurement() {
     }
   }, [stage]);
 
+  const sendable = canSend(request);
+
   function onSend() {
-    if (request.lines.length === 0) return;
+    if (!sendable) return;
     focusNext.current = 'email';
     send();
     pushToast(
@@ -171,8 +173,7 @@ export default function Procurement() {
         Your procurement list goes by email straight to Compass, GAC’s own procurement branch.
         Compass supplies what it can from its own stock and network. Where it cannot assist on a
         line, it sources it — a ship chandler, for example — and pays that supplier itself. You are
-        then invoiced via Compass, under GAC, with a mark-up: one supplier relationship, one
-        invoice, and GAC accountable for the whole basket.
+        then invoiced via Compass, under GAC, with a mark-up.
       </p>
       <p
         className="mt-2 inline-flex max-w-[760px] flex-wrap items-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] text-ink-soft"
@@ -209,13 +210,18 @@ export default function Procurement() {
             data-testid="procurement-request"
             data-stage={stage}
             tabIndex={-1}
+            role="region"
+            aria-labelledby="procurement-request-title"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[12px] font-semibold tracking-[0.02em] text-ink-soft">
                   {request.ref} · Procurement request
                 </p>
-                <h2 className="mt-0.5 font-display text-[17px] font-bold">
+                <h2
+                  id="procurement-request-title"
+                  className="mt-0.5 font-display text-[17px] font-bold"
+                >
                   {vessel.name} · {vessel.port}
                 </h2>
                 <p className="mt-0.5 text-[13px] text-ink-soft">
@@ -415,15 +421,15 @@ export default function Procurement() {
             {/* Send */}
             {draft ? (
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <Button
-                  onClick={onSend}
-                  disabled={request.lines.length === 0}
-                  data-testid="send-to-compass"
-                >
+                <Button onClick={onSend} disabled={!sendable} data-testid="send-to-compass">
                   Send to Compass
                 </Button>
                 <span className="text-[12.5px] text-ink-soft">
-                  The platform composes the email and shows it here — nothing to type
+                  {sendable
+                    ? 'The platform composes the email and shows it here — nothing to type'
+                    : request.lines.length === 0
+                      ? 'Add at least one line to send'
+                      : 'Every line needs a description before it can go to Compass'}
                 </span>
               </div>
             ) : null}

@@ -30,8 +30,8 @@ LOI / repatriation-letter templates that GAC endorses, or UK Border Force endors
 ```bash
 npm install
 npm run dev              # local dev server (builds the presenter into public/ first)
-npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request unit tests
-npm run e2e              # playwright — ten smoke journeys (installs Chromium once)
+npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request/terms/launches/procurement/crew-change unit tests
+npm run e2e              # playwright — 21 journeys across six specs (installs Chromium once)
 npm run lint             # eslint + prettier
 npm run build            # production build (Pages base path aware) — presenter + tsc + vite
 npm run build:presenter  # presenter only (Python 3 required) → public/presenter.html + public/presenter/
@@ -70,7 +70,7 @@ Lighthouse (headless Chromium, lab): **Performance ≈ 95** (FCP 1.5 s · LCP 1.
 CLS 0 — Speed Index alone is elevated because the signature loader animation plays during the
 trace), **Accessibility: all audits pass**, **Best Practices: all audits pass**. The local
 runner nulled the category aggregates, so the performance figure is computed from the audited
-metric scores using Lighthouse's published weights. 67 unit tests and 10 Playwright smoke
+metric scores using Lighthouse's published weights. 150 unit tests and 21 Playwright
 journeys run green; deep links survive refresh via the 404 shim (verified live).
 
 ## Architecture in five lines
@@ -78,5 +78,5 @@ journeys run green; deep links survive refresh via the 404 shim (verified live).
 1. **Vite + React 18 + TypeScript (strict) + Tailwind 4**, tokens defined once in `src/styles/tokens.css` as CSS custom properties and mirrored into the Tailwind theme.
 2. **React Router** with Pages-safe deep links; screens lazy-load per route; marketing shell and platform shell are nested layouts.
 3. **Zustand + a storage adapter** (`src/lib/storage.ts`): all persistence goes through one interface, so a real backend replaces localStorage without touching UI code.
-4. **Business logic lives in `src/lib`** (`tier.ts`, `svs.ts`, `marketplace.ts`, `commission.ts`, `invoices.ts`, `requests.ts`) with the mandatory rule tests in `tests/` — the UI only renders what the lib computes.
+4. **Business logic lives in `src/lib`** (`tier.ts`, `svs.ts`, `marketplace.ts`, `commission.ts`, `invoices.ts`, `requests.ts`, `launches.ts`, `procurement.ts`, `crewChange.ts`; hire terms in `src/data/serviceTerms.ts`) with the mandatory rule tests in `tests/` — the UI only renders what the lib computes.
 5. **Mock data is typed and canonical** (`src/data/*.ts`), fictional names only, governed by the handoff package in `docs/handoff/` — `07_GUARDRAILS_CONFIDENTIALITY.md` overrides everything.

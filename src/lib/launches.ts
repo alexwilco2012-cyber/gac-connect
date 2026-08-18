@@ -21,7 +21,7 @@ export type RunFit = 'fits' | 'runs' | 'no-freight';
  */
 export const LAUNCH_PORT_NOTES: Record<string, string> = {
   Aberdeen:
-    'Runs from the harbour to the outer anchorage and the inshore fields. Transit is short, so most operators run round the clock; check capacity against the crew list before booking.',
+    'Runs from the harbour to the outer anchorage and the inshore fields. Transit is short and notice is usually an hour or less; check capacity against the crew list before booking.',
   Macduff:
     'Cover for the Moray Firth anchorages and vessels working the firth. Transits are longer and daylight running is the norm, so plan the return leg with the operator.',
 };

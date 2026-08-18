@@ -19,7 +19,9 @@ import { annualSaving, isFullStack, tierPct } from '../../lib/tier';
 import { INVOICES } from '../../data/invoices';
 import { CATEGORY_SERVICE, relatedServicesFor } from '../../data/related';
 import { DASHBOARD_KPIS, PREDICTED_NEEDS, VESSELS } from '../../data/vessels';
+import { isTerminalStage } from '../../lib/crewChange';
 import { useApp } from '../../store/app';
+import { useCrewChange } from '../../store/crewChange';
 import { TourPrompt } from '../../tour/Tour';
 
 const PILL_TONE = { info: 'info', warn: 'warn', success: 'verified' } as const;
@@ -38,6 +40,7 @@ export default function Dashboard() {
   const tier = useApp((s) => s.tier);
   const spend = useApp((s) => s.spend);
   const invoiceDecisions = useApp((s) => s.invoiceDecisions);
+  const crewRequests = useCrewChange((s) => s.requests);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [replyWindowId, setReplyWindowId] = useState(DEFAULT_REPLY_WINDOW);
 
@@ -54,6 +57,9 @@ export default function Dashboard() {
       acc === null || daysLeft(inv.receivedDaysAgo) < daysLeft(acc) ? inv.receivedDaysAgo : acc,
     null,
   );
+
+  // Crew change — LOI / repatriation letters not yet returned to the client.
+  const lettersInProgress = crewRequests.filter((r) => !isTerminalStage(r.kind, r.stage)).length;
 
   function sendQuoteRequests() {
     const window_ = replyWindowById(replyWindowId);
@@ -73,7 +79,15 @@ export default function Dashboard() {
           <Eyebrow>Thursday · Aberdeen</Eyebrow>
           <h1 className="mt-1 font-display text-2xl font-bold">Morning, agent</h1>
           <p className="mt-1 text-[14px] text-ink-soft">
-            2 vessels arriving in the next 24 hours. 1 procurement list ready to send.
+            2 vessels arriving in the next 24 hours.{' '}
+            <Link
+              to="/app/procurement"
+              className="font-semibold text-sea"
+              data-testid="dashboard-procurement-link"
+            >
+              1 procurement list ready to send
+            </Link>
+            .
           </p>
         </div>
         <Button variant="ghost" onClick={() => setDrawerOpen(true)}>
@@ -271,6 +285,38 @@ export default function Dashboard() {
             <div className="mt-3">
               <Button variant="ghost" onClick={() => navigate('/app/svs')}>
                 Open SVS
+              </Button>
+            </div>
+          </Card>
+
+          {/* Crew change and launches — the crew side of the call (17 Aug review) */}
+          <Card data-testid="dashboard-crew">
+            <Eyebrow>Crew change · launches</Eyebrow>
+            <p className="mt-2.5 text-[14px]">
+              {lettersInProgress === 0 ? (
+                <>
+                  <strong>No letters in progress.</strong> Hotels, immigration, LOI and
+                  repatriation-letter templates live in one place.
+                </>
+              ) : (
+                <>
+                  <strong>
+                    {lettersInProgress} {lettersInProgress === 1 ? 'letter' : 'letters'} in progress
+                  </strong>{' '}
+                  — LOI and repatriation letters on their way through GAC and Border Force.
+                </>
+              )}
+            </p>
+            <p className="mt-2 text-[12.5px] text-ink-soft">
+              Crew to a vessel at anchor? The Launches tab shows each launch’s capacity and whether
+              freight is included.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button variant="ghost" onClick={() => navigate('/app/crew-change')}>
+                Open crew change
+              </Button>
+              <Button variant="ghost" onClick={() => navigate('/app/launches')}>
+                Plan a launch run
               </Button>
             </div>
           </Card>

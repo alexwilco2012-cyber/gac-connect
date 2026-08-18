@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { DEFAULT_REQUEST } from '../data/procurement';
 import type { ProcurementLine, ProcurementRequest } from '../data/procurement';
-import { isFinalStage, nextStage } from '../lib/procurement';
+import { isFinalStage, nextStage, STAGES } from '../lib/procurement';
 import type { Stage } from '../lib/procurement';
 import { persistent } from '../lib/storage';
 
@@ -46,6 +46,54 @@ function cloneDefault(): ProcurementRequest {
   return { ...DEFAULT_REQUEST, lines: DEFAULT_REQUEST.lines.map((l) => ({ ...l })) };
 }
 
+/* Hydration is defensive: storage may hold an older shape or a hand-edited
+   value, and a corrupt entry must never take the screen down. Anything that
+   does not look right falls back to the default. */
+function isLine(v: unknown): v is ProcurementLine {
+  if (!v || typeof v !== 'object') return false;
+  const l = v as Record<string, unknown>;
+  return typeof l.id === 'string' && typeof l.description === 'string' && typeof l.qty === 'string';
+}
+
+export function readRequest(): ProcurementRequest {
+  const stored = persistent.get<unknown>(KEY_REQUEST, null);
+  if (!stored || typeof stored !== 'object') return cloneDefault();
+  const r = stored as Record<string, unknown>;
+  if (
+    typeof r.ref !== 'string' ||
+    typeof r.vesselId !== 'string' ||
+    typeof r.deliveryPoint !== 'string' ||
+    typeof r.neededBy !== 'string' ||
+    !Array.isArray(r.lines) ||
+    !r.lines.every(isLine)
+  ) {
+    return cloneDefault();
+  }
+  return { ...cloneDefault(), ...(r as unknown as ProcurementRequest) };
+}
+
+export function readStage(): Stage {
+  const stored = persistent.get<unknown>(KEY_STAGE, 'draft');
+  return typeof stored === 'string' && (STAGES as readonly string[]).includes(stored)
+    ? (stored as Stage)
+    : 'draft';
+}
+
+export function readStageTimes(): StageTimes {
+  const stored = persistent.get<unknown>(KEY_TIMES, {});
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+  const out: StageTimes = {};
+  for (const [k, v] of Object.entries(stored as Record<string, unknown>)) {
+    if ((STAGES as readonly string[]).includes(k) && typeof v === 'string') out[k as Stage] = v;
+  }
+  return out;
+}
+
+/** A request is sendable when it has at least one line and no blank descriptions. */
+export function canSend(request: ProcurementRequest): boolean {
+  return request.lines.length > 0 && request.lines.every((l) => l.description.trim().length > 0);
+}
+
 let lineSeq = 1;
 
 export const useProcurement = create<ProcurementState>((set, get) => {
@@ -58,9 +106,9 @@ export const useProcurement = create<ProcurementState>((set, get) => {
   }
 
   return {
-    request: persistent.get<ProcurementRequest>(KEY_REQUEST, cloneDefault()),
-    stage: persistent.get<Stage>(KEY_STAGE, 'draft'),
-    stageTimes: persistent.get<StageTimes>(KEY_TIMES, {}),
+    request: readRequest(),
+    stage: readStage(),
+    stageTimes: readStageTimes(),
 
     setLines(lines) {
       patchRequest({ lines });
@@ -92,7 +140,10 @@ export const useProcurement = create<ProcurementState>((set, get) => {
     },
 
     send() {
-      if (get().stage !== 'draft' || get().request.lines.length === 0) return;
+      if (get().stage !== 'draft' || !canSend(get().request)) return;
+      // Snapshot the request as sent, so what is on disk is what went to Compass
+      // (an unedited draft was never written until now).
+      persistent.set(KEY_REQUEST, get().request);
       const stage: Stage = 'sent';
       const stageTimes: StageTimes = { ...get().stageTimes, sent: now() };
       persistent.set(KEY_STAGE, stage);
