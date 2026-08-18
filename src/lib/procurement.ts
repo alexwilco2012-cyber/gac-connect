@@ -125,7 +125,7 @@ export function sourceLabel(source: LineSource, chandler = CHANDLER_NAME): strin
 // ── Invoice ──────────────────────────────────────────────────────────────
 
 /*
- * There is no mark-up on the client's paperwork. Compass prices every line
+ * The client's paperwork carries Compass's prices only. Compass prices every line
  * through its own network and the client sees those prices and one total —
  * nothing about Compass's cost base or margin is surfaced here (17 Aug
  * review, owner's follow-up).

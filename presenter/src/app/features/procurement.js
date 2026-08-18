@@ -68,7 +68,7 @@ const PR_CHANDLER_NAME = 'Granite Ship Chandlers';
 /* Illustrative demo prices per line id; added lines take the fallback. Nothing here is a real Compass price. */
 const PR_PRICES_GBP = { 'engine-room': 1240, provisions: 2150, 'deck-stores': 860, 'bonded-stores': 540, 'galley-gas': 190 };
 const PR_PRICE_FALLBACK_GBP = 250;
-/* There is no mark-up on the client's paperwork (17 Aug review, owner's follow-up):
+/* The client's paperwork carries Compass's prices only (17 Aug review, owner's follow-up):
    Compass prices every line through its own network and the client sees those
    prices and one total — nothing about Compass's cost base or margin is surfaced. */
 const PR_RULES = [
