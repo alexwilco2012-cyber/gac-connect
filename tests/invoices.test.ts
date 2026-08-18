@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INVOICES } from '../src/data/invoices';
+import { INVOICE_RULES, INVOICES } from '../src/data/invoices';
 import { supplierById } from '../src/data/suppliers';
 import {
   changeCarriesAdminFee,
@@ -49,6 +49,25 @@ describe('Invoice review — the seven-day client window (v12 §5)', () => {
     expect(commissionAtMatching(4400, 'premium')).toBe(440);
     expect(commissionAtMatching(1850, 'professional')).toBe(278);
     expect(commissionAtMatching(2900, 'free')).toBe(580);
+  });
+
+  it('commission at matching stays a supplier-side calculation — the maths still holds', () => {
+    // 17 Aug review: the client never sees commission in the app. The lib rule
+    // is unchanged (supplier surfaces still rely on it); only the client
+    // screens stopped rendering it.
+    expect(commissionAtMatching(4400, 'premium', true)).toBe(220);
+    expect(commissionAtMatching(0, 'free')).toBe(0);
+    for (const inv of INVOICES) {
+      expect(commissionAtMatching(inv.amountGBP, inv.plan)).toBeGreaterThan(0);
+    }
+  });
+
+  it('the client-facing rules strip never mentions commission', () => {
+    for (const rule of INVOICE_RULES) {
+      expect(`${rule.title} ${rule.body}`).not.toMatch(/commission/i);
+    }
+    expect(INVOICE_RULES).toHaveLength(3);
+    expect(INVOICE_RULES[2].title).toBe('Rate the job when it closes');
   });
 
   it('countdown labels', () => {

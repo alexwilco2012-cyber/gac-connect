@@ -5,6 +5,8 @@ import {
   RELATED_INTRO,
   relatedServicesFor,
 } from '../data/related';
+import { bookedWindowFrom } from '../data/quotes';
+import { isOverrunCategory, OVERRUN_TERMS } from '../data/serviceTerms';
 import { VESSELS } from '../data/vessels';
 import { gbp } from '../lib/format';
 import {
@@ -31,7 +33,10 @@ import { Toggle } from './ui/Toggle';
  *    transfer and hotel), for the GAC agent to arrange;
  *  · a hotel — whether booked directly from the Hotels category or added to a
  *    medical request — is quoted subject to availability, and if the client
- *    wants a meal allowance it follows a sliding scale.
+ *    wants a meal allowance it follows a sliding scale;
+ *  · crane and FLT hire is priced for a booked window (data/serviceTerms), so
+ *    the request carries the window the price covers and the overrun clause;
+ *    the window follows the needed-by time until the client edits it.
  */
 
 export interface RequestTarget {
@@ -138,7 +143,11 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
   const [related, setRelated] = useState<Record<string, boolean>>({});
   const [meals, setMeals] = useState(false);
   const [nights, setNights] = useState<number>(1);
+  // null until the client edits it — the window follows the needed-by time.
+  const [bookedWindow, setBookedWindow] = useState<string | null>(null);
 
+  const bookedWindowValue = bookedWindow ?? bookedWindowFrom(neededBy);
+  const effectiveBookedWindow = bookedWindowValue.trim() || bookedWindowFrom(neededBy);
   const window_ = replyWindowById(windowId);
   const advice = deadlineAdvice(window_.hours);
   const suggestions = relatedServicesFor(target.category);
@@ -146,6 +155,7 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
   const chosenCount = suggestions.filter((s) => related[s.id]).length;
 
   const isHotel = target.category === 'Hotels';
+  const isOverrun = isOverrunCategory(target.category);
   const serviceLabel = target.service ?? CATEGORY_SERVICE[target.category] ?? target.category;
   const who = target.supplierName ?? `${target.category} suppliers`;
   const vessel = VESSELS.find((v) => v.id === vesselId) ?? VESSELS[0]!;
@@ -163,6 +173,11 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
         `Rate indicative and subject to availability — your agent confirms the booking on the platform${
           meals ? ` (${mealLine})` : ''
         }.`,
+      );
+    }
+    if (isOverrun) {
+      parts.push(
+        `Price covers the booked window ${effectiveBookedWindow}; overrun not included, subject to change, supplier T&Cs included.`,
       );
     }
     if (chosenCount > 0) {
@@ -243,6 +258,31 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
           {advice.text}
         </p>
       </fieldset>
+
+      {/* Hire terms — crane and FLT work is priced for the booked window; overrun is on top */}
+      {isOverrun ? (
+        <fieldset
+          className="mt-4 rounded-lg border border-line bg-paper p-3"
+          data-testid="hire-terms"
+        >
+          <legend className="px-1 text-[12.5px] font-bold">Hire terms</legend>
+          <p className="text-[12.5px] text-ink-soft">{OVERRUN_TERMS}</p>
+          <label className="mt-2.5 block text-[12.5px] font-semibold text-ink-soft">
+            Booked window
+            <input
+              type="text"
+              value={bookedWindowValue}
+              onChange={(e) => setBookedWindow(e.target.value)}
+              aria-describedby="booked-window-help"
+              className="mt-1 block min-h-[40px] w-full rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+            />
+          </label>
+          <p id="booked-window-help" className="mt-1 text-[11.5px] text-ink-soft">
+            The window the quoted price covers — it follows the needed-by time until you edit it.
+            Time beyond it is charged at the supplier’s published rates.
+          </p>
+        </fieldset>
+      ) : null}
 
       {/* Hotel booking terms — availability caveat and meal allowance on the booking itself */}
       {isHotel ? (

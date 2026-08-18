@@ -60,10 +60,32 @@ is filled per output: preload hints + `window.__resources` (site), just
 `src/partials/` is in document order: `10-loader` (chain-forge entrance, only
 shown when the opening is off), `20-opening` (the Advantage opening: four
 slides shown before the platform — see below), `30-chrome` (header/nav),
-`40-…53-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
+`40-…56-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
-certification, bunkers, kitchen-sink), `60-footer-drawer`, `70-modal`,
-`71-tour`, `72-toast`.
+certification, bunkers, kitchen-sink, launches, procurement, crew-change),
+`60-footer-drawer`, `70-modal`, `73-request`, `74-launch-request`, `71-tour`,
+`72-toast`.
+
+### Feature modules (17 Aug review screens)
+
+The screens added after v12 — Launches, Procurement, Crew change — live as
+**feature modules** in `src/app/features/<name>.js`, included after
+`component.js` in the x-dc script. Each module owns its data, state, bindings
+and Escape handling and registers them with the core:
+
+```js
+(Component._features = Component._features || []).push({
+  state() { return { … } },        // initial state keys
+  vals(st) { return { … } },       // renderVals bindings for its partial
+  escape() { return closedSomething } // true if Escape closed a modal it owns
+});
+```
+
+`component.js` merges them through `_featureState()`, `_featureVals(st)` and
+`_featureEscape()` and knows nothing else about them; routes and nav entries
+for the three screens are the only core edits. Add a screen = a partial + a
+module + one route/nav line. `build.py` runs the same forbidden-sequence guard
+over `app/features/*.js` as over the core files.
 
 ## The opening
 
@@ -132,10 +154,19 @@ slides animate (pieces, lights, runner); `Esc` reaches the closer and `Enter`
 
 Figures and language are locked by the v12 fact block (see
 `reference/BUILD_NOTES-v12.md` for the full block). Highlights: supplier
-commission bands 20/15/10 deducted at invoice matching; Founder Programme = first 50 suppliers, first year free,
+commission bands 20/15/10 deducted at invoice matching (never shown to the
+client persona — 17 Aug review); Founder Programme = first 50 suppliers, first year free,
 plus a 5-point commission-band reduction for 24 months; SVS is GAC-owned,
 maintenance moving to Group IT. Never say: platform booking fee, "no
 commission", rebates as a live mechanism, a flat "5%" disbursement fee,
 third-party SVS licence, highest-margin customs, decade of GA data.
 Fictional operator names only: Browne Energy, Grizzell Marine, Stronach
 Subsea, Wilkinson Drilling.
+
+17 Aug review additions (mirror the site, `docs/handoff/03 §3.2`): FLT and
+crane prices cover the booked window only — overrun not included, subject to
+change, supplier T&Cs included; Launches tab (capacity + freight included, per
+port); Procurement via Compass (email → Compass supplies or sources from a
+chandler and pays them → invoiced via Compass under GAC with an illustrative,
+labelled mark-up); Crew change (hotels, immigration, LOI endorsed by GAC as
+agents, repat letter endorsed by UK Border Force). Simulated steps say so.

@@ -158,14 +158,18 @@ test('7 · invoice review: seven-day window, allocation, match to GA, agent rati
   await expect(page.getByText('2 days left')).toBeVisible();
   await expect(page.getByTestId('invoice-INV-4452')).toHaveAttribute('data-state', 'auto-matched');
 
-  // Allocate and match the crane invoice: commission is deducted at matching.
+  // The client persona never sees supplier commission on this screen (17 Aug review).
+  await expect(page.getByText(/commission/i)).toHaveCount(0);
+
+  // Allocate and match the crane invoice under the chosen billing party.
   const crane = page.getByTestId('invoice-INV-4471');
   await crane.getByRole('radio', { name: /Browne Energy — 100%/ }).check();
   await crane.getByRole('button', { name: 'Confirm & match to GA' }).click();
   await expect(page.getByText(/INV-4471 matched to GA — Browne Energy — 100%/)).toBeVisible();
-  await expect(page.getByText(/£440 supplier commission \(10% Premium band\)/)).toBeVisible();
   await expect(crane).toHaveAttribute('data-state', 'matched');
   await expect(crane.getByText(/Changes after matching carry an administrative fee/)).toBeVisible();
+  // Still nothing about commission once matched — toast and matched state included.
+  await expect(page.getByText(/commission/i)).toHaveCount(0);
 
   // Rate the supplier for the job.
   await page.getByTestId('rate-INV-4471-5').click();

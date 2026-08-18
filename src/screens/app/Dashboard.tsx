@@ -246,8 +246,7 @@ export default function Dashboard() {
               </p>
             ) : null}
             <p className="mt-2 text-[12.5px] text-ink-soft">
-              Left alone, an invoice matches as it stands; supplier commission is deducted at
-              matching.
+              Left alone, an invoice matches as it stands.
             </p>
             <div className="mt-3">
               <Button variant="ghost" onClick={() => navigate('/app/invoices')}>

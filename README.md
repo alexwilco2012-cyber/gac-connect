@@ -6,10 +6,17 @@ Logistics, Customs, Assets, Procurement — woven through the middle, with a tie
 rewards consolidating spend and a Supplier Vetting System (SVS) that blocks lapsed suppliers
 from booking, anywhere, automatically. Suppliers pay a commission only on work won through the
 platform, banded by plan (Basic 20% · Professional 15% · Premium 10%) and deducted at invoice
-matching; clients pay nothing to use it. Above standard verification sits **GAC Gold Band**, an
-earned annual-audit tier for Premium suppliers. Supplier invoices route to the client first with
-a seven-day window to allocate billing parties and splits before they match in GAC Agent, and
-agents rate suppliers on job close-out — every rating shown carries the number submitted.
+matching; clients pay nothing to use it and never see that commission. Above standard
+verification sits **GAC Gold Band**, an earned annual-audit tier for Premium suppliers. Supplier
+invoices route to the client first with a seven-day window to allocate billing parties and splits
+before they match in GAC Agent, and agents rate suppliers on job close-out — every rating shown
+carries the number submitted. From the 17 August review: FLT and crane prices cover the booked
+window only (overrun not included, subject to change, supplier T&Cs included); a **Launches** tab
+shows each crew launch's capacity and whether freight is included, port by port; **Procurement**
+is a working example of the Compass flow (list emailed straight to Compass, GAC's procurement
+branch, which supplies or sources from a chandler, pays them, and invoices via Compass under GAC
+with a mark-up — one invoice); and **Crew change** gathers hotels, immigration guidance, and the
+LOI / repatriation-letter templates that GAC endorses, or UK Border Force endorses, and returns.
 
 **Live:** https://alexwilco2012-cyber.github.io/gac-connect/
 

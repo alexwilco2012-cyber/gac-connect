@@ -1,6 +1,6 @@
 /**
  * Service terms shown with a listing, a quote, and the request — the point
- * Ben raised on 17 Aug: FLT and crane work is priced for the booked window,
+ * the 17 Aug review raised: FLT and crane work is priced for the booked window,
  * so if the job overruns the extra time is not inside the quoted price. The
  * price is subject to change and the supplier's T&Cs travel with every quote.
  * Category-level; a supplier's own `bookingNote` (e.g. a hotel's availability

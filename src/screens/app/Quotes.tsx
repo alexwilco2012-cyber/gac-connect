@@ -10,6 +10,7 @@ import { gbp } from '../../lib/format';
 import { goldBandActive, isBookable } from '../../lib/svs';
 import { ACCEPTANCE_TOAST, QUOTE_REQUEST, QUOTES, REQUEST_QUEUE } from '../../data/quotes';
 import type { Quote } from '../../data/quotes';
+import { OVERRUN_TERMS_SHORT, serviceTermsFor } from '../../data/serviceTerms';
 import { supplierById } from '../../data/suppliers';
 import { useApp } from '../../store/app';
 
@@ -25,9 +26,16 @@ const NEXT_STEPS = [
   },
   {
     title: 'Invoice review',
-    body: 'The supplier invoice routes to you first: seven days to allocate the billing party and splits, then it matches to GA. Commission is deducted at matching.',
+    body: 'The supplier invoice routes to you first: seven days to allocate the billing party and splits, then it matches to GA.',
   },
 ];
+
+/**
+ * Hire terms for this request's category (data/serviceTerms) — crane work is
+ * priced for the booked window, so the clause travels with every quote and
+ * into the agreement. Undefined for categories without one.
+ */
+const REQUEST_TERMS = serviceTermsFor(QUOTE_REQUEST.category);
 
 function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => void }) {
   const acceptedQuoteId = useApp((s) => s.acceptedQuoteId);
@@ -80,6 +88,15 @@ function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => 
               <td className="py-1.5 text-right font-semibold">{v}</td>
             </tr>
           ))}
+          {REQUEST_TERMS ? (
+            <tr
+              className="border-b border-dashed border-line last:border-b-0"
+              data-testid="quote-terms"
+            >
+              <td className="py-1.5 align-top text-ink-soft">Terms</td>
+              <td className="py-1.5 text-right text-[12px] font-semibold">{OVERRUN_TERMS_SHORT}</td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
       <div className="mt-3">
@@ -113,6 +130,7 @@ export default function Quotes() {
   const resetQuote = useApp((s) => s.resetQuote);
   const acceptedQuoteId = useApp((s) => s.acceptedQuoteId);
   const [signing, setSigning] = useState<Quote | null>(null);
+  const [termsOpen, setTermsOpen] = useState(false);
 
   function confirmBooking() {
     if (!signing) return;
@@ -134,6 +152,29 @@ export default function Quotes() {
       <p className="mt-1.5 text-[12.5px] text-ink-soft" data-testid="request-meta">
         {`Sent ${QUOTE_REQUEST.sentAt} · reply-by ${QUOTE_REQUEST.replyBy} (${QUOTE_REQUEST.replyWindowLabel} to reply, set by the client) · needed ${QUOTE_REQUEST.neededBy}`}
       </p>
+      {REQUEST_TERMS ? (
+        <div className="mt-1 text-[12.5px] text-ink-soft" data-testid="request-terms">
+          <p>
+            Prices cover the booked window{' '}
+            <strong className="text-ink">{QUOTE_REQUEST.bookedWindow}</strong> ·{' '}
+            {OVERRUN_TERMS_SHORT} ·{' '}
+            <button
+              type="button"
+              aria-expanded={termsOpen}
+              aria-controls="request-terms-full"
+              onClick={() => setTermsOpen((o) => !o)}
+              className="cursor-pointer font-semibold text-sea underline-offset-2 hover:underline"
+            >
+              {termsOpen ? 'Hide full hire terms' : 'Full hire terms'}
+            </button>
+          </p>
+          {termsOpen ? (
+            <p id="request-terms-full" className="mt-1 max-w-[72ch]">
+              {REQUEST_TERMS}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-6 grid items-start gap-5 lg:grid-cols-[220px_1fr]">
         {/* Request queue sidebar */}
@@ -233,11 +274,13 @@ export default function Quotes() {
             <h2 id="sign-title" className="mt-1 font-display text-[19px] font-bold">
               Accept quote — {signing.supplierName}
             </h2>
-            <p className="mt-2.5 text-[13.5px] text-ink-soft">
-              Scope: 1 × mobile crane, MV Caledonian Star, Aberdeen, Fri 06:00–18:00. Price:{' '}
-              <strong className="text-ink">{gbp(signing.priceGBP)}</strong>. Terms incorporated by
-              reference from the platform Terms of Use. Both parties sign electronically; the
-              agreement is stored with a full audit trail.
+            <p className="mt-2.5 text-[13.5px] text-ink-soft" data-testid="agreement-scope">
+              Scope: 1 × mobile crane, {QUOTE_REQUEST.vessel}, {QUOTE_REQUEST.port}, booked window{' '}
+              {QUOTE_REQUEST.bookedWindow}. Price:{' '}
+              <strong className="text-ink">{gbp(signing.priceGBP)}</strong>.{' '}
+              {REQUEST_TERMS ? `${REQUEST_TERMS} ` : null}
+              Terms incorporated by reference from the platform Terms of Use. Both parties sign
+              electronically; the agreement is stored with a full audit trail.
             </p>
             <p className="mt-5 border-b-2 border-ink px-1 pb-0.5 font-serif text-[22px] italic">
               A. Wilkinson

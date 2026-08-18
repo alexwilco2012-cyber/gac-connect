@@ -60,14 +60,45 @@ export const QUOTES: Quote[] = [
 ];
 
 /**
+ * A crane or FLT price covers a booked window (data/serviceTerms). The demo's
+ * standard window is a day shift of this many hours from the needed-by time —
+ * illustrative, not a supplier's actual hire terms.
+ */
+export const HIRE_WINDOW_HOURS = 12;
+
+/** The demo's standard booked window — the crane scenario and a fresh request both start here. */
+export const DEFAULT_BOOKED_WINDOW = 'Fri 06:00–18:00';
+
+/**
+ * The booked window a request defaults to for a needed-by time, so the two
+ * stay coherent when the client edits one: 'Fri 06:00' → 'Fri 06:00–18:00'.
+ * Free text without a trailing HH:MM falls back to the demo default.
+ */
+export function bookedWindowFrom(neededBy: string): string {
+  const match = /^(.*?)(\d{1,2}):(\d{2})\s*$/.exec(neededBy.trim());
+  if (!match) return DEFAULT_BOOKED_WINDOW;
+  const [, prefix, hh, mm] = match;
+  const startHour = Number(hh);
+  if (startHour > 23 || Number(mm) > 59) return DEFAULT_BOOKED_WINDOW;
+  const endHour = (startHour + HIRE_WINDOW_HOURS) % 24;
+  return `${prefix}${hh}:${mm}–${String(endHour).padStart(2, '0')}:${mm}`;
+}
+
+/**
  * The request behind this comparison. The client sets the reply-by deadline
- * when the request goes out; suppliers quote against it.
+ * when the request goes out; suppliers quote against it. The category drives
+ * the hire terms shown with every quote (data/serviceTerms): crane work is
+ * priced for the booked window, so the window the prices cover travels with
+ * the request.
  */
 export const QUOTE_REQUEST = {
   service: 'Crane hire',
+  category: 'Cranes',
   vessel: 'MV Caledonian Star',
   port: 'Aberdeen',
   neededBy: 'Fri 06:00',
+  /** The window the quoted prices cover — overrun beyond it is charged on top. */
+  bookedWindow: DEFAULT_BOOKED_WINDOW,
   replyBy: 'Thu 12:00',
   replyWindowLabel: '4 hours',
   sentAt: 'Thu 08:00',

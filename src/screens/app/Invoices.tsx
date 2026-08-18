@@ -4,27 +4,21 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Pill } from '../../components/ui/Pill';
-import { COMMISSION_BANDS } from '../../lib/commission';
 import { gbp, ratingLine } from '../../lib/format';
-import {
-  changeCarriesAdminFee,
-  commissionAtMatching,
-  daysLeft,
-  invoiceState,
-  windowLabel,
-} from '../../lib/invoices';
+import { changeCarriesAdminFee, daysLeft, invoiceState, windowLabel } from '../../lib/invoices';
 import type { InvoiceState } from '../../lib/invoices';
 import { INVOICES, INVOICE_RULES } from '../../data/invoices';
 import type { SupplierInvoice } from '../../data/invoices';
-import { planById } from '../../data/plans';
 import { supplierById } from '../../data/suppliers';
 import { useApp } from '../../store/app';
 
 /**
  * Invoice review — the client's seven-day loop before anything matches in GA
  * (v12 §5). The client allocates the billing party and any split; left alone,
- * the invoice matches as it stands. Supplier commission is deducted at the
- * moment of matching, and the agent rates the supplier on job close-out.
+ * the invoice matches as it stands. The agent rates the supplier on job
+ * close-out. This is the client's view: supplier-side mechanics (plan, band,
+ * what is deducted at matching) are deliberately not shown here — they belong
+ * to the supplier surfaces (17 Aug review).
  */
 
 const STARS = [1, 2, 3, 4, 5] as const;
@@ -58,10 +52,10 @@ function InvoiceCard({ invoice }: { invoice: SupplierInvoice }) {
   const [chosenId, setChosenId] = useState(invoice.defaultAllocationId);
 
   const state = invoiceState(invoice.receivedDaysAgo, decision);
-  const plan = planById(invoice.plan);
-  const pct = COMMISSION_BANDS[invoice.plan];
-  const commission = commissionAtMatching(invoice.amountGBP, invoice.plan);
   const supplier = supplierById(invoice.supplierId);
+  const receivedLabel = `${invoice.receivedDaysAgo} ${
+    invoice.receivedDaysAgo === 1 ? 'day' : 'days'
+  } ago`;
 
   const appliedId = decision?.allocationId ?? invoice.defaultAllocationId;
   const appliedLabel =
@@ -71,7 +65,7 @@ function InvoiceCard({ invoice }: { invoice: SupplierInvoice }) {
     const label = invoice.allocations.find((a) => a.id === chosenId)?.label ?? appliedLabel;
     matchInvoice(invoice.id, chosenId);
     pushToast(
-      `${invoice.id} matched to GA — ${label}. ${gbp(commission)} supplier commission (${pct}% ${plan.name} band) deducted at matching.`,
+      `${invoice.id} matched to GA — ${label}. Billing party applied against ${invoice.poRef}; changes from here carry an administrative fee at published rates.`,
       'GA',
     );
   }
@@ -126,7 +120,7 @@ function InvoiceCard({ invoice }: { invoice: SupplierInvoice }) {
             ['Vessel', invoice.vessel],
             ['Job reference', `${invoice.jobRef} · ${invoice.poRef}`],
             ['Service confirmation', invoice.serviceConfirmed],
-            ['Supplier plan', `${plan.name} · ${pct}% commission band`],
+            ['Invoice received', receivedLabel],
           ].map(([k, v]) => (
             <tr key={k} className="border-b border-dashed border-line last:border-b-0">
               <td className="py-1.5 pr-3 text-ink-soft">{k}</td>
@@ -167,8 +161,7 @@ function InvoiceCard({ invoice }: { invoice: SupplierInvoice }) {
               Confirm &amp; match to GA
             </Button>
             <span className="text-[12.5px] text-ink-soft">
-              {gbp(commission)} supplier commission ({pct}% {plan.name} band) is deducted at
-              matching
+              Matches in GAC Agent against {invoice.poRef} under the billing party you choose
             </span>
           </div>
         </fieldset>
@@ -181,11 +174,8 @@ function InvoiceCard({ invoice }: { invoice: SupplierInvoice }) {
             ) : null}
           </p>
           <p className="mt-1">
-            <span className="text-ink-soft">Commission deducted at matching:</span>{' '}
-            <strong>{gbp(commission)}</strong>{' '}
-            <span className="text-ink-soft">
-              ({pct}% {plan.name} band)
-            </span>
+            <span className="text-ink-soft">Matched in GAC Agent against</span>{' '}
+            <strong>{invoice.poRef}</strong>
           </p>
           {changeCarriesAdminFee(state) ? (
             <p className="mt-1.5 text-[12.5px] text-ink-soft">
@@ -286,8 +276,9 @@ export default function Invoices() {
       <div className="mt-4 flex flex-wrap items-center gap-4 rounded-brand bg-ink px-4.5 py-3.5 text-[13.5px] text-[#D8E2EC]">
         <span className="rounded-md bg-white/12 px-2 py-0.5 text-[11.5px] font-bold">GA</span>
         <span className="flex-1">
-          The loop gives clients direct control of their own billing structure, removes a recurring
-          source of agent admin, and is the point at which supplier commission is deducted.
+          The loop gives clients direct control of their own billing structure and removes a
+          recurring source of agent admin — the billing party is applied once, in GAC Agent, and
+          never re-keyed.
         </span>
         {dirty ? (
           <Button

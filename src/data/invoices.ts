@@ -111,7 +111,7 @@ export const INVOICE_RULES = [
     body: 'If the window passes without action, the invoice matches to GAC Agent as received. Changes requested after matching carry an administrative fee at published rates.',
   },
   {
-    title: 'Commission is deducted at matching',
-    body: 'The supplier’s tier band is applied at the moment of matching, so collection needs no separate process — and your agent is freed of a recurring piece of admin.',
+    title: 'Rate the job when it closes',
+    body: 'When the job closes, your agent rates the supplier — thirty seconds of agent time. That rating feeds the live score every client sees in the marketplace, always with the number of ratings behind it.',
   },
 ] as const;

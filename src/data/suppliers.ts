@@ -16,8 +16,8 @@ export interface ListingFact {
 }
 
 /**
- * Launch (crew boat / workboat) service details — the Launches tab (Ben,
- * 17 Aug): where the launch runs from, how many it carries, and whether
+ * Launch (crew boat / workboat) service details — the Launches tab (17 Aug
+ * review): where the launch runs from, how many it carries, and whether
  * freight is included in the run. Ports are examples (Macduff, Aberdeen).
  */
 export interface LaunchDetails {
