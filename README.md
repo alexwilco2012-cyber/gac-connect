@@ -13,11 +13,11 @@ before they match in GAC Agent, and agents rate suppliers on job close-out — e
 carries the number submitted. From the 17 August review: FLT and crane prices cover the booked
 window only (overrun not included, subject to change, supplier T&Cs included); **Procurement** is
 a working example of the Compass flow (list emailed straight to Compass, GAC's procurement
-branch, which supplies or sources through its network, pays the chandler, and invoices via
+branch, which sources and supplies every line itself, confirms the list back, and invoices via
 Compass under GAC — one invoice at Compass's prices); and **Crew change** gathers hotels,
-**transfers** (taxis and launches — capacity and freight-included per launch, port by port — timed
-to the crew's tracked flight), immigration guidance, and the LOI / repatriation-letter templates
-that GAC endorses, or UK Border Force endorses, and returns.
+**taxis** (timed to the crew's tracked flight), **launches** (capacity and freight-included per
+launch, port by port), immigration guidance, and the LOI / repatriation-letter templates that GAC
+endorses, or UK Border Force endorses, and returns.
 
 **Live:** https://alexwilco2012-cyber.github.io/gac-connect/
 
@@ -32,7 +32,7 @@ that GAC endorses, or UK Border Force endorses, and returns.
 npm install
 npm run dev              # local dev server (builds the presenter into public/ first)
 npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request/terms/launches/transfers/procurement/crew-change unit tests
-npm run e2e              # playwright — 22 journeys across six specs (installs Chromium once)
+npm run e2e              # playwright — 25 journeys across six specs (installs Chromium once)
 npm run lint             # eslint + prettier
 npm run build            # production build (Pages base path aware) — presenter + tsc + vite
 npm run build:presenter  # presenter only (Python 3 required) → public/presenter.html + public/presenter/
@@ -71,7 +71,7 @@ Lighthouse (headless Chromium, lab): **Performance ≈ 95** (FCP 1.5 s · LCP 1.
 CLS 0 — Speed Index alone is elevated because the signature loader animation plays during the
 trace), **Accessibility: all audits pass**, **Best Practices: all audits pass**. The local
 runner nulled the category aggregates, so the performance figure is computed from the audited
-metric scores using Lighthouse's published weights. 160 unit tests and 22 Playwright
+metric scores using Lighthouse's published weights. 164 unit tests and 25 Playwright
 journeys run green; deep links survive refresh via the 404 shim (verified live).
 
 ## Architecture in five lines

@@ -171,11 +171,13 @@ Subsea, Wilkinson Drilling.
 
 17 Aug review additions (mirror the site, `docs/handoff/03 §3.2`): FLT and
 crane prices cover the booked window only — overrun not included, subject to
-change, supplier T&Cs included; Procurement via Compass (email → Compass
-supplies or sources through its network and pays the chandler → invoiced via
-Compass under GAC; the client never sees or hears of a mark-up — Compass's
-prices, one total); Crew change (hotels; Transfers = taxis + the launches panel
-(capacity + freight included, per port) + flight-timed transport with a
-simulated flight-status feed; immigration; LOI endorsed by GAC as agents; repat
-letter endorsed by UK Border Force). Simulated steps say so. There is no
-Launches tab — `#/launches` opens Crew change on Transfers.
+change, supplier T&Cs included; Procurement via Compass (email → Compass sources
+and supplies every line itself and confirms the list back → invoiced via Compass
+under GAC; no third party is ever named to the client, and the client never sees
+or hears of a mark-up — Compass's prices, one total); Crew change, six sections
+(hotels; taxis with the flight-timed transport planner and a simulated
+flight-status feed; launches with capacity + freight included, per port;
+immigration; LOI endorsed by GAC as agents; repat letter endorsed by UK Border
+Force). Simulated steps say so. There is no Launches tab — `#/launches` opens
+Crew change on the launches section, and a retired `#/crew-change/transfers`
+opens taxis.
