@@ -290,7 +290,7 @@ class Component extends DCLogic {
       this.toastMsg(s.name + ' is blocked — insurance certificate lapsed. Booking is refused until evidence is uploaded and verified.', 'SVS');
       return;
     }
-    this.setState({ rq: { id: s.id, name: s.name, cat: s.cat, windowId: '4h', related: {}, meals: false, nights: 1 } });
+    this.setState({ rq: { id: s.id, name: s.name, cat: s.cat, windowId: '4h', related: {}, meals: false, nights: 1, bookedWindow: 'Fri 06:00–18:00' } });
   }
   /* Deadline advice — a taxi can be quoted in ten minutes; a crane cannot. */
   _deadlineAdvice(hours) {
@@ -314,6 +314,7 @@ class Component extends DCLogic {
     const mealLine = 'meal allowance ' + this._gbp(this._mealPerDay(rq.nights)) + '/day, ' + rq.nights + (rq.nights === 1 ? ' night' : ' nights');
     const parts = [(isHotel ? 'Booking request' : 'Quote request') + ' sent to ' + rq.name + ' — ' + service + ', MV Caledonian Star.', 'Reply-by window: ' + win.label + '.'];
     if (isHotel) parts.push('Rate indicative and subject to availability — your agent confirms the booking on the platform' + (rq.meals ? ' (' + mealLine + ')' : '') + '.');
+    if (this._isOverrunCat(rq.cat)) parts.push('Price covers the booked window ' + (rq.bookedWindow || '').trim() + '; overrun not included, subject to change, supplier T&Cs included.');
     if (related.length) parts.push(related.length + ' related ' + (related.length === 1 ? 'service' : 'services') + ' passed to your GAC agent' + (hotelChosen && rq.meals ? ' (' + mealLine + ')' : '') + '.');
     this.setState({ rq: null });
     this.toastMsg(parts.join(' '));
@@ -332,6 +333,19 @@ class Component extends DCLogic {
     this._set('accepted', m.name);
     this.toastMsg('Booked with ' + m.name + ' at ' + m.price + '. PO 48211 generated in GAC Agent — billing split 60/40 Browne Energy / Grizzell Marine applied automatically.', 'GA');
   }
+
+  /* ---------- listing facts + hire terms (17 Aug review; mirrors lib/marketplace.ts + data/serviceTerms.ts) ---------- */
+  _listingFacts(s) {
+    if (s.facts && s.facts.length) return s.facts;
+    const l = s.launch; if (!l) return [];
+    return [
+      { label: 'Port', value: l.port },
+      { label: 'Max capacity', value: l.maxPassengers + ' passengers' },
+      { label: 'Freight', value: l.freightIncluded ? 'Included' : 'Not included' }
+    ];
+  }
+  _isOverrunCat(cat) { return this.OVERRUN_CATEGORIES.includes(cat); }
+  _termsFor(cat) { return this._isOverrunCat(cat) ? this.OVERRUN_TERMS : ''; }
 
   /* ---------- format helpers ---------- */
   _gbp(n) { return '£' + n.toLocaleString('en-GB'); }
@@ -390,10 +404,13 @@ class Component extends DCLogic {
     const thirdList = third.map((s) => {
       const status = this.deriveStatus(s);
       const blocked = status === 'blocked';
+      const facts = this._listingFacts(s);
       return {
         name: s.name, desc: s.desc, cat: s.cat, esg: s.esg, esgStyle: this._esgStyle(s.esg),
         ratingLabel: s.rating.toFixed(1) + ' ★',
         ratingCountLabel: '· ' + s.ratingCount + ' ratings',
+        facts: facts, hasFacts: facts.length > 0,
+        terms: this._termsFor(s.cat), hasTerms: !!this._termsFor(s.cat),
         goldBand: s.goldBand === 'held' && !blocked,
         promoted: !!s.promoted, blocked: blocked, due: status === 'due', verified: !blocked,
         cardStyle: 'display:grid;grid-template-columns:1fr auto;gap:14px;padding:16px 18px;margin-bottom:12px;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);' +
@@ -653,8 +670,11 @@ class Component extends DCLogic {
       saveLabel: this._gbp(save) + ' saved / year',
       tierNote: tierNote,
 
-      /* quotes */
+      /* quotes — the crane scenario carries the hire terms (17 Aug review) */
       quotesList: quotesList,
+      quoteTermsShort: this.OVERRUN_TERMS_SHORT,
+      quoteTermsFull: this.OVERRUN_TERMS,
+      quoteBookedWindow: this.QUOTE_REQUEST.bookedWindow,
 
       /* supplier profile */
       profFound: !!prof,
@@ -676,6 +696,10 @@ class Component extends DCLogic {
       profVerified: !!prof && profStatus !== 'blocked',
       profCerts: prof ? prof.certs.map(certChip) : [],
       profActivity: prof ? prof.activity : [],
+      profFacts: prof ? this._listingFacts(prof) : [],
+      profHasFacts: !!(prof && this._listingFacts(prof).length),
+      profTerms: prof ? this._termsFor(prof.cat) : '',
+      profHasTerms: !!(prof && this._termsFor(prof.cat)),
       profCtaLabel: profStatus === 'blocked' ? 'Unavailable' : 'Request quote',
       profCtaStyle: profStatus === 'blocked'
         ? 'background:#FFFFFF;color:#9AA8B8;border:1.5px solid #E5EAF1;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:not-allowed;white-space:nowrap;'
@@ -708,6 +732,10 @@ class Component extends DCLogic {
       rqName: rq ? rq.name : '',
       rqService: rq ? (this.CATEGORY_SERVICE[rq.cat] || rq.cat) : '',
       rqIsHotel: !!(rq && rq.cat === 'Hotels'),
+      rqIsOverrun: !!(rq && this._isOverrunCat(rq.cat)),
+      rqOverrunTerms: this.OVERRUN_TERMS,
+      rqBookedWindow: rq ? (rq.bookedWindow || '') : '',
+      onRqBookedWindow: (e) => this._rqSet({ bookedWindow: e.target.value }),
       rqWindows: rqWindows,
       rqAdvice: rqAdvice.text,
       rqAdviceStyle: 'border-left:4px solid;border-radius:8px;padding:8px 12px;font-size:12.5px;margin:8px 0 0;' +

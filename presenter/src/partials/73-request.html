@@ -12,6 +12,16 @@
         </div>
         <p style="{{ rqAdviceStyle }}">{{ rqAdvice }}</p>
 
+        <sc-if value="{{ rqIsOverrun }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px;margin-top:14px;" data-testid="hire-terms">
+            <p style="font-size:12.5px;font-weight:700;margin:0;">Hire terms</p>
+            <p style="font-size:12.5px;color:#33475F;margin:4px 0 0;">{{ rqOverrunTerms }}</p>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;margin-top:10px;">Booked window
+              <input type="text" value="{{ rqBookedWindow }}" sc-camel-on-change="{{ onRqBookedWindow }}" aria-label="Booked window" style="display:block;margin-top:4px;min-height:38px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+            </label>
+          </div>
+        </sc-if>
+
         <sc-if value="{{ rqIsHotel }}" hint-placeholder-val="{{ false }}">
           <div style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px;margin-top:14px;">
             <p style="font-size:12.5px;font-weight:700;margin:0;">Hotel booking terms</p>

@@ -3,7 +3,8 @@
       <div style="background:#FFFFFF;border-radius:14px;max-width:460px;width:92vw;padding:26px;">
         <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Per-transaction agreement</p>
         <h2 style="margin:4px 0 0;font-size:19px;">Accept quote — {{ modalSupplier }}</h2>
-        <p style="color:#33475F;font-size:13.5px;margin:10px 0 0;">Scope: 1 × mobile crane, MV Caledonian Star, Aberdeen, Fri 06:00–18:00. Price: <strong>{{ modalPrice }}</strong>. Terms incorporated by reference from the platform Terms of Use. Both parties sign electronically; the agreement is stored with a full audit trail.</p>
+        <p style="color:#33475F;font-size:13.5px;margin:10px 0 0;">Scope: 1 × mobile crane, MV Caledonian Star, Aberdeen, booked window {{ quoteBookedWindow }}. Price: <strong>{{ modalPrice }}</strong> for the booked window. Terms incorporated by reference from the platform Terms of Use. Both parties sign electronically; the agreement is stored with a full audit trail.</p>
+        <p style="color:#33475F;font-size:12.5px;margin:8px 0 0;border:1px solid #E5EAF1;background:#FAFBFD;border-radius:8px;padding:8px 12px;" data-testid="agreement-terms"><strong style="color:#0A2540;">Hire terms.</strong> {{ quoteTermsFull }}</p>
         <div style="border-bottom:2px solid #0A2540;margin:22px 0 6px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:22px;padding:0 4px 2px;">Alex Wilkinson</div>
         <p style="color:#33475F;font-size:12.5px;margin:0;">Signed on behalf of client · supplier countersignature requested automatically</p>
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
