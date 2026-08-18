@@ -5,12 +5,22 @@ import { Loader } from '../motif/Loader';
 import { BetaPill } from '../ui/Pill';
 import { Wordmark } from './Wordmark';
 
+/**
+ * Platform navigation. Order follows the client's working day: find and book
+ * (Marketplace, Launches, Procurement, Crew change), then the paper trail
+ * (Quotes, Invoices), then the commercial and compliance views. Eleven items
+ * have to fit at 1280 px, so the link padding is tight and the tier screen is
+ * simply "Tiers" here (its heading still says Tier Calculator).
+ */
 const NAV = [
   { to: '/app', label: 'Dashboard', end: true },
   { to: '/app/marketplace', label: 'Marketplace' },
+  { to: '/app/launches', label: 'Launches' },
+  { to: '/app/procurement', label: 'Procurement' },
+  { to: '/app/crew-change', label: 'Crew change' },
   { to: '/app/quotes', label: 'Quotes' },
   { to: '/app/invoices', label: 'Invoices' },
-  { to: '/app/tiers', label: 'Tier Calculator' },
+  { to: '/app/tiers', label: 'Tiers' },
   { to: '/app/svs', label: 'SVS' },
   { to: '/app/certification', label: 'Certification', beta: true },
   { to: '/app/bunkers', label: 'Bunkers', beta: true },
@@ -40,7 +50,7 @@ export default function AppLayout() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `rounded-md px-2.5 py-2 text-[13.5px] font-semibold whitespace-nowrap no-underline transition-colors ${
+                  `rounded-md px-2 py-2 text-[13px] font-semibold whitespace-nowrap no-underline transition-colors ${
                     isActive
                       ? 'bg-white/14 text-white shadow-[inset_0_-3px_0_var(--gold)]'
                       : 'text-[#B9C8D6] hover:bg-white/8 hover:text-white'
@@ -53,7 +63,7 @@ export default function AppLayout() {
             ))}
           </nav>
           <div className="hidden items-center gap-2.5 text-[13px] text-[#C9D6E2] lg:flex">
-            <span>A. Wilkinson · Aberdeen Agency</span>
+            <span className="hidden 2xl:inline">A. Wilkinson · Aberdeen Agency</span>
             <span
               aria-hidden="true"
               className="grid h-8 w-8 place-items-center rounded-full bg-gold text-[13px] font-extrabold text-ink"

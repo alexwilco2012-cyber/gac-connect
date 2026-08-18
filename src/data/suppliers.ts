@@ -9,6 +9,34 @@ export type Esg = 'A' | 'B' | 'C';
 
 export type Plan = 'free' | 'professional' | 'premium';
 
+/** A short label/value pair rendered as a fact chip on the listing and profile. */
+export interface ListingFact {
+  label: string;
+  value: string;
+}
+
+/**
+ * Launch (crew boat / workboat) service details — the Launches tab (Ben,
+ * 17 Aug): where the launch runs from, how many it carries, and whether
+ * freight is included in the run. Ports are examples (Macduff, Aberdeen).
+ */
+export interface LaunchDetails {
+  /** Home port the launch runs from, e.g. 'Aberdeen', 'Macduff'. */
+  port: string;
+  /** The launch's own name (fictional). */
+  vesselName: string;
+  /** Maximum passengers carried per run. */
+  maxPassengers: number;
+  /** Whether freight (deck cargo, stores) is included in the quoted run. */
+  freightIncluded: boolean;
+  /** What "freight included" means in practice — allowance, or the add-on basis. */
+  freightNote: string;
+  /** Typical transit to the anchorage / field, e.g. '25 min to Aberdeen anchorage'. */
+  transit: string;
+  /** Operating pattern, e.g. '24 h · 30 min notice'. */
+  availability: string;
+}
+
 export interface Supplier {
   id: string;
   name: string;
@@ -27,6 +55,10 @@ export interface Supplier {
   goldBandDate?: string;
   /** Booking terms shown with the listing — e.g. a hotel's availability caveat. */
   bookingNote?: string;
+  /** Extra facts shown as chips on the row and profile (capacity, freight, port…). */
+  facts?: ListingFact[];
+  /** Present on Launches suppliers — drives the Launches tab. */
+  launch?: LaunchDetails;
   /** Fictional recent activity for the profile page. */
   recentJobs: string[];
 }
@@ -34,6 +66,8 @@ export interface Supplier {
 export const CATEGORIES = [
   'All',
   'Cranes',
+  'FLT',
+  'Launches',
   'Medical',
   'Scaffolding',
   'Diving',
@@ -92,6 +126,96 @@ export const SUPPLIERS: Supplier[] = [
     certs: fullCerts(['LOLER', 'Insurance', 'GWO']),
     plan: 'free',
     recentJobs: ['Contract lift — Wilkinson Drilling laydown area'],
+  },
+  {
+    id: 'quayside-forklift-hire',
+    name: 'Quayside Forklift Hire',
+    category: 'FLT',
+    description:
+      'Counterbalance and telehandler FLTs to 16t with operator, Aberdeen and Peterhead quaysides. Same-day where the plant is free.',
+    rating: 4.5,
+    ratingCount: 29,
+    esg: 'B',
+    certs: fullCerts(['LOLER', 'Insurance', 'Operator certificates']),
+    plan: 'free',
+    recentJobs: [
+      'FLT with operator, 1 day — MV Caledonian Star stores load',
+      'Telehandler hire — Grizzell Marine quayside laydown',
+    ],
+  },
+  {
+    id: 'granite-launches',
+    name: 'Granite Launches',
+    category: 'Launches',
+    description:
+      'Crew launch and workboat runs from Aberdeen to the anchorage and inshore fields. Crew, stores, and spares in one run.',
+    rating: 4.7,
+    ratingCount: 53,
+    esg: 'B',
+    certs: fullCerts(['Insurance', 'MCA workboat certificate', 'Crew STCW']),
+    plan: 'professional',
+    launch: {
+      port: 'Aberdeen',
+      vesselName: 'Granite Runner',
+      maxPassengers: 12,
+      freightIncluded: true,
+      freightNote:
+        'Deck cargo to 500 kg included in the run; pallets and stores above that quoted per lift.',
+      transit: '25 min to Aberdeen anchorage',
+      availability: '24 h · 1 h notice',
+    },
+    recentJobs: [
+      'Crew change, 9 pax + stores — MV Caledonian Star at anchor',
+      'Spares run — Wilkinson Drilling standby vessel',
+    ],
+  },
+  {
+    id: 'torry-workboats',
+    name: 'Torry Workboats',
+    category: 'Launches',
+    description:
+      'Small fast launch for crew transfers and pilot-style runs out of Aberdeen. Passengers and hand luggage only.',
+    rating: 4.4,
+    ratingCount: 27,
+    esg: 'C',
+    certs: fullCerts(['Insurance', 'MCA workboat certificate']),
+    plan: 'free',
+    launch: {
+      port: 'Aberdeen',
+      vesselName: 'Torry Tern',
+      maxPassengers: 8,
+      freightIncluded: false,
+      freightNote:
+        'Freight not included — hand luggage only; stores go by a separate workboat run, quoted per pallet.',
+      transit: '20 min to Aberdeen anchorage',
+      availability: '06:00–22:00 · 30 min notice',
+    },
+    recentJobs: ['Crew transfer, 6 pax — Grizzell Marine coaster at anchor'],
+  },
+  {
+    id: 'deveron-launch-services',
+    name: 'Deveron Launch Services',
+    category: 'Launches',
+    description:
+      'Launch and workboat cover from Macduff for vessels working the Moray Firth. Crew, stores, and light spares.',
+    rating: 4.6,
+    ratingCount: 38,
+    esg: 'B',
+    certs: fullCerts(['Insurance', 'MCA workboat certificate', 'Crew STCW']),
+    plan: 'professional',
+    launch: {
+      port: 'Macduff',
+      vesselName: 'Deveron Lass',
+      maxPassengers: 10,
+      freightIncluded: true,
+      freightNote: 'Stores and spares to 300 kg included; anything larger is a workboat quote.',
+      transit: '40 min to the Moray Firth anchorages',
+      availability: 'Daylight hours · 2 h notice',
+    },
+    recentJobs: [
+      'Crew change, 8 pax — Stronach Subsea survey vessel off Macduff',
+      'Stores run — MV Boreal at anchor',
+    ],
   },
   {
     id: 'aberdeen-offshore-medical',

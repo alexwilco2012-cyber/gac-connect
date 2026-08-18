@@ -8,8 +8,10 @@ import { CertChip } from '../../components/ui/CertChip';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { GoldBandPill, Pill, StatusPill } from '../../components/ui/Pill';
 import { Rating } from '../../components/ui/Rating';
+import { listingFacts } from '../../lib/marketplace';
 import { deriveStatus, goldBandActive, isBookable } from '../../lib/svs';
 import { GOLD_BAND } from '../../data/goldBand';
+import { serviceTermsFor } from '../../data/serviceTerms';
 import { supplierById } from '../../data/suppliers';
 
 export default function SupplierProfile() {
@@ -36,6 +38,8 @@ export default function SupplierProfile() {
   const status = deriveStatus(supplier.certs);
   const bookable = isBookable(supplier.certs);
   const goldBand = goldBandActive(supplier.goldBand, supplier.certs);
+  const facts = listingFacts(supplier);
+  const terms = serviceTermsFor(supplier.category);
 
   return (
     <div className="screen-enter">
@@ -130,9 +134,29 @@ export default function SupplierProfile() {
           <Card>
             <Eyebrow>Capability</Eyebrow>
             <p className="mt-2 text-[14.5px]">{supplier.description}</p>
+            {facts.length > 0 ? (
+              <ul className="mt-2.5 flex flex-wrap gap-2" data-testid="listing-facts">
+                {facts.map((f) => (
+                  <li
+                    key={f.label}
+                    className="rounded-md border border-line bg-paper px-2.5 py-1 text-[12.5px] text-ink-soft"
+                  >
+                    {f.label} <strong className="text-ink">{f.value}</strong>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             {supplier.bookingNote ? (
               <p className="mt-2 rounded-lg border border-line bg-paper px-3 py-2 text-[12.5px] text-ink-soft">
                 <strong className="text-ink">Booking terms.</strong> {supplier.bookingNote}
+              </p>
+            ) : null}
+            {terms ? (
+              <p
+                className="mt-2 rounded-lg border border-line bg-paper px-3 py-2 text-[12.5px] text-ink-soft"
+                data-testid="service-terms"
+              >
+                <strong className="text-ink">Hire terms.</strong> {terms}
               </p>
             ) : null}
             {supplier.plan !== 'free' ? (

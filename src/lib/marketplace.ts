@@ -1,6 +1,23 @@
-import type { Supplier } from '../data/suppliers';
+import type { ListingFact, Supplier } from '../data/suppliers';
 
 /** Marketplace ordering rules (01 §B3, 03 §3.2). */
+
+/**
+ * Fact chips for a listing row and profile header. A supplier's explicit
+ * `facts` win; a Launches supplier derives them from its launch details
+ * (port · max capacity · freight) so the marketplace and the Launches tab
+ * always say the same thing.
+ */
+export function listingFacts(supplier: Supplier): ListingFact[] {
+  if (supplier.facts && supplier.facts.length > 0) return supplier.facts;
+  const l = supplier.launch;
+  if (!l) return [];
+  return [
+    { label: 'Port', value: l.port },
+    { label: 'Max capacity', value: `${l.maxPassengers} passengers` },
+    { label: 'Freight', value: l.freightIncluded ? 'Included' : 'Not included' },
+  ];
+}
 
 export type SortKey = 'rating' | 'esg' | 'name';
 

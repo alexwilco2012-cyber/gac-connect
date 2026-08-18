@@ -55,6 +55,8 @@ export const RELATED_SERVICES: Record<string, RelatedService[]> = {
 /** Default service label for a request raised from a category. */
 export const CATEGORY_SERVICE: Record<string, string> = {
   Cranes: 'Crane hire',
+  FLT: 'Forklift (FLT) hire',
+  Launches: 'Launch / crew transfer',
   Medical: 'Medical cover',
   Scaffolding: 'Access scaffolding',
   Diving: 'Diving services',

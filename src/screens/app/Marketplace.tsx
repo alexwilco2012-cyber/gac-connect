@@ -8,9 +8,10 @@ import { Chip } from '../../components/ui/Chip';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { GoldBandPill, Pill, StatusPill } from '../../components/ui/Pill';
 import { Rating } from '../../components/ui/Rating';
-import { orderThirdParty } from '../../lib/marketplace';
+import { listingFacts, orderThirdParty } from '../../lib/marketplace';
 import type { SortKey } from '../../lib/marketplace';
 import { deriveStatus, goldBandActive, isBookable } from '../../lib/svs';
+import { serviceTermsFor } from '../../data/serviceTerms';
 import { CATEGORIES, IN_HOUSE_LINES, SUPPLIERS } from '../../data/suppliers';
 import type { Supplier } from '../../data/suppliers';
 import { useApp } from '../../store/app';
@@ -27,6 +28,8 @@ function SupplierRow({
   const status = deriveStatus(supplier.certs);
   const bookable = isBookable(supplier.certs);
   const goldBand = goldBandActive(supplier.goldBand, supplier.certs);
+  const facts = listingFacts(supplier);
+  const terms = serviceTermsFor(supplier.category);
 
   return (
     <Card
@@ -48,9 +51,26 @@ function SupplierRow({
           <StatusPill status={status} />
         </div>
         <p className="mt-1.5 text-[13.5px] text-ink-soft">{supplier.description}</p>
+        {facts.length > 0 ? (
+          <ul className="mt-1.5 flex flex-wrap gap-1.5" data-testid="listing-facts">
+            {facts.map((f) => (
+              <li
+                key={f.label}
+                className="rounded-md border border-line bg-paper px-2 py-0.5 text-[12px] text-ink-soft"
+              >
+                {f.label} <strong className="text-ink">{f.value}</strong>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         {supplier.bookingNote ? (
           <p className="mt-1 text-[12px] text-ink-soft" data-testid="booking-note">
             {supplier.bookingNote}
+          </p>
+        ) : null}
+        {terms ? (
+          <p className="mt-1 text-[12px] text-ink-soft" data-testid="service-terms">
+            {terms}
           </p>
         ) : null}
         <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3.5 text-[13px] text-ink-soft">

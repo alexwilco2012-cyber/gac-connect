@@ -18,6 +18,9 @@ const importers = {
   Dashboard: () => import('./screens/app/Dashboard'),
   Marketplace: () => import('./screens/app/Marketplace'),
   SupplierProfile: () => import('./screens/app/SupplierProfile'),
+  Launches: () => import('./screens/app/Launches'),
+  Procurement: () => import('./screens/app/Procurement'),
+  CrewChange: () => import('./screens/app/CrewChange'),
   Quotes: () => import('./screens/app/Quotes'),
   Invoices: () => import('./screens/app/Invoices'),
   TierCalculator: () => import('./screens/app/TierCalculator'),
@@ -35,6 +38,9 @@ const About = lazy(importers.About);
 const Dashboard = lazy(importers.Dashboard);
 const Marketplace = lazy(importers.Marketplace);
 const SupplierProfile = lazy(importers.SupplierProfile);
+const Launches = lazy(importers.Launches);
+const Procurement = lazy(importers.Procurement);
+const CrewChange = lazy(importers.CrewChange);
 const Quotes = lazy(importers.Quotes);
 const Invoices = lazy(importers.Invoices);
 const TierCalculator = lazy(importers.TierCalculator);
@@ -77,6 +83,9 @@ export const routes: RouteObject[] = [
           { index: true, element: lazily(<Dashboard />) },
           { path: 'marketplace', element: lazily(<Marketplace />) },
           { path: 'marketplace/:supplierId', element: lazily(<SupplierProfile />) },
+          { path: 'launches', element: lazily(<Launches />) },
+          { path: 'procurement', element: lazily(<Procurement />) },
+          { path: 'crew-change', element: lazily(<CrewChange />) },
           { path: 'quotes', element: lazily(<Quotes />) },
           { path: 'invoices', element: lazily(<Invoices />) },
           { path: 'tiers', element: lazily(<TierCalculator />) },
