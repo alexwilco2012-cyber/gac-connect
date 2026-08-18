@@ -15,7 +15,6 @@ import { VESSELS } from '../../data/vessels';
 import { gbp } from '../../lib/format';
 import {
   composeEmail,
-  ILLUSTRATIVE_MARKUP_PCT,
   invoiceLines,
   invoiceTotals,
   routeLines,
@@ -37,7 +36,7 @@ import { canSend, useProcurement } from '../../store/procurement';
  * Compass, GAC's procurement branch; Compass supplies what it can and, where
  * it cannot assist, sources the line from a third party (a ship chandler)
  * and pays them; the client is invoiced via Compass, under GAC, with a
- * mark-up — one invoice, no third-party paperwork. There is no mail server
+ * one invoice, no third-party paperwork. There is no mail server
  * behind this proof of concept: the email is composed and shown, and the
  * Compass side is advanced by "Simulate" buttons, and says so on screen.
  */
@@ -157,7 +156,7 @@ export default function Procurement() {
           ? `Compass pays ${CHANDLER_NAME} directly. The chandler’s invoice goes to Compass — never to you.`
           : 'No third-party lines on this request — nothing for Compass to settle.';
       case 'invoiced':
-        return 'One invoice, from GAC via Compass, covering every line with Compass’s mark-up applied. No third-party paperwork.';
+        return 'One invoice, from GAC via Compass, covering every line at Compass’s prices. No third-party paperwork.';
       default:
         return '';
     }
@@ -172,8 +171,8 @@ export default function Procurement() {
       <p className="mt-1 max-w-[760px] text-[14px] text-ink-soft">
         Your procurement list goes by email straight to Compass, GAC’s own procurement branch.
         Compass supplies what it can from its own stock and network. Where it cannot assist on a
-        line, it sources it — a ship chandler, for example — and pays that supplier itself. You are
-        then invoiced via Compass, under GAC, with a mark-up.
+        line, it sources it through its network — a ship chandler, for example — and pays that
+        supplier itself. You are then invoiced via Compass, under GAC.
       </p>
       <p
         className="mt-2 inline-flex max-w-[760px] flex-wrap items-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-[12.5px] text-ink-soft"
@@ -611,23 +610,6 @@ export default function Procurement() {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t border-line">
-                      <td className="py-1.5 pr-3 text-ink-soft">Subtotal</td>
-                      <td
-                        className="py-1.5 text-right font-semibold"
-                        data-testid="invoice-subtotal"
-                      >
-                        {gbp(totals.subtotal)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 pr-3 text-ink-soft">
-                        Compass mark-up · illustrative {ILLUSTRATIVE_MARKUP_PCT}%
-                      </td>
-                      <td className="py-1.5 text-right font-semibold" data-testid="invoice-markup">
-                        {gbp(totals.markup)}
-                      </td>
-                    </tr>
                     <tr className="border-t border-ink">
                       <td className="py-2 pr-3 font-bold">Total</td>
                       <td
@@ -640,8 +622,7 @@ export default function Procurement() {
                   </tfoot>
                 </table>
                 <p className="mt-2 text-[12px] text-ink-soft">
-                  Mark-up shown is illustrative — Compass’s rate is set by Compass, not by this
-                  platform. Every price above is a demo figure.
+                  Prices are Compass’s, through its network. Every figure above is a demo figure.
                 </p>
                 <ul className="mt-3 list-disc space-y-1 pl-5 text-[13px]">
                   <li>The chandler was paid by Compass. You see one invoice, from GAC.</li>

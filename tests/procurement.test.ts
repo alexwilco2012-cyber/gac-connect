@@ -5,17 +5,16 @@ import {
   COMPASS_ADDRESS,
   DEFAULT_REQUEST,
   ILLUSTRATIVE_PRICES_GBP,
+  PROCUREMENT_RULES,
+  SIMULATION_NOTICE,
 } from '../src/data/procurement';
 import { VESSELS } from '../src/data/vessels';
 import {
   composeEmail,
   FINAL_STAGE,
-  ILLUSTRATIVE_MARKUP_PCT,
   invoiceLines,
   invoiceTotals,
   isFinalStage,
-  markupAmount,
-  markupTotal,
   nextStage,
   routeLines,
   simulateLabel,
@@ -109,13 +108,13 @@ describe('Procurement via Compass — routing lines', () => {
 });
 
 describe('Procurement via Compass — the one invoice', () => {
-  it('mark-up is illustrative, 10%, whole pounds', () => {
-    expect(ILLUSTRATIVE_MARKUP_PCT).toBe(10);
-    expect(markupTotal(1000, 10)).toBe(1100);
-    expect(markupTotal(1000)).toBe(1100);
-    expect(markupAmount(4980, 10)).toBe(498);
-    expect(markupTotal(333, 10)).toBe(366); // 333 + 33.3 → rounded
-    expect(markupTotal(0, 10)).toBe(0);
+  it('nothing about a mark-up reaches the client: no percentage, no line, no word', () => {
+    // 17 Aug review follow-up: pricing is Compass's, through its network —
+    // the client sees line prices and one total, nothing else.
+    const t = invoiceTotals(invoiceLines(DEFAULT_REQUEST));
+    expect(Object.keys(t)).toEqual(['total']);
+    const copy = JSON.stringify(PROCUREMENT_RULES) + SIMULATION_NOTICE;
+    expect(copy.toLowerCase()).not.toMatch(/mark-?up|margin/);
   });
 
   it('one invoice line per request line, illustrative prices, no chandler on the paperwork', () => {
@@ -128,13 +127,11 @@ describe('Procurement via Compass — the one invoice', () => {
     }
   });
 
-  it('totals add up: subtotal + mark-up = total', () => {
+  it('the total is the sum of the line prices — nothing added on top', () => {
     const lines = invoiceLines(DEFAULT_REQUEST);
     const t = invoiceTotals(lines);
-    expect(t.subtotal).toBe(1240 + 2150 + 860 + 540 + 190);
-    expect(t.markup).toBe(markupAmount(t.subtotal));
-    expect(t.total).toBe(t.subtotal + t.markup);
-    expect(t.total).toBe(markupTotal(t.subtotal));
+    expect(t.total).toBe(1240 + 2150 + 860 + 540 + 190);
+    expect(invoiceTotals([]).total).toBe(0);
   });
 
   it('a user-added line takes the fallback illustrative price', () => {

@@ -68,6 +68,7 @@ export const CATEGORIES = [
   'Cranes',
   'FLT',
   'Launches',
+  'Taxis',
   'Medical',
   'Scaffolding',
   'Diving',
@@ -216,6 +217,49 @@ export const SUPPLIERS: Supplier[] = [
       'Crew change, 8 pax — Stronach Subsea survey vessel off Macduff',
       'Stores run — MV Boreal at anchor',
     ],
+  },
+  {
+    id: 'regent-quay-cars',
+    name: 'Regent Quay Cars',
+    category: 'Taxis',
+    description:
+      'Crew taxis and 8-seat minibuses between Aberdeen airport, the hotels, and the quay. Airport meet-and-greet timed to the tracked flight.',
+    rating: 4.6,
+    ratingCount: 112,
+    esg: 'B',
+    certs: fullCerts(['Insurance', 'Operator licence', 'Driver checks']),
+    plan: 'professional',
+    facts: [
+      { label: 'Vehicles', value: 'Saloon · 8-seat minibus' },
+      { label: 'Airport', value: 'Meet and greet, flight-tracked' },
+      { label: 'Availability', value: '24 h' },
+    ],
+    bookingNote:
+      'Airport pickups are timed to the tracked flight — a delay moves the pickup automatically, and the driver waits at arrivals.',
+    recentJobs: [
+      'Airport → Regent Quay, 6 crew — MV Caledonian Star on-signers',
+      'Hotel → quay minibus — Grizzell Marine crew change',
+    ],
+  },
+  {
+    id: 'deveron-cabs',
+    name: 'Deveron Cabs',
+    category: 'Taxis',
+    description:
+      'Taxis and a minibus covering Macduff, Banff, and the run to and from Aberdeen airport for crews working the Moray Firth.',
+    rating: 4.4,
+    ratingCount: 39,
+    esg: 'C',
+    certs: fullCerts(['Insurance', 'Operator licence', 'Driver checks']),
+    plan: 'free',
+    facts: [
+      { label: 'Vehicles', value: 'Saloon · 6-seat minibus' },
+      { label: 'Airport', value: 'Aberdeen airport runs, flight-tracked' },
+      { label: 'Availability', value: '05:00–23:00' },
+    ],
+    bookingNote:
+      'Airport pickups are timed to the tracked flight — a delay moves the pickup automatically, and the driver waits at arrivals.',
+    recentJobs: ['Airport → Macduff harbour, 4 crew — Stronach Subsea crew change'],
   },
   {
     id: 'aberdeen-offshore-medical',

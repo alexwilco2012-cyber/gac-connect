@@ -168,3 +168,90 @@ test('crew change: every form control is labelled', async ({ page }) => {
     expect(unlabelled, name).toEqual([]);
   }
 });
+
+test('crew change › transfers: taxis, launches, and transport timed to the tracked flight', async ({
+  page,
+}) => {
+  await page.goto('/app/crew-change?section=transfers');
+  await page.keyboard.press('Escape');
+
+  // The section opens from the URL and the chip strip reflects it.
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'transfers');
+  await expect(
+    page
+      .getByTestId('crew-sections')
+      .getByRole('button', { name: 'Transfers · taxis and launches', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+
+  // Flight-timed planner: the demo flight tracks, the plan lists every leg.
+  const planner = page.getByTestId('flight-planner');
+  await expect(planner).toContainText('Illustrative');
+  await expect(planner.getByTestId('flight-no')).toHaveValue('ZZ 417');
+  await planner.getByTestId('track-flight').click();
+  await expect(planner.getByTestId('flight-status')).toHaveAttribute('data-phase', 'in-air');
+  await expect(planner.getByTestId('flight-status')).toContainText('Amsterdam → Aberdeen');
+  await expect(planner.getByTestId('flight-estimate')).toContainText('13:55');
+  // land 13:55 → taxi 14:35 → quay 15:00 → launch 15:20 → alongside 15:45
+  await expect(planner.getByTestId('leg-0')).toHaveText('13:55');
+  await expect(planner.getByTestId('leg-1')).toHaveText('14:35');
+  await expect(planner.getByTestId('leg-3')).toHaveText('15:20');
+  await expect(planner.getByTestId('transfer-plan')).toContainText('Regent Quay Cars');
+  await expect(planner.getByTestId('transfer-plan')).toContainText('Granite Launches');
+
+  // A delay re-times the whole chain from the new estimate.
+  await planner.getByTestId('simulate-delay').click();
+  await expect(planner.getByTestId('flight-status')).toHaveAttribute('data-phase', 'delayed');
+  await expect(planner.getByTestId('flight-estimate')).toContainText('14:35');
+  await expect(planner.getByTestId('leg-1')).toHaveText('15:15');
+  await expect(planner.getByTestId('leg-3')).toHaveText('16:00');
+
+  // Vessel alongside → no launch leg.
+  await planner.getByTestId('flight-launch').selectOption('');
+  await expect(planner.getByTestId('transfer-plan')).toContainText('Board the vessel alongside');
+  await expect(planner.getByTestId('transfer-plan')).not.toContainText('Launch departs');
+
+  // Send → toast carries the timings.
+  await planner.getByTestId('send-transport').click();
+  await expect(page.getByText(/Transport request sent — 6 crew, ZZ417/)).toBeVisible();
+
+  // Off-signers work back from the check-in deadline; an unknown flight is said so.
+  await planner.getByTestId('direction-departing').click();
+  await expect(planner.getByTestId('flight-no')).toHaveValue('ZZ204');
+  await planner.getByTestId('track-flight').click();
+  await expect(planner.getByTestId('transfer-plan')).toContainText('Flight departs');
+  // Vessel still alongside from above: leave the vessel and taxi 14:45, airport 15:10, departs 17:10.
+  await expect(planner.getByTestId('leg-1')).toHaveText('14:45');
+  await expect(planner.getByTestId('leg-2')).toHaveText('15:10');
+  await expect(planner.getByTestId('leg-3')).toHaveText('17:10');
+  await planner.getByTestId('flight-no').fill('XX 999');
+  await planner.getByTestId('track-flight').click();
+  await expect(planner.getByTestId('flight-not-found')).toBeVisible();
+
+  // Taxis: two fictional operators, flight-tracked pickups, request opens the shared modal.
+  const taxis = page.getByTestId('taxis');
+  await expect(taxis.getByRole('heading', { name: 'Regent Quay Cars' })).toBeVisible();
+  await expect(taxis.getByRole('heading', { name: 'Deveron Cabs' })).toBeVisible();
+  await expect(taxis.getByText('flight-tracked').first()).toBeVisible();
+  await taxis.getByTestId('book-regent-quay-cars').click();
+  const dialog = page.getByRole('dialog', { name: /Request a quote — Regent Quay Cars/ });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+
+  // Launches live here too, with the plan-a-run card.
+  await expect(page.getByTestId('launches-panel')).toBeVisible();
+  await expect(page.getByTestId('plan-run')).toBeVisible();
+  await expect(page.getByTestId('launch-deveron-launch-services')).toContainText('Deveron Lass');
+
+  // The nav no longer carries a Launches tab; the marketplace still lists taxis and launches.
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Platform' })
+      .getByRole('link', { name: 'Launches', exact: true }),
+  ).toHaveCount(0);
+  await page.goto('/app/marketplace');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Taxis', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Regent Quay Cars' })).toBeVisible();
+  await expect(page.getByTestId('listing-facts').first()).toContainText('flight-tracked');
+});

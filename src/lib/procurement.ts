@@ -15,8 +15,8 @@ import { VESSELS } from '../data/vessels';
  * review, point 4). A request moves through a fixed set of stages: the
  * client sends the list to Compass by email; Compass sources it; Compass
  * replies line by line (supplied, or routed to a third-party chandler that
- * Compass pays); the client is invoiced via Compass, under GAC, with a
- * mark-up. The chandler never invoices the client and never appears on the
+ * Compass pays); the client is invoiced via Compass, under GAC, at Compass's
+ * prices. The chandler never invoices the client and never appears on the
  * client's paperwork. Everything numeric here is illustrative.
  */
 
@@ -124,22 +124,12 @@ export function sourceLabel(source: LineSource, chandler = CHANDLER_NAME): strin
 
 // ── Invoice ──────────────────────────────────────────────────────────────
 
-/**
- * Illustrative only. Compass's actual rate is set by Compass, not by this
- * platform — this figure exists so the demo invoice adds up, and it is
- * never GAC's margin.
+/*
+ * There is no mark-up on the client's paperwork. Compass prices every line
+ * through its own network and the client sees those prices and one total —
+ * nothing about Compass's cost base or margin is surfaced here (17 Aug
+ * review, owner's follow-up).
  */
-export const ILLUSTRATIVE_MARKUP_PCT = 10;
-
-/** The mark-up amount on a subtotal, rounded to whole pounds. */
-export function markupAmount(subtotal: number, pct = ILLUSTRATIVE_MARKUP_PCT): number {
-  return Math.round((subtotal * pct) / 100);
-}
-
-/** Subtotal plus mark-up, rounded to whole pounds — markupTotal(1000, 10) = 1100. */
-export function markupTotal(subtotal: number, pct = ILLUSTRATIVE_MARKUP_PCT): number {
-  return Math.round(subtotal + markupAmount(subtotal, pct));
-}
 
 export interface InvoiceLine {
   id: string;
@@ -167,17 +157,12 @@ export function invoiceLines(request: ProcurementRequest): InvoiceLine[] {
 }
 
 export interface InvoiceTotals {
-  subtotal: number;
-  markup: number;
+  /** Sum of the line prices — the figure the client pays. */
   total: number;
 }
 
-export function invoiceTotals(
-  lines: readonly InvoiceLine[],
-  pct = ILLUSTRATIVE_MARKUP_PCT,
-): InvoiceTotals {
-  const subtotal = lines.reduce((sum, l) => sum + l.priceGBP, 0);
-  return { subtotal, markup: markupAmount(subtotal, pct), total: markupTotal(subtotal, pct) };
+export function invoiceTotals(lines: readonly InvoiceLine[]): InvoiceTotals {
+  return { total: lines.reduce((sum, l) => sum + l.priceGBP, 0) };
 }
 
 // ── Email ────────────────────────────────────────────────────────────────

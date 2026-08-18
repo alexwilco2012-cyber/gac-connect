@@ -4,7 +4,7 @@
  * branch. Compass supplies what it can from its own stock and network; where
  * it cannot assist on a line it sources it (a ship chandler, for example) and
  * pays that supplier itself. The client is invoiced via Compass, under GAC,
- * with a mark-up: one invoice, no third-party paperwork. Everything here is
+ * one invoice, no third-party paperwork. Everything here is
  * fictional and illustrative — there is no mail server behind the proof of
  * concept, and every price is a demo figure.
  */
@@ -109,7 +109,7 @@ export const PROCUREMENT_RULES = [
   },
   {
     step: '4',
-    title: 'You are invoiced via Compass, under GAC, with a mark-up',
+    title: 'You are invoiced via Compass, under GAC',
     body: 'One invoice, from GAC, covering every line. No third-party paperwork; GAC accountable for the whole basket.',
   },
 ] as const;

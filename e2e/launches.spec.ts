@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-/** Launches tab — capacity and freight at a glance (17 Aug review, point 3). */
+/** Launches — capacity and freight at a glance (17 Aug review, point 3), now inside Crew change › Transfers. */
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -11,8 +11,11 @@ test.beforeEach(async ({ page }) => {
 test('launches: ports from data, capacity and freight facts, plan-a-run pills', async ({
   page,
 }) => {
-  await page.goto('/app/launches');
+  // The old tab route still works as a deep link — it lands on Crew change › Transfers.
+  await page.goto('/app/crew-change?section=transfers');
   await page.keyboard.press('Escape');
+  await expect(page).toHaveURL(/\/app\/crew-change\?section=transfers/);
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'transfers');
 
   await expect(page.getByRole('heading', { name: 'Launches from the quay' })).toBeVisible();
   await expect(
@@ -54,7 +57,7 @@ test('launches: ports from data, capacity and freight facts, plan-a-run pills', 
 });
 
 test('launches: request modal validates capacity and sends the request', async ({ page }) => {
-  await page.goto('/app/launches');
+  await page.goto('/app/crew-change?section=transfers');
   await page.keyboard.press('Escape');
 
   await page.getByTestId('request-granite-launches').click();
@@ -85,7 +88,7 @@ test('launches: request modal validates capacity and sends the request', async (
 });
 
 test('launches: the no-freight operator says freight is quoted separately', async ({ page }) => {
-  await page.goto('/app/launches');
+  await page.goto('/app/crew-change?section=transfers');
   await page.keyboard.press('Escape');
 
   await page.getByTestId('request-torry-workboats').click();

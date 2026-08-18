@@ -7,7 +7,7 @@ import { VESSELS } from './vessels';
  * details, and the screen tells the user not to enter real ones.
  */
 
-export type CrewSectionId = 'hotels' | 'immigration' | 'loi' | 'repat';
+export type CrewSectionId = 'hotels' | 'transfers' | 'immigration' | 'loi' | 'repat';
 
 export interface CrewSection {
   id: CrewSectionId;
@@ -21,6 +21,12 @@ export const CREW_SECTIONS: CrewSection[] = [
     id: 'hotels',
     label: 'Hotels',
     summary: 'Rooms for crew held ashore — off-signers, transit crews, medical stand-downs.',
+  },
+  {
+    id: 'transfers',
+    label: 'Transfers · taxis and launches',
+    summary:
+      'Taxis between the airport, the hotel, and the quay, and launches out to the vessel — timed to the crew member’s flight when you give us the flight number.',
   },
   {
     id: 'immigration',
@@ -63,6 +69,17 @@ export const CREW_FLOW = [
     body: 'LOIs are signed by GAC as agents and sent back. Repatriation letters go to UK Border Force for endorsement and come back endorsed.',
   },
 ] as const;
+
+/** Transfers section — copy for the flight-timed planner. */
+export const TRANSFERS_INTRO =
+  'Give us the flight number and the platform tracks the flight and times the transport to it: the taxi meets the crew at arrivals, the launch leaves the quay when they get there, and a delay moves the whole chain — no phone calls.';
+
+/** Which section the screen opens on when the URL carries no ?section=. */
+export const DEFAULT_CREW_SECTION: CrewSectionId = 'hotels';
+
+export function isCrewSectionId(v: string | null | undefined): v is CrewSectionId {
+  return !!v && CREW_SECTIONS.some((s) => s.id === v);
+}
 
 /** Immigration guidance — the checklist the client works through first. */
 export const IMMIGRATION_CHECKLIST = [

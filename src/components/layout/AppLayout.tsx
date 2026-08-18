@@ -7,15 +7,14 @@ import { Wordmark } from './Wordmark';
 
 /**
  * Platform navigation. Order follows the client's working day: find and book
- * (Marketplace, Launches, Procurement, Crew change), then the paper trail
- * (Quotes, Invoices), then the commercial and compliance views. Eleven items
- * have to fit at 1280 px, so the link padding is tight and the tier screen is
- * simply "Tiers" here (its heading still says Tier Calculator).
+ * (Marketplace, Procurement, Crew change — which holds taxis and launches),
+ * then the paper trail (Quotes, Invoices), then the commercial and compliance
+ * views. Ten items have to fit at 1280 px, so the link padding is tight and the
+ * tier screen is simply "Tiers" here (its heading still says Tier Calculator).
  */
 const NAV = [
   { to: '/app', label: 'Dashboard', end: true },
   { to: '/app/marketplace', label: 'Marketplace' },
-  { to: '/app/launches', label: 'Launches' },
   { to: '/app/procurement', label: 'Procurement' },
   { to: '/app/crew-change', label: 'Crew change' },
   { to: '/app/quotes', label: 'Quotes' },

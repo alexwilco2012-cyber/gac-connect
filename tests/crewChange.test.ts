@@ -224,8 +224,14 @@ describe('Crew change — repatriation-letter validation', () => {
 });
 
 describe('Crew change — data guardrails', () => {
-  it('four sections, three ports, demo vessels from the canonical set', () => {
-    expect(CREW_SECTIONS.map((s) => s.id)).toEqual(['hotels', 'immigration', 'loi', 'repat']);
+  it('five sections (transfers holds taxis and launches), three ports, demo vessels from the canonical set', () => {
+    expect(CREW_SECTIONS.map((s) => s.id)).toEqual([
+      'hotels',
+      'transfers',
+      'immigration',
+      'loi',
+      'repat',
+    ]);
     expect(CREW_PORTS).toEqual(['Aberdeen', 'Peterhead', 'Montrose']);
     expect(VESSELS.some((v) => v.id === LOI_DEMO_FORM.vesselId)).toBe(true);
     expect(VESSELS.some((v) => v.id === REPAT_DEMO_FORM.vesselId)).toBe(true);

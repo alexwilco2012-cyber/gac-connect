@@ -26,9 +26,7 @@ test('procurement · the Compass flow end to end, persisted, then reset', async 
 
   // The four-step "How it works" strip.
   await expect(
-    page
-      .getByTestId('how-it-works')
-      .getByText('You are invoiced via Compass, under GAC, with a mark-up'),
+    page.getByTestId('how-it-works').getByText('You are invoiced via Compass, under GAC'),
   ).toBeVisible();
 
   // Five pre-filled, editable lines; remove one → four.
@@ -105,17 +103,16 @@ test('procurement · the Compass flow end to end, persisted, then reset', async 
   await expect(stage('invoiced')).toContainText('Invoiced via Compass');
   await expect(simulate).toHaveCount(0);
 
-  // The one invoice: from GAC via Compass, illustrative, adds up, no chandler on it.
+  // The one invoice: from GAC via Compass, illustrative, adds up, no chandler on it —
+  // and nothing about a mark-up anywhere on the client's screen.
   const invoice = page.getByTestId('compass-invoice');
   await expect(invoice).toBeVisible();
   await expect(invoice).toContainText('GAC — via Compass');
   await expect(invoice).toContainText('illustrative');
-  await expect(invoice).toContainText('Compass mark-up · illustrative 10%');
   await expect(invoice).not.toContainText('Granite Ship Chandlers');
-  // 1240 + 2150 + 540 + 190 = 4120 · +10% = 412 · total 4532
-  await expect(page.getByTestId('invoice-subtotal')).toHaveText('£4,120');
-  await expect(page.getByTestId('invoice-markup')).toHaveText('£412');
-  await expect(page.getByTestId('invoice-total')).toHaveText('£4,532');
+  await expect(page.getByText(/mark-?up/i)).toHaveCount(0);
+  // 1240 + 2150 + 540 + 190 = 4120 — the total is the sum of Compass's prices
+  await expect(page.getByTestId('invoice-total')).toHaveText('£4,120');
   await expect(invoice).toContainText(
     'The chandler was paid by Compass. You see one invoice, from GAC.',
   );

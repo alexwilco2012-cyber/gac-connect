@@ -291,7 +291,7 @@ export default function Dashboard() {
 
           {/* Crew change and launches — the crew side of the call (17 Aug review) */}
           <Card data-testid="dashboard-crew">
-            <Eyebrow>Crew change · launches</Eyebrow>
+            <Eyebrow>Crew change · transfers</Eyebrow>
             <p className="mt-2.5 text-[14px]">
               {lettersInProgress === 0 ? (
                 <>
@@ -308,15 +308,19 @@ export default function Dashboard() {
               )}
             </p>
             <p className="mt-2 text-[12.5px] text-ink-soft">
-              Crew to a vessel at anchor? The Launches tab shows each launch’s capacity and whether
-              freight is included.
+              Give us the flight number and the taxi and the launch are timed to it — capacity and
+              freight for every launch, port by port.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button variant="ghost" onClick={() => navigate('/app/crew-change')}>
                 Open crew change
               </Button>
-              <Button variant="ghost" onClick={() => navigate('/app/launches')}>
-                Plan a launch run
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/app/crew-change?section=transfers')}
+                data-testid="dashboard-transfers"
+              >
+                Plan transfers
               </Button>
             </div>
           </Card>

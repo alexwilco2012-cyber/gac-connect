@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { LaunchesPanel } from '../../components/LaunchesPanel';
 import { RequestQuoteModal } from '../../components/RequestQuoteModal';
 import type { RequestTarget } from '../../components/RequestQuoteModal';
 import { Button } from '../../components/ui/Button';
@@ -14,7 +15,9 @@ import {
   CREW_FLOW,
   CREW_PORTS,
   CREW_SECTIONS,
+  DEFAULT_CREW_SECTION,
   ILLUSTRATIVE_NOTICE,
+  isCrewSectionId,
   IMMIGRATION_CHECKLIST,
   INFORMS_NOT_ADVISES,
   LOI_DEMO_FORM,
@@ -24,6 +27,7 @@ import {
   REPAT_INTRO,
   REPAT_QUESTION,
   STAGE_NOTES,
+  TRANSFERS_INTRO,
 } from '../../data/crewChange';
 import type { CrewSectionId } from '../../data/crewChange';
 import { SUPPLIERS } from '../../data/suppliers';
@@ -40,7 +44,17 @@ import {
   validateRepat,
 } from '../../lib/crewChange';
 import type { CrewRequest, LoiForm, RepatForm } from '../../lib/crewChange';
+import { launchPorts, launchSuppliers } from '../../lib/launches';
+import type { LaunchSupplier } from '../../lib/launches';
 import { deriveStatus, isBookable } from '../../lib/svs';
+import {
+  DEMO_FLIGHTS,
+  FLIGHT_FEED_NOTE,
+  planTransfers,
+  trackFlight,
+  TRANSFER_BUFFERS,
+} from '../../lib/transfers';
+import type { Direction, FlightStatus } from '../../lib/transfers';
 import { useApp } from '../../store/app';
 import { useCrewChange } from '../../store/crewChange';
 
@@ -57,6 +71,9 @@ const INPUT =
 const LABEL = 'text-[12.5px] font-semibold text-ink-soft';
 
 const HOTELS = SUPPLIERS.filter((s) => s.category === 'Hotels');
+const TAXIS = SUPPLIERS.filter((s) => s.category === 'Taxis');
+const LAUNCHES = launchSuppliers(SUPPLIERS);
+const LAUNCH_PORTS = launchPorts(SUPPLIERS);
 
 const PORT_SET = new Set<string>(CREW_PORTS);
 
@@ -217,6 +234,389 @@ function HotelsSection({ onRequest }: { onRequest: (t: RequestTarget) => void })
         , with the same booking terms. A crew stay usually needs a run to and from the quay — your
         GAC agent arranges the transfer.
       </p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- Transfers */
+
+const DIRECTIONS: { id: Direction; label: string; hint: string }[] = [
+  { id: 'arriving', label: 'On-signers arriving', hint: 'flight lands → taxi → quay → launch' },
+  { id: 'departing', label: 'Off-signers departing', hint: 'launch → quay → taxi → flight' },
+];
+
+const PHASE_TONE = {
+  scheduled: 'neutral',
+  'in-air': 'info',
+  delayed: 'warn',
+  landed: 'verified',
+} as const;
+const PHASE_LABEL = {
+  scheduled: 'Scheduled',
+  'in-air': 'In the air',
+  delayed: 'Delayed',
+  landed: 'Landed',
+} as const;
+
+/** Flight-timed planner: flight number → tracked status → taxi and launch timings. */
+function FlightPlanner() {
+  const pushToast = useApp((s) => s.pushToast);
+  const [direction, setDirection] = useState<Direction>('arriving');
+  const [flightNo, setFlightNo] = useState('ZZ 417');
+  const [pax, setPax] = useState('6');
+  const [port, setPort] = useState(LAUNCH_PORTS[0] ?? 'Aberdeen');
+  const [launchId, setLaunchId] = useState<string>(LAUNCHES[0]?.id ?? '');
+  const [tracked, setTracked] = useState<FlightStatus | null>(null);
+  const [notFound, setNotFound] = useState<string | null>(null);
+  const [delay, setDelay] = useState(0);
+
+  const launchesHere = LAUNCHES.filter((l) => l.launch.port === port);
+  const launch: LaunchSupplier | null =
+    launchId === '' ? null : (launchesHere.find((l) => l.id === launchId) ?? null);
+  const status = tracked ? trackFlight(tracked.flight, delay) : null;
+  const plan = status ? planTransfers(status, port, launch?.launch ?? null) : null;
+  const paxN = Math.max(1, Math.floor(Number(pax) || 1));
+  const taxi =
+    TAXIS.find((t) =>
+      port === 'Macduff' ? t.id === 'deveron-cabs' : t.id === 'regent-quay-cars',
+    ) ?? TAXIS[0];
+  const suggestions = Object.values(DEMO_FLIGHTS).filter((f) => f.direction === direction);
+
+  function track() {
+    const found = trackFlight(flightNo);
+    if (!found) {
+      setTracked(null);
+      setNotFound(flightNo.trim() || 'that flight');
+      return;
+    }
+    setNotFound(null);
+    setDelay(0);
+    setDirection(found.direction);
+    setTracked(found);
+  }
+
+  function pickDirection(d: Direction) {
+    setDirection(d);
+    setTracked(null);
+    setNotFound(null);
+    setDelay(0);
+    // Offer a matching demo flight so the button always has something to track.
+    const first = Object.values(DEMO_FLIGHTS).find((f) => f.direction === d);
+    if (first) setFlightNo(first.flight);
+  }
+
+  function send() {
+    if (!plan || !status) return;
+    const who = `${paxN} ${paxN === 1 ? 'crew member' : 'crew'}`;
+    pushToast(
+      `Transport request sent — ${who}, ${status.flight} ${status.route}. ${plan.summary} Taxi ${taxi?.name ?? 'operator'}${launch ? `, launch ${launch.name}` : ''} — both hold the flight and re-time on a delay.`,
+    );
+  }
+
+  return (
+    <Card data-testid="flight-planner">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Eyebrow>Flight-timed transport</Eyebrow>
+          <h3 className="mt-1 font-display text-[17px] font-bold">
+            Give us the flight. We time the taxi and the launch to it.
+          </h3>
+        </div>
+        <Pill tone="neutral">Illustrative</Pill>
+      </div>
+      <p className="mt-1.5 max-w-[760px] text-[13.5px] text-ink-soft">{TRANSFERS_INTRO}</p>
+
+      <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Direction">
+        {DIRECTIONS.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            aria-pressed={direction === d.id}
+            onClick={() => pickDirection(d.id)}
+            data-testid={`direction-${d.id}`}
+            className={`min-h-[34px] cursor-pointer rounded-full border-[1.5px] px-3 py-1 text-[12.5px] font-semibold transition-colors ${
+              direction === d.id
+                ? 'border-ink bg-ink text-white'
+                : 'border-line-strong bg-white text-ink-soft hover:border-sea'
+            }`}
+          >
+            {d.label} <span className="font-normal opacity-80">· {d.hint}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <label className={LABEL}>
+          Flight number
+          <input
+            type="text"
+            value={flightNo}
+            onChange={(e) => setFlightNo(e.target.value)}
+            className={INPUT}
+            data-testid="flight-no"
+            aria-describedby="flight-suggestions"
+          />
+        </label>
+        <label className={LABEL}>
+          Crew travelling
+          <input
+            type="number"
+            min={1}
+            step={1}
+            inputMode="numeric"
+            value={pax}
+            onChange={(e) => setPax(e.target.value)}
+            onBlur={() => {
+              if (String(paxN) !== pax) setPax(String(paxN));
+            }}
+            className={INPUT}
+            data-testid="flight-pax"
+          />
+        </label>
+        <label className={LABEL}>
+          Port
+          <select
+            value={port}
+            onChange={(e) => {
+              setPort(e.target.value);
+              const first = LAUNCHES.find((l) => l.launch.port === e.target.value);
+              setLaunchId(first?.id ?? '');
+            }}
+            className={INPUT}
+            data-testid="flight-port"
+          >
+            {LAUNCH_PORTS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className={LABEL}>
+          Launch to the vessel
+          <select
+            value={launchId}
+            onChange={(e) => setLaunchId(e.target.value)}
+            className={INPUT}
+            data-testid="flight-launch"
+          >
+            <option value="">None — vessel alongside</option>
+            {launchesHere.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.launch.vesselName} · {l.name} · {l.launch.transit}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p id="flight-suggestions" className="mt-1.5 text-[12px] text-ink-soft">
+        Demo flights the simulated feed knows:{' '}
+        {suggestions.map((f, i) => (
+          <span key={f.flight}>
+            {i ? ' · ' : ''}
+            <button
+              type="button"
+              className="cursor-pointer border-none bg-transparent p-0 font-semibold text-sea underline"
+              onClick={() => setFlightNo(f.flight)}
+            >
+              {f.flight}
+            </button>{' '}
+            {f.route} {f.scheduled}
+          </span>
+        ))}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <Button onClick={track} data-testid="track-flight">
+          Track flight
+        </Button>
+        {status ? (
+          <Button
+            variant="ghost"
+            onClick={() => setDelay(delay ? 0 : TRANSFER_BUFFERS.simulatedDelayMin)}
+            data-testid="simulate-delay"
+          >
+            {delay
+              ? 'Simulate: back on time'
+              : `Simulate: flight delayed ${TRANSFER_BUFFERS.simulatedDelayMin} min`}
+          </Button>
+        ) : null}
+        <span className="text-[12px] text-ink-soft">{FLIGHT_FEED_NOTE}</span>
+      </div>
+
+      {notFound ? (
+        <p
+          role="alert"
+          className="mt-3 rounded-lg border-l-4 border-warn bg-warn-soft px-3 py-2 text-[12.5px] text-warn"
+          data-testid="flight-not-found"
+        >
+          The feed does not know {notFound}. Check the number, or pick one of the demo flights above
+          — in production your agent times the transport from the itinerary instead.
+        </p>
+      ) : null}
+
+      {status && plan ? (
+        <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+          <div
+            className="rounded-lg border border-line bg-paper p-3.5"
+            data-testid="flight-status"
+            data-phase={status.phase}
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <strong className="font-display text-[16px]">{status.flight}</strong>
+              <Pill tone={PHASE_TONE[status.phase]}>{PHASE_LABEL[status.phase]}</Pill>
+            </div>
+            <p className="mt-1 text-[13px]">{status.route}</p>
+            <table className="mt-2 w-full border-collapse text-[13px]">
+              <tbody>
+                <tr className="border-b border-dashed border-line">
+                  <td className="py-1 text-ink-soft">
+                    Scheduled {status.direction === 'arriving' ? 'landing' : 'departure'}
+                  </td>
+                  <td className="py-1 text-right font-semibold">{status.scheduled}</td>
+                </tr>
+                <tr>
+                  <td className="py-1 text-ink-soft">Live estimate</td>
+                  <td className="py-1 text-right font-semibold" data-testid="flight-estimate">
+                    {status.estimated}
+                    {status.delayMin ? (
+                      <span className="ml-1.5 text-[12px] font-semibold text-warn">
+                        +{status.delayMin} min
+                      </span>
+                    ) : null}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="rounded-lg border border-line p-3.5" data-testid="transfer-plan">
+            <p className="text-[12.5px] font-bold">Transport, timed to the flight</p>
+            <ol className="mt-2 space-y-1.5">
+              {plan.legs.map((leg, i) => (
+                <li
+                  key={leg.label}
+                  className="flex items-baseline justify-between gap-3 border-b border-dashed border-line pb-1.5 text-[13px] last:border-b-0"
+                >
+                  <span>
+                    <span
+                      aria-hidden="true"
+                      className="mr-2 inline-grid h-5 w-5 place-items-center rounded-full bg-sea-soft font-display text-[11px] font-bold text-sea"
+                    >
+                      {i + 1}
+                    </span>
+                    {leg.label}
+                    {leg.note ? (
+                      <span className="ml-1.5 text-[12px] text-ink-soft">· {leg.note}</span>
+                    ) : null}
+                  </span>
+                  <strong className="font-display whitespace-nowrap" data-testid={`leg-${i}`}>
+                    {leg.time}
+                  </strong>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-2.5 text-[12.5px] text-ink-soft">
+              Taxi: <strong className="text-ink">{taxi?.name}</strong>
+              {launch ? (
+                <>
+                  {' '}
+                  · Launch: <strong className="text-ink">{launch.name}</strong> (
+                  {launch.launch.vesselName}, max {launch.launch.maxPassengers} passengers
+                  {paxN > launch.launch.maxPassengers ? ` — ${paxN} needs more than one run` : ''})
+                </>
+              ) : null}
+            </p>
+            <div className="mt-3">
+              <Button onClick={send} data-testid="send-transport">
+                Send transport request
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </Card>
+  );
+}
+
+function TaxisSection({ onRequest }: { onRequest: (t: RequestTarget) => void }) {
+  return (
+    <div data-testid="taxis" className="mt-6">
+      <h3 className="font-display text-[17px] font-bold">Taxis and minibuses</h3>
+      <p className="mt-1 max-w-[720px] text-[13.5px] text-ink-soft">
+        Airport, hotel, and quay runs. Airport pickups hold the tracked flight, so a delay moves the
+        pickup — not the crew.
+      </p>
+      <div className="mt-3 grid gap-4 md:grid-cols-2">
+        {TAXIS.map((t) => {
+          const status = deriveStatus(t.certs);
+          const bookable = isBookable(t.certs);
+          return (
+            <Card key={t.id} data-testid={`taxi-${t.id}`} data-status={status}>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <h4 className="font-display text-[16px] font-bold">
+                    <Link
+                      to={`/app/marketplace/${t.id}`}
+                      className="text-ink no-underline hover:text-sea hover:underline"
+                    >
+                      {t.name}
+                    </Link>
+                  </h4>
+                  <p className="mt-0.5 text-[13px]">
+                    <Rating rating={t.rating} count={t.ratingCount} size="sm" />
+                  </p>
+                </div>
+                <StatusPill status={status} />
+              </div>
+              <p className="mt-2 text-[13px] text-ink-soft">{t.description}</p>
+              {t.facts ? (
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {t.facts.map((f) => (
+                    <li
+                      key={f.label}
+                      className="rounded-md border border-line bg-paper px-2 py-0.5 text-[12px] text-ink-soft"
+                    >
+                      {f.label} <strong className="text-ink">{f.value}</strong>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {t.bookingNote ? (
+                <p className="mt-2.5 rounded-lg border border-line bg-paper px-3 py-2 text-[12.5px] text-ink-soft">
+                  {t.bookingNote}
+                </p>
+              ) : null}
+              <div className="mt-3.5">
+                {bookable ? (
+                  <Button
+                    onClick={() => onRequest({ supplierName: t.name, category: 'Taxis' })}
+                    aria-label={`Request taxi from ${t.name}`}
+                    data-testid={`book-${t.id}`}
+                  >
+                    Request taxi
+                  </Button>
+                ) : (
+                  <Button disabled title="Blocked by SVS — compliance evidence required">
+                    Unavailable
+                  </Button>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function TransfersSection({ onRequest }: { onRequest: (t: RequestTarget) => void }) {
+  return (
+    <div data-testid="section-transfers">
+      <FlightPlanner />
+      <TaxisSection onRequest={onRequest} />
+      <div className="mt-6">
+        <LaunchesPanel />
+      </div>
     </div>
   );
 }
@@ -713,7 +1113,17 @@ function RequestsList() {
 /* ----------------------------------------------------------------- Screen */
 
 export default function CrewChange() {
-  const [section, setSection] = useState<CrewSectionId>('hotels');
+  // The active section lives in the URL (?section=transfers) so the dashboard,
+  // the old /app/launches route, and a shared link can open straight onto it.
+  const [params, setParams] = useSearchParams();
+  const fromUrl = params.get('section');
+  const section: CrewSectionId = isCrewSectionId(fromUrl) ? fromUrl : DEFAULT_CREW_SECTION;
+  const setSection = (id: CrewSectionId) => {
+    const next = new URLSearchParams(params);
+    if (id === DEFAULT_CREW_SECTION) next.delete('section');
+    else next.set('section', id);
+    setParams(next, { replace: true });
+  };
   const [target, setTarget] = useState<RequestTarget | null>(null);
   // Drafts live here so switching section (say, to the checklist) keeps them.
   const loi = useTemplateState<LoiForm>(LOI_DEMO_FORM);
@@ -722,15 +1132,15 @@ export default function CrewChange() {
 
   return (
     <div className="screen-enter">
-      <Eyebrow>Crew change · hotels, immigration, letters</Eyebrow>
+      <Eyebrow>Crew change · hotels, transfers, immigration, letters</Eyebrow>
       <h1 className="mt-1 font-display text-2xl font-bold">
         Everything a crew change needs, in one place
       </h1>
       <p className="mt-1 max-w-[760px] text-[14px] text-ink-soft">
-        Rooms for crew held ashore, the immigration paperwork for visa-national crew, an Immigration
-        Support Letter for each on-signer and a repatriation letter for each off-signer. The
-        platform holds the templates, you fill them in, GAC endorses or routes them and sends them
-        back — one letter per crew member, always.
+        Rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration
+        paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a
+        repatriation letter for each off-signer. The platform holds the templates, you fill them in,
+        GAC endorses or routes them and sends them back — one letter per crew member, always.
       </p>
 
       <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -761,6 +1171,7 @@ export default function CrewChange() {
           {active.summary}
         </p>
         {section === 'hotels' ? <HotelsSection onRequest={setTarget} /> : null}
+        {section === 'transfers' ? <TransfersSection onRequest={setTarget} /> : null}
         {section === 'immigration' ? <ImmigrationSection /> : null}
         {section === 'loi' ? <LoiSection state={loi} /> : null}
         {section === 'repat' ? <RepatSection state={repat} /> : null}
