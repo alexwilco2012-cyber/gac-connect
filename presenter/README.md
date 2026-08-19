@@ -60,20 +60,20 @@ is filled per output: preload hints + `window.__resources` (site), just
 `src/partials/` is in document order: `10-loader` (chain-forge entrance, only
 shown when the opening is off), `20-opening` (the Advantage opening: four
 slides shown before the platform — see below), `30-chrome` (header/nav),
-`40-…56-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
+`40-…57-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
 certification, bunkers, kitchen-sink, procurement, crew-change — which holds
 all six crew-change sections, Taxis (planner + operators) and Launches (the
-panel) among them; `54-launches` is retired), `60-footer-drawer`, `70-modal`,
-`73-request`, `74-launch-request`, `71-tour`, `72-toast`.
+panel) among them; `54-launches` is retired — invoices), `60-footer-drawer`,
+`70-modal`, `73-request`, `74-launch-request`, `71-tour`, `72-toast`.
 
 ### Feature modules (17 Aug review screens)
 
-The screens added after v12 — Procurement, Crew change, and the launches panel
-that Crew change › Launches embeds (`launches.js` still owns plan-a-run, the
-per-port cards and the launch-request modal; `56-crew-change.html` binds them) —
-live as **feature modules** in `src/app/features/<name>.js`, included after
-`component.js` in the x-dc script. Each module owns its data, state, bindings
+The screens added after v12 — Procurement, Crew change, Invoices, and the
+launches panel that Crew change › Launches embeds (`launches.js` still owns
+plan-a-run, the per-port cards and the launch-request modal;
+`56-crew-change.html` binds them) — live as **feature modules** in
+`src/app/features/<name>.js`, included after `component.js` in the x-dc script. Each module owns its data, state, bindings
 and Escape handling and registers them with the core:
 
 ```js
@@ -185,3 +185,13 @@ immigration; LOI endorsed by GAC as agents; repat letter endorsed by UK Border
 Force). Simulated steps say so. There is no Launches tab — `#/launches` opens
 Crew change on the launches section, and a retired `#/crew-change/transfers`
 opens taxis.
+
+The platform nav carries the same ten items as the site's `AppLayout`, in the
+same order. Invoices (`#/invoices`, `app/features/invoices.js` +
+`partials/57-invoices.html`) is the v12 §5 review loop: the seven-day window,
+allocate the billing party, confirm and match to GA, and rate the job on
+close-out, with the dashboard's "Invoice review · 7-day window" card counting
+what is still open. The client persona never sees a supplier's plan, band, or
+the commission deducted at matching, so none of it is on the screen. Analytics
+is supplier-facing on both surfaces: it keeps its route and its "See the example
+analytics dashboard" button on For Suppliers, and is not a client nav tab.

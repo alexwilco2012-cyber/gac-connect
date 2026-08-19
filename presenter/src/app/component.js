@@ -98,7 +98,7 @@ class Component extends DCLogic {
        resolved by the crew-change module, which reads state.routeSection. */
     if (parts[0] === 'launches') return { route: 'crew-change', profileId: null, section: 'launches' };
     if (parts[0] === 'crew-change' && parts[1]) return { route: 'crew-change', profileId: null, section: parts[1] };
-    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null, section: null };
   }
   nav(r) {
@@ -394,12 +394,13 @@ class Component extends DCLogic {
     const brandSubUpper = bParts.slice(1).join(' ').toUpperCase() || 'CONNECT';
     const route = st.route;
 
-    const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'procurement', 'crew-change', 'quotes', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     const isPlatform = platformRoutes.includes(route);
 
-    /* nav — ten platform items after the 17 Aug review (launches are a section of
-       Crew change, not a tab), so the padding is tight (mirrors the site's
-       AppLayout) and the tier screen is "Tiers" */
+    /* nav — the same ten platform items as the site's AppLayout, in the same
+       order (launches are a section of Crew change, not a tab; Analytics is
+       supplier-facing and is reached from For Suppliers, not the client's nav),
+       so the padding is tight and the tier screen is "Tiers" */
     const mk = (label, r, beta) => ({
       label: label, beta: !!beta, pressed: (route === r || (r === 'marketplace' && route === 'supplier')) ? 'true' : 'false',
       go: this._go(r),
@@ -407,7 +408,7 @@ class Component extends DCLogic {
         ((route === r || (r === 'marketplace' && route === 'supplier')) ? 'color:#FFFFFF;background:rgba(255,255,255,.14);box-shadow:inset 0 -3px 0 #C9A227;' : 'color:#B9C8D6;')
     });
     const navItems = isPlatform
-      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Procurement', 'procurement'), mk('Crew change', 'crew-change'), mk('Quotes', 'quotes'), mk('Tiers', 'tiers'), mk('SVS', 'svs'), mk('Analytics', 'analytics'), mk('Certification', 'certification', true), mk('Bunkers', 'bunkers', true)]
+      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Procurement', 'procurement'), mk('Crew change', 'crew-change'), mk('Quotes', 'quotes'), mk('Invoices', 'invoices'), mk('Tiers', 'tiers'), mk('SVS', 'svs'), mk('Certification', 'certification', true), mk('Bunkers', 'bunkers', true)]
       : [mk('Home', 'home'), mk('For Clients', 'clients'), mk('For Suppliers', 'suppliers'), mk('About', 'about')];
 
     /* marketplace */
@@ -615,12 +616,12 @@ class Component extends DCLogic {
       isPlatform: isPlatform, isMarketing: !isPlatform,
       isHome: route === 'home', isClients: route === 'clients', isSuppliers: route === 'suppliers', isAbout: route === 'about',
       isDashboard: route === 'dashboard', isMarketplace: route === 'marketplace', isProfile: route === 'supplier',
-      isQuotes: route === 'quotes', isTiers: route === 'tiers', isSvs: route === 'svs', isAnalytics: route === 'analytics',
+      isQuotes: route === 'quotes', isInvoices: route === 'invoices', isTiers: route === 'tiers', isSvs: route === 'svs', isAnalytics: route === 'analytics',
       isCert: route === 'certification', isBunkers: route === 'bunkers', isKitchen: route === 'kitchen-sink',
       isProcurement: route === 'procurement', isCrew: route === 'crew-change',
       navItems: navItems,
       goHome: this._go('home'), goClients: this._go('clients'), goSuppliers: this._go('suppliers'), goAbout: this._go('about'),
-      goDashboard: this._go('dashboard'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'),
+      goDashboard: this._go('dashboard'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'), goInvoices: this._go('invoices'),
       goTiers: this._go('tiers'), goSvs: this._go('svs'), goAnalytics: this._go('analytics'), goKitchen: this._go('kitchen-sink'),
       goProcurement: this._go('procurement'), goCrew: this._go('crew-change'),
       /* dashboard crew-change card line — a default the crew-change module overrides with a live count */
