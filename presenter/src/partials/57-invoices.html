@@ -3,6 +3,7 @@
       <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Invoice review · job close-out</p>
       <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Supplier invoices, reviewed by you first</h1>
       <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:720px;">Every supplier invoice routes to the client before it matches in GAC Agent. Seven days to allocate the billing party and any split; left alone, it matches as it stands.</p>
+      <p style="color:#33475F;margin:6px 0 0;font-size:13.5px;max-width:720px;">Where a call straddles a delivery or a redelivery, one disbursement carries costs for two parties. The platform holds the on-hire and off-hire moments from the charter, allocates each cost to the side that owned the vessel when it fell, and lets you move any line before it matches.</p>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px;">
         <sc-for list="{{ invRules }}" as="ir" hint-placeholder-count="3">
@@ -20,11 +21,17 @@
 
       <div id="invoices-list" tabindex="-1" style="display:grid;gap:16px;margin-top:8px;">
         <sc-for list="{{ invCards }}" as="ic" hint-placeholder-count="3">
-          <div data-testid="{{ ic.testId }}" data-state="{{ ic.state }}" style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
+          <!-- min-width:0 so a card holding the wide split table can shrink below
+               it: grid items default to min-width:auto, which would otherwise let
+               the table push the whole page sideways on a phone -->
+          <div data-testid="{{ ic.testId }}" data-state="{{ ic.state }}" style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
             <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
               <div>
                 <p style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#33475F;margin:0;">{{ ic.refLine }}</p>
-                <h2 style="font-size:17px;font-weight:700;margin:2px 0 0;"><button style="background:none;border:none;padding:0;font:inherit;font-size:17px;font-weight:700;color:#0A2540;cursor:pointer;" style-hover="color:#0E5E8A;text-decoration:underline;" sc-camel-on-click="{{ ic.openSupplier }}">{{ ic.supplierName }}</button></h2>
+                <h2 style="font-size:17px;font-weight:700;margin:2px 0 0;">
+                  <sc-if value="{{ ic.linkedSupplier }}" hint-placeholder-val="{{ true }}"><button style="background:none;border:none;padding:0;font:inherit;font-size:17px;font-weight:700;color:#0A2540;cursor:pointer;" style-hover="color:#0E5E8A;text-decoration:underline;" sc-camel-on-click="{{ ic.openSupplier }}">{{ ic.supplierName }}</button></sc-if>
+                  <sc-if value="{{ ic.plainSupplier }}" hint-placeholder-val="{{ false }}">{{ ic.supplierName }}</sc-if>
+                </h2>
                 <p style="font-size:13.5px;color:#33475F;margin:2px 0 0;">{{ ic.serviceLine }}</p>
               </div>
               <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;max-width:100%;">
@@ -44,33 +51,105 @@
               </sc-raw-tbody>
             </sc-raw-table>
 
-            <sc-if value="{{ ic.awaiting }}" hint-placeholder-val="{{ true }}">
-              <div role="group" aria-labelledby="{{ ic.legendId }}" style="margin-top:16px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:14px;">
-                <p id="{{ ic.legendId }}" style="font-size:12.5px;font-weight:700;margin:0;">Billing party</p>
-                <p style="font-size:12.5px;color:#33475F;margin:4px 0 0;">Allocate this invoice before it matches. The split held on the GA vessel profile is pre-selected.</p>
-                <div style="display:grid;gap:8px;margin-top:10px;">
-                  <sc-for list="{{ ic.allocations }}" as="al" hint-placeholder-count="3">
-                    <label for="{{ al.inputId }}" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13.5px;cursor:pointer;">
-                      <input type="radio" id="{{ al.inputId }}" name="{{ al.group }}" checked="{{ al.checked }}" sc-camel-on-change="{{ al.onPick }}" style="width:16px;height:16px;accent-color:#0E5E8A;cursor:pointer;">
-                      <span style="font-weight:600;">{{ al.label }}</span>
-                      <sc-if value="{{ al.fromProfile }}" hint-placeholder-val="{{ false }}"><span style="{{ invPillInfo }}">From GA vessel profile</span></sc-if>
-                    </label>
-                  </sc-for>
+            <sc-if value="{{ ic.hasSplit }}" hint-placeholder-val="{{ false }}">
+              <div data-testid="split-{{ ic.id }}" style="min-width:0;margin-top:16px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:14px;">
+                <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;">
+                  <p style="font-size:12.5px;font-weight:700;margin:0;">{{ ic.allocTitle }}</p>
+                  <span style="{{ invPillInfo }}">{{ ic.hireHeadline }}</span>
                 </div>
-                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
-                  <button style="{{ invBtnPrimary }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ ic.confirm }}" data-testid="{{ ic.matchTestId }}">Confirm &amp; match to GA</button>
-                  <span style="font-size:12.5px;color:#33475F;">{{ ic.confirmHint }}</span>
+                <p style="font-size:12.5px;color:#33475F;margin:6px 0 0;">{{ ic.allocIntro }}</p>
+                <div style="overflow-x:auto;margin-top:10px;">
+                  <sc-raw-table style="width:100%;border-collapse:collapse;font-size:13px;min-width:520px;">
+                    <sc-raw-thead>
+                      <sc-raw-tr style="border-bottom:1.5px solid #E5EAF1;">
+                        <sc-raw-th style="text-align:left;padding:6px 12px 6px 0;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#33475F;">Cost</sc-raw-th>
+                        <sc-raw-th style="text-align:right;padding:6px 12px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#33475F;">Amount</sc-raw-th>
+                        <sc-raw-th style="text-align:left;padding:6px 0;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#33475F;">Billed to</sc-raw-th>
+                      </sc-raw-tr>
+                    </sc-raw-thead>
+                    <sc-raw-tbody>
+                      <sc-for list="{{ ic.splitLines }}" as="sl" hint-placeholder-count="8">
+                        <sc-raw-tr style="border-bottom:1px dashed #E5EAF1;">
+                          <sc-raw-td style="padding:8px 12px 8px 0;">
+                            <span style="font-weight:600;">{{ sl.description }}</span>
+                            <span style="display:block;color:#33475F;font-size:12px;margin-top:1px;">{{ sl.when }}</span>
+                          </sc-raw-td>
+                          <sc-raw-td style="padding:8px 12px;text-align:right;font-weight:600;white-space:nowrap;vertical-align:top;">{{ sl.amount }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 0;vertical-align:top;">
+                            <sc-if value="{{ ic.splitEditable }}" hint-placeholder-val="{{ true }}">
+                              <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                                <sc-for list="{{ sl.options }}" as="op" hint-placeholder-count="2">
+                                  <label for="{{ op.inputId }}" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap;cursor:pointer;">
+                                    <input type="radio" id="{{ op.inputId }}" name="{{ op.group }}" aria-label="{{ op.ariaLabel }}" checked="{{ op.checked }}" sc-camel-on-change="{{ op.onPick }}" style="width:15px;height:15px;accent-color:#0E5E8A;cursor:pointer;">
+                                    <span style="font-weight:600;">{{ op.label }}</span>
+                                  </label>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+                            <sc-if value="{{ ic.splitLocked }}" hint-placeholder-val="{{ false }}"><span style="font-weight:600;font-size:12.5px;">{{ sl.partyLabel }}</span></sc-if>
+                            <sc-if value="{{ sl.moved }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:4px;font-size:11.5px;color:#9A7B14;">moved off the charter terms</span></sc-if>
+                          </sc-raw-td>
+                        </sc-raw-tr>
+                      </sc-for>
+                    </sc-raw-tbody>
+                    <sc-raw-tfoot>
+                      <sc-raw-tr>
+                        <sc-raw-td style="padding:10px 12px 2px 0;color:#33475F;">{{ ic.splitChartererLabel }}</sc-raw-td>
+                        <sc-raw-td style="padding:10px 12px 2px;text-align:right;font-weight:700;white-space:nowrap;" data-testid="split-charterer-{{ ic.id }}">{{ ic.splitChartererTotal }}</sc-raw-td>
+                        <sc-raw-td style="padding:10px 0 2px;"></sc-raw-td>
+                      </sc-raw-tr>
+                      <sc-raw-tr>
+                        <sc-raw-td style="padding:2px 12px 2px 0;color:#33475F;">{{ ic.splitOwnerLabel }}</sc-raw-td>
+                        <sc-raw-td style="padding:2px 12px;text-align:right;font-weight:700;white-space:nowrap;" data-testid="split-owner-{{ ic.id }}">{{ ic.splitOwnerTotal }}</sc-raw-td>
+                        <sc-raw-td style="padding:2px 0;"></sc-raw-td>
+                      </sc-raw-tr>
+                      <sc-raw-tr style="border-top:1.5px solid #E5EAF1;">
+                        <sc-raw-td style="padding:8px 12px 0 0;font-weight:700;">Total</sc-raw-td>
+                        <sc-raw-td style="padding:8px 12px 0;text-align:right;font-weight:800;white-space:nowrap;" data-testid="split-total-{{ ic.id }}">{{ ic.splitTotal }}</sc-raw-td>
+                        <sc-raw-td style="padding:8px 0 0;"></sc-raw-td>
+                      </sc-raw-tr>
+                    </sc-raw-tfoot>
+                  </sc-raw-table>
                 </div>
+                <sc-if value="{{ ic.awaiting }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
+                    <button style="{{ invBtnPrimary }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ ic.confirm }}" data-testid="{{ ic.matchTestId }}">Confirm &amp; match to GA</button>
+                    <span style="font-size:12.5px;color:#33475F;">{{ ic.confirmHint }}</span>
+                  </div>
+                </sc-if>
               </div>
+            </sc-if>
+
+            <sc-if value="{{ ic.awaiting }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ ic.hasAllocations }}" hint-placeholder-val="{{ true }}">
+                <div role="group" aria-labelledby="{{ ic.legendId }}" style="margin-top:16px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:14px;">
+                  <p id="{{ ic.legendId }}" style="font-size:12.5px;font-weight:700;margin:0;">{{ ic.allocTitle }}</p>
+                  <p style="font-size:12.5px;color:#33475F;margin:4px 0 0;">{{ ic.allocIntro }}</p>
+                  <div style="display:grid;gap:8px;margin-top:10px;">
+                    <sc-for list="{{ ic.allocations }}" as="al" hint-placeholder-count="3">
+                      <label for="{{ al.inputId }}" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13.5px;cursor:pointer;">
+                        <input type="radio" id="{{ al.inputId }}" name="{{ al.group }}" checked="{{ al.checked }}" sc-camel-on-change="{{ al.onPick }}" style="width:16px;height:16px;accent-color:#0E5E8A;cursor:pointer;">
+                        <span style="font-weight:600;">{{ al.label }}</span>
+                        <sc-if value="{{ al.fromProfile }}" hint-placeholder-val="{{ false }}"><span style="{{ invPillInfo }}">From GA vessel profile</span></sc-if>
+                      </label>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
+                    <button style="{{ invBtnPrimary }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ ic.confirm }}" data-testid="{{ ic.matchTestId }}">Confirm &amp; match to GA</button>
+                    <span style="font-size:12.5px;color:#33475F;">{{ ic.confirmHint }}</span>
+                  </div>
+                </div>
+              </sc-if>
             </sc-if>
             <sc-if value="{{ ic.settled }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:16px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px 14px;font-size:13px;">
-                <p style="margin:0;"><span style="color:#33475F;">Billing party:</span> <strong>{{ ic.appliedLabel }}</strong><sc-if value="{{ ic.asReceived }}" hint-placeholder-val="{{ false }}"><span style="color:#33475F;"> · applied as received</span></sc-if></p>
+                <p style="margin:0;"><span style="color:#33475F;">{{ ic.settledTitle }}</span> <strong>{{ ic.appliedLabel }}</strong><sc-if value="{{ ic.asReceived }}" hint-placeholder-val="{{ false }}"><span style="color:#33475F;"> · applied as received</span></sc-if></p>
                 <p style="margin:4px 0 0;"><span style="color:#33475F;">Matched in GAC Agent against</span> <strong>{{ ic.poRef }}</strong></p>
                 <sc-if value="{{ ic.showAdminFee }}" hint-placeholder-val="{{ false }}"><p style="font-size:12.5px;color:#33475F;margin:6px 0 0;">Changes after matching carry an administrative fee at published rates.</p></sc-if>
               </div>
             </sc-if>
 
+            <sc-if value="{{ ic.rateable }}" hint-placeholder-val="{{ true }}">
             <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;border-top:1px dashed #E5EAF1;padding-top:12px;">
               <p style="font-size:13px;margin:0;"><strong>{{ ic.rateTitle }}</strong>
                 <sc-if value="{{ ic.rated }}" hint-placeholder-val="{{ false }}"><span style="color:#33475F;margin-left:8px;">{{ ic.ratedLabel }}</span></sc-if>
@@ -82,6 +161,7 @@
                 </sc-for>
               </div>
             </div>
+            </sc-if>
           </div>
         </sc-for>
       </div>

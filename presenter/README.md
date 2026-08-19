@@ -192,6 +192,22 @@ same order. Invoices (`#/invoices`, `app/features/invoices.js` +
 allocate the billing party, confirm and match to GA, and rate the job on
 close-out, with the dashboard's "Invoice review · 7-day window" card counting
 what is still open. The client persona never sees a supplier's plan, band, or
-the commission deducted at matching, so none of it is on the screen. Analytics
-is supplier-facing on both surfaces: it keeps its route and its "See the example
-analytics dashboard" button on For Suppliers, and is not a client nav tab.
+what is deducted when an invoice matches, so none of it is on the screen.
+Analytics is supplier-facing on both surfaces: it keeps its route and its "See
+the example analytics dashboard" button on For Suppliers, and is not a client
+nav tab.
+
+**The presenter is ahead of the site on one thing** (owner's call, 19 Aug):
+the fourth invoice, `INV-4483`, splits a port disbursement **line by line at an
+off-hire**. A call that straddles a delivery or redelivery has two payers — the
+vessel is on the charterer's time inbound and the owners' from the off-hire
+moment — so pilotage, towage, linesmen in and dues to that moment sit with the
+charterer, and the berth shift into maintenance, the dues across the repair
+days, linesmen out and pilotage out sit with the owners. Every line can be moved
+before the invoice matches, and one that has been shows "moved off the charter
+terms". Both parties are then applied against the one PO. The site still has
+only the three whole-invoice allocations, so `INV_INVOICES[3]` and everything
+under "line-level split" in `features/invoices.js`, plus the `hasSplit` branches
+in `57-invoices.html`, are the presenter's own until they are ported back to
+`src/{data,lib,screens}`. Port them before adding anything else here that
+assumes the two surfaces match.
