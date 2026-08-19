@@ -8,12 +8,11 @@
    are prefixed 'pres.' so they never collide with the site's own stores on the
    same origin.
 
-   AHEAD OF THE SITE (owner's call, 19 Aug): the fourth invoice — the port
-   disbursement split at an off-hire — exists here only. The site still has the
-   three whole-invoice ones, so `INV_INVOICES[3]`, everything under "line-level
-   split" below, and the matching parts of 57-invoices.html are the presenter's
-   own until they are ported back to src/{data,lib,screens}. Keep that in mind
-   before calling this file a straight port.
+   The fourth invoice — the port disbursement split at an off-hire — landed here
+   first and was ported back on 19 Aug, so the two surfaces match again: the
+   maths lives in src/lib/invoices.ts (defaultLineParties, splitTotals,
+   movedOffCharterTerms) with unit tests, and this module mirrors it. Change one
+   and change the other.
 
    The client persona never sees the supplier-side mechanics behind an invoice
    — the plan, the band, or what is deducted when it matches (17 Aug review):

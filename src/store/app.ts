@@ -1,12 +1,46 @@
 import { create } from 'zustand';
+import { INVOICES } from '../data/invoices';
+import type { HireParty } from '../data/invoices';
 import { persistent, session } from '../lib/storage';
-import type { InvoiceDecision } from '../lib/invoices';
+import type { InvoiceDecision, LineParties } from '../lib/invoices';
 import type { TierSelection } from '../lib/tier';
 
 /**
  * App state (04_ARCHITECTURE): tier selections, tour, toasts, quote
  * acceptance — persisted via the storage adapter, never directly.
  */
+
+/**
+ * Stored decisions are read back defensively: an invoice id that no longer
+ * exists, an allocation that is no longer offered, or a split missing any of
+ * its lines is dropped rather than left to drive a card. A half-read split
+ * matters most — it would show per-party totals that do not add up to the
+ * invoice — so a split is restored only when every line is accounted for.
+ */
+function readInvoiceDecisions(): Record<string, InvoiceDecision> {
+  const stored = persistent.get<Record<string, unknown>>('invoiceDecisions', {});
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+  const out: Record<string, InvoiceDecision> = {};
+  for (const [id, value] of Object.entries(stored)) {
+    const invoice = INVOICES.find((i) => i.id === id);
+    if (!invoice || !value || typeof value !== 'object') continue;
+    if (invoice.kind === 'split') {
+      const parties = (value as { lineParties?: Record<string, unknown> }).lineParties;
+      if (!parties || typeof parties !== 'object' || Array.isArray(parties)) continue;
+      const isParty = (v: unknown): v is HireParty => v === 'charterer' || v === 'owner';
+      if (!invoice.lines.every((l) => isParty(parties[l.id]))) continue;
+      const clean: LineParties = {};
+      for (const line of invoice.lines) clean[line.id] = parties[line.id] as HireParty;
+      out[id] = { lineParties: clean };
+      continue;
+    }
+    const allocationId = (value as { allocationId?: unknown }).allocationId;
+    if (invoice.allocations.some((a) => a.id === allocationId)) {
+      out[id] = { allocationId: allocationId as string };
+    }
+  }
+  return out;
+}
 
 export interface Toast {
   id: number;
@@ -29,6 +63,8 @@ interface AppState {
   // Invoice review — persisted client decisions (allocation → matched to GA)
   invoiceDecisions: Record<string, InvoiceDecision>;
   matchInvoice(id: string, allocationId: string): void;
+  /** A port disbursement settled line by line across the hire boundary. */
+  matchInvoiceSplit(id: string, lineParties: LineParties): void;
   resetInvoices(): void;
 
   // Supplier ratings submitted on job close-out — persisted, keyed by job
@@ -80,9 +116,17 @@ export const useApp = create<AppState>((set, get) => ({
     set({ acceptedQuoteId: null });
   },
 
-  invoiceDecisions: persistent.get<Record<string, InvoiceDecision>>('invoiceDecisions', {}),
+  invoiceDecisions: readInvoiceDecisions(),
   matchInvoice(id, allocationId) {
     const invoiceDecisions = { ...get().invoiceDecisions, [id]: { allocationId } };
+    persistent.set('invoiceDecisions', invoiceDecisions);
+    set({ invoiceDecisions });
+  },
+  matchInvoiceSplit(id, lineParties) {
+    const invoiceDecisions = {
+      ...get().invoiceDecisions,
+      [id]: { lineParties: { ...lineParties } },
+    };
     persistent.set('invoiceDecisions', invoiceDecisions);
     set({ invoiceDecisions });
   },

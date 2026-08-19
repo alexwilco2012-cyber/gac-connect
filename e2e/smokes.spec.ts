@@ -181,6 +181,49 @@ test('7 · invoice review: seven-day window, allocation, match to GA, agent rati
   await expect(page.getByTestId('invoice-INV-4471')).toHaveAttribute('data-state', 'matched');
 });
 
+test('7b · port disbursement splits by line at the off-hire, and the halves reconcile', async ({
+  page,
+}) => {
+  await page.goto('/app/invoices');
+  await page.keyboard.press('Escape');
+
+  const call = page.getByTestId('invoice-INV-4483');
+  await expect(call.getByText('MV Granite Coast').first()).toBeVisible();
+  // Arrives on the charterer's time, redelivered to owners alongside.
+  await expect(call.getByText(/redelivered to owners alongside Thu 14:20/)).toBeVisible();
+
+  // The charter terms put the inbound on the charterer, the rest on owners.
+  await expect(page.getByTestId('split-charterer-INV-4483')).toHaveText('£3,410');
+  await expect(page.getByTestId('split-owner-INV-4483')).toHaveText('£3,890');
+  await expect(page.getByTestId('split-total-INV-4483')).toHaveText('£7,300');
+
+  // Move linesmen in across to owners: the money moves, the total does not.
+  await call
+    .getByRole('radio', { name: 'Linesmen — mooring on arrival — bill to Stronach Subsea' })
+    .check();
+  await expect(page.getByTestId('split-charterer-INV-4483')).toHaveText('£3,100');
+  await expect(page.getByTestId('split-owner-INV-4483')).toHaveText('£4,200');
+  await expect(page.getByTestId('split-total-INV-4483')).toHaveText('£7,300');
+  await expect(page.getByTestId('moved-INV-4483-lines-in')).toBeVisible();
+
+  // Both parties applied against the one PO, and the table stays as the record.
+  await call.getByRole('button', { name: 'Confirm & match to GA' }).click();
+  await expect(
+    page.getByText(/INV-4483 matched to GA — Wilkinson Drilling £3,100, Stronach Subsea £4,200/),
+  ).toBeVisible();
+  await expect(call).toHaveAttribute('data-state', 'matched');
+  await expect(call.getByText('Split by line:')).toBeVisible();
+
+  // Nothing supplier-side reaches the client on this screen either.
+  await expect(page.getByText(/commission|mark-?up/i)).toHaveCount(0);
+
+  // The split survives a reload exactly as it was matched.
+  await page.reload();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('split-charterer-INV-4483')).toHaveText('£3,100');
+  await expect(page.getByTestId('split-owner-INV-4483')).toHaveText('£4,200');
+});
+
 test('8 · quote request: client-set deadline advice, medical cross-sell, hotel caveat, meal scale', async ({
   page,
 }) => {
