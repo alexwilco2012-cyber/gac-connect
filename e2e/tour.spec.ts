@@ -59,3 +59,14 @@ test('the tour can be declined and picked up again later', async ({ page }) => {
   await page.getByRole('button', { name: 'Take the guided tour' }).click();
   await expect(page.getByRole('dialog', { name: /^Tour step/ })).toContainText('Tour · 1 of 12');
 });
+
+test('the landing page offers the tour without scrolling, and starts it', async ({ page }) => {
+  // Where the QR on the closing slide lands.
+  await page.goto('/');
+  const invite = page.getByRole('button', { name: 'Start the guided tour' });
+  await expect(invite).toBeInViewport();
+
+  await invite.click();
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(page.getByRole('dialog', { name: /^Tour step/ })).toContainText('Tour · 1 of 12');
+});

@@ -157,6 +157,41 @@ export function Tour() {
 }
 
 /**
+ * The landing-page invitation.
+ *
+ * Unlike TourPrompt this is never dismissed and never shrinks: the landing page
+ * is where someone arrives from the QR on the closing slide, and the offer has
+ * to be the first thing they see rather than something they scroll to. Starting
+ * from here sets the step and moves to the platform; the Tour engine mounted in
+ * AppLayout picks it up from there.
+ */
+export function TourInvite() {
+  const startTour = useApp((s) => s.startTour);
+  const navigate = useNavigate();
+
+  return (
+    <div className="border-b border-sea-soft bg-sea-soft/70">
+      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-6 py-3.5">
+        <p className="text-[13.5px]">
+          <strong>First time here?</strong> Take the {TOUR_STEPS.length}-stop guided tour — a port
+          call from the vessel arriving to the invoice being matched.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            startTour();
+            navigate('/app');
+          }}
+          className="min-h-[44px] cursor-pointer rounded-lg border-none bg-sea px-4 py-2 text-[13px] font-bold text-white hover:bg-[#0B4C70]"
+        >
+          Start the guided tour
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
  * The way in. Shown on whatever screen you arrive at rather than only on the
  * dashboard, because the QR on the closing slide drops people straight into the
  * platform and they should not have to find the tour to be offered it. Once

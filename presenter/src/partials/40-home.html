@@ -1,5 +1,11 @@
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
     <main data-screen-label="Landing" style="max-width:1180px;margin:0 auto;padding:28px 24px 0;animation:fadeUp .25s ease;">
+      <!-- Above the harbour, not below it: this is where the closing slide's QR
+           lands, and the offer has to be visible without scrolling. -->
+      <div style="background:#E8F1F7;border:1px solid #CFE2EE;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <p style="margin:0;font-size:13.5px;flex:1;min-width:220px;"><strong>First time here?</strong> Take the twelve-stop guided tour — a port call from the vessel arriving to the invoice being matched.</p>
+        <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:10px 16px;min-height:44px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ startTour }}">Start the guided tour</button>
+      </div>
       <div style="display:flex;flex-wrap:wrap;align-items:stretch;gap:18px;padding:22px 0 10px;">
         <div style="flex:2.6 1 520px;min-width:0;">
           <div style="position:relative;height:clamp(430px,54vw,760px);width:100%;overflow:hidden;border-radius:16px;background:#0A2540;box-shadow:0 1px 3px rgba(10,37,64,.12),0 10px 30px rgba(10,37,64,.14);">

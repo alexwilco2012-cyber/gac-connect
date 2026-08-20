@@ -700,7 +700,9 @@ class Component extends DCLogic {
         this._routeTimer = setTimeout(() => this.nav('quotes'), 1500);
       },
       /* offered on any platform screen, not the dashboard alone: the closing
-         slide's QR drops people straight into the platform */
+         slide's QR lands on the harbour, and whichever tab they open first
+         should still offer the walkthrough. The landing screen carries its own
+         invitation above the harbour (partials/40-home.html). */
       showTourPrompt: isPlatform && !st.tourDismissed && st.tourStep === null,
       showTourRestart: isPlatform && st.tourDismissed && st.tourStep === null,
 

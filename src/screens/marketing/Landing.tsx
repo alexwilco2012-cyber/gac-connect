@@ -1,4 +1,5 @@
 import { PillarsRoof } from '../../components/motif/PillarsRoof';
+import { TourInvite } from '../../tour/Tour';
 import { ButtonLink } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Eyebrow } from '../../components/ui/Eyebrow';
@@ -49,6 +50,10 @@ const FULL_PILLARS = [
 export default function Landing() {
   return (
     <main className="screen-enter">
+      {/* Above the hero, not below it: this is where the closing slide's QR
+          lands, and the offer has to be visible without scrolling. */}
+      <TourInvite />
+
       {/* Interactive services hero — the night-harbour scene (design handoff) */}
       <InteractiveHarbour />
 
