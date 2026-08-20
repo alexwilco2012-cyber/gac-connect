@@ -75,8 +75,10 @@ export function Tour() {
     const t = window.setTimeout(() => cardRef.current?.focus(), 450);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') dismissTour();
-      else if (e.key === 'ArrowRight') isLast ? dismissTour() : nextTourStep();
-      else if (e.key === 'ArrowLeft') prevTourStep();
+      else if (e.key === 'ArrowRight') {
+        if (isLast) dismissTour();
+        else nextTourStep();
+      } else if (e.key === 'ArrowLeft') prevTourStep();
     };
     document.addEventListener('keydown', onKey);
     return () => {
