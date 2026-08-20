@@ -226,6 +226,19 @@
 .adv .cta.pulse{animation:advCtaPulse .5s var(--ease)}
 @keyframes advCtaPulse{35%{transform:scale(1.06)}}
 .adv .cta-note{font-size:11px;letter-spacing:.1em;color:var(--dim)}
+/* The closer carries two ways in: the button for the presenter, the code for the
+   room. The QR points at the platform (/gac-connect/app), never at the deck. */
+.adv .close-row{display:flex;align-items:center;justify-content:center;gap:clamp(20px,4vw,52px);flex-wrap:wrap}
+.adv .qr-wrap{display:flex;align-items:center;gap:14px}
+.adv .qr-plate{
+  background:#FFFFFF;border-radius:14px;padding:9px;line-height:0;
+  box-shadow:0 10px 34px rgba(4,12,26,.45);border:1px solid rgba(255,199,44,.5);
+}
+.adv .qr-plate .qr{display:block;width:clamp(92px,11vh,124px);height:auto}
+.adv .qr-note{text-align:left;max-width:170px}
+.adv .qr-note b{display:block;font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--mist)}
+.adv .qr-note span{display:block;margin-top:5px;font-size:11.5px;line-height:1.45;color:var(--dim)}
+.adv .slide.active .qr-wrap{animation:advRise .7s var(--ease) 1.15s both}
 .adv .tagline{font-family:var(--disp);font-weight:500;font-size:13px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
 .adv .slide.active .tagline{animation:advRise .6s var(--ease) .42s both}
 
@@ -353,6 +366,13 @@
   .adv .rcard .ric svg{width:17px;height:17px}
   .adv .rcard h3{font-size:13px;margin-bottom:3px}
   .adv .rcard p{font-size:11px;line-height:1.45}
+  .adv .close-row{gap:16px}
+  .adv .qr-wrap{gap:11px}
+  .adv .qr-plate{padding:7px}
+  .adv .qr-plate .qr{width:84px}
+  .adv .qr-note{max-width:150px}
+  .adv .qr-note b{font-size:12.5px}
+  .adv .qr-note span{font-size:10.5px}
   /* the card slides keep the icon above the text -- a bullet list does not read as a row */
   .adv .slide-6 .rcard,.adv .slide-8 .rcard,.adv .slide-10 .rcard{display:block;padding:12px 14px}
   .adv .slide-6 .rcard .ric,.adv .slide-8 .rcard .ric,.adv .slide-10 .rcard .ric{margin-bottom:8px}

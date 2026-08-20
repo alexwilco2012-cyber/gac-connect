@@ -27,7 +27,10 @@ export default function CertificationBeta() {
       </h1>
 
       {/* Mandatory scope banner — verbatim skeleton from 03 §3.2 */}
-      <div className="mt-4 flex items-start gap-3.5 rounded-xl border border-gold-bright/30 bg-gradient-to-r from-gold-bright/12 to-gold-bright/4 px-4.5 py-3.5">
+      <div
+        data-tour="beta"
+        className="mt-4 flex items-start gap-3.5 rounded-xl border border-gold-bright/30 bg-gradient-to-r from-gold-bright/12 to-gold-bright/4 px-4.5 py-3.5"
+      >
         <span aria-hidden="true" className="text-[18px] text-gold-deep">
           ⓘ
         </span>

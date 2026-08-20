@@ -699,7 +699,10 @@ class Component extends DCLogic {
         this.toastMsg('9 quote requests issued for MV Caledonian Star. Replies will populate the comparison view.', 'SENT');
         this._routeTimer = setTimeout(() => this.nav('quotes'), 1500);
       },
-      showTourPrompt: route === 'dashboard' && !st.tourDismissed && st.tourStep === null,
+      /* offered on any platform screen, not the dashboard alone: the closing
+         slide's QR drops people straight into the platform */
+      showTourPrompt: isPlatform && !st.tourDismissed && st.tourStep === null,
+      showTourRestart: isPlatform && st.tourDismissed && st.tourStep === null,
 
       /* pillars widget (bound live to calculator state) */
       p1Fill: calc.agency ? '#0E5E8A' : '#D7DFE8',
@@ -846,11 +849,11 @@ class Component extends DCLogic {
 
       /* tour */
       tourOpen: tourOpen,
-      tourStepLabel: tourOpen ? (st.tourStep + 1) + ' / 5' : '',
+      tourStepLabel: tourOpen ? (st.tourStep + 1) + ' / ' + this.TOUR.length : '',
       tourTitle: stop ? stop.title : '',
       tourBody: stop ? stop.body : '',
       tourHasBack: tourOpen && st.tourStep > 0,
-      tourNextLabel: tourOpen && st.tourStep === 4 ? 'Finish' : 'Next',
+      tourNextLabel: tourOpen && st.tourStep === this.TOUR.length - 1 ? 'Finish' : 'Next',
       startTour: () => { this.setState({ tourStep: 0 }); this.nav('dashboard'); },
       dismissTourPrompt: () => { this.setState({ tourDismissed: true }); this._set('tour-dismissed', true); },
       skipTour: this._skipTour,
@@ -860,7 +863,7 @@ class Component extends DCLogic {
       },
       tourNext: () => {
         const i = this.state.tourStep;
-        if (i >= 4) { this._skipTour(); this.toastMsg('Tour complete. The five core flows are yours — everything persists between visits.'); return; }
+        if (i >= this.TOUR.length - 1) { this._skipTour(); this.toastMsg('Tour complete. Everything you just saw persists between visits — pick any tab and carry on.'); return; }
         this.setState({ tourStep: i + 1 }); this.nav(this.TOUR[i + 1].route);
       }
     };

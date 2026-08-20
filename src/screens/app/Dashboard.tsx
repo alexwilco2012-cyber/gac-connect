@@ -22,7 +22,6 @@ import { DASHBOARD_KPIS, PREDICTED_NEEDS, VESSELS } from '../../data/vessels';
 import { isTerminalStage } from '../../lib/crewChange';
 import { useApp } from '../../store/app';
 import { useCrewChange } from '../../store/crewChange';
-import { TourPrompt } from '../../tour/Tour';
 
 const PILL_TONE = { info: 'info', warn: 'warn', success: 'verified' } as const;
 
@@ -94,8 +93,6 @@ export default function Dashboard() {
           Open Outlook add-in preview
         </Button>
       </div>
-
-      <TourPrompt />
 
       {/* KPIs */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-tour="kpis">
@@ -205,7 +202,10 @@ export default function Dashboard() {
                 { label: 'Procurement', on: true },
               ]}
               fullStack={fullStack}
-              className="mx-auto mt-2 w-[240px]"
+              // The pillar labels are 7.5 user units, so a fixed 240px box paints
+              // them at 7.5px on a phone. Letting the motif use the card's width
+              // scales the whole diagram, labels included.
+              className="mx-auto mt-2 w-full max-w-[300px] sm:w-[240px]"
             />
             <div className="mt-2 text-center">
               {fullStack ? <Pill tone="inhouse">★ Full Stack client</Pill> : null}

@@ -103,12 +103,23 @@ DC_DATA.QUOTES = [
   { name: 'Granite Cranes', price: '£5,100', avail: 'Fri 09:00', capacity: '110t mobile', rating: '4.5 ★ · 46 ratings', esg: 'B', src: 'Replied via platform · 11:03', outlook: false, best: false }
 ];
 
+/* The guided tour: the demo path, in the order it is actually walked. Kept
+   word for word in step with the site's src/tour/steps.ts — both surfaces tell
+   the panel the same story, and a panel member who scans the QR gets the same
+   walkthrough the room just watched. */
 DC_DATA.TOUR = [
-  { route: 'dashboard', title: 'The agent’s morning', body: 'Arrivals are flagged from GA history and a procurement list is drafted before you pick up the phone. One button sends every quote request.' },
-  { route: 'marketplace', title: 'The marketplace', body: 'GAC’s own service lines are pinned first. Promoted suppliers are always labelled, and a blocked supplier cannot be booked at any price.' },
-  { route: 'quotes', title: 'Quotes, side by side', body: 'Replies land in one comparison view — including replies parsed straight from Outlook. Accepting one generates the PO in GAC Agent.' },
-  { route: 'tiers', title: 'The tier discount', body: 'Non-cumulative: the highest single tier applies. All three pillars is Full Stack — 7%, and £35,000 a year on £500k of GAC spend.' },
-  { route: 'svs', title: 'The SVS', body: 'Compliance gate at the front, expiry early-warning behind it. Lapsed paperwork blocks booking everywhere — promotion cannot override it.' }
+  { route: 'dashboard', title: 'Where every call stands', body: 'Open jobs, quote requests out, suppliers vetted, and the admin hours this replaces. One glance, before anyone asks.' },
+  { route: 'dashboard', title: 'The morning starts done', body: 'GA already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.' },
+  { route: 'marketplace', title: 'Vetted, or not bookable', body: 'GAC’s own lines pin first, promoted listings are always labelled, and a supplier with lapsed paperwork cannot be booked at any price.' },
+  { route: 'crew-change', title: 'A crew change, end to end', body: 'Hotels, taxis timed off the flight, launches by port, immigration guidance, and the LOI and repatriation letters. Give a flight number and every leg times itself.' },
+  { route: 'logistics', title: 'Cargo you can watch', body: 'Booked, collected, in transit, at the GAC warehouse, delivered to the quay — beside the port call it belongs to, not in a separate system.' },
+  { route: 'customs', title: 'Customs, without the guesswork', body: 'Documents, preparation, submission, clearance. It will not take a declaration until the document set is complete, and it informs rather than advises.' },
+  { route: 'procurement', title: 'One list, one invoice', body: 'The list goes to Compass, GAC’s own procurement branch. Compass sources and supplies every line and confirms it back. One relationship, one invoice.' },
+  { route: 'quotes', title: 'Quotes compare themselves', body: 'Replies land side by side, including ones sent as plain Outlook emails. Accepting one raises the PO in GA with the split already applied.' },
+  { route: 'invoices', title: 'Seven days to check it', body: 'Allocate the billing party, split a disbursement line by line, match it to the call. A harbour bill at an off-hire splits down the middle here.' },
+  { route: 'tiers', title: 'Consolidation pays', body: 'The highest single tier applies, never the sum. All three lines is Full Stack: 7%, and £35,000 a year on £500k of GAC spend.' },
+  { route: 'svs', title: 'The gate and the early warning', body: 'Certification is mandatory, alerts fire at 90, 30 and 7 days, and a lapse blocks booking everywhere. No commercial arrangement overrides it.' },
+  { route: 'certification', title: 'What it could become', body: 'Certification tracking and bunker coordination are previews, clearly outside this proposal’s scope. They show the platform is a chassis, not a single-purpose tool.' }
 ];
 
 /* Interactive harbour landing — copy verbatim from the "GAC Services Landing" handoff (matches the live site). */

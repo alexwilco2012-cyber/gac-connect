@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { POC_RIBBON } from '../../config/brand';
-import { Tour } from '../../tour/Tour';
+import { Tour, TourPrompt } from '../../tour/Tour';
 import { Loader } from '../motif/Loader';
 import { Wordmark } from './Wordmark';
 
@@ -49,24 +49,33 @@ export default function AppLayout() {
       <header className="sticky top-0 z-50 bg-ink text-white">
         <div className="mx-auto flex h-[58px] max-w-[1180px] items-center gap-4 px-4 sm:px-6">
           <Wordmark />
-          <nav aria-label="Platform" className="flex flex-1 gap-0.5 overflow-x-auto">
-            {NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `rounded-md px-2 py-2 text-[13px] font-semibold whitespace-nowrap no-underline transition-colors ${
-                    isActive
-                      ? 'bg-white/14 text-white shadow-[inset_0_-3px_0_var(--gold)]'
-                      : 'text-[#B9C8D6] hover:bg-white/8 hover:text-white'
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+          {/* The scroller is wrapped so the fade can sit over its right edge:
+              ten tabs never fit on a phone, and a hard cut looks like the end
+              of the list rather than the middle of it. */}
+          <div className="relative min-w-0 flex-1">
+            <nav aria-label="Platform" className="flex gap-0.5 overflow-x-auto">
+              {NAV.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    `rounded-md px-2 py-2 text-[13px] font-semibold whitespace-nowrap no-underline transition-colors ${
+                      isActive
+                        ? 'bg-white/14 text-white shadow-[inset_0_-3px_0_var(--gold)]'
+                        : 'text-[#B9C8D6] hover:bg-white/8 hover:text-white'
+                    }`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 right-0 w-7 bg-gradient-to-l from-ink to-transparent lg:hidden"
+            />
+          </div>
           <div className="hidden items-center gap-2.5 text-[13px] text-[#C9D6E2] lg:flex">
             <span className="hidden 2xl:inline">A. Wilkinson · Aberdeen Agency</span>
             <span
@@ -80,6 +89,9 @@ export default function AppLayout() {
       </header>
 
       <main id="app-main" className="mx-auto w-full max-w-[1180px] flex-1 px-4 pt-7 pb-20 sm:px-6">
+        {/* Above the outlet, so someone arriving from the QR is offered the
+            walkthrough on whatever screen they land on. */}
+        <TourPrompt />
         <Outlet />
       </main>
 

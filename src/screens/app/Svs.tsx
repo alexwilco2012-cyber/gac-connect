@@ -46,7 +46,10 @@ export default function Svs() {
         7 days; lapsed suppliers cannot be booked.
       </p>
 
-      <div className="mt-4 rounded-lg border-l-4 border-warn bg-warn-soft px-4 py-3 text-[13.5px]">
+      <div
+        data-tour="svs"
+        className="mt-4 rounded-lg border-l-4 border-warn bg-warn-soft px-4 py-3 text-[13.5px]"
+      >
         <strong>2 alerts:</strong> Granite NDT Ltd — GWO expires in 21 days (renewal reminder sent).
         Peterhead Diving Services — insurance lapsed (booking blocked until evidence uploaded).
       </div>

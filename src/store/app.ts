@@ -76,6 +76,7 @@ interface AppState {
   tourStep: number | null;
   startTour(): void;
   nextTourStep(): void;
+  prevTourStep(): void;
   dismissTour(): void;
 
   // Loader — once per session
@@ -152,6 +153,10 @@ export const useApp = create<AppState>((set, get) => ({
   nextTourStep() {
     const cur = get().tourStep;
     set({ tourStep: cur === null ? 0 : cur + 1 });
+  },
+  prevTourStep() {
+    const cur = get().tourStep;
+    set({ tourStep: cur === null ? 0 : Math.max(0, cur - 1) });
   },
   dismissTour() {
     persistent.set('tourDismissed', true);

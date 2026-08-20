@@ -170,6 +170,11 @@ platform home (interactive harbour). It shows when the URL hash is empty or
 `#/present`; any other route skips it. Toggle with `presenter` in
 `src/app/props.json`.
 
+The closer carries a **QR code pointing at the platform** (`…/gac-connect/app`, never at the
+deck) as inline SVG paths rather than a base64 image — it stays crisp at projector
+size, costs no payload, and takes the deck's own colours. Regenerate it only if
+the platform address changes, and decode the result before shipping it.
+
 Adding or removing a slide is three edits: a `<section class="{{ advCls<n> }}">`
 in the partial, a label in `ADV_DOT_LABELS`, and `ADV_SLIDES`. The
 `advCls<n>`/`advHid<n>` bindings, the counter and the dots are all generated from
