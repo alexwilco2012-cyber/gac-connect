@@ -127,11 +127,11 @@ The presenter opens with an eleven-slide sequence:
 | 03 | The proposal | four pillars and a roof |
 | 04 | How it fixes it | the same job as a five-step flow |
 | 05 | The numbers | revenue against operating result, Years 1-3, break-even marked |
-| 06 | Strategy and finance | "back to the board" — closes the chess loop |
+| 06 | Strategy and finance | GA already holds every service ever bought; the chess loop closes in the card title |
 | 07 | F1 | a 30-second head start |
 | 08 | QHSSE | the head start exists because the car passed scrutineering |
 | 09 | Hyrox | two of the eight stations done for you |
-| 10 | Our people | which two, and who gets the time back |
+| 10 | Our people | which two, and how the role changes shape |
 | 11 | Closer | three recap cards and an **Enter the platform** button |
 
 The metaphors (01, 07, 09) and the closer are the **Advantage** slides, ported
@@ -146,9 +146,23 @@ the live site.
 our people. That is what makes the metaphors load-bearing rather than
 decorative, and it means every headline on 02, 06, 08 and 10 is a handoff line —
 they answer the slide in front of them and should not be reworded in isolation.
-Chess is the exception: it stays at the front as the cold open, so slide 06
-reopens it explicitly instead of sitting next to it. Slides 06, 08 and 10 carry
-cards rather than an illustration and reuse `.recap`/`.rcard` from the closer.
+Chess is the exception: it stays at the front as the cold open, and its payoff
+lands on slide 06 in the card titled "The moves they can't see" rather than in
+the headline. Slides 06, 08 and 10 carry cards rather than an illustration and
+reuse `.recap`/`.rcard` from the closer.
+
+Two copy rules the owner set on 2026-08-20, both worth keeping:
+
+- **No prop travels between non-adjacent slides.** Slide 04 used to open "the
+  same crane, on the platform", reaching back over slide 03 to a detail in slide
+  02's illustration; anyone who had not held the prop just heard an odd line. The
+  crane stays on 02 as concrete detail and is referred to nowhere else.
+- **Slide 10 is about role design, not job protection.** It is shown to the
+  people who decide headcount, so a promise that nobody loses a job reads as
+  naive to that room and answers a question they were not asking. The slide says
+  the agent's job changes shape, names the released capacity as a decision for
+  them, and states the Year 1 assumption (capacity spent on more volume through
+  the same team) that the Section 8 uplift is modelled on.
 
 Click / `→` / Space advance; `←` back; `Esc` jumps to the closer; on the closer,
 advancing pulses the button and `Enter` or the button fades the overlay into the
