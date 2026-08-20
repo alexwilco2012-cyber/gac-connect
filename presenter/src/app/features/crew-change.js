@@ -411,8 +411,12 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
     /* A retired id in the hash resolved to a live section: tidy the address bar on
        the next tick so what is shared next is the current name (site: CrewChange.tsx
        rewrites ?section=). The rewritten hash resolves to itself, so this settles
-       after one pass. */
-    if (st.routeSection && st.routeSection !== wanted) {
+       after one pass.
+       Guarded on the route: state.routeSection is shared by every screen that
+       has sections, so without this a '#/customs/documents' — a section this
+       module does not recognise — would be "tidied" to the crew-change default
+       and drag the visitor off the screen they asked for. */
+    if (st.route === 'crew-change' && st.routeSection && st.routeSection !== wanted) {
       setTimeout(() => {
         if (self.state.routeSection !== st.routeSection) return;
         ccWriteHash(wanted);

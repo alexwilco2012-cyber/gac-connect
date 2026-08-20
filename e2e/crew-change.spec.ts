@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 test('crew change: sections, hotels, LOI and repat pipelines, persistence, reset', async ({
   page,
 }) => {
-  await page.goto('/app/crew-change');
+  await page.goto('/app/agency/crew-change');
   await page.keyboard.press('Escape'); // skip loader if present
 
   await expect(
@@ -147,7 +147,7 @@ test('crew change: sections, hotels, LOI and repat pipelines, persistence, reset
 });
 
 test('crew change: every form control is labelled', async ({ page }) => {
-  await page.goto('/app/crew-change');
+  await page.goto('/app/agency/crew-change');
   await page.keyboard.press('Escape');
 
   for (const name of ['LOI (on-signers)', 'Repat letters (off-signers)']) {
@@ -174,7 +174,7 @@ test('crew change: every form control is labelled', async ({ page }) => {
 test('crew change › taxis: the planner times the transport to the tracked flight', async ({
   page,
 }) => {
-  await page.goto('/app/crew-change?section=taxis');
+  await page.goto('/app/agency/crew-change?section=taxis');
   await page.keyboard.press('Escape');
 
   // The section opens from the URL and the chip strip reflects it.
@@ -249,7 +249,7 @@ test('crew change › taxis: the planner times the transport to the tracked flig
 });
 
 test('crew change › launches: capacity and freight, on a section of its own', async ({ page }) => {
-  await page.goto('/app/crew-change?section=launches');
+  await page.goto('/app/agency/crew-change?section=launches');
   await page.keyboard.press('Escape');
 
   await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'launches');

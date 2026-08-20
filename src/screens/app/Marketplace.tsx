@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { RequestQuoteModal } from '../../components/RequestQuoteModal';
 import type { RequestTarget } from '../../components/RequestQuoteModal';
 import { Button, ButtonLink } from '../../components/ui/Button';
@@ -17,6 +17,18 @@ import type { Supplier } from '../../data/suppliers';
 import { useApp } from '../../store/app';
 
 type EsgFilter = 'all' | 'a' | 'ab';
+
+/**
+ * In-house lines that now have a hub of their own. The directory entry opens
+ * the line rather than firing a request into the void — GAC Assets is the one
+ * line with no hub, so it keeps the "engage service" action.
+ */
+const IN_HOUSE_ROUTE: Record<string, { to: string; label: string } | undefined> = {
+  'gac-agency': { to: '/app/agency', label: 'Open Agency' },
+  'gac-logistics': { to: '/app/logistics', label: 'Open Logistics' },
+  'gac-customs': { to: '/app/customs', label: 'Open Customs' },
+  'gac-procurement': { to: '/app/procurement', label: 'Send a list to Compass' },
+};
 
 function SupplierRow({
   supplier,
@@ -108,7 +120,20 @@ function SupplierRow({
 export default function Marketplace() {
   const pushToast = useApp((s) => s.pushToast);
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<string>('All');
+  // The category lives in the URL (?category=Haulage) so a service line can
+  // hand off to the directory already filtered, and the filtered view is a
+  // shareable address. An unknown category falls back to All.
+  const [params, setParams] = useSearchParams();
+  const requested = params.get('category');
+  const category: string = (CATEGORIES as readonly string[]).includes(requested ?? '')
+    ? requested!
+    : 'All';
+  const setCategory = (c: string) => {
+    const next = new URLSearchParams(params);
+    if (c === 'All') next.delete('category');
+    else next.set('category', c);
+    setParams(next, { replace: true });
+  };
   const [sort, setSort] = useState<SortKey>('rating');
   const [esg, setEsg] = useState<EsgFilter>('all');
   const [target, setTarget] = useState<RequestTarget | null>(null);
@@ -220,10 +245,11 @@ export default function Marketplace() {
                   <p className="mt-1.5 text-[13px] font-bold text-gold-deep">{line.tierLabel}</p>
                 </div>
                 <div className="flex items-start">
-                  {line.id === 'gac-procurement' ? (
-                    // Procurement has its own working example — the Compass flow.
-                    <ButtonLink to="/app/procurement" variant="gold">
-                      Send a list to Compass
+                  {IN_HOUSE_ROUTE[line.id] ? (
+                    // The line has a hub of its own — open it rather than
+                    // raising a request the client cannot see afterwards.
+                    <ButtonLink to={IN_HOUSE_ROUTE[line.id]!.to} variant="gold">
+                      {IN_HOUSE_ROUTE[line.id]!.label}
                     </ButtonLink>
                   ) : (
                     <Button

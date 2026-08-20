@@ -6,6 +6,7 @@ import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Pill } from '../../components/ui/Pill';
 import type { PillTone } from '../../components/ui/Pill';
 import { DEFAULT_REQUEST, PROCUREMENT_RULES, SIMULATION_NOTICE } from '../../data/procurement';
+import { serviceLine } from '../../data/serviceLines';
 import { VESSELS } from '../../data/vessels';
 import { gbp } from '../../lib/format';
 import {
@@ -37,6 +38,9 @@ import { canSend, useProcurement } from '../../store/procurement';
 
 const INPUT =
   'block min-h-[40px] w-full rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink';
+
+/** Procurement is a service line in its own right — the header says so. */
+const PROCUREMENT_LINE = serviceLine('procurement');
 
 /** Header pill for the request card, per stage. */
 const STAGE_PILL: Record<Stage, { tone: PillTone; label: string }> = {
@@ -157,10 +161,13 @@ export default function Procurement() {
 
   return (
     <div className="screen-enter">
-      <Eyebrow>Procurement · via Compass</Eyebrow>
-      <h1 className="mt-1 font-display text-2xl font-bold">
-        Send the list to Compass. One invoice comes back.
-      </h1>
+      <Eyebrow>Service line · GAC Procurement · via Compass</Eyebrow>
+      <div className="mt-1 flex flex-wrap items-center gap-2.5">
+        <h1 className="font-display text-2xl font-bold">
+          Send the list to Compass. One invoice comes back.
+        </h1>
+        <Pill tone="inhouse">{PROCUREMENT_LINE.tierLabel}</Pill>
+      </div>
       <p className="mt-1 max-w-[760px] text-[14px] text-ink-soft">
         Your procurement list goes by email straight to Compass, GAC’s own procurement branch.
         Compass sources and supplies every line on it, from its own stock and its own supply

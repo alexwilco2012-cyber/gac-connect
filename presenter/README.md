@@ -71,16 +71,18 @@ is filled per output: preload hints + `window.__resources` (site), just
 `src/partials/` is in document order: `10-loader` (chain-forge entrance, only
 shown when the opening is off), `20-opening` (the Advantage opening: four
 slides shown before the platform — see below), `30-chrome` (header/nav),
-`40-…57-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
+`40-…58-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
 certification, bunkers, kitchen-sink, procurement, crew-change — which holds
 all six crew-change sections, Taxis (planner + operators) and Launches (the
-panel) among them; `54-launches` is retired — invoices), `60-footer-drawer`,
+panel) among them; `54-launches` is retired — invoices, and `58-service-lines`,
+which renders all three hubs from one set of bindings), `60-footer-drawer`,
 `70-modal`, `73-request`, `74-launch-request`, `71-tour`, `72-toast`.
 
 ### Feature modules (17 Aug review screens)
 
-The screens added after v12 — Procurement, Crew change, Invoices, and the
+The screens added after v12 — Procurement, Crew change, Invoices, the three
+service-line hubs (`service-lines.js`), and the
 launches panel that Crew change › Launches embeds (`launches.js` still owns
 plan-a-run, the per-port cards and the launch-request modal;
 `56-crew-change.html` binds them) — live as **feature modules** in
@@ -100,7 +102,13 @@ and Escape handling and registers them with the core:
 for the two screens are the only core edits, plus one generic hook: `_parseHash`
 turns `#/crew-change/<section>` (and the retired `#/launches`, which is
 `#/crew-change/launches`) into `state.routeSection`, which the crew-change
-module resolves — retired names such as `transfers` included — and shows.
+module resolves — retired names such as `transfers` included — and shows. The
+same slot carries `#/logistics/<section>` and `#/customs/<section>` for the
+service-line hubs, and `#/agency/crew-change/<section>` drops its first segment,
+so every address minted before the 20 Aug restructure still lands. **A module
+that resolves `routeSection` must guard on `st.route` being its own screen** —
+the slot is shared, so an unguarded module will "tidy" a section it does not
+recognise and drag the visitor off the screen they asked for.
 `routeSection` is the only record of which section is open, so picking a chip
 or following a cross-link rewrites the hash in place (`history.replaceState`:
 no history entry, no `hashchange`, so no scroll to the top) and a hash with no
@@ -198,7 +206,22 @@ Crew change on the launches section, and a retired `#/crew-change/transfers`
 opens taxis.
 
 The platform nav carries the same ten items as the site's `AppLayout`, in the
-same order. Invoices (`#/invoices`, `app/features/invoices.js` +
+same order — since 20 Aug that is the **service-line** row: Dashboard · Agency ·
+Logistics · Customs · Procurement · Marketplace · Quotes · Invoices · SVS ·
+Tiers. Customs holds its own tab so the 2 / 4 / 7 tier reads straight off the
+navigation (owner's decision). Crew change, certification and bunkers live
+inside Agency, and the Agency tab stays lit on all three (`_navHeld`). Each hub
+lands on what is live in the line, then what can be asked for — every service
+marked **★ GAC service** or **◇ GAC network**, because the tier discount applies
+to GAC in-house charges only — then the line's own working screen inline, then a
+shortcut into the directory rather than a second copy of it. Logistics runs
+consignments (Booked → Collected → In transit → At GAC warehouse → Delivered to
+quay) and Customs runs declarations (Documents received → Declaration prepared →
+Submitted to HMRC → Cleared); a movement from outside the UK cross-links to
+Customs and fills the entry in from the logistics record. Customs will not take
+a declaration until the document set is confirmed complete, says "GAC informs,
+it does not advise", and names no broker or third party. Never real commodity
+codes, EORI numbers or entry references. Invoices (`#/invoices`, `app/features/invoices.js` +
 `partials/57-invoices.html`) is the v12 §5 review loop: the seven-day window,
 allocate the billing party, confirm and match to GA, and rate the job on
 close-out, with the dashboard's "Invoice review · 7-day window" card counting

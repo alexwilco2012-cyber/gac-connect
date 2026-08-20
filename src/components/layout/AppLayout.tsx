@@ -2,27 +2,34 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { POC_RIBBON } from '../../config/brand';
 import { Tour } from '../../tour/Tour';
 import { Loader } from '../motif/Loader';
-import { BetaPill } from '../ui/Pill';
 import { Wordmark } from './Wordmark';
 
 /**
- * Platform navigation. Order follows the client's working day: find and book
- * (Marketplace, Procurement, Crew change — which holds taxis and launches),
- * then the paper trail (Quotes, Invoices), then the commercial and compliance
- * views. Ten items have to fit at 1280 px, so the link padding is tight and the
- * tier screen is simply "Tiers" here (its heading still says Tier Calculator).
+ * Platform navigation, grouped by **service line**.
+ *
+ * It used to be flat, and mixed altitudes doing it: Crew change (a workflow),
+ * Bunkers (a commodity), Invoices (a record) and SVS (a trust system) sat as
+ * peers, and at ten items there was nowhere left to put a new service. The row
+ * now reads in three blocks — the four lines GAC sells and invoices, then the
+ * spine every line runs through (find, compare, pay), then the commercial and
+ * compliance views. Customs keeps its own tab rather than folding into
+ * Logistics so the 2 / 4 / 7 tier reads straight off the navigation, and the
+ * two beta previews moved inside Agency, where a future service belongs.
+ *
+ * Ten items still have to fit at 1280 px, so the link padding stays tight and
+ * the tier screen is simply "Tiers" here (its heading says Tier Calculator).
  */
 const NAV = [
   { to: '/app', label: 'Dashboard', end: true },
-  { to: '/app/marketplace', label: 'Marketplace' },
+  { to: '/app/agency', label: 'Agency' },
+  { to: '/app/logistics', label: 'Logistics' },
+  { to: '/app/customs', label: 'Customs' },
   { to: '/app/procurement', label: 'Procurement' },
-  { to: '/app/crew-change', label: 'Crew change' },
+  { to: '/app/marketplace', label: 'Marketplace' },
   { to: '/app/quotes', label: 'Quotes' },
   { to: '/app/invoices', label: 'Invoices' },
-  { to: '/app/tiers', label: 'Tiers' },
   { to: '/app/svs', label: 'SVS' },
-  { to: '/app/certification', label: 'Certification', beta: true },
-  { to: '/app/bunkers', label: 'Bunkers', beta: true },
+  { to: '/app/tiers', label: 'Tiers' },
 ];
 
 export default function AppLayout() {
@@ -57,7 +64,6 @@ export default function AppLayout() {
                 }
               >
                 {item.label}
-                {item.beta ? <BetaPill /> : null}
               </NavLink>
             ))}
           </nav>

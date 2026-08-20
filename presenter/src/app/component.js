@@ -88,7 +88,7 @@ class Component extends DCLogic {
   _parseHash() {
     const h = (typeof location !== 'undefined' ? location.hash : '').replace(/^#\/?/, '');
     if (!h) return { route: '', profileId: null, section: null };
-    const parts = h.split('/');
+    let parts = h.split('/');
     if (parts[0] === 'supplier' && parts[1]) return { route: 'supplier', profileId: parts[1], section: null };
     /* '#/crew-change/<section>' mirrors the site's ?section= deep link; there is
        no Launches tab any more (17 Aug review follow-up), so the old '#/launches'
@@ -97,9 +97,29 @@ class Component extends DCLogic {
        before taxis and launches were split) are passed through as written and
        resolved by the crew-change module, which reads state.routeSection. */
     if (parts[0] === 'launches') return { route: 'crew-change', profileId: null, section: 'launches' };
+    /* Crew change, certification and bunkers moved inside the Agency service
+       line on 20 Aug, so '#/agency/crew-change/taxis' is written the way the
+       site's /app/agency/crew-change?section=taxis is. The leading segment is
+       simply dropped — every address minted before the restructure
+       ('#/crew-change/taxis', '#/certification') still lands, exactly as the
+       site's redirects do. */
+    if (parts[0] === 'agency' && parts[1]) parts = parts.slice(1);
     if (parts[0] === 'crew-change' && parts[1]) return { route: 'crew-change', profileId: null, section: parts[1] };
-    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    /* A hub section: '#/logistics/warehousing', '#/customs/documents'. */
+    if ((parts[0] === 'logistics' || parts[0] === 'customs') && parts[1]) {
+      return { route: parts[0], profileId: null, section: parts[1] };
+    }
+    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'agency', 'logistics', 'customs', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null, section: null };
+  }
+  /* Which nav tab reads as current. A tab stays lit on the screens that live
+     inside it: Marketplace on a supplier profile, Agency on crew change and on
+     the two beta previews that moved under it (20 Aug service lines). */
+  _navHeld(tab, route) {
+    if (tab === route) return true;
+    if (tab === 'marketplace') return route === 'supplier';
+    if (tab === 'agency') return route === 'crew-change' || route === 'certification' || route === 'bunkers';
+    return false;
   }
   nav(r) {
     if (typeof location !== 'undefined') {
@@ -394,7 +414,7 @@ class Component extends DCLogic {
     const brandSubUpper = bParts.slice(1).join(' ').toUpperCase() || 'CONNECT';
     const route = st.route;
 
-    const platformRoutes = ['dashboard', 'marketplace', 'supplier', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const platformRoutes = ['dashboard', 'agency', 'logistics', 'customs', 'marketplace', 'supplier', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     const isPlatform = platformRoutes.includes(route);
 
     /* nav — the same ten platform items as the site's AppLayout, in the same
@@ -402,13 +422,13 @@ class Component extends DCLogic {
        supplier-facing and is reached from For Suppliers, not the client's nav),
        so the padding is tight and the tier screen is "Tiers" */
     const mk = (label, r, beta) => ({
-      label: label, beta: !!beta, pressed: (route === r || (r === 'marketplace' && route === 'supplier')) ? 'true' : 'false',
+      label: label, beta: !!beta, pressed: this._navHeld(r, route) ? 'true' : 'false',
       go: this._go(r),
       style: 'background:none;border:none;padding:8px 8px;border-radius:6px;font-weight:600;font-size:13px;white-space:nowrap;cursor:pointer;font-family:inherit;' +
-        ((route === r || (r === 'marketplace' && route === 'supplier')) ? 'color:#FFFFFF;background:rgba(255,255,255,.14);box-shadow:inset 0 -3px 0 #C9A227;' : 'color:#B9C8D6;')
+        (this._navHeld(r, route) ? 'color:#FFFFFF;background:rgba(255,255,255,.14);box-shadow:inset 0 -3px 0 #C9A227;' : 'color:#B9C8D6;')
     });
     const navItems = isPlatform
-      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Procurement', 'procurement'), mk('Crew change', 'crew-change'), mk('Quotes', 'quotes'), mk('Invoices', 'invoices'), mk('Tiers', 'tiers'), mk('SVS', 'svs'), mk('Certification', 'certification', true), mk('Bunkers', 'bunkers', true)]
+      ? [mk('Dashboard', 'dashboard'), mk('Agency', 'agency'), mk('Logistics', 'logistics'), mk('Customs', 'customs'), mk('Procurement', 'procurement'), mk('Marketplace', 'marketplace'), mk('Quotes', 'quotes'), mk('Invoices', 'invoices'), mk('SVS', 'svs'), mk('Tiers', 'tiers')]
       : [mk('Home', 'home'), mk('For Clients', 'clients'), mk('For Suppliers', 'suppliers'), mk('About', 'about')];
 
     /* marketplace */
@@ -430,10 +450,12 @@ class Component extends DCLogic {
     const inhouseList = this.INHOUSE.filter(match).map((s) => ({
       name: s.name, desc: s.desc, cat: s.cat, esg: s.esg, esgStyle: this._esgStyle(s.esg), tierLabel: s.tierLabel,
       cardStyle: 'display:grid;grid-template-columns:1fr auto;gap:14px;padding:16px 18px;margin-bottom:12px;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);border:1.5px solid #C9A227;background:linear-gradient(180deg,#FFFDF4,#FFFFFF 60%);',
-      /* Procurement has its own working example (the Compass flow) — mirrors the site */
-      actionLabel: s.id === 'gac-procurement' ? 'Send a list to Compass' : 'Engage service',
-      onAction: s.id === 'gac-procurement'
-        ? this._go('procurement')
+      /* A line with a hub of its own opens it rather than firing a request the
+         client cannot see afterwards; GAC Assets is the one line with no hub,
+         so it keeps the engage-service action (mirrors the site's Marketplace). */
+      actionLabel: (this.INHOUSE_ROUTES[s.id] || {}).label || 'Engage service',
+      onAction: this.INHOUSE_ROUTES[s.id]
+        ? this._go(this.INHOUSE_ROUTES[s.id].route)
         : () => this.toastMsg('Request sent to your GAC agent — surfaced inside the existing relationship, not a new queue.')
     }));
 
@@ -619,11 +641,13 @@ class Component extends DCLogic {
       isQuotes: route === 'quotes', isInvoices: route === 'invoices', isTiers: route === 'tiers', isSvs: route === 'svs', isAnalytics: route === 'analytics',
       isCert: route === 'certification', isBunkers: route === 'bunkers', isKitchen: route === 'kitchen-sink',
       isProcurement: route === 'procurement', isCrew: route === 'crew-change',
+      isAgency: route === 'agency', isLogistics: route === 'logistics', isCustoms: route === 'customs',
       navItems: navItems,
       goHome: this._go('home'), goClients: this._go('clients'), goSuppliers: this._go('suppliers'), goAbout: this._go('about'),
       goDashboard: this._go('dashboard'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'), goInvoices: this._go('invoices'),
       goTiers: this._go('tiers'), goSvs: this._go('svs'), goAnalytics: this._go('analytics'), goKitchen: this._go('kitchen-sink'),
       goProcurement: this._go('procurement'), goCrew: this._go('crew-change'),
+      goAgency: this._go('agency'), goLogistics: this._go('logistics'), goCustoms: this._go('customs'),
       /* dashboard crew-change card line — a default the crew-change module overrides with a live count */
       dashCrewLine: 'No letters in progress. Hotels, immigration, LOI and repatriation-letter templates live in one place.',
 

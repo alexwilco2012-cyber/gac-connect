@@ -58,6 +58,7 @@ export const CATEGORY_SERVICE: Record<string, string> = {
   FLT: 'Forklift (FLT) hire',
   Launches: 'Launch / crew transfer',
   Taxis: 'Crew taxi / airport transfer',
+  Haulage: 'Road haulage',
   Medical: 'Medical cover',
   Scaffolding: 'Access scaffolding',
   Diving: 'Diving services',

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import App from './App';
 import MarketingLayout from './components/layout/MarketingLayout';
+import { RouteRedirect } from './components/RouteRedirect';
 import { RouteErrorBoundary } from './components/ui/RouteErrorBoundary';
 import Landing from './screens/marketing/Landing';
 
@@ -10,6 +11,11 @@ import Landing from './screens/marketing/Landing';
  * first paint only ships the landing page. The importers are kept in one table
  * so `prefetchRoutes` can warm the rest once the browser is idle — the first
  * click on any nav item then renders from cache instead of waiting on a fetch.
+ *
+ * The app routes are grouped by **service line** — Agency, Logistics, Customs,
+ * Procurement — mirroring how GAC sells and invoices, and the 2 / 4 / 7 tier.
+ * Everything that moved keeps its old address as a redirect that carries the
+ * query string, so shared deep links and printed references still resolve.
  */
 const importers = {
   ForClients: () => import('./screens/marketing/ForClients'),
@@ -18,6 +24,9 @@ const importers = {
   Dashboard: () => import('./screens/app/Dashboard'),
   Marketplace: () => import('./screens/app/Marketplace'),
   SupplierProfile: () => import('./screens/app/SupplierProfile'),
+  Agency: () => import('./screens/app/Agency'),
+  Logistics: () => import('./screens/app/Logistics'),
+  Customs: () => import('./screens/app/Customs'),
   Launches: () => import('./screens/app/Launches'),
   Procurement: () => import('./screens/app/Procurement'),
   CrewChange: () => import('./screens/app/CrewChange'),
@@ -38,6 +47,9 @@ const About = lazy(importers.About);
 const Dashboard = lazy(importers.Dashboard);
 const Marketplace = lazy(importers.Marketplace);
 const SupplierProfile = lazy(importers.SupplierProfile);
+const Agency = lazy(importers.Agency);
+const Logistics = lazy(importers.Logistics);
+const Customs = lazy(importers.Customs);
 const Launches = lazy(importers.Launches);
 const Procurement = lazy(importers.Procurement);
 const CrewChange = lazy(importers.CrewChange);
@@ -81,18 +93,32 @@ export const routes: RouteObject[] = [
         element: lazily(<AppLayout />),
         children: [
           { index: true, element: lazily(<Dashboard />) },
+
+          // Service lines
+          { path: 'agency', element: lazily(<Agency />) },
+          { path: 'agency/crew-change', element: lazily(<CrewChange />) },
+          { path: 'agency/certification', element: lazily(<CertificationBeta />) },
+          { path: 'agency/bunkers', element: lazily(<BunkersBeta />) },
+          { path: 'logistics', element: lazily(<Logistics />) },
+          { path: 'customs', element: lazily(<Customs />) },
+          { path: 'procurement', element: lazily(<Procurement />) },
+
+          // Find, compare, pay — the spine every line runs through
           { path: 'marketplace', element: lazily(<Marketplace />) },
           { path: 'marketplace/:supplierId', element: lazily(<SupplierProfile />) },
-          { path: 'launches', element: lazily(<Launches />) },
-          { path: 'procurement', element: lazily(<Procurement />) },
-          { path: 'crew-change', element: lazily(<CrewChange />) },
           { path: 'quotes', element: lazily(<Quotes />) },
           { path: 'invoices', element: lazily(<Invoices />) },
+
+          // Commercial and compliance
           { path: 'tiers', element: lazily(<TierCalculator />) },
           { path: 'svs', element: lazily(<Svs />) },
           { path: 'analytics', element: lazily(<Analytics />) },
-          { path: 'certification', element: lazily(<CertificationBeta />) },
-          { path: 'bunkers', element: lazily(<BunkersBeta />) },
+
+          // Addresses that pre-date the service lines
+          { path: 'crew-change', element: <RouteRedirect to="/app/agency/crew-change" /> },
+          { path: 'certification', element: <RouteRedirect to="/app/agency/certification" /> },
+          { path: 'bunkers', element: <RouteRedirect to="/app/agency/bunkers" /> },
+          { path: 'launches', element: lazily(<Launches />) },
         ],
       },
       { path: 'kitchen-sink', element: lazily(<KitchenSink />) },

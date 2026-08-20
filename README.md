@@ -19,6 +19,14 @@ Compass under GAC — one invoice at Compass's prices); and **Crew change** gath
 launch, port by port), immigration guidance, and the LOI / repatriation-letter templates that GAC
 endorses, or UK Border Force endorses, and returns.
 
+The platform is navigated by **service line** — Agency, Logistics, Customs, Procurement — the way
+GAC sells and invoices, with Customs on its own tab so the 2 / 4 / 7 tier discount reads straight
+off the navigation. Each line opens on what is running in it now, what can be asked for (every
+service marked as GAC's own work or a vetted supplier booked through GAC), and its own working
+screen: crew change under Agency, consignments under Logistics, declarations under Customs, the
+Compass list under Procurement. A movement arriving from outside the UK carries straight over
+into a customs entry, which is the two lines meeting on one job.
+
 **Live:** https://alexwilco2012-cyber.github.io/gac-connect/
 
 ![Landing page](docs/screenshot.png)
@@ -31,7 +39,7 @@ endorses, or UK Border Force endorses, and returns.
 ```bash
 npm install
 npm run dev              # local dev server (builds the presenter into public/ first)
-npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request/terms/launches/transfers/procurement/crew-change unit tests
+npm test                 # vitest — tier/SVS/marketplace/commission/invoice/request/terms/launches/transfers/procurement/crew-change/service-line/logistics/customs unit tests
 npm run e2e              # playwright — 25 journeys across six specs (installs Chromium once)
 npm run lint             # eslint + prettier
 npm run build            # production build (Pages base path aware) — presenter + tsc + vite
