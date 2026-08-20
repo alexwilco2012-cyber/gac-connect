@@ -14,7 +14,7 @@ test('launches: ports from data, capacity and freight facts, plan-a-run pills', 
   // The old tab route still works as a deep link — it lands on Crew change › Launches.
   await page.goto('/app/launches');
   await page.keyboard.press('Escape');
-  await expect(page).toHaveURL(/\/app\/crew-change\?section=launches/);
+  await expect(page).toHaveURL(/\/app\/agency\/crew-change\?section=launches/);
   await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'launches');
 
   await expect(page.getByRole('heading', { name: 'Launches from the quay' })).toBeVisible();
@@ -57,7 +57,7 @@ test('launches: ports from data, capacity and freight facts, plan-a-run pills', 
 });
 
 test('launches: request modal validates capacity and sends the request', async ({ page }) => {
-  await page.goto('/app/crew-change?section=launches');
+  await page.goto('/app/agency/crew-change?section=launches');
   await page.keyboard.press('Escape');
 
   await page.getByTestId('request-granite-launches').click();
@@ -88,7 +88,7 @@ test('launches: request modal validates capacity and sends the request', async (
 });
 
 test('launches: the no-freight operator says freight is quoted separately', async ({ page }) => {
-  await page.goto('/app/crew-change?section=launches');
+  await page.goto('/app/agency/crew-change?section=launches');
   await page.keyboard.press('Escape');
 
   await page.getByTestId('request-torry-workboats').click();

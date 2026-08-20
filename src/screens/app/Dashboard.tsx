@@ -313,19 +313,19 @@ export default function Dashboard() {
               port.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="ghost" onClick={() => navigate('/app/crew-change')}>
+              <Button variant="ghost" onClick={() => navigate('/app/agency/crew-change')}>
                 Open crew change
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => navigate('/app/crew-change?section=taxis')}
+                onClick={() => navigate('/app/agency/crew-change?section=taxis')}
                 data-testid="dashboard-taxis"
               >
                 Plan taxis
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => navigate('/app/crew-change?section=launches')}
+                onClick={() => navigate('/app/agency/crew-change?section=launches')}
                 data-testid="dashboard-launches"
               >
                 Book a launch

@@ -69,6 +69,7 @@ export const CATEGORIES = [
   'FLT',
   'Launches',
   'Taxis',
+  'Haulage',
   'Medical',
   'Scaffolding',
   'Diving',
@@ -260,6 +261,49 @@ export const SUPPLIERS: Supplier[] = [
     bookingNote:
       'Airport pickups are timed to the tracked flight — a delay moves the pickup automatically, and the driver waits at arrivals.',
     recentJobs: ['Airport → Macduff harbour, 4 crew — Stronach Subsea crew change'],
+  },
+  {
+    id: 'formartine-freight',
+    name: 'Formartine Freight Services',
+    category: 'Haulage',
+    description:
+      'Curtainsiders and flatbeds between the central belt and the Aberdeen quays, with a nightly trunk run into the GAC warehouse.',
+    rating: 4.7,
+    ratingCount: 76,
+    esg: 'B',
+    certs: fullCerts(['Operator licence', 'Insurance', 'CMR cover']),
+    plan: 'professional',
+    facts: [
+      { label: 'Fleet', value: 'Curtainsider · flatbed · van' },
+      { label: 'Trunk run', value: 'Nightly, central belt → Aberdeen' },
+      { label: 'Booking notice', value: '4 h for a same-day collection' },
+    ],
+    recentJobs: [
+      'Spares collection, Grangemouth → GAC Aberdeen warehouse',
+      'Quayside delivery, 6 pallets — MV Caledonian Star',
+    ],
+  },
+  {
+    id: 'mearns-heavy-transport',
+    name: 'Mearns Heavy Transport',
+    category: 'Haulage',
+    description:
+      'Low-loaders and escorted abnormal loads for project cargo, including route survey and lift liaison at the berth.',
+    rating: 4.5,
+    ratingCount: 31,
+    esg: 'B',
+    certs: [
+      { name: 'Operator licence', state: 'ok' },
+      { name: 'Insurance', state: 'ok' },
+      { name: 'Abnormal load notifications', state: 'due', daysToExpiry: 24 },
+    ],
+    plan: 'free',
+    facts: [
+      { label: 'Fleet', value: 'Low-loader · step-frame · escort' },
+      { label: 'Max load', value: '80 t, out of gauge' },
+      { label: 'Notice', value: '5 working days for an escorted move' },
+    ],
+    recentJobs: ['Module move, Montrose → Aberdeen berth — Browne Energy project cargo'],
   },
   {
     id: 'aberdeen-offshore-medical',
