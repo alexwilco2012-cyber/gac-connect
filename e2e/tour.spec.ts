@@ -32,7 +32,8 @@ test('the tour is offered off the dashboard, and walks all twelve stops', async 
   for (let step = 2; step <= 12; step++) {
     await page.getByRole('button', { name: 'Next →' }).click();
     await expect(card).toContainText(`Tour · ${step} of 12`);
-    if (checkpoints[step]) await expect(page).toHaveURL(checkpoints[step]);
+    const expected = checkpoints[step];
+    if (expected) await expect(page).toHaveURL(expected);
   }
 
   // Back reverses without leaving the tour.

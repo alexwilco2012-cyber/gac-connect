@@ -63,8 +63,8 @@ describe('the guided tour', () => {
   });
 
   it('ends on the beta preview, framed as out of scope', () => {
-    const last = TOUR_STEPS[TOUR_STEPS.length - 1];
-    expect(last.route).toBe('/app/agency/certification');
-    expect(last.body).toMatch(/scope/i);
+    const last = TOUR_STEPS.at(-1);
+    expect(last?.route).toBe('/app/agency/certification');
+    expect(last?.body).toMatch(/scope/i);
   });
 });
