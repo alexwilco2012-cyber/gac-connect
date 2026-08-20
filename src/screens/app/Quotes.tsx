@@ -50,7 +50,7 @@ function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => 
     ['Availability', quote.availability],
     ['Capacity', quote.capacity],
     ['Rating', <Rating rating={quote.rating} count={quote.ratingCount} size="sm" />],
-    ['ESG score', quote.esg],
+    ['ESG score (planned)', quote.esg],
   ];
 
   return (

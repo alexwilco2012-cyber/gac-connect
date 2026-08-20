@@ -111,13 +111,14 @@ export default function ForClients() {
       <section className="mx-auto max-w-[1180px] px-6 py-14 md:py-20">
         <Eyebrow>The ESG angle</Eyebrow>
         <h2 className="mt-2 max-w-[640px] font-display text-[clamp(24px,3.2vw,34px)] leading-tight font-bold">
-          Supplier scoring that supports your decarbonisation reporting
+          Supplier ratings that will support your decarbonisation reporting
         </h2>
         <p className="mt-4 max-w-[640px] text-[14.5px] text-ink-soft">
-          Every supplier on the marketplace carries an ESG grade alongside rating and compliance
-          status, visible at the moment you choose between quotes. Choosing the greener crane is a
-          decision the comparison view lets you make deliberately — and evidence for the report you
-          have to write later.
+          We intend to rate suppliers for ESG alongside rating and compliance status, visible at the
+          moment you choose between quotes, so that choosing the greener crane becomes a deliberate
+          decision and evidence for the report you have to write later. GAC does not score suppliers
+          for ESG today: the ratings arrive once ESG reporting is established within GAC, and the
+          grades shown across the marketplace illustrate how they would read.
         </p>
         <div className="mt-6">
           <ButtonLink to="/app/marketplace" variant="ghost">

@@ -70,6 +70,14 @@ export const CATEGORY_SERVICE: Record<string, string> = {
   Bunkers: 'Bunker coordination',
 };
 
+/**
+ * ESG ratings are a stated intention, not a capability the SVS has today
+ * (owner, 20 Aug 2026). Every screen that shows a grade carries this, so the
+ * platform never claims more than the proposal does.
+ */
+export const ESG_PLANNED_NOTE =
+  'ESG ratings are planned, not live. GAC does not score suppliers for ESG today — the grades here show how they would read once ESG reporting is established within GAC.';
+
 export function relatedServicesFor(category: string): RelatedService[] {
   return RELATED_SERVICES[category] ?? [];
 }

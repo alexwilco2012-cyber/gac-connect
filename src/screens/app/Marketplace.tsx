@@ -12,6 +12,7 @@ import { listingFacts, orderThirdParty } from '../../lib/marketplace';
 import type { SortKey } from '../../lib/marketplace';
 import { deriveStatus, goldBandActive, isBookable } from '../../lib/svs';
 import { serviceTermsFor } from '../../data/serviceTerms';
+import { ESG_PLANNED_NOTE } from '../../data/related';
 import { CATEGORIES, IN_HOUSE_LINES, SUPPLIERS } from '../../data/suppliers';
 import type { Supplier } from '../../data/suppliers';
 import { useApp } from '../../store/app';
@@ -190,12 +191,12 @@ export default function Marketplace() {
             className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
           >
             <option value="rating">Rating</option>
-            <option value="esg">ESG grade</option>
+            <option value="esg">ESG grade (planned)</option>
             <option value="name">Name</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-soft">
-          ESG
+          ESG (planned)
           <select
             value={esg}
             onChange={(e) => setEsg(e.target.value as EsgFilter)}
@@ -207,6 +208,8 @@ export default function Marketplace() {
           </select>
         </label>
       </div>
+
+      <p className="mt-2 text-[12px] text-ink-soft">{ESG_PLANNED_NOTE}</p>
 
       <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Service categories">
         {CATEGORIES.map((c) => (

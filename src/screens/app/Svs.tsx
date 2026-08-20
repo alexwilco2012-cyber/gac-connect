@@ -6,6 +6,7 @@ import { Chip } from '../../components/ui/Chip';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { GoldBandPill, StatusPill } from '../../components/ui/Pill';
 import { Rating } from '../../components/ui/Rating';
+import { ESG_PLANNED_NOTE } from '../../data/related';
 import { deriveStatus, goldBandActive } from '../../lib/svs';
 import type { SupplierStatus } from '../../lib/svs';
 import { GOLD_BAND } from '../../data/goldBand';
@@ -66,14 +67,16 @@ export default function Svs() {
         <table className="w-full border-collapse overflow-hidden rounded-brand border border-line bg-white text-[13.5px]">
           <thead>
             <tr>
-              {['Supplier', 'Category', 'Certifications', 'ESG', 'Rating', 'Status'].map((h) => (
-                <th
-                  key={h}
-                  className="bg-ink px-3.5 py-2.5 text-left text-[12px] tracking-[0.05em] text-white uppercase"
-                >
-                  {h}
-                </th>
-              ))}
+              {['Supplier', 'Category', 'Certifications', 'ESG (planned)', 'Rating', 'Status'].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="bg-ink px-3.5 py-2.5 text-left text-[12px] tracking-[0.05em] text-white uppercase"
+                  >
+                    {h}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody>
@@ -128,11 +131,12 @@ export default function Svs() {
         <p className="mt-2 text-[14px]">
           Keyword taxonomy across 40+ service categories · supplier self-service portal · automated
           expiry alerts · live performance ratings fed from completed platform transactions, each
-          shown with the number of ratings submitted · built-in ESG scoring · the GAC Verified badge
-          as a visible mark of quality · GAC Gold Band as the earned audit tier above it. Owned by
-          GAC — built for us by a third-party developer, now moving to full Group IT maintenance.
-          The platform is what turns it commercial.
+          shown with the number of ratings submitted · the GAC Verified badge as a visible mark of
+          quality · GAC Gold Band as the earned audit tier above it. Owned by GAC — built for us by
+          a third-party developer, now moving to full Group IT maintenance. The platform is what
+          turns it commercial.
         </p>
+        <p className="mt-2 text-[13px] text-ink-soft">{ESG_PLANNED_NOTE}</p>
       </Card>
 
       <Card className="mt-4">

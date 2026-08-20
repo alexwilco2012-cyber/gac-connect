@@ -59,7 +59,7 @@ export default function SupplierProfile() {
           <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3.5 text-[14px] text-ink-soft">
             <Rating rating={supplier.rating} count={supplier.ratingCount} />
             <span>
-              ESG grade <strong>{supplier.esg}</strong>
+              ESG grade <strong>{supplier.esg}</strong> (planned)
             </span>
             <span>{supplier.category}</span>
           </p>
