@@ -10,7 +10,8 @@ Assembles the modular source tree into three outputs:
                                 public/ into dist/ unchanged, so the published URL
                                 stays exactly
                                 https://alexwilco2012-cyber.github.io/gac-connect/presenter.html
-                                (the QR baked into printed materials points there).
+                                (printed materials point there; the QR itself now
+                                resolves to the platform at /gac-connect/app).
                                 Override the folder with --site DIR.
   dist/presenter.html           single-file self-extracting bundle -- the offline /
                                 "download the deck" copy. Not deployed to the site.

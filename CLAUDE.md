@@ -26,7 +26,7 @@ npm run build:presenter  # presenter only → public/presenter.html + public/pre
 ## Two surfaces, one repo
 
 - **Platform** — `src/` (Vite + React). Screens are lazy chunks; `prefetchRoutes()` warms them on idle.
-- **Presenter** — `presenter/` (modular source: `src/partials/` one per screen, `src/app/{data,component}.js`, `src/styles/`; `build.py` assembles it). Its site output (`public/presenter.html` + `public/presenter/`) is **generated and gitignored** — never edit or commit it; edit `presenter/src/` and rebuild. The single-file bundle `presenter/dist/presenter.html` is the offline/download copy only. Read `presenter/README.md` before touching it. The published URL `…/gac-connect/presenter.html` must never move (printed QR).
+- **Presenter** — `presenter/` (modular source: `src/partials/` one per screen, `src/app/{data,component}.js`, `src/styles/`; `build.py` assembles it). Its site output (`public/presenter.html` + `public/presenter/`) is **generated and gitignored** — never edit or commit it; edit `presenter/src/` and rebuild. The single-file bundle `presenter/dist/presenter.html` is the offline/download copy only. Read `presenter/README.md` before touching it. The published URL `…/gac-connect/presenter.html` must never move (existing printed materials point at it) and the deck carries `noindex, nofollow` — **unlisted, not private**: Pages has no access control, so anyone with the link still opens it. The **printed QR now points at the platform**, `…/gac-connect/app`, so the panel can open the demo on their own phones (owner, 19 Aug); regenerate it against that address, not the deck.
 
 ## Branch workflow (owner-facing rules — see `docs/WORKFLOW.md`)
 

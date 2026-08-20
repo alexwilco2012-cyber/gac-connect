@@ -14,8 +14,19 @@ never patch outputs.
 | `dist/presenter.html` | The single-file self-extracting bundle (`wrapper/loader.html` + base64 assets). Offline / "download the deck" copy | No |
 | `dev.html` | Instant preview from this folder (`python -m http.server 8788`, open `/dev.html`) | No |
 
-The published URL and the QR baked into printed materials must remain exactly
-`https://alexwilco2012-cyber.github.io/gac-connect/presenter.html`.
+The published URL must remain exactly
+`https://alexwilco2012-cyber.github.io/gac-connect/presenter.html` — printed
+materials already point at it. The deck carries `noindex, nofollow`
+(`src/index.html`), so it stays out of search results: **unlisted, not
+private**. GitHub Pages has no access control and this repo is public, so
+anyone holding the URL opens it, and any passphrase added here would ship in
+readable source. If the deck ever has to be genuinely closed, it comes off the
+public site and is presented from `dist/presenter.html` offline, or moves to a
+host with real auth.
+
+The QR in printed materials now points at the **platform**
+(`https://alexwilco2012-cyber.github.io/gac-connect/app`), not the deck: the
+panel scans it after the presentation and lands in the demo (owner, 19 Aug).
 
 ## Everyday workflow
 
