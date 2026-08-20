@@ -118,25 +118,37 @@ over `app/features/*.js` as over the core files.
 
 ## The opening
 
-The presenter opens with an eleven-slide sequence. The first three and the last
-are the **Advantage** slides (ported 2026-08-15 from the standalone
-`GAC Connect Advantage.html`, kept verbatim as
-`reference/GAC Connect Advantage.standalone.html`) — chess (see the next three
-moves), F1 (30-second head start), Hyrox (two stations done for you), and the
-closer ("GAC Connect is exactly this. We have the advantage. Let's take it."
-with three recap cards and an **Enter the platform** button). They are 1:1 with
-the standalone — same markup, CSS and timings, scoped under `.adv` and driven by
-the same `.active` class; the only deliberate difference is the CTA, which
-enters the embedded platform instead of linking to the live site.
+The presenter opens with an eleven-slide sequence:
 
-Slides 4-10 were added 2026-08-20 to carry the argument between them, in the
-order a panel asks for it: **the problem** (four days of calls and emails, and
-nothing on record), **the proposal** (four pillars and a roof), **how it fixes
-it** (the same job as a five-step flow), **the numbers** (revenue and operating
-result for Years 1-3 with break-even marked), and then one slide each for the
-three seats in the room — **strategy and finance**, **QHSSE**, and **our
-people**. Those last three carry cards instead of an illustration and reuse
-`.recap`/`.rcard` from the closer.
+| | | |
+|---|---|---|
+| 01 | Chess | see the opponent's next three moves |
+| 02 | The board today | nobody in this market can see it; every shortlist is in somebody's head |
+| 03 | The proposal | four pillars and a roof |
+| 04 | How it fixes it | the same job as a five-step flow |
+| 05 | The numbers | revenue against operating result, Years 1-3, break-even marked |
+| 06 | Strategy and finance | "back to the board" — closes the chess loop |
+| 07 | F1 | a 30-second head start |
+| 08 | QHSSE | the head start exists because the car passed scrutineering |
+| 09 | Hyrox | two of the eight stations done for you |
+| 10 | Our people | which two, and who gets the time back |
+| 11 | Closer | three recap cards and an **Enter the platform** button |
+
+The metaphors (01, 07, 09) and the closer are the **Advantage** slides, ported
+2026-08-15 from the standalone `GAC Connect Advantage.html` and kept verbatim as
+`reference/GAC Connect Advantage.standalone.html`: same markup, CSS and timings,
+scoped under `.adv` and driven by the same `.active` class. The only deliberate
+difference is the CTA, which enters the embedded platform instead of linking to
+the live site.
+
+**Each metaphor sits immediately before the slide it pays off** (owner's call,
+2026-08-20): chess before strategy and finance, F1 before QHSSE, Hyrox before
+our people. That is what makes the metaphors load-bearing rather than
+decorative, and it means every headline on 02, 06, 08 and 10 is a handoff line —
+they answer the slide in front of them and should not be reworded in isolation.
+Chess is the exception: it stays at the front as the cold open, so slide 06
+reopens it explicitly instead of sitting next to it. Slides 06, 08 and 10 carry
+cards rather than an illustration and reuse `.recap`/`.rcard` from the closer.
 
 Click / `→` / Space advance; `←` back; `Esc` jumps to the closer; on the closer,
 advancing pulses the button and `Enter` or the button fades the overlay into the
@@ -150,13 +162,21 @@ in the partial, a label in `ADV_DOT_LABELS`, and `ADV_SLIDES`. The
 that count, and `closer` lands on the last slide, so nothing else is numbered by
 hand.
 
+Slide indices appear in the CSS in exactly two places — the per-slide `.chip`
+delays and the `.slide-6, .slide-8, .slide-10` card-slide group — so reordering
+the deck means remapping those and the dot labels, and nothing else. Everything
+else is keyed on the illustration's own class (`.chess`, `.prob`, `.house`,
+`.flow`, `.bars`, `.f1`, `.hy`).
+
 Two CSS traps live in here. `advRise` has only a `from` keyframe, so its end
 state is the element's own style: an element animated with it must **not** also
 carry a static `opacity:0`, or it finishes invisible — the backwards fill during
 the delay is what hides it. And `base.css` kills every animation under
 `prefers-reduced-motion`, so anything held back by a static `opacity:0` (or a
 `scaleY(0)`, or a dash offset) needs its end state restored in the
-reduced-motion block at the foot of `opening.css`.
+reduced-motion block at the foot of `opening.css` — the F1 chip and the entire
+Hyrox board were missing from that block until 2026-08-20, so with animations off
+the Hyrox slide rendered as an empty course.
 Fonts: Space Grotesk (already in the bundle) + Inter variable
 (`assets/fonts/inter-variable.woff2`).
 

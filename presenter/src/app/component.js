@@ -609,9 +609,9 @@ class Component extends DCLogic {
     const advCls = (i) => 'slide slide-' + (i + 1) + (i === LAST ? ' closer' : '') + (adv === i ? ' active' : '');
     const advHid = (i) => (adv === i ? 'false' : 'true');
     const ADV_DOT_LABELS = [
-      'Slide 1 — chess', 'Slide 2 — F1', 'Slide 3 — Hyrox',
-      'Slide 4 — where we are today', 'Slide 5 — what we are proposing', 'Slide 6 — how it fixes it',
-      'Slide 7 — the numbers', 'Slide 8 — strategy and finance', 'Slide 9 — QHSSE',
+      'Slide 1 — chess', 'Slide 2 — the board today', 'Slide 3 — what we are proposing',
+      'Slide 4 — how it fixes it', 'Slide 5 — the numbers', 'Slide 6 — strategy and finance',
+      'Slide 7 — F1', 'Slide 8 — QHSSE', 'Slide 9 — Hyrox',
       'Slide 10 — our people', 'Slide 11 — GAC Connect'
     ];
     /* One advCls<n>/advHid<n> binding per slide, built from the count so adding

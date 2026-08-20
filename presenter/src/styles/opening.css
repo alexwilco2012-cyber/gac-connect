@@ -140,7 +140,7 @@
 @keyframes advGhostPulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes advTagPop{from{opacity:0;transform:translateY(8px) scale(.7)}to{opacity:1;transform:none}}
 
-/* ============ Slide 2 · F1 ============ */
+/* ============ Slide 7 · F1 ============ */
 .adv .f1 .lane{stroke:rgba(234,242,248,.20);stroke-width:2.5;stroke-dasharray:26 22}
 .adv .slide.active .f1 .lane{animation:advLaneDrift 1.5s linear infinite}
 @keyframes advLaneDrift{to{stroke-dashoffset:-48}}
@@ -160,7 +160,7 @@
 .adv .f1 .t30{opacity:0}
 .adv .slide.active .f1 .t30{animation:advTagPop .55s var(--ease) 2.55s both}
 
-/* ============ Slide 3 · Hyrox ============ */
+/* ============ Slide 9 · Hyrox ============ */
 .adv .hy .tile-g{opacity:0}
 .adv .slide.active .hy .tile-g{animation:advTilePop .55s var(--ease) both}
 @keyframes advTilePop{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
@@ -229,9 +229,9 @@
 .adv .tagline{font-family:var(--disp);font-weight:500;font-size:13px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
 .adv .slide.active .tagline{animation:advRise .6s var(--ease) .42s both}
 
-/* ============ Story slides 4-10 (shared furniture) ============
-   Slides 4-7 are illustrated like the three metaphors above them; slides 8-10
-   answer the three people in the room (strategy and finance, QHSSE, HR) and so
+/* ============ Story slides 2-6, 8, 10 (shared furniture) ============
+   Slides 2-5 are illustrated like the metaphors; slides 6, 8 and 10 pair with
+   the metaphor in front of them (chess, F1, Hyrox) and so
    carry cards instead of an illustration. Both reuse .slide, .kicker, h1 and
    .chip unchanged; everything below is the extra furniture they need. */
 .adv .svgbody{font-family:var(--body);font-weight:500;font-size:11.5px;letter-spacing:.01em}
@@ -257,12 +257,12 @@
 .adv .slide.active .note{animation:advRise .65s var(--ease) 1.05s both}
 
 /* the card slides are text-dense: smaller headline, and they scroll if they must */
-.adv .slide-8,.adv .slide-9,.adv .slide-10{justify-content:safe center;overflow-y:auto}
-.adv .slide-8 h1 .l1,.adv .slide-9 h1 .l1,.adv .slide-10 h1 .l1{font-size:clamp(1.1rem,2.2vw,1.5rem)}
-.adv .slide-8 h1 .l2,.adv .slide-9 h1 .l2,.adv .slide-10 h1 .l2{font-size:clamp(1.5rem,3.3vw,2.3rem)}
-.adv .slide-8 .recap,.adv .slide-9 .recap,.adv .slide-10 .recap{max-width:1010px}
+.adv .slide-6,.adv .slide-8,.adv .slide-10{justify-content:safe center;overflow-y:auto}
+.adv .slide-6 h1 .l1,.adv .slide-8 h1 .l1,.adv .slide-10 h1 .l1{font-size:clamp(1.1rem,2.2vw,1.5rem)}
+.adv .slide-6 h1 .l2,.adv .slide-8 h1 .l2,.adv .slide-10 h1 .l2{font-size:clamp(1.5rem,3.3vw,2.3rem)}
+.adv .slide-6 .recap,.adv .slide-8 .recap,.adv .slide-10 .recap{max-width:1010px}
 
-/* ============ Slide 4 · The problem ============ */
+/* ============ Slide 2 · The board today ============ */
 .adv .slide.active .prob .pr-ask{animation:advRise .55s var(--ease) .5s both}
 .adv .prob .pr-rail{stroke-dasharray:4 5;opacity:0}
 .adv .slide.active .prob .pr-rail{animation:advFadeIn .5s ease-out .75s both}
@@ -283,10 +283,10 @@
 .adv .slide.active .prob .pr-thread{animation:advRouteDraw 1.5s var(--ease) .95s both}
 .adv .slide.active .prob .pr-cost{animation:advRise .55s var(--ease) 2.15s both}
 .adv .slide.active .prob .pr-out{animation:advRise .55s var(--ease) 2.35s both}
-.adv .slide-4.slide.active .chip{animation-delay:2.75s}
+.adv .slide-2.slide.active .chip{animation-delay:2.75s}
 @keyframes advFadeIn{from{opacity:0}to{opacity:1}}
 
-/* ============ Slide 5 · Four pillars and a roof ============ */
+/* ============ Slide 3 · Four pillars and a roof ============ */
 .adv .house .hs-p{opacity:0}
 .adv .slide.active .house .hs-p{animation:advPillarUp .6s var(--ease) both}
 .adv .slide.active .house .hs-p:nth-child(1){animation-delay:.6s}
@@ -298,9 +298,9 @@
 .adv .house .hs-roof{opacity:0}
 .adv .slide.active .house .hs-roof{animation:advRoofDrop .75s cubic-bezier(.3,1.5,.5,1) 1.35s both}
 @keyframes advRoofDrop{from{opacity:0;transform:translateY(-64px)}to{opacity:1;transform:none}}
-.adv .slide-5.slide.active .chip{animation-delay:2.2s}
+.adv .slide-3.slide.active .chip{animation-delay:2.2s}
 
-/* ============ Slide 6 · How it fixes it ============ */
+/* ============ Slide 4 · How it fixes it ============ */
 .adv .slide.active .flow .fl-clock{animation:advRise .55s var(--ease) .5s both}
 @keyframes advStrike{to{stroke-dashoffset:0}}
 .adv .flow .fl-s{opacity:0}
@@ -317,9 +317,9 @@
 .adv .slide.active .flow .fl-l:nth-child(3){animation-delay:1.26s}
 .adv .slide.active .flow .fl-l:nth-child(4){animation-delay:1.42s}
 .adv .slide.active .flow .fl-band{animation:advRise .6s var(--ease) 1.7s both}
-.adv .slide-6.slide.active .chip{animation-delay:2.25s}
+.adv .slide-4.slide.active .chip{animation-delay:2.25s}
 
-/* ============ Slide 7 · The numbers ============ */
+/* ============ Slide 5 · The numbers ============ */
 .adv .bars .bx-legend{opacity:0}
 .adv .slide.active .bars .bx-legend{animation:advFadeIn .5s ease-out .55s both}
 .adv .bars .bx-axis{stroke-dasharray:800;stroke-dashoffset:800}
@@ -337,7 +337,7 @@
 .adv .slide.active .bars .bx-y2 text{animation-delay:1.5s}
 .adv .slide.active .bars .bx-y3 text{animation-delay:1.7s}
 .adv .slide.active .bars .bx-be{animation:advRise .55s var(--ease) 2s both}
-.adv .slide-7.slide.active .chip{animation-delay:2.4s}
+.adv .slide-5.slide.active .chip{animation-delay:2.4s}
 
 /* ============ Responsive ============ */
 @media (max-width:720px){
@@ -354,8 +354,8 @@
   .adv .rcard h3{font-size:13px;margin-bottom:3px}
   .adv .rcard p{font-size:11px;line-height:1.45}
   /* the card slides keep the icon above the text -- a bullet list does not read as a row */
-  .adv .slide-8 .rcard,.adv .slide-9 .rcard,.adv .slide-10 .rcard{display:block;padding:12px 14px}
-  .adv .slide-8 .rcard .ric,.adv .slide-9 .rcard .ric,.adv .slide-10 .rcard .ric{margin-bottom:8px}
+  .adv .slide-6 .rcard,.adv .slide-8 .rcard,.adv .slide-10 .rcard{display:block;padding:12px 14px}
+  .adv .slide-6 .rcard .ric,.adv .slide-8 .rcard .ric,.adv .slide-10 .rcard .ric{margin-bottom:8px}
   .adv .rcard li{font-size:11px;line-height:1.45;padding-left:13px}
   .adv .note{font-size:11px;line-height:1.55}
   .adv .fact span{font-size:8.5px;letter-spacing:.14em}
@@ -381,6 +381,8 @@
   .adv .hy .route-base,.adv .hy .arc{stroke-dashoffset:0}
   .adv .chess .mv-line{stroke-dashoffset:0}
   .adv .chess .mv-head,.adv .chess .mv-ghost,.adv .chess .mv-badge,.adv .chess .prow,.adv .chess .pfoot{opacity:1}
+  .adv .f1 .t30{opacity:1}
+  .adv .hy .tile-g,.adv .hy .stamp,.adv .hy .node{opacity:1}
   .adv .prob .pr-ask,.adv .prob .pr-cost,.adv .prob .pr-out,.adv .prob .pr-rail,.adv .prob .pr-d{opacity:1}
   .adv .prob .pr-thread{stroke-dashoffset:0}
   .adv .house .hs-p,.adv .house .hs-base,.adv .house .hs-roof{opacity:1}
