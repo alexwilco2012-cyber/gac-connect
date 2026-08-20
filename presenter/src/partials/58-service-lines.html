@@ -1,0 +1,288 @@
+  <sc-if value="{{ slIsLine }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="{{ slLabel }}" data-testid="service-line" data-line="{{ slLineId }}" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Service line · {{ slName }}</p>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:2px;">
+        <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:0;">{{ slHeadline }}</h1>
+        <span style="{{ slTierPillStyle }}" data-testid="line-tier">{{ slTierLabel }}</span>
+      </div>
+      <p style="color:#33475F;margin:6px 0 0;font-size:14px;max-width:760px;">{{ slIntro }}</p>
+
+      <!-- what is running in this line right now — the reason a hub is not a menu -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:20px;" data-testid="line-live" aria-label="Live in this service line">
+        <sc-for list="{{ slLive }}" as="lv" hint-placeholder-count="3">
+          <button style="text-align:left;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:16px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ lv.on }}">
+            <span style="display:block;font-size:12px;color:#33475F;">{{ lv.label }}</span>
+            <span style="display:block;font-size:24px;font-weight:800;color:#0A2540;margin-top:2px;">{{ lv.value }}</span>
+            <span style="display:block;font-size:12px;color:#33475F;">{{ lv.note }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <!-- what you can ask for; every card says who performs it -->
+      <h2 style="font-size:19px;font-weight:700;margin:28px 0 0;">What you can ask for</h2>
+      <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ slDirectoryPointer }}</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px;" data-testid="line-services">
+        <sc-for list="{{ slServices }}" as="sv" hint-placeholder-count="4">
+          <div style="{{ sv.cardStyle }}" data-testid="{{ sv.testId }}" data-provision="{{ sv.provision }}">
+            <div style="min-width:0;">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                <h3 style="font-size:15.5px;font-weight:700;margin:0;">{{ sv.label }}<sc-if value="{{ sv.beta }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;margin-left:6px;background:#FFC72C;color:#0A2540;font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 5px;border-radius:3px;vertical-align:middle;position:relative;top:-1px;">BETA</span></sc-if></h3>
+                <span style="{{ sv.pillStyle }}">{{ sv.pillLabel }}</span>
+              </div>
+              <p style="color:#33475F;font-size:13px;margin:6px 0 0;">{{ sv.body }}</p>
+            </div>
+            <div><button style="{{ sv.btnStyle }}" sc-camel-on-click="{{ sv.on }}">{{ sv.btnLabel }}</button></div>
+          </div>
+        </sc-for>
+      </div>
+      <p style="color:#33475F;font-size:12px;margin:12px 0 0;max-width:900px;" data-testid="provision-key">{{ slProvisionKey }}</p>
+
+      <!-- the line's own working screen, inline -->
+      <sc-if value="{{ slHasSections }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;" role="group" aria-label="Service line sections" data-testid="line-sections">
+          <sc-for list="{{ slSections }}" as="sn" hint-placeholder-count="3">
+            <button style="{{ sn.style }}" sc-camel-on-click="{{ sn.on }}" aria-pressed="{{ sn.pressed }}">{{ sn.label }}</button>
+          </sc-for>
+        </div>
+        <div style="margin-top:16px;" data-testid="line-section" data-section="{{ slSectionId }}">
+          <h2 style="font-size:19px;font-weight:700;margin:0;">{{ slSectionLabel }}</h2>
+          <p style="color:#33475F;font-size:13.5px;margin:2px 0 12px;" data-testid="line-section-summary">{{ slSectionSummary }}</p>
+
+          <!-- ── logistics · consignments ── -->
+          <sc-if value="{{ slIsConsignments }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <p style="color:#33475F;font-size:13.5px;margin:0 0 16px;max-width:760px;">{{ slLogisticsIntro }}</p>
+
+              <div style="{{ slCardStyle }}" data-testid="consignment-form">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                  <div>
+                    <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Book a movement</p>
+                    <h3 style="font-size:17px;font-weight:700;margin:4px 0 0;">Booked against the call, not against a date</h3>
+                  </div>
+                  <span style="{{ slNeutralPill }}">Illustrative</span>
+                </div>
+                <p style="color:#33475F;font-size:13px;margin:6px 0 0;max-width:720px;">{{ slConsignmentNotice }}</p>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px;">
+                  <label style="{{ slLabelStyle }}grid-column:1/-1;">What is moving<input type="text" value="{{ slCDescription }}" sc-camel-on-change="{{ slOnCDescription }}" data-testid="c-description" placeholder="Deck spares and hose reels, 4 pallets" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Collection from<input type="text" value="{{ slCOrigin }}" sc-camel-on-change="{{ slOnCOrigin }}" data-testid="c-origin" placeholder="Grangemouth" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Delivery point<sc-raw-select value="{{ slCDeliveryPoint }}" sc-camel-on-change="{{ slOnCDeliveryPoint }}" style="{{ slInputStyle }}"><sc-for list="{{ slDeliveryPoints }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
+                  <label style="{{ slLabelStyle }}">Vessel<sc-raw-select value="{{ slCVesselId }}" sc-camel-on-change="{{ slOnCVessel }}" style="{{ slInputStyle }}"><sc-for list="{{ slVesselOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
+                  <label style="{{ slLabelStyle }}">Mode<sc-raw-select value="{{ slCMode }}" sc-camel-on-change="{{ slOnCMode }}" style="{{ slInputStyle }}"><sc-for list="{{ slModeOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
+                  <label style="{{ slLabelStyle }}">Ready for collection<input type="text" value="{{ slCReadyDate }}" sc-camel-on-change="{{ slOnCReadyDate }}" placeholder="26 Aug 2026" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Pieces<input type="text" sc-camel-input-mode="numeric" value="{{ slCPieces }}" sc-camel-on-change="{{ slOnCPieces }}" placeholder="4" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Gross weight (kg)<input type="text" sc-camel-input-mode="numeric" value="{{ slCWeight }}" sc-camel-on-change="{{ slOnCWeight }}" placeholder="1250" style="{{ slInputStyle }}"></label>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px;margin-top:14px;">
+                  <span style="font-size:13px;font-weight:600;">Moving from outside the UK?</span>
+                  <button type="button" role="switch" aria-checked="{{ slCOutsideAria }}" aria-label="Moving from outside the UK" style="{{ slCOutsideTrack }}" sc-camel-on-click="{{ slToggleCOutside }}"><span style="{{ slCOutsideKnob }}"></span></button>
+                </div>
+                <sc-if value="{{ slCOutsideUk }}" hint-placeholder-val="{{ false }}">
+                  <p style="color:#33475F;font-size:12.5px;margin:8px 0 0;" data-testid="customs-pointer">{{ slCustomsPointer }} <button style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:#0E5E8A;cursor:pointer;" sc-camel-on-click="{{ slGoCustoms }}">Open Customs →</button></p>
+                </sc-if>
+
+                <sc-if value="{{ slCHasProblems }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" data-testid="consignment-problems" style="border:1px solid #B45309;background:#FDF3E3;color:#B45309;border-radius:8px;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ slCProblems }}</p>
+                </sc-if>
+
+                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;">
+                  <button style="{{ slCBookStyle }}" sc-camel-on-click="{{ slCBook }}" data-testid="consignment-book">Book the movement</button>
+                  <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ slCFillExample }}">Fill with an example</button>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;">
+                <div>
+                  <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ slConsignmentsCount }}</p>
+                  <h3 style="font-size:17px;font-weight:700;margin:2px 0 0;">On the way to the quay</h3>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="font-size:12.5px;color:#33475F;" data-testid="consignments-summary">{{ slConsignmentsSummary }}</span>
+                  <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ slResetConsignments }}">Reset movements</button>
+                </div>
+              </div>
+
+              <div id="sl-consignments" tabindex="-1" style="margin-top:12px;display:grid;gap:16px;" data-testid="consignments">
+                <sc-for list="{{ slConsignments }}" as="c" hint-placeholder-count="2">
+                  <div style="{{ slCardStyle }}" data-testid="{{ c.testId }}" data-stage="{{ c.stage }}">
+                    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                      <div style="min-width:0;">
+                        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                          <span style="{{ c.modePill }}">{{ c.mode }}</span>
+                          <span style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#33475F;">{{ c.meta }}</span>
+                        </div>
+                        <h3 style="font-size:16.5px;font-weight:700;margin:6px 0 0;">{{ c.description }}</h3>
+                        <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ c.routeLine }}</p>
+                        <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">{{ c.detailLine }}</p>
+                      </div>
+                      <span style="{{ c.stagePillStyle }}">{{ c.stageLabel }}</span>
+                    </div>
+                    <ol style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0;padding:0;" aria-label="Progress">
+                      <sc-for list="{{ c.track }}" as="t" hint-placeholder-count="5">
+                        <li style="{{ t.style }}" data-stage-state="{{ t.state }}"><span aria-hidden="true">{{ t.glyph }}</span> <strong>{{ t.label }}</strong></li>
+                      </sc-for>
+                    </ol>
+                    <sc-if value="{{ c.needsCustoms }}" hint-placeholder-val="{{ false }}">
+                      <p style="color:#33475F;font-size:12.5px;margin:12px 0 0;" data-testid="consignment-customs"><button style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:#0E5E8A;cursor:pointer;" sc-camel-on-click="{{ c.onCustoms }}">{{ c.customsLine }}</button></p>
+                    </sc-if>
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
+                      <sc-if value="{{ c.hasAction }}" hint-placeholder-val="{{ true }}">
+                        <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ c.onAdvance }}" data-testid="consignment-advance">{{ c.actionLabel }}</button>
+                      </sc-if>
+                      <sc-if value="{{ c.delivered }}" hint-placeholder-val="{{ false }}">
+                        <button style="{{ slCBookStyle }}" sc-camel-on-click="{{ c.onPod }}">Proof of delivery</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ── logistics · warehousing / project cargo ── -->
+          <sc-if value="{{ slIsWarehousing }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+              <sc-for list="{{ slWarehousing }}" as="w" hint-placeholder-count="3">
+                <div style="{{ slCardStyle }}"><p style="font-size:13.5px;font-weight:700;margin:0;">{{ w.title }}</p><p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ w.body }}</p></div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ slIsProjectCargo }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+              <sc-for list="{{ slProjectCargo }}" as="w" hint-placeholder-count="3">
+                <div style="{{ slCardStyle }}"><p style="font-size:13.5px;font-weight:700;margin:0;">{{ w.title }}</p><p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ w.body }}</p></div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- ── customs · declarations ── -->
+          <sc-if value="{{ slIsDeclarations }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <p style="color:#33475F;font-size:13.5px;margin:0 0 16px;max-width:760px;">{{ slCustomsIntro }}</p>
+
+              <div style="{{ slCardStyle }}" data-testid="declaration-form">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                  <div>
+                    <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Raise a declaration</p>
+                    <h3 style="font-size:17px;font-weight:700;margin:4px 0 0;">Prepared and submitted by GAC, in-house</h3>
+                  </div>
+                  <span style="{{ slNeutralPill }}">Illustrative</span>
+                </div>
+                <p style="color:#33475F;font-size:13px;margin:6px 0 0;max-width:720px;">{{ slDeclarationNotice }}</p>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px;">
+                  <label style="{{ slLabelStyle }}">Entry type<sc-raw-select value="{{ slDKind }}" sc-camel-on-change="{{ slOnDKind }}" style="{{ slInputStyle }}"><sc-for list="{{ slKindOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
+                  <label style="{{ slLabelStyle }}">Against a movement<sc-raw-select value="{{ slDConsignmentRef }}" sc-camel-on-change="{{ slOnDConsignment }}" data-testid="declaration-consignment" style="{{ slInputStyle }}"><sc-for list="{{ slMovementOptions }}" as="o" hint-placeholder-count="2"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
+                  <label style="{{ slLabelStyle }}grid-column:1/-1;">What the goods are<input type="text" value="{{ slDGoods }}" sc-camel-on-change="{{ slOnDGoods }}" data-testid="d-goods" placeholder="What the item is, what it is made of, what it does" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Moving from<input type="text" value="{{ slDFrom }}" sc-camel-on-change="{{ slOnDFrom }}" data-testid="d-from" placeholder="Rotterdam" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Moving to<input type="text" value="{{ slDTo }}" sc-camel-on-change="{{ slOnDTo }}" data-testid="d-to" placeholder="Aberdeen — Regent Quay" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Packages<input type="text" sc-camel-input-mode="numeric" value="{{ slDPackages }}" sc-camel-on-change="{{ slOnDPackages }}" placeholder="1" style="{{ slInputStyle }}"></label>
+                  <label style="{{ slLabelStyle }}">Gross weight (kg)<input type="text" sc-camel-input-mode="numeric" value="{{ slDWeight }}" sc-camel-on-change="{{ slOnDWeight }}" placeholder="380" style="{{ slInputStyle }}"></label>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px;margin-top:14px;">
+                  <span style="font-size:13px;font-weight:600;max-width:560px;">The document set is complete — invoice, packing list, transport document, and any licence the goods need.</span>
+                  <button type="button" role="switch" aria-checked="{{ slDDocsAria }}" aria-label="Document set is complete" style="{{ slDDocsTrack }}" sc-camel-on-click="{{ slToggleDDocs }}"><span style="{{ slDDocsKnob }}"></span></button>
+                </div>
+
+                <sc-if value="{{ slDHasProblems }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" data-testid="declaration-problems" style="border:1px solid #B45309;background:#FDF3E3;color:#B45309;border-radius:8px;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ slDProblems }}</p>
+                </sc-if>
+
+                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;">
+                  <button style="{{ slCBookStyle }}" sc-camel-on-click="{{ slDRaise }}" data-testid="declaration-raise">Raise the declaration</button>
+                  <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ slDFillExample }}">Fill with an example</button>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;">
+                <div>
+                  <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ slDeclarationsCount }}</p>
+                  <h3 style="font-size:17px;font-weight:700;margin:2px 0 0;">Entries in progress</h3>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="font-size:12.5px;color:#33475F;" data-testid="declarations-summary">{{ slDeclarationsSummary }}</span>
+                  <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ slResetDeclarations }}">Reset entries</button>
+                </div>
+              </div>
+
+              <div id="sl-declarations" tabindex="-1" style="margin-top:12px;display:grid;gap:16px;" data-testid="declarations">
+                <sc-for list="{{ slDeclarations }}" as="d" hint-placeholder-count="1">
+                  <div style="{{ slCardStyle }}" data-testid="{{ d.testId }}" data-stage="{{ d.stage }}">
+                    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                      <div style="min-width:0;">
+                        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                          <span style="{{ d.kindPill }}">{{ d.kind }}</span>
+                          <span style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#33475F;">{{ d.meta }}</span>
+                        </div>
+                        <h3 style="font-size:16.5px;font-weight:700;margin:6px 0 0;">{{ d.goods }}</h3>
+                        <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ d.routeLine }}</p>
+                        <sc-if value="{{ d.hasMovement }}" hint-placeholder-val="{{ true }}">
+                          <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;" data-testid="declaration-movement">Against <button style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:#0E5E8A;cursor:pointer;" sc-camel-on-click="{{ d.onMovement }}">{{ d.movementLabel }}</button></p>
+                        </sc-if>
+                      </div>
+                      <span style="{{ d.stagePillStyle }}">{{ d.stageLabel }}</span>
+                    </div>
+                    <ol style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0;padding:0;" aria-label="Progress">
+                      <sc-for list="{{ d.track }}" as="t" hint-placeholder-count="4">
+                        <li style="{{ t.style }}" data-stage-state="{{ t.state }}"><span aria-hidden="true">{{ t.glyph }}</span> <strong>{{ t.label }}</strong></li>
+                      </sc-for>
+                    </ol>
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
+                      <sc-if value="{{ d.hasAction }}" hint-placeholder-val="{{ true }}">
+                        <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ d.onAdvance }}" data-testid="declaration-advance">{{ d.actionLabel }}</button>
+                      </sc-if>
+                      <sc-if value="{{ d.cleared }}" hint-placeholder-val="{{ false }}">
+                        <button style="{{ slCBookStyle }}" sc-camel-on-click="{{ d.onNote }}">Clearance note</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ── customs · what GAC needs ── -->
+          <sc-if value="{{ slIsDocuments }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <p style="border:1px solid #E5EAF1;border-radius:10px;background:#FAFBFD;padding:12px 16px;color:#33475F;font-size:13px;margin:0;max-width:760px;">{{ slInformsNotAdvises }}</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px;">
+                <sc-for list="{{ slDocumentChecklist }}" as="dc" hint-placeholder-count="6">
+                  <div style="{{ slCardStyle }}"><p style="font-size:13.5px;font-weight:700;margin:0;">{{ dc.title }}</p><p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ dc.body }}</p></div>
+                </sc-for>
+              </div>
+              <p style="color:#33475F;font-size:13px;margin:16px 0 0;max-width:760px;" data-testid="delay-note">{{ slDelayNote }}</p>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- who is vetted in this line — a shortcut into the directory, not a copy of it -->
+      <h2 style="font-size:19px;font-weight:700;margin:32px 0 0;">Vetted suppliers in this line</h2>
+      <sc-if value="{{ slHasSuppliers }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <p style="color:#33475F;font-size:13px;margin:2px 0 0;" data-testid="line-supplier-count">{{ slSupplierCount }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;" data-testid="line-categories">
+            <sc-for list="{{ slCategories }}" as="cat" hint-placeholder-count="4">
+              <button style="{{ cat.style }}" sc-camel-on-click="{{ cat.on }}">{{ cat.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px;" data-testid="line-suppliers">
+            <sc-for list="{{ slSuppliers }}" as="sp" hint-placeholder-count="3">
+              <div style="{{ slCardStyle }}">
+                <p style="font-size:14.5px;font-weight:700;margin:0;"><button style="background:none;border:none;padding:0;font:inherit;color:#0A2540;cursor:pointer;text-align:left;" style-hover="color:#0E5E8A;text-decoration:underline;" sc-camel-on-click="{{ sp.onOpen }}">{{ sp.name }}</button></p>
+                <p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ sp.cat }}</p>
+                <p style="font-size:12.5px;margin:6px 0 0;"><span style="color:#9A7B14;font-weight:700;">{{ sp.ratingLabel }}</span> <span style="color:#33475F;">{{ sp.ratingCountLabel }}</span></p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ slNoNetwork }}" hint-placeholder-val="{{ false }}">
+        <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;max-width:760px;" data-testid="no-network">{{ slNoNetworkNote }}</p>
+      </sc-if>
+
+      <p style="border:1px solid #E5EAF1;border-radius:10px;background:#FAFBFD;padding:12px 16px;color:#33475F;font-size:13px;margin:24px 0 0;">{{ slTierSentence }} <button style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:#0E5E8A;cursor:pointer;" sc-camel-on-click="{{ slGoTiers }}">Open the tier calculator →</button></p>
+    </main>
+  </sc-if>
