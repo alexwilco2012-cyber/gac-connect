@@ -215,7 +215,7 @@ class Component extends DCLogic {
      lives in st.advSlide and the CSS does the rest via the .active class. The
      one deliberate difference is the closer's CTA, which fades the overlay into
      the embedded platform home instead of linking to the live site. */
-  get ADV_SLIDES() { return 4; }
+  get ADV_SLIDES() { return 11; }
   _advGo(i) {
     if (!this.state.presOn || this._advLeaving) return;
     if (i < 0 || i >= this.ADV_SLIDES || i === this.state.advSlide) return;
@@ -605,9 +605,19 @@ class Component extends DCLogic {
     /* Advantage opening */
     const adv = st.advSlide;
     const pad2 = (n) => (n < 10 ? '0' : '') + n;
-    const advCls = (i) => 'slide slide-' + (i + 1) + (i === 3 ? ' closer' : '') + (adv === i ? ' active' : '');
+    const LAST = this.ADV_SLIDES - 1;
+    const advCls = (i) => 'slide slide-' + (i + 1) + (i === LAST ? ' closer' : '') + (adv === i ? ' active' : '');
     const advHid = (i) => (adv === i ? 'false' : 'true');
-    const ADV_DOT_LABELS = ['Slide 1 — chess', 'Slide 2 — F1', 'Slide 3 — Hyrox', 'Slide 4 — GAC Connect'];
+    const ADV_DOT_LABELS = [
+      'Slide 1 — chess', 'Slide 2 — F1', 'Slide 3 — Hyrox',
+      'Slide 4 — where we are today', 'Slide 5 — what we are proposing', 'Slide 6 — how it fixes it',
+      'Slide 7 — the numbers', 'Slide 8 — strategy and finance', 'Slide 9 — QHSSE',
+      'Slide 10 — our people', 'Slide 11 — GAC Connect'
+    ];
+    /* One advCls<n>/advHid<n> binding per slide, built from the count so adding
+       a slide is a partial plus a dot label and nothing else. */
+    const advSlots = {};
+    for (let i = 0; i < this.ADV_SLIDES; i++) { advSlots['advCls' + (i + 1)] = advCls(i); advSlots['advHid' + (i + 1)] = advHid(i); }
     if (!this._advGoCache) this._advGoCache = ADV_DOT_LABELS.map((_, i) => (e) => this._advDot(i, e));
 
     return {
@@ -622,8 +632,7 @@ class Component extends DCLogic {
       advEnter: () => this._advEnter(),
       ctaRef: this.ctaRef,
       advCounter: pad2(adv + 1) + ' / ' + pad2(this.ADV_SLIDES),
-      advCls1: advCls(0), advCls2: advCls(1), advCls3: advCls(2), advCls4: advCls(3),
-      advHid1: advHid(0), advHid2: advHid(1), advHid3: advHid(2), advHid4: advHid(3),
+      ...advSlots,
       advDots: ADV_DOT_LABELS.map((label, i) => ({
         cls: 'dot' + (adv === i ? ' on' : ''), label: label, go: this._advGoCache[i]
       })),

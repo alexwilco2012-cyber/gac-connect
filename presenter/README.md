@@ -69,7 +69,7 @@ is filled per output: preload hints + `window.__resources` (site), just
 | Loading screen shown while the single-file bundle unpacks | `wrapper/loader.html` (rarely touched) |
 
 `src/partials/` is in document order: `10-loader` (chain-forge entrance, only
-shown when the opening is off), `20-opening` (the Advantage opening: four
+shown when the opening is off), `20-opening` (the opening sequence: eleven
 slides shown before the platform — see below), `30-chrome` (header/nav),
 `40-…58-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
@@ -118,21 +118,45 @@ over `app/features/*.js` as over the core files.
 
 ## The opening
 
-The presenter opens with the **Advantage** sequence (ported 2026-08-15 from the
-standalone `GAC Connect Advantage.html`, kept verbatim as
-`reference/GAC Connect Advantage.standalone.html`): four
-slides — chess (see the next three moves), F1 (30-second head start), Hyrox
-(two stations done for you), and the closer ("GAC Connect is exactly this. We
-have the advantage. Let's take it." with three recap cards and an **Enter the
-platform** button). Click / `→` / Space advance; `←` back; `Esc` jumps to the
-closer; on the closer, advancing pulses the button and `Enter` or the button
-fades the overlay into the platform home (interactive harbour). It shows when
-the URL hash is empty or `#/present`; any other route skips it. Toggle with
-`presenter` in `src/app/props.json`.
+The presenter opens with an eleven-slide sequence. The first three and the last
+are the **Advantage** slides (ported 2026-08-15 from the standalone
+`GAC Connect Advantage.html`, kept verbatim as
+`reference/GAC Connect Advantage.standalone.html`) — chess (see the next three
+moves), F1 (30-second head start), Hyrox (two stations done for you), and the
+closer ("GAC Connect is exactly this. We have the advantage. Let's take it."
+with three recap cards and an **Enter the platform** button). They are 1:1 with
+the standalone — same markup, CSS and timings, scoped under `.adv` and driven by
+the same `.active` class; the only deliberate difference is the CTA, which
+enters the embedded platform instead of linking to the live site.
 
-The port is 1:1 with the standalone: same markup, CSS and timings, scoped under
-`.adv` and driven by the same `.active` class; the only deliberate difference is
-the CTA, which enters the embedded platform instead of linking to the live site.
+Slides 4-10 were added 2026-08-20 to carry the argument between them, in the
+order a panel asks for it: **the problem** (four days of calls and emails, and
+nothing on record), **the proposal** (four pillars and a roof), **how it fixes
+it** (the same job as a five-step flow), **the numbers** (revenue and operating
+result for Years 1-3 with break-even marked), and then one slide each for the
+three seats in the room — **strategy and finance**, **QHSSE**, and **our
+people**. Those last three carry cards instead of an illustration and reuse
+`.recap`/`.rcard` from the closer.
+
+Click / `→` / Space advance; `←` back; `Esc` jumps to the closer; on the closer,
+advancing pulses the button and `Enter` or the button fades the overlay into the
+platform home (interactive harbour). It shows when the URL hash is empty or
+`#/present`; any other route skips it. Toggle with `presenter` in
+`src/app/props.json`.
+
+Adding or removing a slide is three edits: a `<section class="{{ advCls<n> }}">`
+in the partial, a label in `ADV_DOT_LABELS`, and `ADV_SLIDES`. The
+`advCls<n>`/`advHid<n>` bindings, the counter and the dots are all generated from
+that count, and `closer` lands on the last slide, so nothing else is numbered by
+hand.
+
+Two CSS traps live in here. `advRise` has only a `from` keyframe, so its end
+state is the element's own style: an element animated with it must **not** also
+carry a static `opacity:0`, or it finishes invisible — the backwards fill during
+the delay is what hides it. And `base.css` kills every animation under
+`prefers-reduced-motion`, so anything held back by a static `opacity:0` (or a
+`scaleY(0)`, or a dash offset) needs its end state restored in the
+reduced-motion block at the foot of `opening.css`.
 Fonts: Space Grotesk (already in the bundle) + Inter variable
 (`assets/fonts/inter-variable.woff2`).
 
