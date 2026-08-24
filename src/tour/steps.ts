@@ -44,7 +44,7 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/app/agency/crew-change',
     anchor: null,
     title: 'A crew change, end to end',
-    body: 'Hotels, taxis timed off the flight, launches by port, immigration guidance, and the LOI and repatriation letters. Give a flight number and every leg times itself.',
+    body: 'Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it — then delete the crew’s details when the job is done. Give a flight number and every leg times itself.',
   },
   {
     route: '/app/logistics',

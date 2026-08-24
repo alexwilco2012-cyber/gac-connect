@@ -1,8 +1,8 @@
   <sc-if value="{{ isCrew }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Crew change" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
-      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · hotels, taxis, launches, immigration, letters</p>
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Crew change · crew list, hotels, taxis, launches, immigration, letters</p>
       <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Everything a crew change needs, in one place</h1>
-      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a repatriation letter for each off-signer. The platform holds the templates, you fill them in, GAC endorses or routes them and sends them back — one letter per crew member, always.</p>
+      <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it; or work section by section — rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a repatriation letter for each off-signer. The platform holds the templates, you fill them in, GAC endorses or routes them and sends them back — one letter per crew member, always.</p>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:20px;">
         <sc-for list="{{ ccFlow }}" as="f" hint-placeholder-count="3">
@@ -14,7 +14,7 @@
       </div>
 
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;" role="group" aria-label="Crew change sections" data-testid="crew-sections">
-        <sc-for list="{{ ccSections }}" as="s" hint-placeholder-count="6">
+        <sc-for list="{{ ccSections }}" as="s" hint-placeholder-count="7">
           <button id="{{ s.chipId }}" style="{{ s.style }}" sc-camel-on-click="{{ s.on }}" aria-pressed="{{ s.pressed }}">{{ s.label }}</button>
         </sc-for>
       </div>
@@ -22,6 +22,363 @@
       <div style="margin-top:16px;" data-testid="crew-section" data-section="{{ ccSectionId }}">
         <h2 style="font-size:19px;font-weight:700;margin:0;">{{ ccSectionLabel }}</h2>
         <p style="color:#33475F;font-size:13.5px;margin:2px 0 12px;" data-testid="section-summary">{{ ccSectionSummary }}</p>
+
+        <sc-if value="{{ ccIsCrewList }}" hint-placeholder-val="{{ false }}">
+          <div data-testid="section-crew-list" style="position:relative;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;">
+            <!-- Every direct child carries min-width:0: a grid item otherwise sizes to its min-content, and the 980px crew table would widen the page on a phone instead of scrolling inside its own box. -->
+            <ol aria-label="Crew list steps" data-testid="crew-list-steps" style="display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:0;">
+              <sc-for list="{{ clSteps }}" as="s" hint-placeholder-count="5">
+                <li aria-current="{{ s.ariaCurrent }}" data-step-state="{{ s.state }}" style="{{ s.style }}"><span aria-hidden="true" style="margin-right:4px;">{{ s.mark }}</span>{{ s.label }}</li>
+              </sc-for>
+            </ol>
+            <p role="status" aria-live="polite" data-testid="crew-list-status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0;">{{ clAnnounce }}</p>
+
+            <div style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="crew-data-notice" data-expanded="{{ clNoticeExpandedAttr }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                  <p style="font-size:13.5px;font-weight:700;margin:0;">{{ clNoticeTitle }}</p>
+                  <sc-if value="{{ !clNoticeExpanded }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;color:#33475F;">· read</span></sc-if>
+                </div>
+                <sc-if value="{{ clNoticeCollapsible }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" sc-camel-on-click="{{ clToggleNotice }}" aria-expanded="{{ clNoticeOpenAria }}" aria-controls="crew-data-notice-body" style="background:none;border:none;padding:0;font-size:12.5px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;" data-testid="crew-data-notice-toggle">{{ clNoticeToggleLabel }}</button>
+                </sc-if>
+              </div>
+              <sc-if value="{{ clNoticeExpanded }}" hint-placeholder-val="{{ true }}">
+                <div id="crew-data-notice-body">
+                  <p style="display:inline-block;margin:6px 0 0;border-radius:999px;border:1px solid #CBD6E2;background:#FAFBFD;padding:2px 10px;font-size:11.5px;font-weight:600;color:#33475F;">{{ clNoticeIntro }}</p>
+                  <dl style="display:grid;gap:10px 24px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin:12px 0 0;">
+                    <sc-for list="{{ clNoticePoints }}" as="p" hint-placeholder-count="5">
+                      <div style="min-width:0;font-size:13px;">
+                        <dt style="font-weight:700;">{{ p.title }}</dt>
+                        <dd style="margin:0;color:#33475F;">{{ p.body }}</dd>
+                      </div>
+                    </sc-for>
+                  </dl>
+                </div>
+              </sc-if>
+            </div>
+
+            <p id="crew-list-illustrative" data-testid="crew-list-illustrative" style="min-width:0;border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;font-weight:600;margin:0;">{{ clIllustrative }}</p>
+
+            <sc-if value="{{ clIsUpload }}" hint-placeholder-val="{{ true }}">
+              <div style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="crew-list-upload">
+                <div sc-camel-on-drag-over="{{ onClDragOver }}" sc-camel-on-drag-leave="{{ onClDragLeave }}" sc-camel-on-drop="{{ onClDrop }}" data-drag-over="{{ clDragOverAttr }}" aria-describedby="crew-list-illustrative" style="{{ clDropStyle }}" style-focus-within="border-color:#0E5E8A;box-shadow:0 0 0 3px rgba(14,94,138,.35);">
+                  <label style="display:block;cursor:pointer;text-align:center;">
+                    <input id="crew-list-file-input" type="file" accept="{{ clAccept }}" sc-camel-on-change="{{ onClFile }}" disabled="{{ clBusy }}" aria-describedby="crew-list-illustrative" data-testid="crew-list-file" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;">
+                    <span style="display:block;font-size:16px;font-weight:700;">{{ clDropHeading }}</span>
+                    <span style="display:block;margin-top:4px;font-size:13px;color:#33475F;">{{ clDropHint }}</span>
+                  </label>
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:16px;">
+                    <button type="button" style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ onClChoose }}" disabled="{{ clBusy }}" data-testid="crew-list-choose">Choose file</button>
+                    <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ onClTemplate }}" data-testid="crew-list-template">Download the template (.xlsx)</button>
+                    <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ onClDemo }}" disabled="{{ clBusy }}" data-testid="crew-list-demo">Use the demo crew list</button>
+                  </div>
+                </div>
+                <sc-if value="{{ clHasError }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" data-testid="crew-list-error" style="border-left:4px solid #B91C1C;border-radius:8px;background:#FBEAEA;color:#B91C1C;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ clError }}</p>
+                </sc-if>
+                <p style="color:#33475F;font-size:12.5px;margin:12px 0 0;">The file is read here, in your browser. Nothing is sent until you press Submit on the last step.</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ clIsCheck }}" hint-placeholder-val="{{ false }}">
+              <div style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="crew-list-check">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                  <div style="min-width:0;">
+                    <p style="font-size:13.5px;font-weight:700;margin:0;">Check what the platform read</p>
+                    <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;" data-testid="crew-list-summary">{{ clSummaryText }}</p>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;">
+                    <span aria-hidden="true">Show passport numbers</span>
+                    <span data-testid="crew-show-passports" style="display:inline-flex;"><button type="button" role="switch" aria-checked="{{ clShowPassportsAria }}" aria-label="Show passport numbers" style="{{ clShowPassportsTrack }}" sc-camel-on-click="{{ clToggleShowPassports }}"><span style="{{ clShowPassportsKnob }}"></span></button></span>
+                  </div>
+                </div>
+
+                <fieldset style="border:0;padding:0;margin:16px 0 0;min-width:0;">
+                  <legend style="font-size:12.5px;font-weight:700;padding:0;">Columns — change any the platform got wrong</legend>
+                  <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin-top:8px;">
+                    <sc-for list="{{ clColumns }}" as="c" hint-placeholder-count="4">
+                      <label style="display:block;min-width:0;font-size:12.5px;font-weight:600;color:#33475F;">
+                        <span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ c.name }}">{{ c.name }}</span>
+                        <sc-raw-select value="{{ c.value }}" sc-camel-on-change="{{ c.on }}" aria-label="{{ c.aria }}" data-testid="{{ c.testId }}" style="display:block;margin-top:2px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                          <option value="">— ignore —</option>
+                          <sc-for list="{{ clFieldOptions }}" as="f" hint-placeholder-count="16"><option value="{{ f.id }}">{{ f.label }}</option></sc-for>
+                        </sc-raw-select>
+                      </label>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ clHasUnmapped }}" hint-placeholder-val="{{ false }}">
+                    <p style="color:#33475F;font-size:12.5px;margin:8px 0 0;" data-testid="crew-list-unmapped">Not found in your file: {{ clUnmappedText }}.</p>
+                  </sc-if>
+                </fieldset>
+
+                <div style="position:relative;margin-top:16px;overflow-x:auto;border-radius:8px;border:1px solid #E5EAF1;">
+                  <sc-raw-table style="width:100%;min-width:980px;border-collapse:collapse;font-size:13px;" data-testid="crew-table">
+                    <sc-raw-thead style="background:#FAFBFD;">
+                      <sc-raw-tr>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Name</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Rank</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Nationality</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">DOB</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Passport</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Expiry</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">On/Off</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Flight</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Issues</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Remove</span></sc-raw-th>
+                      </sc-raw-tr>
+                    </sc-raw-thead>
+                    <sc-raw-tbody>
+                      <sc-for list="{{ clRows }}" as="r" hint-placeholder-count="8">
+                        <sc-raw-tr style="border-top:1px solid #E5EAF1;" data-testid="crew-row" data-issues="{{ r.issuesAttr }}">
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;font-weight:600;">{{ r.name }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;">{{ r.rank }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;">{{ r.nationality }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;white-space:nowrap;">{{ r.dob }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;white-space:nowrap;" data-testid="crew-passport">{{ r.passport }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;white-space:nowrap;">{{ r.expiry }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;"><span style="{{ r.movementStyle }}">{{ r.movementLabel }}</span></sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;">{{ r.flight }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;">
+                            <sc-if value="{{ !r.hasIssues }}" hint-placeholder-val="{{ true }}"><span style="color:#33475F;">—</span></sc-if>
+                            <sc-if value="{{ r.hasIssues }}" hint-placeholder-val="{{ false }}">
+                              <ul style="display:flex;flex-wrap:wrap;gap:4px;list-style:none;margin:0;padding:0;">
+                                <sc-for list="{{ r.issues }}" as="i" hint-placeholder-count="1"><li><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;letter-spacing:.02em;background:#FBF0E1;color:#B45309;">{{ i.text }}</span></li></sc-for>
+                              </ul>
+                            </sc-if>
+                          </sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;text-align:right;">
+                            <button type="button" sc-camel-on-click="{{ r.onRemove }}" aria-label="{{ r.removeAria }}" style="min-height:32px;min-width:32px;cursor:pointer;border-radius:6px;border:1px solid #CBD6E2;background:#FFFFFF;padding:0 8px;font-size:13px;font-weight:700;color:#33475F;font-family:inherit;" style-hover="border-color:#B91C1C;color:#B91C1C;" data-testid="crew-remove">✕</button>
+                          </sc-raw-td>
+                        </sc-raw-tr>
+                      </sc-for>
+                    </sc-raw-tbody>
+                  </sc-raw-table>
+                </div>
+
+                <p style="color:#33475F;font-size:12.5px;margin:12px 0 0;">Nothing has left this browser. Discard clears it; Submit is the only thing that sends it.</p>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px;">
+                  <button type="button" style="{{ clContinueStyle }}" disabled="{{ clContinueDisabled }}" sc-camel-on-click="{{ clContinue }}" data-testid="crew-list-continue">Continue to services</button>
+                  <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ clDiscard }}" data-testid="crew-list-discard">Discard</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ clIsServices }}" hint-placeholder-val="{{ false }}">
+              <div data-testid="crew-list-services" style="min-width:0;">
+                <h3 style="font-size:17px;font-weight:700;margin:0;">What do you need for this crew?</h3>
+                <div style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px;">
+
+                  <div style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-service-on="{{ clLoiOnAttr }}">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                      <div style="min-width:0;">
+                        <p style="font-size:13.5px;font-weight:700;margin:0;">{{ clLoiTitle }}</p>
+                        <p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ clLoiBody }}</p>
+                      </div>
+                      <span data-testid="service-loi" style="display:inline-flex;flex-shrink:0;"><button type="button" role="switch" aria-checked="{{ clLoiAria }}" aria-label="{{ clLoiTitle }}" style="{{ clLoiTrack }}" sc-camel-on-click="{{ clToggleLoi }}"><span style="{{ clLoiKnob }}"></span></button></span>
+                    </div>
+                    <div style="margin-top:12px;">
+                      <p style="font-size:13px;font-weight:600;margin:0;" data-testid="service-loi-count">{{ clLoiCountText }}</p>
+                      <sc-if value="{{ clHasLoiCrew }}" hint-placeholder-val="{{ false }}">
+                        <ul style="list-style:none;margin:6px 0 0;padding:0;display:grid;gap:2px;font-size:12.5px;color:#33475F;">
+                          <sc-for list="{{ clLoiCrew }}" as="c" hint-placeholder-count="5"><li>{{ c.name }}{{ c.tail }}</li></sc-for>
+                        </ul>
+                      </sc-if>
+                      <p style="color:#33475F;font-size:12.5px;margin:8px 0 0;">Not sure who needs one? The <button type="button" sc-camel-on-click="{{ clOpenImmigration }}" style="background:none;border:none;padding:0;font-size:12.5px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;" data-testid="crew-list-immigration-link">Immigration checklist</button> settles it.</p>
+                    </div>
+                  </div>
+
+                  <div style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-service-on="{{ clHotelsOnAttr }}">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                      <div style="min-width:0;">
+                        <p style="font-size:13.5px;font-weight:700;margin:0;">{{ clHotelsTitle }}</p>
+                        <p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ clHotelsBody }}</p>
+                      </div>
+                      <span data-testid="service-hotels" style="display:inline-flex;flex-shrink:0;"><button type="button" role="switch" aria-checked="{{ clHotelsAria }}" aria-label="{{ clHotelsTitle }}" style="{{ clHotelsTrack }}" sc-camel-on-click="{{ clToggleHotels }}"><span style="{{ clHotelsKnob }}"></span></button></span>
+                    </div>
+                    <div style="margin-top:12px;">
+                      <fieldset style="border:0;padding:0;margin:0;min-width:0;" disabled="{{ clHotelsOff }}">
+                        <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Hotel, nights and rooms</legend>
+                        <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Hotel
+                          <sc-raw-select value="{{ clHotelId }}" sc-camel-on-change="{{ onClHotelId }}" data-testid="service-hotel-id" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                            <sc-for list="{{ clHotelOptions }}" as="h" hint-placeholder-count="2"><option value="{{ h.id }}" disabled="{{ h.disabled }}">{{ h.label }}</option></sc-for>
+                          </sc-raw-select>
+                        </label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+                          <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Nights
+                            <input type="{{ 'number' }}" min="1" max="14" step="1" sc-camel-input-mode="numeric" value="{{ clNights }}" sc-camel-on-change="{{ onClNights }}" data-testid="service-hotel-nights" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                          </label>
+                          <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Rooms
+                            <input type="{{ 'number' }}" min="1" max="99" step="1" sc-camel-input-mode="numeric" value="{{ clRoomsValue }}" sc-camel-on-change="{{ onClRooms }}" data-testid="service-hotel-rooms" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                          </label>
+                        </div>
+                      </fieldset>
+                      <p style="font-size:13px;font-weight:600;margin:8px 0 0;" data-testid="service-hotel-line">{{ clHotelLine }}</p>
+                      <p style="color:#33475F;font-size:12px;margin:4px 0 0;">{{ clHotelCaveat }}</p>
+                    </div>
+                  </div>
+
+                  <div style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-service-on="{{ clTaxisOnAttr }}">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+                      <div style="min-width:0;">
+                        <p style="font-size:13.5px;font-weight:700;margin:0;">{{ clTaxisTitle }}</p>
+                        <p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ clTaxisBody }}</p>
+                      </div>
+                      <span data-testid="service-taxis" style="display:inline-flex;flex-shrink:0;"><button type="button" role="switch" aria-checked="{{ clTaxisAria }}" aria-label="{{ clTaxisTitle }}" style="{{ clTaxisTrack }}" sc-camel-on-click="{{ clToggleTaxis }}"><span style="{{ clTaxisKnob }}"></span></button></span>
+                    </div>
+                    <div style="margin-top:12px;">
+                      <fieldset style="border:0;padding:0;margin:0;min-width:0;" disabled="{{ clTaxisOff }}">
+                        <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Port for the runs</legend>
+                        <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Port
+                          <sc-raw-select value="{{ clTaxiPort }}" sc-camel-on-change="{{ onClTaxiPort }}" data-testid="service-taxi-port" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                            <sc-for list="{{ clTaxiPorts }}" as="p" hint-placeholder-count="4"><option value="{{ p.value }}">{{ p.label }}</option></sc-for>
+                          </sc-raw-select>
+                        </label>
+                      </fieldset>
+                      <p style="font-size:13px;font-weight:600;margin:8px 0 0;" data-testid="service-taxi-line">{{ clTaxiLine }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="position:relative;margin-top:16px;overflow-x:auto;border-radius:8px;border:1px solid #E5EAF1;">
+                  <sc-raw-table style="width:100%;min-width:760px;border-collapse:collapse;font-size:13px;" data-testid="taxi-runs">
+                    <sc-raw-caption style="padding:8px 10px;text-align:left;font-size:12.5px;font-weight:700;">Taxi runs, grouped from the list</sc-raw-caption>
+                    <sc-raw-thead style="background:#FAFBFD;">
+                      <sc-raw-tr>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Flight</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">From / to</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Date</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Time</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Crew</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Timing</sc-raw-th>
+                        <sc-raw-th scope="col" style="padding:8px 10px;text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#33475F;text-transform:uppercase;">Pick-up</sc-raw-th>
+                      </sc-raw-tr>
+                    </sc-raw-thead>
+                    <sc-raw-tbody>
+                      <sc-for list="{{ clRuns }}" as="run" hint-placeholder-count="4">
+                        <sc-raw-tr style="border-top:1px solid #E5EAF1;" data-testid="taxi-run" data-tracked="{{ run.trackedAttr }}">
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;font-weight:600;">{{ run.flight }}<span style="display:block;font-size:11.5px;font-weight:400;color:#33475F;">{{ run.direction }}</span></sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;">{{ run.from }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;white-space:nowrap;">{{ run.date }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;white-space:nowrap;">{{ run.time }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;">{{ run.crew }}</sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;"><span style="{{ run.timingStyle }}">{{ run.timingLabel }}</span></sc-raw-td>
+                          <sc-raw-td style="padding:8px 10px;vertical-align:top;font-size:13px;font-weight:700;white-space:nowrap;">{{ run.pickup }}</sc-raw-td>
+                        </sc-raw-tr>
+                      </sc-for>
+                    </sc-raw-tbody>
+                  </sc-raw-table>
+                </div>
+                <p style="margin:8px 0 0;font-size:12px;color:#33475F;" data-testid="crew-list-feed-note">{{ trFeedNote }}</p>
+
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;">
+                  <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ clBackToList }}" data-testid="crew-list-back-to-list">Back to the list</button>
+                  <button type="button" style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ clToSubmit }}" data-testid="crew-list-to-submit">Continue to submit</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ clIsSubmit }}" hint-placeholder-val="{{ false }}">
+              <div style="min-width:0;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="crew-list-submit-step">
+                <p style="font-size:13.5px;font-weight:700;margin:0;">Submit the crew list to GAC</p>
+                <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">{{ clSubmitIntro }}</p>
+                <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:12px;">
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Vessel
+                    <sc-raw-select value="{{ clVesselId }}" sc-camel-on-change="{{ onClVessel }}" data-testid="crew-list-vessel" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                      <sc-for list="{{ clVessels }}" as="v" hint-placeholder-count="3"><option value="{{ v.id }}">{{ v.label }}</option></sc-for>
+                    </sc-raw-select>
+                  </label>
+                  <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Port of crew change
+                    <sc-raw-select value="{{ clPort }}" sc-camel-on-change="{{ onClPort }}" data-testid="crew-list-port" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
+                      <sc-for list="{{ clPorts }}" as="p" hint-placeholder-count="3"><option value="{{ p.value }}">{{ p.label }}</option></sc-for>
+                    </sc-raw-select>
+                  </label>
+                </div>
+
+                <ul style="list-style:none;margin:12px 0 0;padding:8px 12px;display:grid;gap:4px;border-radius:8px;border:1px solid #E5EAF1;background:#FAFBFD;font-size:13px;" data-testid="crew-list-service-summary">
+                  <sc-if value="{{ !clHasSummaryLines }}" hint-placeholder-val="{{ false }}"><li>No services chosen — GAC receives the list for the crew change and your agent picks it up.</li></sc-if>
+                  <sc-for list="{{ clSummaryLines }}" as="l" hint-placeholder-count="3"><li>{{ l.text }}</li></sc-for>
+                </ul>
+
+                <label style="display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:13px;cursor:pointer;">
+                  <input type="checkbox" checked="{{ clAck }}" sc-camel-on-change="{{ onClAck }}" data-testid="crew-list-ack" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#0E5E8A;">
+                  <span>{{ clAckText }}</span>
+                </label>
+
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px;">
+                  <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ clBackToServices }}" data-testid="crew-list-back-to-services">Back to services</button>
+                  <button type="button" style="{{ clSubmitStyle }}" disabled="{{ clSubmitDisabled }}" sc-camel-on-click="{{ clSubmit }}" data-testid="crew-list-submit">Submit crew list to GAC</button>
+                  <span style="color:#33475F;font-size:12.5px;">GAC confirms receipt, then arranges what you chose.</span>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ clHasSubs }}" hint-placeholder-val="{{ false }}">
+              <section aria-labelledby="crew-lists-heading" data-testid="crew-lists" style="min-width:0;">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+                  <h3 id="crew-lists-heading" style="font-size:17px;font-weight:700;margin:0;">{{ clSubsHeading }}</h3>
+                  <p style="color:#33475F;font-size:12.5px;margin:0;" data-testid="crew-lists-summary">{{ clSubsSummary }}</p>
+                </div>
+                <div style="display:grid;gap:16px;margin-top:12px;">
+                  <sc-for list="{{ clSubCards }}" as="c" hint-placeholder-count="1">
+                    <div tabindex="-1" style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;outline:none;" style-focus-visible="box-shadow:0 0 0 2px #0E5E8A;" data-testid="{{ c.testId }}" data-stage="{{ c.stage }}" data-personal-data="{{ c.personalData }}">
+                      <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
+                        <div style="min-width:0;">
+                          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                            <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;letter-spacing:.02em;background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;">Crew list</span>
+                            <span style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#33475F;">{{ c.meta }}</span>
+                          </div>
+                          <h3 style="font-size:17px;font-weight:700;margin:4px 0 0;overflow-wrap:anywhere;">{{ c.fileName }}</h3>
+                          <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ c.line }}</p>
+                        </div>
+                        <div style="max-width:100%;" data-testid="crew-list-stage"><span style="{{ c.stageStyle }}">{{ c.stageLabel }}</span></div>
+                      </div>
+                      <ol style="display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:12px 0 0;" aria-label="Progress" data-testid="stage-tracker">
+                        <sc-for list="{{ c.tracker }}" as="t" hint-placeholder-count="4">
+                          <li style="{{ t.style }}" data-stage-state="{{ t.state }}"><span aria-hidden="true" style="margin-right:4px;">{{ t.mark }}</span><strong>{{ t.label }}</strong><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">{{ t.sr }}</span></li>
+                        </sc-for>
+                      </ol>
+                      <p style="font-size:13px;margin:12px 0 0;"><strong>{{ c.counts }}</strong>{{ c.countsTail }}</p>
+                      <ul style="list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-size:12.5px;color:#33475F;">
+                        <sc-if value="{{ !c.hasLines }}" hint-placeholder-val="{{ false }}"><li>No services chosen</li></sc-if>
+                        <sc-for list="{{ c.lines }}" as="l" hint-placeholder-count="3"><li>{{ l.text }}</li></sc-for>
+                      </ul>
+                      <sc-if value="{{ c.hasCrew }}" hint-placeholder-val="{{ false }}">
+                        <div style="margin-top:10px;">
+                          <button type="button" sc-camel-on-click="{{ c.onToggleCrew }}" aria-expanded="{{ c.crewAria }}" aria-controls="{{ c.crewControls }}" style="background:none;border:none;padding:0;font-size:12.5px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;" data-testid="crew-list-show-crew">{{ c.crewToggleLabel }}</button>
+                          <sc-if value="{{ c.crewOpen }}" hint-placeholder-val="{{ false }}">
+                            <ul id="{{ c.crewControls }}" style="list-style:none;margin:6px 0 0;padding:0;display:grid;gap:2px 24px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));font-size:12.5px;" data-testid="crew-list-crew">
+                              <sc-for list="{{ c.crew }}" as="r" hint-placeholder-count="8"><li style="min-width:0;">{{ r.name }}<span style="color:#33475F;">{{ r.tail }}</span></li></sc-for>
+                            </ul>
+                          </sc-if>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ c.hasLinked }}" hint-placeholder-val="{{ false }}">
+                        <p style="color:#33475F;font-size:12.5px;margin:8px 0 0;" data-testid="crew-list-linked">LOIs raised: <sc-for list="{{ c.linked }}" as="l" hint-placeholder-count="5"><span>{{ l.sep }}<button type="button" sc-camel-on-click="{{ l.on }}" aria-label="{{ l.aria }}" style="background:none;border:none;padding:0;font-size:12.5px;font-weight:600;color:#0E5E8A;text-decoration:underline;cursor:pointer;font-family:inherit;">{{ l.id }}</button></span></sc-for> in the letters list below.</p>
+                      </sc-if>
+                      <p style="{{ c.dataStyle }}" data-testid="crew-list-data-state">{{ c.dataText }}</p>
+                      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
+                        <sc-if value="{{ c.hasAction }}" hint-placeholder-val="{{ false }}">
+                          <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ c.onAdvance }}" data-testid="crew-list-advance">{{ c.actionLabel }}</button>
+                        </sc-if>
+                        <sc-if value="{{ c.canDelete }}" hint-placeholder-val="{{ false }}">
+                          <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ c.onDelete }}" data-testid="crew-list-delete">{{ c.deleteLabel }}</button>
+                        </sc-if>
+                        <sc-if value="{{ c.hasNote }}" hint-placeholder-val="{{ false }}"><span style="max-width:560px;color:#33475F;font-size:12.5px;">{{ c.note }}</span></sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ clHasDataToDelete }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px;">
+                    <button type="button" style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ clDeleteAll }}" data-testid="crew-list-delete-all">Delete all crew data</button>
+                    <span style="color:#33475F;font-size:12.5px;">Every list that still holds personal data, in one go. References, counts and services stay.</span>
+                  </div>
+                </sc-if>
+              </section>
+            </sc-if>
+          </div>
+        </sc-if>
 
         <sc-if value="{{ ccIsHotels }}" hint-placeholder-val="{{ false }}">
           <div data-testid="section-hotels">
@@ -445,12 +802,13 @@
 
         <div style="display:grid;gap:16px;margin-top:12px;" data-testid="crew-requests">
           <sc-for list="{{ ccRequests }}" as="r" hint-placeholder-count="2">
-            <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="{{ r.testId }}" data-kind="{{ r.kind }}" data-stage="{{ r.stage }}">
+            <div tabindex="-1" style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;outline:none;" style-focus-visible="box-shadow:0 0 0 2px #0E5E8A;" data-testid="{{ r.testId }}" data-kind="{{ r.kind }}" data-stage="{{ r.stage }}" data-redacted="{{ r.redactedAttr }}">
               <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;">
                 <div style="min-width:0;">
                   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
                     <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;letter-spacing:.02em;background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;">{{ r.kindLabel }}</span>
                     <span style="font-size:12px;font-weight:600;letter-spacing:.02em;color:#33475F;">{{ r.meta }}</span>
+                    <sc-if value="{{ r.hasSource }}" hint-placeholder-val="{{ false }}"><span style="border-radius:6px;border:1px solid #E5EAF1;background:#FAFBFD;padding:2px 6px;font-size:11.5px;font-weight:600;color:#33475F;" data-testid="crew-request-source">{{ r.sourceLabel }}</span></sc-if>
                   </div>
                   <h3 style="font-size:17px;font-weight:700;margin:4px 0 0;" data-testid="crew-name">{{ r.name }}</h3>
                   <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ r.line }}</p>

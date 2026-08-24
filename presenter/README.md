@@ -74,19 +74,32 @@ slides shown before the platform — see below), `30-chrome` (header/nav),
 `40-…58-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
 certification, bunkers, kitchen-sink, procurement, crew-change — which holds
-all six crew-change sections, Taxis (planner + operators) and Launches (the
-panel) among them; `54-launches` is retired — invoices, and `58-service-lines`,
-which renders all three hubs from one set of bindings), `60-footer-drawer`,
-`70-modal`, `73-request`, `74-launch-request`, `71-tour`, `72-toast`.
+all seven crew-change sections (Crew list first — upload, services, GDPR
+deletion — then hotels, Taxis (planner + operators), Launches (the panel),
+immigration and the two letters); `54-launches` is retired — invoices, and
+`58-service-lines`, which renders all three hubs from one set of bindings),
+`60-footer-drawer`, `70-modal`, `73-request`, `74-launch-request`,
+`75-crew-delete` (the crew list's delete-crew-data dialog), `71-tour`,
+`72-toast`.
 
 ### Feature modules (17 Aug review screens)
 
 The screens added after v12 — Procurement, Crew change, Invoices, the three
-service-line hubs (`service-lines.js`), and the
+service-line hubs (`service-lines.js`), the
 launches panel that Crew change › Launches embeds (`launches.js` still owns
 plan-a-run, the per-port cards and the launch-request modal;
-`56-crew-change.html` binds them) — live as **feature modules** in
-`src/app/features/<name>.js`, included after `component.js` in the x-dc script. Each module owns its data, state, bindings
+`56-crew-change.html` binds them), and the Crew list section (`crew-list.js`,
+23 Aug: the zero-dependency .xlsx/.csv reader and writer, the header mapping
+and row rules, the services planner, the submission record with its
+thirty-day purge, and the delete dialog in `75-crew-delete.html`; it is
+included straight after `crew-change.js` and reads that module's helpers from
+the shared script scope, and an LOI raised from a list lands in `ccRequests`
+tagged `crewListId`, which `crew-change.js` renders redacted once the list's
+data is deleted) — live as **feature modules** in
+`src/app/features/<name>.js`, included after `component.js` in the x-dc script
+(the include list in `src/index.html` is explicit — a new module is one line
+there; `build.py` runs its forbidden-sequence guard over every file in the
+folder). Each module owns its data, state, bindings
 and Escape handling and registers them with the core:
 
 ```js
@@ -260,13 +273,17 @@ crane prices cover the booked window only — overrun not included, subject to
 change, supplier T&Cs included; Procurement via Compass (email → Compass sources
 and supplies every line itself and confirms the list back → invoiced via Compass
 under GAC; no third party is ever named to the client, and the client never sees
-or hears of a mark-up — Compass's prices, one total); Crew change, six sections
-(hotels; taxis with the flight-timed transport planner and a simulated
-flight-status feed; launches with capacity + freight included, per port;
-immigration; LOI endorsed by GAC as agents; repat letter endorsed by UK Border
-Force). Simulated steps say so. There is no Launches tab — `#/launches` opens
-Crew change on the launches section, and a retired `#/crew-change/transfers`
-opens taxis.
+or hears of a mark-up — Compass's prices, one total); Crew change, seven
+sections (the crew list first and by default — the coordinator's own .xlsx or
+.csv read in the browser, checked, then LOIs, hotel rooms and taxis raised from
+it, with the crew's personal data deletable at any time and purged thirty days
+after completion, under an illustrative data-handling notice; hotels; taxis with
+the flight-timed transport planner and a simulated flight-status feed; launches
+with capacity + freight included, per port; immigration; LOI endorsed by GAC as
+agents; repat letter endorsed by UK Border Force). Simulated steps say so. There
+is no Launches tab — `#/launches` opens Crew change on the launches section, a
+retired `#/crew-change/transfers` opens taxis, and a bare `#/crew-change` opens
+the crew list (hotels are `#/crew-change/hotels`).
 
 The platform nav carries the same ten items as the site's `AppLayout`, in the
 same order — since 20 Aug that is the **service-line** row: Dashboard · Agency ·

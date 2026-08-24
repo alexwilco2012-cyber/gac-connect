@@ -8,7 +8,14 @@
    src/screens/app/CrewChange.tsx, src/lib/crewChange.ts, src/lib/transfers.ts,
    src/data/crewChange.ts and src/store/crewChange.ts — copy verbatim, rules
    ported verbatim. The launches panel on the Launches section is bound by
-   features/launches.js. All data on this screen is illustrative and fictional.
+   features/launches.js; the Crew list section (first in the strip and the
+   default since 23 Aug — upload, services, GDPR deletion) is bound by
+   features/crew-list.js, which is included straight after this module and
+   reads its helpers (vessels, ports, dates, the flight feed, the style strings,
+   the requests store keys) from the shared x-dc scope. An LOI raised from a
+   crew list lands in ccRequests tagged crewListId and is redacted when the
+   list's personal data is deleted; the requests list here renders that. All
+   data on this screen is illustrative and fictional.
 
    Deep link: the core maps '#/crew-change/<section>' (and '#/launches', which is
    '#/crew-change/launches') to route 'crew-change' with state.routeSection =
@@ -19,6 +26,9 @@
 
 /* ---------- copy tables (src/data/crewChange.ts) ---------- */
 const CC_SECTIONS = [
+  /* First and the default (owner's ask, 23 Aug): the list is where a coordinator's
+     crew change starts; the other sections are the services that hang off it. */
+  { id: 'crew-list', label: 'Crew list', summary: 'Upload the crew list you already keep — names, passports, flights — and the platform offers the LOIs, hotel rooms and taxis that follow from it. One upload, not one form per crew member.' },
   { id: 'hotels', label: 'Hotels', summary: 'Rooms for crew held ashore — off-signers, transit crews, medical stand-downs.' },
   { id: 'taxis', label: 'Taxis', summary: 'Airport, hotel and quay runs, timed to the crew member’s tracked flight when you give us the flight number.' },
   { id: 'launches', label: 'Launches', summary: 'Crew, stores and light freight out to vessels at anchor — capacity and whether freight is included, launch by launch, port by port.' },
@@ -30,7 +40,9 @@ const CC_SECTIONS = [
    were split ('#/crew-change/transfers') still lands somewhere sensible instead
    of silently dropping the visitor on Hotels (site: RETIRED_CREW_SECTIONS). */
 const CC_RETIRED_SECTIONS = { transfers: 'taxis' };
-const CC_DEFAULT_SECTION = 'hotels';
+/* '#/crew-change' with no section means the crew list (site: DEFAULT_CREW_SECTION);
+   hotels deep links are '#/crew-change/hotels'. */
+const CC_DEFAULT_SECTION = 'crew-list';
 function ccIsSectionId(v) { return !!v && CC_SECTIONS.some((s) => s.id === v); }
 /* The section a hash asks for: current id, retired id, or the default. */
 function ccResolveSection(v) {
@@ -188,7 +200,7 @@ const CC_VESSELS = [
 const CC_ILLUSTRATIVE_NOTICE = 'Illustrative — do not enter real passport data in this proof of concept.';
 const CC_FLOW = [
   { title: 'The platform holds the templates', body: 'One template per letter, kept current by GAC. You never start from a blank page or an old email attachment.' },
-  { title: 'You fill them in', body: 'One letter per crew member, details as printed in the passport, vessel and port as on the call, flights as on the itinerary.' },
+  { title: 'You fill them in — or upload the list', body: 'One letter per crew member, details as printed in the passport. Upload your own crew list and the letters are raised from it; delete the crew’s details when the job is done.' },
   { title: 'GAC endorses or routes, then returns', body: 'LOIs are signed by GAC as agents and sent back. Repatriation letters go to UK Border Force for endorsement and come back endorsed.' }
 ];
 const CC_CHECKLIST = [
@@ -329,10 +341,46 @@ function ccIsCrewRequest(v) {
   if (!ccIsRecord(v)) return false;
   if (typeof v.id !== 'string' || typeof v.createdAt !== 'string') return false;
   if (typeof v.stage !== 'string') return false;
+  /* Optional provenance from a crew list upload — absent on older entries. */
+  if (v.crewListId !== undefined && typeof v.crewListId !== 'string') return false;
+  if (v.redacted !== undefined && typeof v.redacted !== 'boolean') return false;
   if (v.kind === 'loi') return ccIsLoiForm(v.form) && ccStageIndex('loi', v.stage) !== -1;
   if (v.kind === 'repat') return ccIsRepatForm(v.form) && ccStageIndex('repat', v.stage) !== -1;
   return false;
 }
+/* What a redacted field reads — a dash, never a blank that could look like an unfinished form. */
+const CC_REDACTED_FIELD = '—';
+/* An LOI form with every personal detail replaced by a dash. Vessel and port are
+   not personal and stay, so the letter still reads as belonging to the right
+   call; the visa-national flag stays because it says nothing about an
+   individual once the name is gone (site: redactLoiForm). */
+function ccRedactLoiForm(form) {
+  return {
+    familyName: CC_REDACTED_FIELD, forenames: CC_REDACTED_FIELD, nationality: CC_REDACTED_FIELD, dateOfBirth: CC_REDACTED_FIELD,
+    passportNumber: CC_REDACTED_FIELD, passportExpiry: CC_REDACTED_FIELD, vesselId: form.vesselId, port: form.port,
+    joiningDate: CC_REDACTED_FIELD, arrivingFlight: CC_REDACTED_FIELD, visaNational: form.visaNational
+  };
+}
+/* The repatriation form redacted the same way; vessel and port stay, flights go. */
+function ccRedactRepatForm(form) {
+  return {
+    familyName: CC_REDACTED_FIELD, forenames: CC_REDACTED_FIELD, dateOfBirth: CC_REDACTED_FIELD, nationality: CC_REDACTED_FIELD,
+    passportNumber: CC_REDACTED_FIELD, vesselId: form.vesselId, port: form.port, disembarkationDate: CC_REDACTED_FIELD,
+    joinedOutsideUk: form.joinedOutsideUk, flights: form.flights.map(function () { return CC_REDACTED_FIELD; })
+  };
+}
+/* A request with its personal fields replaced by dashes, whichever kind it is
+   (site: redactRequest). Only LOIs are raised from a crew list today, but a
+   deletion helper that silently skips one kind is exactly the hole a
+   retention rule must not have. */
+function ccRedactRequest(r) {
+  if (r.redacted === true) return r;
+  return r.kind === 'loi'
+    ? Object.assign({}, r, { form: ccRedactLoiForm(r.form), redacted: true })
+    : Object.assign({}, r, { form: ccRedactRepatForm(r.form), redacted: true });
+}
+/* True when the request's personal data has been deleted — the card shows a placeholder, not a name. */
+function ccIsRedactedRequest(r) { return r.redacted === true; }
 /* 'Mon 18 Aug · 09:41' */
 function ccStampLabel(d) {
   const dt = d || new Date();
@@ -387,6 +435,10 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       ccLoiProblems: [],
       ccRepat: Object.assign({}, CC_REPAT_DEMO_FORM, { flights: CC_REPAT_DEMO_FORM.flights.slice() }),
       ccRepatProblems: [],
+      /* crew-list.js (included after this module) returns ccRequests too and
+         its value WINS the feature-state merge — it re-hydrates both keys
+         through the joint retention rule (clApplyRetention). This line stands
+         alone only if the crew-list module is ever removed. */
       ccRequests: Array.isArray(raw) ? raw.filter(ccIsCrewRequest) : [],
       /* flight-timed planner (Taxis) — not persisted, same as the site's FlightPlanner state */
       trDirection: 'arriving',
@@ -618,12 +670,20 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       const terminal = ccIsTerminalStage(r.kind, r.stage);
       const current = ccStageIndex(r.kind, r.stage);
       const tone = ccStageTone(r.kind, r.stage);
+      /* A request raised from a crew list loses its personal data when the list's
+         data is deleted: the card keeps its reference, stage and call, not the
+         name (site: RequestCard). */
+      const redacted = ccIsRedactedRequest(r);
       return {
         id: r.id, testId: 'crew-request-' + r.id, kind: r.kind, stage: r.stage,
+        redactedAttr: redacted ? 'true' : null,
         kindLabel: r.kind === 'loi' ? 'LOI' : 'Repat',
         meta: r.id + ' · ' + r.createdAt,
-        name: ccFormatCrewName(r.form.familyName, r.form.forenames),
-        line: (vessel ? vessel.name : '—') + ' · ' + r.form.port + ' · ' + (r.kind === 'loi' ? 'Joining ' + r.form.joiningDate : 'Disembarking ' + r.form.disembarkationDate),
+        hasSource: !!r.crewListId, sourceLabel: 'from ' + (r.crewListId || ''),
+        name: redacted ? 'Personal data deleted' : ccFormatCrewName(r.form.familyName, r.form.forenames),
+        line: redacted
+          ? 'Details removed at the client’s request · ' + (vessel ? vessel.name : '—') + ' · ' + r.form.port
+          : (vessel ? vessel.name : '—') + ' · ' + r.form.port + ' · ' + (r.kind === 'loi' ? 'Joining ' + r.form.joiningDate : 'Disembarking ' + r.form.disembarkationDate),
         stageLabel: (terminal ? '✓ ' : '') + r.stage,
         stageStyle: CC_PILL + CC_PILL_TONE[tone] + 'white-space:normal;',
         tracker: ccStagesFor(r.kind).map((s, i) => {
@@ -649,12 +709,13 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       /* section strip */
       ccSections: ccSections,
       ccSectionId: section.id, ccSectionLabel: section.label, ccSectionSummary: section.summary,
+      ccIsCrewList: section.id === 'crew-list',
       ccIsHotels: section.id === 'hotels', ccIsTaxis: section.id === 'taxis', ccIsLaunches: section.id === 'launches',
       ccIsImmigration: section.id === 'immigration', ccIsLoi: section.id === 'loi', ccIsRepat: section.id === 'repat',
       /* dashboard "Plan taxis" / "Book a launch" — open Crew change straight on that
          section (site: ?section=taxis / ?section=launches). The hash is the only
          record of the section, so a plain "Open crew change" ('#/crew-change',
-         no section) afterwards lands on Hotels, as a bare /app/crew-change does. */
+         no section) afterwards lands on the Crew list, as a bare /app/crew-change does. */
       goTaxis: self._go('crew-change/taxis'),
       goLaunches: self._go('crew-change/launches'),
       /* hotels */
@@ -753,6 +814,10 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       ccRequestsCount: 'Requests · ' + requests.length,
       ccRequestsSummary: requests.length === 0 ? 'No requests yet — submit a template above'
         : (inProgress === 0 ? 'All letters returned' : inProgress + ' in progress · ' + (requests.length - inProgress) + ' returned'),
+      /* Both overridden by features/crew-list.js (feature vals merge in include
+         order, and it is included after this module): Reset demo clears the crew
+         lists too, and the button shows while a crew list exists, as the site's
+         reset() and RequestsList do. These stay so this module reads on its own. */
       ccHasRequests: requests.length > 0,
       ccReset: () => { self._set(CC_KEY_REQUESTS, []); self._set(CC_KEY_SEQ, 0); self.setState({ ccRequests: [] }); },
       /* dashboard crew card — live count of letters not yet returned (src/screens/app/Dashboard.tsx);

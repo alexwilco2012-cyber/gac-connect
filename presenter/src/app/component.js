@@ -146,6 +146,7 @@ class Component extends DCLogic {
     };
     window.addEventListener('hashchange', this._onHash);
     this._onKey = (e) => {
+      if (e.key === 'Tab' && this._dlgOpen) { this._dlgTrapTab(e); return; }
       if (e.key === 'Escape') {
         if (this._featureEscape()) { /* a feature module closed its own modal */ }
         else if (this.state.rq) this.setState({ rq: null });
@@ -233,6 +234,24 @@ class Component extends DCLogic {
        synthesised clicks, which keep focus so Enter/Space still work on the dot) */
     if (e && e.detail > 0 && e.currentTarget && e.currentTarget.blur) e.currentTarget.blur();
     this._advGo(i);
+  }
+  _dlgTrapTab(e) {
+    /* Tab stays inside the open dialog, mirroring the site's useFocusTrap:
+       wrap from the last control to the first and back, and pull focus in
+       when it has somehow left the dialog. Lives in the core so every
+       presenter dialog (launch request, crew delete) is trapped alike. */
+    const dlg = document.querySelector('[role="dialog"]');
+    if (!dlg) return;
+    const focusable = Array.from(dlg.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => el.offsetParent !== null);
+    if (!focusable.length) { e.preventDefault(); return; }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (!dlg.contains(active)) { e.preventDefault(); first.focus(); return; }
+    if (e.shiftKey && active === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
   }
   _advTrapTab(e) {
     const root = document.querySelector('.adv'); if (!root) return;

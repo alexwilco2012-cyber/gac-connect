@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * Crew change — hotels, taxis, launches, immigration, LOI and repatriation-letter
- * templates (17 Aug 2026 review; taxis and launches are separate sections since
- * the owner's follow-up). The client fills a template in; GAC endorses the LOI as
- * agents, or routes the repatriation letter to UK Border Force, and returns it.
+ * Crew change — crew list, hotels, taxis, launches, immigration, LOI and
+ * repatriation-letter templates (17 Aug 2026 review; taxis and launches are
+ * separate sections since the owner's follow-up; the crew list is first and the
+ * default since 23 Aug — its own flow is in crew-list.spec.ts). The client fills
+ * a template in; GAC endorses the LOI as agents, or routes the repatriation
+ * letter to UK Border Force, and returns it.
  */
 
 test.beforeEach(async ({ page }) => {
@@ -23,9 +25,11 @@ test('crew change: sections, hotels, LOI and repat pipelines, persistence, reset
     page.getByRole('heading', { name: 'Everything a crew change needs, in one place' }),
   ).toBeVisible();
 
-  // Six section controls, keyboard-operable with aria-pressed.
+  // Seven section controls, keyboard-operable with aria-pressed; the crew list
+  // is where the screen opens.
   const sections = page.getByTestId('crew-sections');
-  await expect(sections.getByRole('button')).toHaveCount(6);
+  await expect(sections.getByRole('button')).toHaveCount(7);
+  const crewListChip = sections.getByRole('button', { name: 'Crew list', exact: true });
   const hotelsChip = sections.getByRole('button', { name: 'Hotels', exact: true });
   const immigrationChip = sections.getByRole('button', { name: 'Immigration', exact: true });
   const loiChip = sections.getByRole('button', { name: 'LOI (on-signers)', exact: true });
@@ -33,13 +37,18 @@ test('crew change: sections, hotels, LOI and repat pipelines, persistence, reset
     name: 'Repat letters (off-signers)',
     exact: true,
   });
-  await expect(hotelsChip).toHaveAttribute('aria-pressed', 'true');
+  await expect(crewListChip).toHaveAttribute('aria-pressed', 'true');
+  await expect(hotelsChip).toHaveAttribute('aria-pressed', 'false');
   await expect(immigrationChip).toHaveAttribute('aria-pressed', 'false');
   await expect(loiChip).toHaveAttribute('aria-pressed', 'false');
   await expect(repatChip).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'crew-list');
 
   // Hotels: both fictional hotels with the availability caveat; booking opens the
   // quote modal with the hotel-terms fieldset; Escape closes it.
+  await hotelsChip.click();
+  await expect(hotelsChip).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/section=hotels/);
   await expect(page.getByRole('heading', { name: 'Granite Quay Hotel' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Caledonia Rooms' })).toBeVisible();
   await expect(page.getByText('subject to availability').first()).toBeVisible();
@@ -308,4 +317,26 @@ test('crew change: a link minted before taxis and launches were split still land
   // Taxis serve the letter ports too, not only the ports that have a launch.
   const ports = await page.getByTestId('flight-port').locator('option').allTextContents();
   expect(ports).toEqual(['Aberdeen', 'Peterhead', 'Montrose', 'Macduff']);
+});
+
+test('crew change: a hotels deep link still lands on Hotels now the crew list is the default', async ({
+  page,
+}) => {
+  await page.goto('/app/agency/crew-change?section=hotels');
+  await page.keyboard.press('Escape');
+
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'hotels');
+  await expect(
+    page.getByTestId('crew-sections').getByRole('button', { name: 'Hotels', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('section-hotels')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Granite Quay Hotel' })).toBeVisible();
+
+  // Choosing the default section tidies the address bar back to the bare route.
+  await page
+    .getByTestId('crew-sections')
+    .getByRole('button', { name: 'Crew list', exact: true })
+    .click();
+  await expect(page.getByTestId('crew-section')).toHaveAttribute('data-section', 'crew-list');
+  await expect(page).toHaveURL(/\/app\/agency\/crew-change$/);
 });

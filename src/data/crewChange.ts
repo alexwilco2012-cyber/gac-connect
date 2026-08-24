@@ -2,12 +2,14 @@ import type { LoiForm, RepatForm } from '../lib/crewChange';
 import { VESSELS } from './vessels';
 
 /**
- * Crew change screen copy and demo data (17 Aug 2026 review). All illustrative
- * and deliberately fictional — the demo forms carry obviously fake passport
- * details, and the screen tells the user not to enter real ones.
+ * Crew change screen copy and demo data (17 Aug 2026 review; crew list upload
+ * added 23 Aug). All illustrative and deliberately fictional — the demo forms
+ * carry obviously fake passport details, and the screen tells the user not to
+ * enter real ones. The crew list's own copy lives in `./crewList.ts`.
  */
 
-export type CrewSectionId = 'hotels' | 'taxis' | 'launches' | 'immigration' | 'loi' | 'repat';
+export type CrewSectionId =
+  'crew-list' | 'hotels' | 'taxis' | 'launches' | 'immigration' | 'loi' | 'repat';
 
 export interface CrewSection {
   id: CrewSectionId;
@@ -17,6 +19,12 @@ export interface CrewSection {
 }
 
 export const CREW_SECTIONS: CrewSection[] = [
+  {
+    id: 'crew-list',
+    label: 'Crew list',
+    summary:
+      'Upload the crew list you already keep — names, passports, flights — and the platform offers the LOIs, hotel rooms and taxis that follow from it. One upload, not one form per crew member.',
+  },
   {
     id: 'hotels',
     label: 'Hotels',
@@ -67,8 +75,8 @@ export const CREW_FLOW = [
     body: 'One template per letter, kept current by GAC. You never start from a blank page or an old email attachment.',
   },
   {
-    title: 'You fill them in',
-    body: 'One letter per crew member, details as printed in the passport, vessel and port as on the call, flights as on the itinerary.',
+    title: 'You fill them in — or upload the list',
+    body: 'One letter per crew member, details as printed in the passport. Upload your own crew list and the letters are raised from it; delete the crew’s details when the job is done.',
   },
   {
     title: 'GAC endorses or routes, then returns',
@@ -88,8 +96,13 @@ export const TAXIS_LAUNCH_POINTER =
 export const LAUNCHES_TAXI_POINTER =
   'A run can be timed to the crew member’s tracked flight — the planner under Taxis times the taxi and the launch to the same flight.';
 
-/** Which section the screen opens on when the URL carries no ?section=. */
-export const DEFAULT_CREW_SECTION: CrewSectionId = 'hotels';
+/**
+ * Which section the screen opens on when the URL carries no ?section=. The
+ * crew list is where a coordinator's crew change starts; the other sections
+ * are the services that hang off it (23 Aug 2026). Hotels deep links are
+ * `?section=hotels`.
+ */
+export const DEFAULT_CREW_SECTION: CrewSectionId = 'crew-list';
 
 export function isCrewSectionId(v: string | null | undefined): v is CrewSectionId {
   return !!v && CREW_SECTIONS.some((s) => s.id === v);

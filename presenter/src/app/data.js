@@ -111,7 +111,7 @@ DC_DATA.TOUR = [
   { route: 'dashboard', title: 'Where every call stands', body: 'Open jobs, quote requests out, suppliers vetted, and the admin hours this replaces. One glance, before anyone asks.' },
   { route: 'dashboard', title: 'The morning starts done', body: 'GA already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.' },
   { route: 'marketplace', title: 'Vetted, or not bookable', body: 'GAC’s own lines pin first, promoted listings are always labelled, and a supplier with lapsed paperwork cannot be booked at any price.' },
-  { route: 'crew-change', title: 'A crew change, end to end', body: 'Hotels, taxis timed off the flight, launches by port, immigration guidance, and the LOI and repatriation letters. Give a flight number and every leg times itself.' },
+  { route: 'crew-change', title: 'A crew change, end to end', body: 'Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it — then delete the crew’s details when the job is done. Give a flight number and every leg times itself.' },
   { route: 'logistics', title: 'Cargo you can watch', body: 'Booked, collected, in transit, at the GAC warehouse, delivered to the quay — beside the port call it belongs to, not in a separate system.' },
   { route: 'customs', title: 'Customs, without the guesswork', body: 'Documents, preparation, submission, clearance. It will not take a declaration until the document set is complete, and it informs rather than advises.' },
   { route: 'procurement', title: 'One list, one invoice', body: 'The list goes to Compass, GAC’s own procurement branch. Compass sources and supplies every line and confirms it back. One relationship, one invoice.' },

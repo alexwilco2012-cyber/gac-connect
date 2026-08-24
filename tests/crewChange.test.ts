@@ -19,7 +19,9 @@ import {
   LOI_STAGES,
   loiRequired,
   nextStage,
+  isRedactedRequest,
   parseDateText,
+  redactLoiForm,
   REPAT_STAGES,
   simulateAction,
   stageIndex,
@@ -29,6 +31,7 @@ import {
   validateLoi,
   validateRepat,
 } from '../src/lib/crewChange';
+import type { CrewRequest } from '../src/lib/crewChange';
 import { readRequests, useCrewChange } from '../src/store/crewChange';
 
 describe('Crew change — stage pipelines', () => {
@@ -236,13 +239,19 @@ describe('Crew change — sections a URL can ask for', () => {
     expect(resolveCrewSection('nonsense')).toBe(DEFAULT_CREW_SECTION);
     expect(resolveCrewSection(null)).toBe(DEFAULT_CREW_SECTION);
     expect(resolveCrewSection('')).toBe(DEFAULT_CREW_SECTION);
-    expect(DEFAULT_CREW_SECTION).toBe('hotels');
+  });
+
+  it('opens on the crew list — the list is where a crew change starts; hotels is a deep link', () => {
+    expect(DEFAULT_CREW_SECTION).toBe('crew-list');
+    expect(resolveCrewSection(null)).toBe('crew-list');
+    expect(resolveCrewSection('hotels')).toBe('hotels');
   });
 });
 
 describe('Crew change — data guardrails', () => {
-  it('six sections (taxis and launches stand apart), three ports, demo vessels from the canonical set', () => {
+  it('seven sections with the crew list first, three ports, demo vessels from the canonical set', () => {
     expect(CREW_SECTIONS.map((s) => s.id)).toEqual([
+      'crew-list',
       'hotels',
       'taxis',
       'launches',
@@ -250,6 +259,7 @@ describe('Crew change — data guardrails', () => {
       'loi',
       'repat',
     ]);
+    expect(CREW_SECTIONS[0]!.label).toBe('Crew list');
     // Every section carries its own one-line summary, and none of them shout.
     expect(CREW_SECTIONS.filter((s) => s.summary.trim() === '')).toEqual([]);
     expect(CREW_SECTIONS.filter((s) => /!/.test(`${s.label} ${s.summary}`))).toEqual([]);
@@ -312,6 +322,20 @@ describe('Crew change — persisted shape guards', () => {
     expect(isCrewRequest({ ...loiRequest, kind: 'other' })).toBe(false);
     expect(isCrewRequest({ ...loiRequest, id: 1 })).toBe(false);
     expect(isCrewRequest('LOI-0001')).toBe(false);
+  });
+
+  it('tolerates the crew-list provenance fields, present or absent, but not mistyped', () => {
+    expect(isCrewRequest({ ...loiRequest, crewListId: 'CL-0001', redacted: false })).toBe(true);
+    expect(isCrewRequest({ ...loiRequest, crewListId: 'CL-0001' })).toBe(true);
+    expect(
+      isCrewRequest({ ...loiRequest, redacted: true, form: redactLoiForm(LOI_DEMO_FORM) }),
+    ).toBe(true);
+    expect(isCrewRequest({ ...loiRequest, crewListId: 1 })).toBe(false);
+    expect(isCrewRequest({ ...loiRequest, redacted: 'yes' })).toBe(false);
+    expect(isRedactedRequest({ ...loiRequest, kind: 'loi', redacted: true } as CrewRequest)).toBe(
+      true,
+    );
+    expect(isRedactedRequest(loiRequest as CrewRequest)).toBe(false);
   });
 
   it('readRequests drops garbage entries and keeps the good ones', () => {

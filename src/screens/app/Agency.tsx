@@ -12,7 +12,7 @@ import { useCrewChange } from '../../store/crewChange';
 
 /**
  * Agency — the port-call line. It owns no working screen of its own: crew
- * change is a screen in its own right (six sections, two letter pipelines) and
+ * change is a screen in its own right (seven sections, two letter pipelines) and
  * the quayside is the marketplace, so the hub's job is to land the visitor on
  * what is live, name every service with who performs it, and hand off. Nesting
  * crew change one level deeper than its own sections would have put the taxis

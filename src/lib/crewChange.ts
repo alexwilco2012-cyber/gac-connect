@@ -208,6 +208,10 @@ interface BaseRequest {
   id: string;
   /** Human label for when the client submitted it. */
   createdAt: string;
+  /** The crew list ('CL-0001') this request was raised from, when it was. */
+  crewListId?: string;
+  /** True once the personal data has been deleted at the client's request — the form holds placeholders. */
+  redacted?: boolean;
 }
 
 export type CrewRequest =
@@ -310,9 +314,70 @@ export function isCrewRequest(v: unknown): v is CrewRequest {
   if (!isRecord(v)) return false;
   if (typeof v.id !== 'string' || typeof v.createdAt !== 'string') return false;
   if (typeof v.stage !== 'string') return false;
+  // Optional provenance from a crew list upload — absent on older entries.
+  if (v.crewListId !== undefined && typeof v.crewListId !== 'string') return false;
+  if (v.redacted !== undefined && typeof v.redacted !== 'boolean') return false;
   if (v.kind === 'loi') return isLoiForm(v.form) && stageIndex('loi', v.stage) !== -1;
   if (v.kind === 'repat') return isRepatForm(v.form) && stageIndex('repat', v.stage) !== -1;
   return false;
+}
+
+/** What a redacted field reads — a dash, never a blank that could look like an unfinished form. */
+export const REDACTED_FIELD = '—';
+
+/**
+ * An LOI form with every personal detail replaced by a dash. Vessel and port
+ * are not personal and stay, so the letter still reads as belonging to the
+ * right call; the visa-national flag stays because it says nothing about an
+ * individual once the name is gone.
+ */
+export function redactLoiForm(form: LoiForm): LoiForm {
+  return {
+    familyName: REDACTED_FIELD,
+    forenames: REDACTED_FIELD,
+    nationality: REDACTED_FIELD,
+    dateOfBirth: REDACTED_FIELD,
+    passportNumber: REDACTED_FIELD,
+    passportExpiry: REDACTED_FIELD,
+    vesselId: form.vesselId,
+    port: form.port,
+    joiningDate: REDACTED_FIELD,
+    arrivingFlight: REDACTED_FIELD,
+    visaNational: form.visaNational,
+  };
+}
+
+/** The repatriation form redacted the same way; vessel and port stay, flights go. */
+export function redactRepatForm(form: RepatForm): RepatForm {
+  return {
+    familyName: REDACTED_FIELD,
+    forenames: REDACTED_FIELD,
+    dateOfBirth: REDACTED_FIELD,
+    nationality: REDACTED_FIELD,
+    passportNumber: REDACTED_FIELD,
+    vesselId: form.vesselId,
+    port: form.port,
+    disembarkationDate: REDACTED_FIELD,
+    joinedOutsideUk: form.joinedOutsideUk,
+    flights: form.flights.map(() => REDACTED_FIELD),
+  };
+}
+
+/**
+ * A request with its personal fields replaced by dashes, whichever kind it is.
+ * Only LOIs are raised from a crew list today, but a deletion helper that
+ * silently skips one kind is exactly the hole a retention rule must not have.
+ */
+export function redactRequest(r: CrewRequest): CrewRequest {
+  if (r.redacted === true) return r;
+  return r.kind === 'loi'
+    ? { ...r, form: redactLoiForm(r.form), redacted: true }
+    : { ...r, form: redactRepatForm(r.form), redacted: true };
+}
+
+/** True when the request's personal data has been deleted — the card shows a placeholder, not a name. */
+export function isRedactedRequest(r: Pick<CrewRequest, 'redacted'>): boolean {
+  return r.redacted === true;
 }
 
 /** 'Mon 18 Aug · 09:41' — the created-at label stored with a request. */
