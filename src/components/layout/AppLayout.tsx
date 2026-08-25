@@ -34,7 +34,7 @@ const NAV = [
 
 export default function AppLayout() {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col font-app">
       <Loader />
       <Tour />
       <a
