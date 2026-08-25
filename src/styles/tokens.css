@@ -68,13 +68,25 @@
 }
 
 /* Inter — self-hosted variable font (latin subset), OFL licence in
-   public/fonts/OFL-Inter.txt. One file carries every weight 300–700. */
+   public/fonts/OFL-Inter.txt. Google splits the wght axis across two files
+   at 700/800, so the second face keeps font-extrabold real rather than
+   clamped to 700. */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300 700;
   font-display: swap;
   src: url('../assets/fonts/inter-var-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800 900;
+  font-display: swap;
+  src: url('../assets/fonts/inter-var-latin-800.woff2') format('woff2');
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -126,6 +138,13 @@ body {
   outline: 3px solid var(--sea);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* On the ink sidebar the sea outline measures ~2.2:1 — below the 3:1
+   non-text minimum. Gold-bright on dark is the established focus override
+   (.harbour-hotspot below), so the dark navigation uses the same. */
+.sidebar-dark :focus-visible {
+  outline-color: var(--gold-bright);
 }
 
 ::selection {

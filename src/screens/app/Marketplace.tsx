@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { RequestQuoteModal } from '../../components/RequestQuoteModal';
 import type { RequestTarget } from '../../components/RequestQuoteModal';
 import { Button, ButtonLink } from '../../components/ui/Button';
@@ -125,13 +125,16 @@ export default function Marketplace() {
   // shareable address. An unknown category falls back to All.
   const [params, setParams] = useSearchParams();
   // The top-bar search hands off through ?q=. One-way: the param seeds the
-  // box, typing stays local — the box never writes the URL back. Adjusted
+  // box, typing stays local — the box never writes the URL back. Keyed on
+  // location.key, not the param value, so re-submitting the same term from
+  // the top bar still reseeds (every navigation mints a new key). Adjusted
   // during render (the React "state from props" pattern), not in an effect.
+  const location = useLocation();
   const qParam = params.get('q');
   const [query, setQuery] = useState(qParam ?? '');
-  const [prevQ, setPrevQ] = useState(qParam);
-  if (qParam !== prevQ) {
-    setPrevQ(qParam);
+  const [prevKey, setPrevKey] = useState(location.key);
+  if (location.key !== prevKey) {
+    setPrevKey(location.key);
     if (qParam !== null) setQuery(qParam);
   }
   const requested = params.get('category');

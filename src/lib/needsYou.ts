@@ -1,7 +1,9 @@
 import type { IconName } from '../components/ui/Icon';
 import { INVOICES } from '../data/invoices';
+import { SUPPLIERS } from '../data/suppliers';
 import { daysLeft, invoiceState, windowLabel } from './invoices';
 import { isTerminalStage } from './crewChange';
+import { complianceWatch, watchLine } from './svs';
 import { useApp } from '../store/app';
 import { useCrewChange } from '../store/crewChange';
 
@@ -45,6 +47,10 @@ export function useNeedsYou(): NeedsYouItem[] {
   // LOI / repatriation letters not yet returned to the client.
   const letters = crewRequests.filter((r) => !isTerminalStage(r.kind, r.stage)).length;
 
+  // Compliance watch — derived from the supplier data, never hand-counted.
+  const watch = complianceWatch(SUPPLIERS);
+  const blocked = watch.filter((w) => w.status === 'blocked').length;
+
   const items: { rank: number; item: NeedsYouItem }[] = [
     {
       rank: tightest === null ? 80 : daysLeft(tightest),
@@ -77,14 +83,20 @@ export function useNeedsYou(): NeedsYouItem[] {
       item: {
         id: 'compliance',
         icon: 'triangle-alert',
-        count: 2,
-        headline: '2 suppliers on compliance watch',
+        count: watch.length,
+        headline:
+          watch.length === 0
+            ? 'Compliance — all clear'
+            : `${watch.length} ${watch.length === 1 ? 'supplier' : 'suppliers'} on compliance watch`,
         detail:
-          'Granite NDT Ltd — GWO expires in 21 days, reminder sent · Peterhead Diving Services — insurance lapsed',
-        chip: { label: '1 blocked from booking', tone: 'danger' },
+          watch.length === 0
+            ? 'Every supplier certificate is current.'
+            : watch.map(watchLine).join(' · '),
+        chip:
+          blocked > 0 ? { label: `${blocked} blocked from booking`, tone: 'danger' } : undefined,
         to: '/app/svs',
         cta: 'Open SVS',
-        actionable: true,
+        actionable: watch.length > 0,
       },
     },
     {

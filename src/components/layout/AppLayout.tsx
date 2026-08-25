@@ -83,7 +83,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
                   onClick={onNavigate}
                   title={collapsed ? item.label : undefined}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-lg py-2.5 text-[13.5px] font-semibold no-underline transition-colors ${
+                    `flex min-h-11 items-center gap-3 rounded-lg py-2.5 text-[13.5px] font-semibold no-underline transition-colors ${
                       collapsed ? 'justify-center px-0' : 'px-3'
                     } ${
                       isActive
@@ -111,35 +111,41 @@ function BellMenu() {
   const items = useNeedsYou();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
     function onDoc(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false);
-    }
     document.addEventListener('mousedown', onDoc);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('keydown', onKey);
-    };
+    return () => document.removeEventListener('mousedown', onDoc);
   }, [open]);
+
+  // Escape handled on the wrapper, not the document: it only fires with focus
+  // inside the menu, restores focus to the trigger, and never reaches the
+  // Tour's document-level handler (which would dismiss the walkthrough).
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Escape' && open) {
+      e.stopPropagation();
+      setOpen(false);
+      btnRef.current?.focus();
+    }
+  }
 
   const actionable = items.filter((i) => i.actionable);
   const badge = actionable.reduce((n, i) => n + i.count, 0);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" onKeyDown={onKeyDown}>
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls="bell-panel"
         aria-label={`Notifications${badge > 0 ? ` (${badge})` : ''}`}
-        className="relative grid h-9 w-9 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-ink-soft transition-colors hover:bg-sea-soft hover:text-ink"
+        className="relative grid h-11 w-11 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-ink-soft transition-colors hover:bg-sea-soft hover:text-ink"
       >
         <Icon name="bell" size={19} />
         {badge > 0 ? (
@@ -204,34 +210,43 @@ function AvatarMenu() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
     function onDoc(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false);
-    }
     document.addEventListener('mousedown', onDoc);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('keydown', onKey);
-    };
+    return () => document.removeEventListener('mousedown', onDoc);
   }, [open]);
 
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Escape' && open) {
+      e.stopPropagation();
+      setOpen(false);
+      btnRef.current?.focus();
+    }
+  }
+
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" onKeyDown={onKeyDown}>
+      {/* 44px hit area around the 32px visual circle (02: touch targets). */}
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls="avatar-panel"
         aria-label="Account"
-        className="grid h-8 w-8 cursor-pointer place-items-center rounded-full border-none bg-gold text-[13px] font-bold text-ink"
+        className="grid h-11 w-11 cursor-pointer place-items-center border-none bg-transparent p-0"
       >
-        AW
+        <span
+          aria-hidden="true"
+          className="grid h-8 w-8 place-items-center rounded-full bg-gold text-[13px] font-bold text-ink"
+        >
+          AW
+        </span>
       </button>
       {open ? (
         <div
@@ -290,10 +305,16 @@ export default function AppLayout() {
     e.preventDefault();
     const q = search.trim();
     navigate(q ? `/app/marketplace?q=${encodeURIComponent(q)}` : '/app/marketplace');
+    // The box hands off; it does not mirror the marketplace filter.
+    setSearch('');
   }
 
   return (
-    <div className="flex min-h-dvh flex-col font-app">
+    // App-shell scroll model: the page never scrolls — the main column does.
+    // A window-scrolled sticky sidebar pokes past the viewport by the ribbon's
+    // height and clips its own Collapse control; this way the sidebar is always
+    // whole, and the PoC ribbon (a guardrail) is permanently on screen.
+    <div className="flex h-dvh flex-col font-app">
       <Loader />
       <Tour />
       <a
@@ -302,14 +323,14 @@ export default function AppLayout() {
       >
         Skip to content
       </a>
-      <div className="border-b border-[#EADFB4] bg-gold-soft px-3 py-1.5 text-center text-[12.5px] font-semibold tracking-[0.02em] text-gold-deep">
+      <div className="shrink-0 border-b border-[#EADFB4] bg-gold-soft px-3 py-1.5 text-center text-[12.5px] font-semibold tracking-[0.02em] text-gold-deep">
         {POC_RIBBON}
       </div>
 
-      <div className="flex flex-1 items-stretch">
+      <div className="flex min-h-0 flex-1 items-stretch">
         {/* Sidebar — desktop only; the drawer below covers small screens */}
         <aside
-          className={`sticky top-0 hidden h-dvh shrink-0 flex-col bg-gradient-to-b from-ink to-[#06132B] text-white transition-[width] duration-200 lg:flex ${
+          className={`sidebar-dark hidden h-full shrink-0 flex-col bg-gradient-to-b from-ink to-[#06132B] text-white transition-[width] duration-200 lg:flex ${
             collapsed ? 'w-16' : 'w-[232px]'
           }`}
         >
@@ -343,14 +364,14 @@ export default function AppLayout() {
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div id="app-scroll" className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <header className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur">
             <div className="flex h-[58px] items-center gap-2.5 px-4 sm:px-6">
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
                 aria-label="Open navigation"
-                className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-ink-soft transition-colors hover:bg-sea-soft hover:text-ink lg:hidden"
+                className="grid h-11 w-11 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-ink-soft transition-colors hover:bg-sea-soft hover:text-ink lg:hidden"
               >
                 <Icon name="menu" size={20} />
               </button>
@@ -373,7 +394,7 @@ export default function AppLayout() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search suppliers and services"
-                    className="h-9 w-[min(320px,30vw)] rounded-lg border-[1.5px] border-line-strong bg-paper pr-3 pl-9 text-[13px] text-ink placeholder:text-ink-soft/70"
+                    className="min-h-[44px] w-[min(320px,30vw)] rounded-lg border-[1.5px] border-line-strong bg-paper pr-3 pl-9 text-[13px] text-ink placeholder:text-ink-soft"
                   />
                 </div>
               </form>
@@ -382,7 +403,7 @@ export default function AppLayout() {
                 type="button"
                 onClick={() => navigate('/app/marketplace')}
                 aria-label="Search the marketplace"
-                className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-ink-soft transition-colors hover:bg-sea-soft hover:text-ink md:hidden"
+                className="grid h-11 w-11 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-ink-soft transition-colors hover:bg-sea-soft hover:text-ink md:hidden"
               >
                 <Icon name="search" size={19} />
               </button>
@@ -407,7 +428,7 @@ export default function AppLayout() {
           <footer className="border-t border-line">
             <div className="mx-auto max-w-[1180px] px-6 py-5 text-[12px] text-ink-soft">
               Proof of concept. All suppliers, vessels, clients, prices, and data on this page are
-              illustrative. Beta tabs preview future directions outside the current scope.
+              illustrative. Beta screens preview future directions outside the current scope.
             </div>
           </footer>
         </div>
@@ -427,7 +448,7 @@ export default function AppLayout() {
             role="dialog"
             aria-modal="true"
             aria-label="Platform navigation"
-            className="fixed top-0 left-0 z-[80] flex h-dvh w-[264px] max-w-[85vw] animate-[drawer-in-left_0.25s_ease] flex-col bg-gradient-to-b from-ink to-[#06132B] text-white lg:hidden"
+            className="sidebar-dark fixed top-0 left-0 z-[80] flex h-dvh w-[264px] max-w-[85vw] animate-[drawer-in-left_0.25s_ease] flex-col bg-gradient-to-b from-ink to-[#06132B] text-white lg:hidden"
           >
             <div className="flex h-[58px] items-center justify-between px-4.5">
               <Wordmark />
@@ -435,7 +456,7 @@ export default function AppLayout() {
                 type="button"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close navigation"
-                className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-[#B9C8D6] hover:text-white"
+                className="grid h-11 w-11 cursor-pointer place-items-center rounded-lg border-none bg-transparent text-[#B9C8D6] hover:text-white"
               >
                 <Icon name="x" size={18} />
               </button>
