@@ -120,11 +120,20 @@ function SupplierRow({
 
 export default function Marketplace() {
   const pushToast = useApp((s) => s.pushToast);
-  const [query, setQuery] = useState('');
   // The category lives in the URL (?category=Haulage) so a service line can
   // hand off to the directory already filtered, and the filtered view is a
   // shareable address. An unknown category falls back to All.
   const [params, setParams] = useSearchParams();
+  // The top-bar search hands off through ?q=. One-way: the param seeds the
+  // box, typing stays local — the box never writes the URL back. Adjusted
+  // during render (the React "state from props" pattern), not in an effect.
+  const qParam = params.get('q');
+  const [query, setQuery] = useState(qParam ?? '');
+  const [prevQ, setPrevQ] = useState(qParam);
+  if (qParam !== prevQ) {
+    setPrevQ(qParam);
+    if (qParam !== null) setQuery(qParam);
+  }
   const requested = params.get('category');
   const category: string = (CATEGORIES as readonly string[]).includes(requested ?? '')
     ? requested!
