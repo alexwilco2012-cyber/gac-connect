@@ -37,6 +37,10 @@ class Component extends DCLogic {
       tourDismissed: this._get('tour-dismissed', false),
       tourStep: null,
       hbSel: null,
+      /* which side of the Dashboard is showing - the client's or the
+         supplier's (26 Aug). Persisted so a rehearsal picks up where it was
+         left, exactly as the site does. */
+      dashView: this._get('dash-view', 'client') === 'supplier' ? 'supplier' : 'client',
       /* Advantage opening: presOn shows the overlay, advSlide 0..3 is the active
          slide, advOp/advPe drive the fade-out into the platform. */
       presOn: presWanted, advSlide: 0, advOp: '1', advPe: 'auto'
@@ -109,7 +113,7 @@ class Component extends DCLogic {
     if ((parts[0] === 'logistics' || parts[0] === 'customs') && parts[1]) {
       return { route: parts[0], profileId: null, section: parts[1] };
     }
-    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'marketplace', 'agency', 'logistics', 'customs', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'internal', 'marketplace', 'agency', 'logistics', 'customs', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null, section: null };
   }
   /* Which nav tab reads as current. A tab stays lit on the screens that live
@@ -468,7 +472,7 @@ class Component extends DCLogic {
     const brandSubUpper = bParts.slice(1).join(' ').toUpperCase() || 'CONNECT';
     const route = st.route;
 
-    const platformRoutes = ['dashboard', 'agency', 'logistics', 'customs', 'marketplace', 'supplier', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
+    const platformRoutes = ['marketplace', 'dashboard', 'internal', 'agency', 'logistics', 'customs', 'supplier', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     const isPlatform = platformRoutes.includes(route);
 
     /* nav — the same ten platform items as the site's AppLayout, in the same
@@ -482,10 +486,17 @@ class Component extends DCLogic {
         (this._navHeld(r, route) ? 'color:#FFFFFF;background:rgba(255,255,255,.14);box-shadow:inset 0 -3px 0 #C9A227;' : 'color:#B9C8D6;')
     });
     const navItems = isPlatform
-      ? [mk('Dashboard', 'dashboard'), mk('Agency', 'agency'), mk('Logistics', 'logistics'), mk('Customs', 'customs'), mk('Procurement', 'procurement'), mk('Marketplace', 'marketplace'), mk('Quotes', 'quotes'), mk('Invoices', 'invoices'), mk('SVS', 'svs'), mk('Tiers', 'tiers')]
+      ? [mk('Marketplace', 'marketplace'), mk('Dashboard', 'dashboard'), mk('Agency', 'agency'), mk('Logistics', 'logistics'), mk('Customs', 'customs'), mk('Procurement', 'procurement'), mk('Quotes', 'quotes'), mk('Invoices', 'invoices'), mk('SVS', 'svs'), mk('Tiers', 'tiers'), mk('Internal', 'internal')]
       : [mk('Home', 'home'), mk('For Clients', 'clients'), mk('For Suppliers', 'suppliers'), mk('About', 'about')];
 
     /* marketplace */
+    /* Hero counters (26 Aug) — read off the roster, never written down, so a
+       supplier added to data.js moves the number without anyone editing it.
+       Categories counts what is actually stocked, not what CATEGORIES declares:
+       a category with nothing in it is not a category a client can shop. */
+    const mktStocked = this.CATEGORIES.filter((c) => c !== 'All'
+      && this.SUPPLIERS.some((sp) => sp.cat === c)).length;
+    const mktBookable = this.SUPPLIERS.filter((sp) => this.deriveStatus(sp) !== 'blocked').length;
     const q = st.query.toLowerCase();
     const match = (s) => {
       const inCat = st.chip === 'All' || s.tags.includes(st.chip);
@@ -700,14 +711,18 @@ class Component extends DCLogic {
       /* zones + routes */
       isPlatform: isPlatform, isMarketing: !isPlatform,
       isHome: route === 'home', isClients: route === 'clients', isSuppliers: route === 'suppliers', isAbout: route === 'about',
-      isDashboard: route === 'dashboard', isMarketplace: route === 'marketplace', isProfile: route === 'supplier',
+      isDashboard: route === 'dashboard', isInternal: route === 'internal',
+      isMarketplace: route === 'marketplace', isProfile: route === 'supplier',
       isQuotes: route === 'quotes', isInvoices: route === 'invoices', isTiers: route === 'tiers', isSvs: route === 'svs', isAnalytics: route === 'analytics',
       isCert: route === 'certification', isBunkers: route === 'bunkers', isKitchen: route === 'kitchen-sink',
       isProcurement: route === 'procurement', isCrew: route === 'crew-change',
       isAgency: route === 'agency', isLogistics: route === 'logistics', isCustoms: route === 'customs',
       navItems: navItems,
+      mktCatCount: String(mktStocked),
+      mktBookableCount: String(mktBookable),
+      mktInhouseCount: String(this.INHOUSE.length),
       goHome: this._go('home'), goClients: this._go('clients'), goSuppliers: this._go('suppliers'), goAbout: this._go('about'),
-      goDashboard: this._go('dashboard'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'), goInvoices: this._go('invoices'),
+      goDashboard: this._go('dashboard'), goInternal: this._go('internal'), goMarketplace: this._go('marketplace'), goQuotes: this._go('quotes'), goInvoices: this._go('invoices'),
       goTiers: this._go('tiers'), goSvs: this._go('svs'), goAnalytics: this._go('analytics'), goKitchen: this._go('kitchen-sink'),
       goProcurement: this._go('procurement'), goCrew: this._go('crew-change'),
       goAgency: this._go('agency'), goLogistics: this._go('logistics'), goCustoms: this._go('customs'),
@@ -741,15 +756,124 @@ class Component extends DCLogic {
       hbGo: () => { const id = this.state.hbSel; if (!id) return; const r = this.HARBOUR[id].route; this.setState({ hbSel: null }); this.nav(r); },
 
       /* dashboard */
+      /* ---- Dashboard: the client's and the supplier's view (26 Aug) ----
+         The platform opens on the marketplace now, so this screen answers what
+         the two paying sides actually arrive with: a client asks where its work
+         is and what is waiting on it, a supplier asks whether it is being found
+         and whether its paperwork still holds. One screen, two views, mirroring
+         the site's src/screens/app/Dashboard.tsx.
+
+         The commercial guardrail rides along with the split: commission is a
+         supplier mechanism, so the plan card exists only on the supplier side
+         and the client side never mentions it. */
+      ...(function (self) {
+        const client = st.dashView !== 'supplier';
+        const sup = self.SUPPLIERS.find(function (x) { return x.id === 'silver-city-welding'; });
+        const band = sup && sup.premium ? 10 : 20;
+        const job = 4400;
+        const seg = function (on) {
+          return 'display:inline-flex;align-items:center;border:none;border-radius:6px;'
+            + 'padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'
+            + (on ? 'background:#0A2540;color:#FFFFFF;' : 'background:transparent;color:#33475F;');
+        };
+        const pill = function (bg, fg) {
+          return 'display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;'
+            + 'font-size:11.5px;font-weight:700;background:' + bg + ';color:' + fg + ';';
+        };
+        const quoteSent = function (what, who) {
+          return function () {
+            self.toastMsg('Quote sent for ' + what + ' \u2014 ' + who
+              + '. It lands in the client\u2019s comparison view beside every other reply.', 'SENT');
+          };
+        };
+        return {
+          dashIsClient: client,
+          dashIsSupplier: !client,
+          dashTitle: client ? 'Browne Energy' : 'Silver City Welding',
+          dashEyebrow: client ? 'Client dashboard' : 'Supplier dashboard',
+          dashLede: client
+            ? 'Everything GAC has running for you, and everything waiting on you. The platform itself costs you nothing.'
+            : 'How you are being found, what is waiting for a quote, and whether your paperwork still holds.',
+          dashClientStyle: seg(client),
+          dashSupplierStyle: seg(!client),
+          dashClientPressed: client ? 'true' : 'false',
+          dashSupplierPressed: !client ? 'true' : 'false',
+          setDashClient: function () { self.setState({ dashView: 'client' }); self._set('dash-view', 'client'); },
+          setDashSupplier: function () { self.setState({ dashView: 'supplier' }); self._set('dash-view', 'supplier'); },
+
+          /* client - what GAC has running, line by line */
+          dashLines: [
+            { name: 'Agency', detail: 'Port calls, berths and crew change', count: '3', go: self._go('agency') },
+            { name: 'Logistics', detail: 'Consignments on their way to the quay', count: '2', go: self._go('logistics') },
+            { name: 'Customs', detail: 'Declarations working through to clearance', count: '1', go: self._go('customs') },
+            { name: 'Procurement', detail: 'One list ready to send to Compass', count: '1', go: self._go('procurement') }
+          ],
+          clientKpis: [
+            { label: 'Port calls in the window', value: '3', delta: 'Aberdeen and Peterhead' },
+            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Caledonian Star' },
+            { label: 'Invoices in your window', value: '2', delta: 'Tightest closes in 2 days' }
+          ],
+
+          /* supplier - reach, the inbox, the listing, the vault, the plan */
+          supReach: [
+            { label: 'Profile views (30 days)', value: '412', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:72%;' },
+            { label: 'Quote requests received', value: '38', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:58%;' },
+            { label: 'Win rate', value: '34%', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:34%;' },
+            { label: 'Avg. response time', value: '2.1 hrs', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:86%;' }
+          ],
+          supInbox: [
+            {
+              service: 'Onboard pipework repair',
+              detail: 'MV Granite Coast \u00b7 coded welder, two days alongside Regent Quay',
+              replyBy: 'Reply by 16:00 today',
+              pillStyle: pill('#FBF0E1', '#B45309'),
+              onQuote: quoteSent('onboard pipework repair', 'MV Granite Coast')
+            },
+            {
+              service: 'Fabrication \u2014 skid frames',
+              detail: 'Wilkinson Drilling mobilisation \u00b7 three frames to drawing, delivered to the GAC warehouse',
+              replyBy: 'Reply by Friday 12:00',
+              pillStyle: pill('#E8F1F7', '#0E5E8A'),
+              onQuote: quoteSent('fabrication', 'Wilkinson Drilling mobilisation')
+            }
+          ],
+          supInboxCount: '2 open',
+          supName: sup ? sup.name : '',
+          supDesc: sup ? sup.desc : '',
+          supCat: sup ? sup.cat : '',
+          supRatingLine: sup ? sup.rating.toFixed(1) + ' \u2605 \u00b7 ' + sup.ratingCount + ' ratings' : '',
+          supPromoted: !!(sup && sup.promoted),
+          supGoldNote: sup && sup.goldBandDate
+            ? sup.goldBandDate + '. The Gold Band is earned at the audit and never bought \u2014 it appears here the day it is passed, and goes the day compliance lapses.'
+            : '',
+          supCerts: sup ? sup.certs.map(function (c) {
+            const bg = c.state === 'lapsed' ? '#FBEAEA' : c.state === 'due' ? '#FBF0E1' : '#E7F4EF';
+            const fg = c.state === 'lapsed' ? '#B91C1C' : c.state === 'due' ? '#B45309' : '#047857';
+            const tail = c.state === 'due' ? ' \u00b7 ' + c.days + ' days' : c.state === 'lapsed' ? ' \u00b7 lapsed' : '';
+            return {
+              label: c.label + tail,
+              style: 'display:inline-block;margin:2px;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;background:' + bg + ';color:' + fg + ';'
+            };
+          }) : [],
+          supPlanLine: 'Premium \u00b7 \u00a31,800 per year',
+          supBandLabel: band + '% commission',
+          supKeeps: self._gbp(job - Math.round(job * band / 100)),
+          supKeepsLine: 'yours, after the ' + band + '% Premium band',
+          supJobLine: 'A ' + self._gbp(job) + ' job won through the platform',
+          goSupProfile: function () { self.setState({ profileId: 'silver-city-welding' }); self.nav('supplier'); }
+        };
+      })(this),
+
       /* ---- restyled dashboard (26 Aug, mirrors the site) --------------
          Sidebar item styling per route, KPI tiles with sparklines, the
          Needs-you feed and the 48-hour strip. Everything variable-width in
          the strip lives in the label column so every track lines up. */
       ...(function (self) {
         const SIDE = [
-          ['dashboard', 'Dashboard'], ['agency', 'Agency'], ['logistics', 'Logistics'],
-          ['customs', 'Customs'], ['procurement', 'Procurement'], ['marketplace', 'Marketplace'],
-          ['quotes', 'Quotes'], ['invoices', 'Invoices'], ['svs', 'SVS'], ['tiers', 'Tiers']
+          ['marketplace', 'Marketplace'], ['dashboard', 'Dashboard'], ['agency', 'Agency'],
+          ['logistics', 'Logistics'], ['customs', 'Customs'], ['procurement', 'Procurement'],
+          ['quotes', 'Quotes'], ['invoices', 'Invoices'], ['svs', 'SVS'], ['tiers', 'Tiers'],
+          ['internal', 'Internal']
         ];
         const base = 'display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:8px;'
           + 'font-weight:600;font-size:13.5px;background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;';
@@ -1011,7 +1135,7 @@ class Component extends DCLogic {
       tourBody: stop ? stop.body : '',
       tourHasBack: tourOpen && st.tourStep > 0,
       tourNextLabel: tourOpen && st.tourStep === this.TOUR.length - 1 ? 'Finish' : 'Next',
-      startTour: () => { this.setState({ tourStep: 0 }); this.nav('dashboard'); },
+      startTour: () => { this.setState({ tourStep: 0 }); this.nav(this.TOUR[0].route); },
       dismissTourPrompt: () => { this.setState({ tourDismissed: true }); this._set('tour-dismissed', true); },
       skipTour: this._skipTour,
       tourBack: () => {

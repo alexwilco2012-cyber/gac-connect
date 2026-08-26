@@ -21,7 +21,9 @@
     "editor": "enum",
     "options": [
       "home",
-      "dashboard"
+      "marketplace",
+      "dashboard",
+      "internal"
     ],
     "default": "home",
     "tsType": "string",

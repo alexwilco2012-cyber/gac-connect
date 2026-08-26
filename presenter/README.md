@@ -71,9 +71,11 @@ is filled per output: preload hints + `window.__resources` (site), just
 `src/partials/` is in document order: `10-loader` (chain-forge entrance, only
 shown when the opening is off), `20-opening` (the opening sequence: eleven
 slides shown before the platform — see below), `30-chrome` (header/nav),
-`40-…58-…` one file per screen (home/harbour, dashboard, marketplace, tiers,
+`40-…59-…` one file per screen (home/harbour, dashboard — the client and
+supplier view since 26 Aug — marketplace, tiers,
 clients, suppliers, about, supplier profile, quotes, SVS, analytics,
-certification, bunkers, kitchen-sink, procurement, crew-change — which holds
+certification, bunkers, kitchen-sink, procurement, `59-internal` (the agent
+desk, which `41-dashboard` used to be), crew-change — which holds
 all six crew-change sections, Taxis (planner + operators) and Launches (the
 panel) among them; `54-launches` is retired — invoices, and `58-service-lines`,
 which renders all three hubs from one set of bindings), `60-footer-drawer`,
