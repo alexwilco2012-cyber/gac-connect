@@ -7,7 +7,7 @@ import { Eyebrow } from '../../components/ui/Eyebrow';
 import { GoldBandPill, StatusPill } from '../../components/ui/Pill';
 import { Rating } from '../../components/ui/Rating';
 import { ESG_PLANNED_NOTE } from '../../data/related';
-import { deriveStatus, goldBandActive } from '../../lib/svs';
+import { complianceWatch, deriveStatus, goldBandActive, watchLine } from '../../lib/svs';
 import type { SupplierStatus } from '../../lib/svs';
 import { GOLD_BAND } from '../../data/goldBand';
 import { SUPPLIERS } from '../../data/suppliers';
@@ -24,6 +24,7 @@ const FILTERS: { key: SvsFilter; label: string }[] = [
 
 export default function Svs() {
   const navigate = useNavigate();
+  const watch = complianceWatch(SUPPLIERS);
   const [filter, setFilter] = useState<SvsFilter>('all');
 
   const rows = useMemo(() => {
@@ -46,12 +47,23 @@ export default function Svs() {
         7 days; lapsed suppliers cannot be booked.
       </p>
 
+      {/* Derived from the supplier data (complianceWatch), never hand-counted
+          — the same list feeds the dashboard and the top-bar bell. */}
       <div
         data-tour="svs"
         className="mt-4 rounded-lg border-l-4 border-warn bg-warn-soft px-4 py-3 text-[13.5px]"
       >
-        <strong>2 alerts:</strong> Granite NDT Ltd — GWO expires in 21 days (renewal reminder sent).
-        Peterhead Diving Services — insurance lapsed (booking blocked until evidence uploaded).
+        <strong>{watch.length} alerts:</strong>{' '}
+        {watch
+          .map(
+            (w) =>
+              `${watchLine(w)} (${
+                w.status === 'blocked'
+                  ? 'booking blocked until evidence uploaded'
+                  : 'renewal reminder sent'
+              }).`,
+          )
+          .join(' ')}
       </div>
 
       <div

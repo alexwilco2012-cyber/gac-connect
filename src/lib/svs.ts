@@ -54,3 +54,55 @@ export function alertTier(daysToExpiry: number): number | null {
   const tier = ascending.find((t) => daysToExpiry <= t);
   return tier ?? null;
 }
+
+/**
+ * The compliance watch — every supplier whose status is not Verified, with
+ * the certificate that put them there. Derived, never hand-counted: the SVS
+ * banner, the dashboard feed and the top-bar bell all read this one list, so
+ * a cert change in the data moves every surface at once. Blocked suppliers
+ * first, then soonest expiry.
+ */
+export interface WatchEntry {
+  name: string;
+  status: Exclude<SupplierStatus, 'verified'>;
+  certName: string;
+  daysToExpiry?: number;
+}
+
+export function complianceWatch(
+  suppliers: readonly { name: string; certs: readonly Cert[] }[],
+): WatchEntry[] {
+  const entries: WatchEntry[] = [];
+  for (const s of suppliers) {
+    const status = deriveStatus(s.certs);
+    if (status === 'verified') continue;
+    const cert =
+      status === 'blocked'
+        ? s.certs.find((c) => c.state === 'lapsed')!
+        : s.certs
+            .filter((c) => c.state === 'due')
+            .sort((a, b) => (a.daysToExpiry ?? 0) - (b.daysToExpiry ?? 0))[0]!;
+    entries.push({ name: s.name, status, certName: cert.name, daysToExpiry: cert.daysToExpiry });
+  }
+  return entries.sort((a, b) => {
+    if ((a.status === 'blocked') !== (b.status === 'blocked')) {
+      return a.status === 'blocked' ? -1 : 1;
+    }
+    return (a.daysToExpiry ?? 0) - (b.daysToExpiry ?? 0);
+  });
+}
+
+/** "GWO" stays upper-case; "Insurance" reads as "insurance" mid-sentence. */
+export function certDisplayName(certName: string): string {
+  return /^[A-Z0-9]{2,}$/.test(certName)
+    ? certName
+    : certName.charAt(0).toLowerCase() + certName.slice(1);
+}
+
+/** One-line description of a watch entry, shared by banner and feed. */
+export function watchLine(entry: WatchEntry): string {
+  const cert = certDisplayName(entry.certName);
+  if (entry.status === 'blocked') return `${entry.name} — ${cert} lapsed`;
+  const verb = entry.certName.endsWith('s') ? 'expire' : 'expires';
+  return `${entry.name} — ${cert} ${verb} in ${entry.daysToExpiry} days`;
+}

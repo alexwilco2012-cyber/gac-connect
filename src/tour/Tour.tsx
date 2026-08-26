@@ -56,7 +56,12 @@ export function Tour() {
         ? document.querySelector<HTMLElement>(`[data-tour="${step.anchor}"]`)
         : null;
       if (anchor) anchor.scrollIntoView({ block: 'center', behavior: 'auto' });
-      else window.scrollTo({ top: 0, behavior: 'auto' });
+      else {
+        // The app shell scrolls its main column, not the window.
+        const scroller = document.getElementById('app-scroll');
+        if (scroller) scroller.scrollTo({ top: 0, behavior: 'auto' });
+        else window.scrollTo({ top: 0, behavior: 'auto' });
+      }
       if (!anchor || narrow) {
         setPos(null);
         return;
@@ -74,6 +79,9 @@ export function Tour() {
     if (!step) return;
     const t = window.setTimeout(() => cardRef.current?.focus(), 450);
     const onKey = (e: KeyboardEvent) => {
+      // An open dialog (modal, drawer) owns the keyboard: its Escape must
+      // close it, not kill the walkthrough underneath.
+      if (document.querySelector('[aria-modal="true"]')) return;
       if (e.key === 'Escape') dismissTour();
       else if (e.key === 'ArrowRight') {
         if (isLast) dismissTour();

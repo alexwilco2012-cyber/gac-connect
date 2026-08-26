@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PillarsRoof } from '../../components/motif/PillarsRoof';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { CardHeader } from '../../components/ui/CardHeader';
 import { Drawer } from '../../components/ui/Drawer';
 import { Eyebrow } from '../../components/ui/Eyebrow';
+import { Icon } from '../../components/ui/Icon';
 import { Pill } from '../../components/ui/Pill';
+import { PortCallTimeline } from '../../components/ui/PortCallTimeline';
 import { StatCard } from '../../components/ui/StatCard';
 import { gbp } from '../../lib/format';
-import { daysLeft, invoiceState, windowLabel } from '../../lib/invoices';
+import { useNeedsYou, type NeedsYouItem } from '../../lib/needsYou';
 import {
   DEFAULT_REPLY_WINDOW,
   deadlineAdvice,
@@ -16,14 +19,9 @@ import {
   replyWindowById,
 } from '../../lib/requests';
 import { annualSaving, isFullStack, tierPct } from '../../lib/tier';
-import { INVOICES } from '../../data/invoices';
 import { CATEGORY_SERVICE, relatedServicesFor } from '../../data/related';
 import { DASHBOARD_KPIS, PREDICTED_NEEDS, VESSELS } from '../../data/vessels';
-import { isTerminalStage } from '../../lib/crewChange';
 import { useApp } from '../../store/app';
-import { useCrewChange } from '../../store/crewChange';
-
-const PILL_TONE = { info: 'info', warn: 'warn', success: 'verified' } as const;
 
 /** Cross-sell hint for a predicted need — the medical example: transfer and hotel. */
 function relatedHint(service: string): string | null {
@@ -33,32 +31,81 @@ function relatedHint(service: string): string | null {
   return `+ ${related.map((r) => r.label.toLowerCase()).join(' · ')} suggested`;
 }
 
+/** The three status cards this feed replaced carried these testids; e2e and
+ *  deep links still expect them on the rows. */
+const ROW_TESTID: Partial<Record<NeedsYouItem['id'], string>> = {
+  invoices: 'dashboard-invoices',
+  letters: 'dashboard-crew',
+};
+
+function NeedsYouRow({ item }: { item: NeedsYouItem }) {
+  const clear = item.count === 0 && !item.actionable;
+  return (
+    <li
+      data-testid={ROW_TESTID[item.id]}
+      data-tour={item.id === 'compliance' ? 'compliance' : undefined}
+      className="flex items-start gap-3 border-b border-dashed border-line-strong py-3 first:pt-0 last:border-b-0 last:pb-0"
+    >
+      <span
+        aria-hidden="true"
+        className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
+          clear ? 'bg-success-soft text-success' : 'bg-sea-soft text-sea'
+        }`}
+      >
+        <Icon name={clear ? 'circle-check' : item.icon} size={16} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[14px]">
+          <Link
+            to={item.to}
+            className="font-semibold text-ink no-underline transition-colors hover:text-sea"
+            aria-label={`${item.headline} — ${item.cta}`}
+          >
+            {item.headline}
+            <Icon name="chevron-right" size={14} className="mb-px ml-0.5 inline" />
+          </Link>
+        </p>
+        <p className="mt-0.5 text-[12.5px] text-ink-soft">{item.detail}</p>
+        {item.id === 'letters' ? (
+          <p className="mt-1.5 flex flex-wrap gap-x-3.5 gap-y-1 text-[12.5px]">
+            <Link
+              to="/app/agency/crew-change?section=taxis"
+              data-testid="dashboard-taxis"
+              className="font-semibold text-sea"
+            >
+              Plan taxis
+            </Link>
+            <Link
+              to="/app/agency/crew-change?section=launches"
+              data-testid="dashboard-launches"
+              className="font-semibold text-sea"
+            >
+              Book a launch
+            </Link>
+          </p>
+        ) : null}
+        {item.chip ? (
+          <p className="mt-1.5">
+            <Pill tone={item.chip.tone}>{item.chip.label}</Pill>
+          </p>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const pushToast = useApp((s) => s.pushToast);
   const tier = useApp((s) => s.tier);
   const spend = useApp((s) => s.spend);
-  const invoiceDecisions = useApp((s) => s.invoiceDecisions);
-  const crewRequests = useCrewChange((s) => s.requests);
+  const needsYou = useNeedsYou();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [replyWindowId, setReplyWindowId] = useState(DEFAULT_REPLY_WINDOW);
 
   const pct = tierPct(tier);
   const fullStack = isFullStack(tier);
   const saving = annualSaving(spend, tier);
-
-  // Invoice review — invoices still inside their seven-day client window.
-  const awaitingInvoices = INVOICES.filter(
-    (inv) => invoiceState(inv.receivedDaysAgo, invoiceDecisions[inv.id]) === 'awaiting',
-  );
-  const tightest = awaitingInvoices.reduce<number | null>(
-    (acc, inv) =>
-      acc === null || daysLeft(inv.receivedDaysAgo) < daysLeft(acc) ? inv.receivedDaysAgo : acc,
-    null,
-  );
-
-  // Crew change — LOI / repatriation letters not yet returned to the client.
-  const lettersInProgress = crewRequests.filter((r) => !isTerminalStage(r.kind, r.stage)).length;
 
   function sendQuoteRequests() {
     const window_ = replyWindowById(replyWindowId);
@@ -78,7 +125,7 @@ export default function Dashboard() {
           <Eyebrow>Thursday · Aberdeen</Eyebrow>
           <h1 className="mt-1 font-display text-2xl font-bold">Morning, agent</h1>
           <p className="mt-1 text-[14px] text-ink-soft">
-            2 vessels arriving in the next 24 hours.{' '}
+            2 vessels arriving tomorrow.{' '}
             <Link
               to="/app/procurement"
               className="font-semibold text-sea"
@@ -97,7 +144,15 @@ export default function Dashboard() {
       {/* KPIs */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-tour="kpis">
         {DASHBOARD_KPIS.map((k) => (
-          <StatCard key={k.label} label={k.label} value={k.value} delta={k.delta} />
+          <StatCard
+            key={k.label}
+            label={k.label}
+            value={k.value}
+            delta={k.delta}
+            deltaTone={k.deltaTone}
+            icon={k.icon}
+            series={k.series}
+          />
         ))}
       </div>
 
@@ -108,20 +163,12 @@ export default function Dashboard() {
             className="border-[#CFE2EE] bg-gradient-to-b from-sea-soft to-white"
             data-tour="predictive"
           >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <Eyebrow>Predictive procurement · from GA history</Eyebrow>
-                <h2 className="mt-1 font-display text-[18px] font-bold">
-                  MV Caledonian Star — Aberdeen, ETA 08:00 tomorrow
-                </h2>
-              </div>
-              <Pill tone="info">GA vessel profile loaded</Pill>
-            </div>
-            <p className="mt-2 text-[13.5px] text-ink-soft">
-              This vessel typically requires the following on a call to Aberdeen. SVS-verified
-              suppliers are pre-selected for each.
-            </p>
-            <ul className="my-3">
+            <CardHeader
+              title="MV Caledonian Star — Aberdeen, ETA 08:00 tomorrow"
+              subtitle="Predictive procurement · what this vessel typically needs on an Aberdeen call, from GA history. SVS-verified suppliers are pre-selected for each."
+              action={<Pill tone="info">GA vessel profile loaded</Pill>}
+            />
+            <ul role="list" className="my-3">
               {PREDICTED_NEEDS.map((n) => {
                 const hint = relatedHint(n.service);
                 return (
@@ -168,32 +215,38 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          {/* Arrivals & departures */}
+          {/* Arrivals & departures — the 48-hour strip */}
           <Card>
-            <Eyebrow>Arrivals &amp; departures</Eyebrow>
-            <div className="mt-3 space-y-4">
-              {VESSELS.map((v) => (
-                <div
-                  key={v.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border-l-4 border-sea pl-3.5"
-                >
-                  <div>
-                    <p className="text-[14.5px]">
-                      <strong>{v.name}</strong> · {v.operatorLine}
-                    </p>
-                    <p className="text-[12.5px] text-ink-soft">{v.scheduleLine}</p>
-                  </div>
-                  <Pill tone={PILL_TONE[v.statusPill.tone]}>{v.statusPill.label}</Pill>
-                </div>
-              ))}
+            <CardHeader
+              title="Arrivals & departures"
+              subtitle="The next 48 hours across Aberdeen and Peterhead"
+            />
+            <div className="mt-3.5">
+              <PortCallTimeline vessels={VESSELS} />
             </div>
           </Card>
         </div>
 
         <div className="space-y-5">
+          {/* Needs you — invoices in their window, the compliance watch, and
+              letters in flight. Same hook as the top-bar bell. */}
+          <Card>
+            <CardHeader
+              title="Needs you"
+              subtitle="Ordered by urgency · the bell reads the same list"
+            />
+            {/* role="list" restores list semantics VoiceOver strips from
+                style-less lists (Tailwind preflight removes the markers). */}
+            <ul role="list" className="mt-3 list-none">
+              {needsYou.map((item) => (
+                <NeedsYouRow key={item.id} item={item} />
+              ))}
+            </ul>
+          </Card>
+
           {/* Consolidation widget — live tier state */}
           <Card data-tour="consolidation">
-            <Eyebrow>Client consolidation · Browne Energy</Eyebrow>
+            <CardHeader title="Client consolidation" subtitle="Browne Energy · live tier state" />
             <PillarsRoof
               pillars={[
                 { label: 'Agency', on: tier.agency },
@@ -230,107 +283,6 @@ export default function Dashboard() {
               </Link>
               .
             </p>
-          </Card>
-
-          {/* Invoice review — the client's seven-day window */}
-          <Card data-testid="dashboard-invoices">
-            <Eyebrow>Invoice review · 7-day window</Eyebrow>
-            <p className="mt-2.5 text-[14px]">
-              {awaitingInvoices.length === 0 ? (
-                <>
-                  <strong>No invoices awaiting your review.</strong> Everything received has matched
-                  in GAC Agent.
-                </>
-              ) : (
-                <>
-                  <strong>
-                    {awaitingInvoices.length}{' '}
-                    {awaitingInvoices.length === 1 ? 'invoice' : 'invoices'} awaiting your review
-                  </strong>{' '}
-                  — allocate the billing party before the window closes.
-                </>
-              )}
-            </p>
-            {tightest !== null ? (
-              <p className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-ink-soft">
-                <span>Tightest window</span>
-                <Pill tone={daysLeft(tightest) <= 2 ? 'warn' : 'info'}>
-                  {windowLabel(tightest)}
-                </Pill>
-              </p>
-            ) : null}
-            <p className="mt-2 text-[12.5px] text-ink-soft">
-              Left alone, an invoice matches as it stands.
-            </p>
-            <div className="mt-3">
-              <Button variant="ghost" onClick={() => navigate('/app/invoices')}>
-                Review invoices
-              </Button>
-            </div>
-          </Card>
-
-          {/* Compliance watch */}
-          <Card data-tour="compliance">
-            <Eyebrow>Compliance watch · SVS</Eyebrow>
-            <p className="mt-2.5 text-[14px]">
-              <strong>Granite NDT Ltd</strong> — GWO expires in 21 days. Renewal reminder sent
-              automatically.
-            </p>
-            <p className="mt-2 flex flex-wrap items-center gap-2 text-[14px]">
-              <span>
-                <strong>Peterhead Diving Services</strong> — insurance certificate lapsed.
-              </span>
-              <Pill tone="danger">✗ Blocked from booking</Pill>
-            </p>
-            <div className="mt-3">
-              <Button variant="ghost" onClick={() => navigate('/app/svs')}>
-                Open SVS
-              </Button>
-            </div>
-          </Card>
-
-          {/* Crew change — the crew side of the call (17 Aug review) */}
-          <Card data-testid="dashboard-crew">
-            <Eyebrow>Crew change · taxis and launches</Eyebrow>
-            <p className="mt-2.5 text-[14px]">
-              {lettersInProgress === 0 ? (
-                <>
-                  <strong>No letters in progress.</strong> Hotels, immigration, LOI and
-                  repatriation-letter templates live in one place.
-                </>
-              ) : (
-                <>
-                  <strong>
-                    {lettersInProgress} {lettersInProgress === 1 ? 'letter' : 'letters'} in progress
-                  </strong>{' '}
-                  — LOI and repatriation letters on their way through GAC and Border Force.
-                </>
-              )}
-            </p>
-            <p className="mt-2 text-[12.5px] text-ink-soft">
-              Taxis are timed to the crew member’s tracked flight, so a delay moves the pickup.
-              Launches are booked separately, with capacity and freight shown for each one, port by
-              port.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button variant="ghost" onClick={() => navigate('/app/agency/crew-change')}>
-                Open crew change
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/app/agency/crew-change?section=taxis')}
-                data-testid="dashboard-taxis"
-              >
-                Plan taxis
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/app/agency/crew-change?section=launches')}
-                data-testid="dashboard-launches"
-              >
-                Book a launch
-              </Button>
-            </div>
           </Card>
         </div>
       </div>

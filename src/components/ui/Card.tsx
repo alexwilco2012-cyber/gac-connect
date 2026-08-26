@@ -16,6 +16,9 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 export function Card({ variant = 'default', className = '', ...rest }: CardProps) {
   return (
-    <div className={`rounded-brand p-5 shadow-card ${VARIANTS[variant]} ${className}`} {...rest} />
+    <div
+      className={`rounded-brand p-[22px] shadow-card ${VARIANTS[variant]} ${className}`}
+      {...rest}
+    />
   );
 }

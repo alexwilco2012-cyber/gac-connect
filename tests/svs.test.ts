@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { QUOTES } from '../src/data/quotes';
 import { SUPPLIERS, supplierById } from '../src/data/suppliers';
 import { ratingLine, ratingsCount } from '../src/lib/format';
-import { alertTier, deriveStatus, goldBandActive, isBookable } from '../src/lib/svs';
+import {
+  alertTier,
+  complianceWatch,
+  deriveStatus,
+  goldBandActive,
+  isBookable,
+  watchLine,
+} from '../src/lib/svs';
 import type { Cert } from '../src/lib/svs';
 
 describe('SVS status derivation (03 §3.3)', () => {
@@ -96,5 +103,32 @@ describe('Ratings carry the number actually submitted', () => {
   it('formatter keeps score and count together', () => {
     expect(ratingLine(4.9, 127)).toBe('4.9 ★ · 127 ratings');
     expect(ratingsCount(1)).toBe('1 rating');
+  });
+});
+
+describe('Compliance watch is derived, never hand-counted', () => {
+  it('lists every non-verified supplier, blocked first then soonest expiry', () => {
+    const watch = complianceWatch(SUPPLIERS);
+    expect(watch.map((w) => w.name)).toEqual([
+      'Peterhead Diving Services',
+      'Granite NDT Ltd',
+      'Mearns Heavy Transport',
+    ]);
+    expect(watch.filter((w) => w.status === 'blocked')).toHaveLength(1);
+  });
+
+  it('describes the offending certificate in one line', () => {
+    const watch = complianceWatch(SUPPLIERS);
+    expect(watch.map(watchLine)).toEqual([
+      'Peterhead Diving Services — insurance lapsed',
+      'Granite NDT Ltd — GWO expires in 21 days',
+      'Mearns Heavy Transport — abnormal load notifications expire in 24 days',
+    ]);
+  });
+
+  it('a supplier with every cert current never appears', () => {
+    expect(
+      complianceWatch([{ name: 'Clean Co', certs: [{ name: 'Insurance', state: 'ok' }] }]),
+    ).toEqual([]);
   });
 });

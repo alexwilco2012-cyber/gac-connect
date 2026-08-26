@@ -134,7 +134,7 @@ test('5 · SVS blocked supplier is unbookable from its profile', async ({ page }
   await page.goto('/app/svs');
   await page.keyboard.press('Escape');
 
-  await expect(page.getByText('2 alerts:')).toBeVisible();
+  await expect(page.getByText('3 alerts:')).toBeVisible();
   await page.getByRole('button', { name: 'Blocked', exact: true }).click();
   await page.getByRole('button', { name: 'Peterhead Diving Services' }).click();
 
