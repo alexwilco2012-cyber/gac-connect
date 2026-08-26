@@ -97,12 +97,12 @@
         </sc-if>
 
         <sc-if value="{{ isMarketing }}" hint-placeholder-val="{{ true }}">
-          <header style="background:#0A2540;color:#FFFFFF;display:flex;align-items:center;gap:20px;padding:0 24px;height:58px;position:sticky;top:0;z-index:50;">
+          <header class="gac-mkt-header" style="background:#0A2540;color:#FFFFFF;display:flex;align-items:center;gap:20px;padding:0 24px;height:58px;position:sticky;top:0;z-index:50;">
             <button sc-camel-on-click="{{ goHome }}" style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;background:none;border:none;color:#FFFFFF;cursor:pointer;padding:0;" aria-label="Go to landing page">
               <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.12em;font-size:18px;">{{ brandMainUpper }}</span>
               <span style="font-weight:300;letter-spacing:.28em;font-size:13px;color:#9FB4C8;text-transform:uppercase;">{{ brandSubUpper }}</span>
             </button>
-            <div style="position:relative;flex:1;min-width:0;">
+            <div class="gac-mkt-nav" style="position:relative;flex:1;min-width:0;">
               <nav style="display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;" aria-label="Main">
                 <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="4">
                   <button style="{{ nv.style }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ nv.go }}" aria-pressed="{{ nv.pressed }}">{{ nv.label }}<sc-if value="{{ nv.beta }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;margin-left:6px;background:#FFC72C;color:#0A2540;font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 5px;border-radius:3px;vertical-align:middle;position:relative;top:-1px;">BETA</span></sc-if></button>

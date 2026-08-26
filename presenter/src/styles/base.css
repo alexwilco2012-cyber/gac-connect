@@ -64,12 +64,29 @@
   }
 
   /* #gac-scroll is a block, not a flex column, on purpose: every screen's
-     &lt;main&gt; carries an inline `margin:0 auto`, and an auto cross-axis margin
-     disables flex stretching, so as a flex item it sized to its own content
-     instead of the column. The SVS supplier table then dragged every platform
-     screen out to that table's width and the wrapper's overflow:auto could
-     never take effect. */
+     main element carries an inline `margin:0 auto`, and an auto cross-axis
+     margin disables flex stretching, so as a flex item it sized to its own
+     content instead of the column. The SVS supplier table then dragged every
+     platform screen out to that table's width, and the table wrapper's own
+     overflow-x:auto could never take effect. */
   #gac-scroll > * { min-width: 0; }
+
+  /* Below 360 the 24px side gutters are a luxury: they cost 48px of a 320px
+     screen and push the widest rows (the marketplace filter row) out. */
+  @media (max-width: 359px) {
+    #gac-scroll main { padding-left: 16px !important; padding-right: 16px !important; }
+  }
+
+  /* The marketing header is wordmark + nav + CTA in one row, and both the
+     wordmark and the CTA are nowrap — so on a phone the nav wrapper absorbed
+     the whole deficit and collapsed to 0px, painting its four tabs nowhere.
+     For Clients had no other route into it at that width. Below 640 the
+     header wraps and the nav takes a row of its own. */
+  @media (max-width: 639px) {
+    .gac-mkt-header { flex-wrap: wrap; height: auto !important; padding: 8px 16px !important; gap: 10px !important; }
+    /* the wrapper carries an inline flex:1, so this needs the weight */
+    .gac-mkt-header .gac-mkt-nav { flex: 1 0 100% !important; order: 3; }
+  }
 
   /* Three axis labels need ~142px; the 24-hour tick stands down until the
      card is wide enough to hold it (the site does the same from xl). */

@@ -178,7 +178,7 @@ const SL_PILL_TONES = {
   warn: 'background:#FDF3E3;color:#B45309;'
 };
 const SL_BTN_PRIMARY = 'display:inline-flex;align-items:center;justify-content:center;min-height:44px;background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;white-space:nowrap;';
-const SL_BTN_GHOST = 'display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;white-space:nowrap;';
+const SL_BTN_GHOST = 'display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;';
 const SL_BTN_GOLD = 'display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:#C9A227;color:#0A2540;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;white-space:nowrap;';
 const SL_INPUT = 'display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;';
 const SL_LABEL = 'display:block;font-size:12.5px;font-weight:600;color:#33475F;';

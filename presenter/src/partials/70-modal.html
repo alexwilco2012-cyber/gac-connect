@@ -1,6 +1,6 @@
   <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
     <div role="dialog" aria-modal="true" aria-label="Per-transaction agreement" style="position:fixed;inset:0;background:rgba(10,37,64,.45);display:grid;place-items:center;z-index:90;" sc-camel-on-click="{{ closeModalOverlay }}">
-      <div style="background:#FFFFFF;border-radius:14px;max-width:460px;width:92vw;padding:26px;">
+      <div style="background:#FFFFFF;border-radius:14px;max-width:460px;width:92vw;box-sizing:border-box;padding:26px;">
         <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Per-transaction agreement</p>
         <h2 style="margin:4px 0 0;font-size:19px;">Accept quote — {{ modalSupplier }}</h2>
         <p style="color:#33475F;font-size:13.5px;margin:10px 0 0;">Scope: 1 × mobile crane, MV Caledonian Star, Aberdeen, booked window {{ quoteBookedWindow }}. Price: <strong>{{ modalPrice }}</strong> for the booked window. Terms incorporated by reference from the platform Terms of Use. Both parties sign electronically; the agreement is stored with a full audit trail.</p>
