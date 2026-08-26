@@ -9,10 +9,16 @@ import { Sparkline } from './Sparkline';
  * props (Analytics, marketing) render as before, minus the plain-text delta
  * which is now always a chip.
  */
+const DELTA_TONE = {
+  success: 'bg-success-soft text-success',
+  info: 'bg-sea-soft text-sea',
+} as const;
+
 export function StatCard({
   label,
   value,
   delta,
+  deltaTone = 'success',
   barPct,
   icon,
   series,
@@ -20,6 +26,8 @@ export function StatCard({
   label: string;
   value: string;
   delta?: string;
+  /** Growth reads success (default); a plain annotation reads info. */
+  deltaTone?: keyof typeof DELTA_TONE;
   barPct?: number;
   icon?: IconName;
   series?: readonly number[];
@@ -32,7 +40,9 @@ export function StatCard({
           <p className="mt-0.5 font-display text-[26px] font-bold">{value}</p>
           {delta ? (
             <p className="mt-1">
-              <span className="inline-block rounded-full bg-success-soft px-2 py-0.5 text-[11.5px] font-bold whitespace-nowrap text-success">
+              <span
+                className={`inline-block rounded-full px-2 py-0.5 text-[11.5px] font-bold whitespace-nowrap ${DELTA_TONE[deltaTone]}`}
+              >
                 {delta}
               </span>
             </p>

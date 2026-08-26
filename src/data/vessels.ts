@@ -78,6 +78,8 @@ export const DASHBOARD_KPIS: readonly {
   label: string;
   value: string;
   delta: string;
+  /** Chip tone: growth reads success (default); a plain annotation reads info. */
+  deltaTone?: 'success' | 'info';
   icon: IconName;
   series: readonly number[];
 }[] = [
@@ -86,12 +88,13 @@ export const DASHBOARD_KPIS: readonly {
     value: '14',
     delta: '+3 this week',
     icon: 'briefcase',
-    series: [9, 11, 10, 12, 13, 12, 14],
+    series: [9, 10, 12, 11, 13, 11, 14],
   },
   {
     label: 'Open quote requests',
     value: '6',
     delta: '2 replies awaiting review',
+    deltaTone: 'info',
     icon: 'send',
     series: [2, 4, 3, 5, 4, 6, 6],
   },
@@ -106,6 +109,7 @@ export const DASHBOARD_KPIS: readonly {
     label: 'Admin time saved (mo.)',
     value: '31 hrs',
     delta: 'vs manual workflow',
+    deltaTone: 'info',
     icon: 'timer',
     series: [22, 24, 26, 27, 29, 30, 31],
   },

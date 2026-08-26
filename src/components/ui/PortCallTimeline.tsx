@@ -23,16 +23,21 @@ export function PortCallTimeline({ vessels }: { vessels: readonly Vessel[] }) {
 
   return (
     <div>
-      {/* Axis — labels centred on their gridlines, ends flush */}
-      <div className="ml-[204px] hidden sm:block">
+      {/* Axis — labels centred on their gridlines, ends flush. Part of the
+          drawing, so hidden from assistive tech like the tracks below; the
+          twelve-hour labels only fit once the grid column is wide enough. */}
+      <div aria-hidden="true" className="ml-[204px] hidden sm:block">
         <div className="relative h-4 text-[10.5px] font-semibold tracking-[0.04em] text-ink-soft uppercase">
           {TIMELINE_TICKS.map((t, i) => {
             const first = i === 0;
             const last = i === TIMELINE_TICKS.length - 1;
+            const minor = t.offsetHours % 24 !== 0;
             return (
               <span
                 key={t.offsetHours}
-                className={`absolute whitespace-nowrap ${first || last ? '' : '-translate-x-1/2'}`}
+                className={`absolute whitespace-nowrap ${first || last ? '' : '-translate-x-1/2'} ${
+                  minor ? 'hidden xl:block' : ''
+                }`}
                 style={first ? { left: 0 } : last ? { right: 0 } : { left: pct(t.offsetHours) }}
               >
                 {t.label}

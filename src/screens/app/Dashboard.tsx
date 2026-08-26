@@ -125,7 +125,7 @@ export default function Dashboard() {
           <Eyebrow>Thursday · Aberdeen</Eyebrow>
           <h1 className="mt-1 font-display text-2xl font-bold">Morning, agent</h1>
           <p className="mt-1 text-[14px] text-ink-soft">
-            2 vessels arriving in the next 24 hours.{' '}
+            2 vessels arriving tomorrow.{' '}
             <Link
               to="/app/procurement"
               className="font-semibold text-sea"
@@ -149,6 +149,7 @@ export default function Dashboard() {
             label={k.label}
             value={k.value}
             delta={k.delta}
+            deltaTone={k.deltaTone}
             icon={k.icon}
             series={k.series}
           />
@@ -167,7 +168,7 @@ export default function Dashboard() {
               subtitle="Predictive procurement · what this vessel typically needs on an Aberdeen call, from GA history. SVS-verified suppliers are pre-selected for each."
               action={<Pill tone="info">GA vessel profile loaded</Pill>}
             />
-            <ul className="my-3">
+            <ul role="list" className="my-3">
               {PREDICTED_NEEDS.map((n) => {
                 const hint = relatedHint(n.service);
                 return (
@@ -234,7 +235,9 @@ export default function Dashboard() {
               title="Needs you"
               subtitle="Ordered by urgency · the bell reads the same list"
             />
-            <ul className="mt-3 list-none">
+            {/* role="list" restores list semantics VoiceOver strips from
+                style-less lists (Tailwind preflight removes the markers). */}
+            <ul role="list" className="mt-3 list-none">
               {needsYou.map((item) => (
                 <NeedsYouRow key={item.id} item={item} />
               ))}
