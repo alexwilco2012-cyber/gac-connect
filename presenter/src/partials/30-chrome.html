@@ -1,32 +1,117 @@
-  <sc-if value="{{ isPlatform }}" hint-placeholder-val="{{ false }}">
-    <div style="background:#FBF6E3;color:#9A7B14;border-bottom:1px solid #EADFB4;text-align:center;font-size:12.5px;padding:5px 12px;font-weight:600;letter-spacing:.02em;">Proof of concept · illustrative data</div>
-  </sc-if>
+  <!-- Platform shell (26 Aug, mirrors the site's AppLayout): a grouped ink
+       sidebar and a light top bar replace the ten-item tab strip. The wrapper
+       divs opened here are closed in 60-footer-drawer.html — partials are
+       concatenated as raw text, so the shell has to span them, but every
+       <sc-if> below stays balanced within itself.
 
-  <header style="background:#0A2540;color:#FFFFFF;display:flex;align-items:center;gap:20px;padding:0 24px;height:58px;position:sticky;top:0;z-index:50;">
-    <button sc-camel-on-click="{{ goHome }}" style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;background:none;border:none;color:#FFFFFF;cursor:pointer;padding:0;" aria-label="Go to landing page">
-      <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.12em;font-size:18px;">{{ brandMainUpper }}</span>
-      <span style="font-weight:300;letter-spacing:.28em;font-size:13px;color:#9FB4C8;text-transform:uppercase;">{{ brandSubUpper }}</span>
-    </button>
-    <div style="position:relative;flex:1;min-width:0;">
-    <nav style="display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;" aria-label="Main">
-      <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="4">
-        <button style="{{ nv.style }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ nv.go }}" aria-pressed="{{ nv.pressed }}">{{ nv.label }}<sc-if value="{{ nv.beta }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;margin-left:6px;background:#FFC72C;color:#0A2540;font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 5px;border-radius:3px;vertical-align:middle;position:relative;top:-1px;">BETA</span></sc-if></button>
-      </sc-for>
-    </nav>
-      <!-- ten tabs never fit on a phone: fade the right edge so the rest read as
-           more list rather than the end of it -->
-      <span aria-hidden="true" class="gac-nav-fade" style="position:absolute;top:0;bottom:0;right:0;width:28px;pointer-events:none;background:linear-gradient(to left,#0A2540,rgba(10,37,64,0));"></span>
-    </div>
+       Marketing keeps the dark top nav: the sidebar is the platform's
+       furniture, and the landing page is a finished piece. -->
+  <div style="height:100vh;display:flex;flex-direction:column;overflow:hidden;">
+
     <sc-if value="{{ isPlatform }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#C9D6E2;">
-        <span class="gac-persona-name">A. Wilkinson · Aberdeen Agency</span>
-        <span style="width:32px;height:32px;border-radius:50%;background:#C9A227;color:#0A2540;display:grid;place-items:center;font-weight:800;font-size:13px;">AW</span>
-      </div>
+      <div style="background:#FBF6E3;color:#9A7B14;border-bottom:1px solid #EADFB4;text-align:center;font-size:12.5px;padding:5px 12px;font-weight:600;letter-spacing:.02em;flex-shrink:0;">Proof of concept · illustrative data</div>
     </sc-if>
-    <sc-if value="{{ isMarketing }}" hint-placeholder-val="{{ true }}">
-      <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ goDashboard }}">Open the platform</button>
-    </sc-if>
-  </header>
+
+    <div style="flex:1;display:flex;align-items:stretch;min-height:0;">
+
+      <sc-if value="{{ isPlatform }}" hint-placeholder-val="{{ false }}">
+        <aside class="gac-side" style="width:232px;flex-shrink:0;background:linear-gradient(180deg,#0A2540,#06132B);color:#FFFFFF;display:flex;flex-direction:column;height:100%;">
+          <div style="height:58px;display:flex;align-items:center;padding:0 18px;flex-shrink:0;">
+            <button sc-camel-on-click="{{ goHome }}" style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;background:none;border:none;color:#FFFFFF;cursor:pointer;padding:0;" aria-label="Go to landing page">
+              <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.12em;font-size:18px;">{{ brandMainUpper }}</span>
+              <span style="font-weight:300;letter-spacing:.28em;font-size:12px;color:#FFC72C;text-transform:uppercase;">{{ brandSubUpper }}</span>
+            </button>
+          </div>
+
+          <nav aria-label="Platform" style="flex:1;overflow-y:auto;padding:8px 10px 16px;">
+            <button style="{{ nsDashboard }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goDashboard }}" aria-pressed="{{ npDashboard }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M3 3h7v9H3z"></path><path d="M14 3h7v5h-7z"></path><path d="M14 12h7v9h-7z"></path><path d="M3 16h7v5H3z"></path></svg>
+              <span>Dashboard</span>
+            </button>
+
+            <p style="margin:18px 0 6px;padding:0 12px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.40);">Service lines</p>
+            <button style="{{ nsAgency }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goAgency }}" aria-pressed="{{ npAgency }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M12 22V8"></path><path d="M5 12H2a10 10 0 0 0 20 0h-3"></path><path d="M12 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path></svg>
+              <span>Agency</span>
+            </button>
+            <button style="{{ nsLogistics }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goLogistics }}" aria-pressed="{{ npLogistics }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><path d="M17 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path><path d="M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path></svg>
+              <span>Logistics</span>
+            </button>
+            <button style="{{ nsCustoms }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goCustoms }}" aria-pressed="{{ npCustoms }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M5 22h14"></path><path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z"></path><path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 2 1 2 1 3.5V13"></path></svg>
+              <span>Customs</span>
+            </button>
+            <button style="{{ nsProcurement }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goProcurement }}" aria-pressed="{{ npProcurement }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>
+              <span>Procurement</span>
+            </button>
+
+            <p style="margin:18px 0 6px;padding:0 12px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.40);">Work</p>
+            <button style="{{ nsMarketplace }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goMarketplace }}" aria-pressed="{{ npMarketplace }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"></path><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"></path><path d="M2 7h20"></path><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"></path></svg>
+              <span>Marketplace</span>
+            </button>
+            <button style="{{ nsQuotes }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goQuotes }}" aria-pressed="{{ npQuotes }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M8 12a1 1 0 0 0 1-1V8H7a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1z"></path><path d="M15 12a1 1 0 0 0 1-1V8h-2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1z"></path></svg>
+              <span>Quotes</span>
+            </button>
+            <button style="{{ nsInvoices }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goInvoices }}" aria-pressed="{{ npInvoices }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>
+              <span>Invoices</span>
+            </button>
+
+            <p style="margin:18px 0 6px;padding:0 12px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.40);">Commercial</p>
+            <button style="{{ nsSvs }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goSvs }}" aria-pressed="{{ npSvs }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+              <span>SVS</span>
+            </button>
+            <button style="{{ nsTiers }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goTiers }}" aria-pressed="{{ npTiers }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>
+              <span>Tiers</span>
+            </button>
+          </nav>
+        </aside>
+      </sc-if>
+
+      <div id="gac-scroll" style="flex:1;min-width:0;display:flex;flex-direction:column;overflow-y:auto;">
+
+        <sc-if value="{{ isPlatform }}" hint-placeholder-val="{{ false }}">
+          <header style="background:#FFFFFF;border-bottom:1px solid #E5EAF1;display:flex;align-items:center;gap:10px;padding:0 24px;height:58px;position:sticky;top:0;z-index:50;">
+            <span style="position:relative;display:flex;align-items:center;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#33475F" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position:absolute;left:12px;pointer-events:none;"><path d="m21 21-4.34-4.34"></path><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"></path></svg>
+              <input type="search" value="{{ query }}" sc-camel-on-change="{{ onTopSearch }}" placeholder="Search suppliers and services" aria-label="Search platform" style="min-height:44px;width:320px;max-width:30vw;border:1.5px solid #CBD6E2;border-radius:8px;padding:0 12px 0 34px;font-size:13px;background:#FAFBFD;font-family:inherit;color:#0A2540;">
+            </span>
+            <span style="flex:1;"></span>
+            <span style="position:relative;display:inline-flex;">
+              <button style="width:44px;height:44px;display:grid;place-items:center;border-radius:8px;border:none;background:none;color:#33475F;cursor:pointer;" style-hover="background:#E8F1F7;color:#0A2540;" sc-camel-on-click="{{ goInvoices }}" aria-label="{{ bellLabel }}">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+              </button>
+              <sc-if value="{{ bellHasCount }}" hint-placeholder-val="{{ true }}">
+                <span aria-hidden="true" style="position:absolute;top:3px;right:3px;min-width:16px;height:16px;border-radius:999px;background:#B91C1C;color:#FFFFFF;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;">{{ bellCount }}</span>
+              </sc-if>
+            </span>
+            <span class="gac-persona-name" style="font-size:13px;color:#33475F;">A. Wilkinson · Aberdeen Agency</span>
+            <span style="width:32px;height:32px;border-radius:50%;background:#C9A227;color:#0A2540;display:grid;place-items:center;font-weight:800;font-size:13px;">AW</span>
+          </header>
+        </sc-if>
+
+        <sc-if value="{{ isMarketing }}" hint-placeholder-val="{{ true }}">
+          <header style="background:#0A2540;color:#FFFFFF;display:flex;align-items:center;gap:20px;padding:0 24px;height:58px;position:sticky;top:0;z-index:50;">
+            <button sc-camel-on-click="{{ goHome }}" style="display:flex;align-items:baseline;gap:8px;white-space:nowrap;background:none;border:none;color:#FFFFFF;cursor:pointer;padding:0;" aria-label="Go to landing page">
+              <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.12em;font-size:18px;">{{ brandMainUpper }}</span>
+              <span style="font-weight:300;letter-spacing:.28em;font-size:13px;color:#9FB4C8;text-transform:uppercase;">{{ brandSubUpper }}</span>
+            </button>
+            <div style="position:relative;flex:1;min-width:0;">
+              <nav style="display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;" aria-label="Main">
+                <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="4">
+                  <button style="{{ nv.style }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ nv.go }}" aria-pressed="{{ nv.pressed }}">{{ nv.label }}<sc-if value="{{ nv.beta }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;margin-left:6px;background:#FFC72C;color:#0A2540;font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;letter-spacing:.08em;padding:2px 5px;border-radius:3px;vertical-align:middle;position:relative;top:-1px;">BETA</span></sc-if></button>
+                </sc-for>
+              </nav>
+            </div>
+            <button style="background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap;" style-hover="background:#0B4C70;" sc-camel-on-click="{{ goDashboard }}">Open the platform</button>
+          </header>
+        </sc-if>
 
   <sc-if value="{{ showTourPrompt }}" hint-placeholder-val="{{ false }}">
     <div style="max-width:1180px;margin:18px auto -4px;padding:0 24px;">
