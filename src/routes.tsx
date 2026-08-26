@@ -17,7 +17,7 @@ import Landing from './screens/marketing/Landing';
  * Everything that moved keeps its old address as a redirect that carries the
  * query string, so shared deep links and printed references still resolve.
  *
- * `/app` is the marketplace (26 Aug). GAC Connect is a marketplace first and a
+ * `/app` is the marketplace (26 Aug). This platform is a marketplace first and a
  * workflow second, so the front door is the directory, not a work queue: the
  * index redirects rather than rendering, keeping one canonical address for the
  * marketplace so the nav highlight and every shared link agree. `/app/dashboard`

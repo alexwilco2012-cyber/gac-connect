@@ -24,7 +24,7 @@ type EsgFilter = 'all' | 'a' | 'ab';
  * The marketplace — the platform's front door since 26 Aug.
  *
  * `/app` opens here, so this screen is now the first thing a client, a supplier
- * or a panel member sees: it has to say what GAC Connect is before it says what
+ * or a panel member sees: it has to say what the platform is before it says what
  * it can filter. Hence the hero band, the trust counters read off the data, and
  * the category tiles — a directory should look like a place you browse, not a
  * report you were handed.

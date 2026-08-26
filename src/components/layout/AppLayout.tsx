@@ -19,7 +19,7 @@ import { Wordmark } from './Wordmark';
  * (find, compare, pay), then the commercial and compliance views. Customs
  * keeps its own entry so the 2 / 4 / 7 tier reads straight off the nav.
  *
- * Marketplace leads (26 Aug): GAC Connect is a marketplace first and a workflow
+ * Marketplace leads (26 Aug): this platform is a marketplace first and a workflow
  * second, so the directory is the first item and the front door, and Dashboard
  * — now the client and supplier view — sits under it. Internal is pinned to the
  * foot of the column, below a rule and out of the client's reading path,
