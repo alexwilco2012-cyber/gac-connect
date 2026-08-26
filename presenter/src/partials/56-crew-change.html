@@ -4,7 +4,7 @@
       <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Everything a crew change needs, in one place</h1>
       <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a repatriation letter for each off-signer. The platform holds the templates, you fill them in, GAC endorses or routes them and sends them back — one letter per crew member, always.</p>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;margin-top:20px;">
         <sc-for list="{{ ccFlow }}" as="f" hint-placeholder-count="3">
           <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
             <p style="font-size:13.5px;font-weight:700;margin:0;">{{ f.title }}</p>
@@ -25,7 +25,7 @@
 
         <sc-if value="{{ ccIsHotels }}" hint-placeholder-val="{{ false }}">
           <div data-testid="section-hotels">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px;">
               <sc-for list="{{ ccHotels }}" as="h" hint-placeholder-count="2">
                 <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="{{ h.testId }}" data-status="{{ h.status }}">
                   <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;">
@@ -71,7 +71,7 @@
                 </sc-for>
               </div>
 
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:12px;margin-top:12px;">
                 <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Flight number
                   <input type="text" value="{{ trFlightNo }}" sc-camel-on-change="{{ onTrFlightNo }}" data-testid="flight-no" aria-describedby="flight-suggestions" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
                 </label>
@@ -106,7 +106,7 @@
               </sc-if>
 
               <sc-if value="{{ trHasStatus }}" hint-placeholder-val="{{ false }}">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px;margin-top:16px;">
                   <div style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:14px;" data-testid="flight-status" data-phase="{{ trPhase }}">
                     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
                       <strong style="font-size:16px;">{{ trFlight }}</strong>
@@ -148,7 +148,7 @@
             <div data-testid="taxis" style="margin-top:24px;">
               <h3 style="font-size:17px;font-weight:700;margin:0;">Taxis and minibuses</h3>
               <p style="color:#33475F;font-size:13.5px;margin:4px 0 0;max-width:720px;">Airport pickups hold the tracked flight, so a delay moves the pickup — not the crew.</p>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:12px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px;margin-top:12px;">
                 <sc-for list="{{ ccTaxis }}" as="t" hint-placeholder-count="2">
                   <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;" data-testid="{{ t.testId }}" data-status="{{ t.status }}">
                     <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px;">
@@ -304,7 +304,7 @@
               <form style="margin-top:16px;" sc-camel-on-submit="{{ ccLoiSubmit }}" aria-describedby="loi-illustrative">
                 <fieldset style="border:0;padding:0;margin:0;min-width:0;" disabled="{{ ccLoiFieldsDisabled }}">
                   <legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Crew member and travel details</legend>
-                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:12px;">
                     <sc-for list="{{ ccLoiFieldsA }}" as="f" hint-placeholder-count="6">
                       <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">{{ f.label }}<input type="text" value="{{ f.value }}" placeholder="{{ f.placeholder }}" sc-camel-on-change="{{ f.on }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;"></label>
                     </sc-for>
@@ -363,7 +363,7 @@
               <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">One crew member per letter. Details as printed in the passport.</p>
               <p id="repat-illustrative" data-testid="repat-illustrative" style="border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
               <form style="margin-top:16px;" sc-camel-on-submit="{{ ccRepatSubmit }}" aria-describedby="repat-illustrative">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:12px;">
                   <sc-for list="{{ ccRepatFieldsA }}" as="f" hint-placeholder-count="5">
                     <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">{{ f.label }}<input type="text" value="{{ f.value }}" placeholder="{{ f.placeholder }}" sc-camel-on-change="{{ f.on }}" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;"></label>
                   </sc-for>

@@ -5,7 +5,7 @@
       <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:760px;">Your procurement list goes by email straight to Compass, GAC’s own procurement branch. Compass sources and supplies every line on it, from its own stock and its own supply network, and confirms the list back to you. You are then invoiced via Compass, under GAC — one invoice, one relationship.</p>
       <p data-testid="procurement-illustrative" style="display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:760px;margin:8px 0 0;border:1px solid #E5EAF1;border-radius:8px;background:#FFFFFF;padding:6px 12px;font-size:12.5px;color:#33475F;"><span style="{{ prPillNeutral }}">Illustrative</span><span>{{ prNotice }}</span></p>
 
-      <div data-testid="how-it-works" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px;">
+      <div data-testid="how-it-works" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px;margin-top:20px;">
         <sc-for list="{{ prRules }}" as="r" hint-placeholder-count="4">
           <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
             <span aria-hidden="true" style="display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#E8F1F7;color:#0E5E8A;font-size:13px;font-weight:700;">{{ r.step }}</span>
@@ -28,7 +28,7 @@
             </div>
 
             <sc-if value="{{ prIsDraft }}" hint-placeholder-val="{{ false }}">
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px;margin-top:16px;">
                 <label style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Vessel
                   <sc-raw-select value="{{ prVesselId }}" sc-camel-on-change="{{ prOnVessel }}" data-testid="request-vessel" style="display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;">
                     <option value="caledonian-star">MV Caledonian Star · Aberdeen</option>

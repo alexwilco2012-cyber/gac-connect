@@ -57,7 +57,19 @@
       padding: 6px 8px !important; overflow-x: auto; overflow-y: hidden;
     }
     .gac-side nav button { width: auto !important; flex: 0 0 auto; }
+    /* The active marker is an inset left edge on the vertical rail; lying
+       down, it belongs underneath. Only the active button carries one, so
+       aria-pressed is enough to find it. */
+    .gac-side nav button[aria-pressed="true"] { box-shadow: inset 0 -3px 0 #C9A227 !important; }
   }
+
+  /* #gac-scroll is a block, not a flex column, on purpose: every screen's
+     &lt;main&gt; carries an inline `margin:0 auto`, and an auto cross-axis margin
+     disables flex stretching, so as a flex item it sized to its own content
+     instead of the column. The SVS supplier table then dragged every platform
+     screen out to that table's width and the wrapper's overflow:auto could
+     never take effect. */
+  #gac-scroll > * { min-width: 0; }
 
   /* Three axis labels need ~142px; the 24-hour tick stands down until the
      card is wide enough to hold it (the site does the same from xl). */

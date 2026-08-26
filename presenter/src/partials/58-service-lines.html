@@ -8,7 +8,7 @@
       <p style="color:#33475F;margin:6px 0 0;font-size:14px;max-width:760px;">{{ slIntro }}</p>
 
       <!-- what is running in this line right now — the reason a hub is not a menu -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:20px;" data-testid="line-live" aria-label="Live in this service line">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:12px;margin-top:20px;" data-testid="line-live" aria-label="Live in this service line">
         <sc-for list="{{ slLive }}" as="lv" hint-placeholder-count="3">
           <button style="text-align:left;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:16px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ lv.on }}">
             <span style="display:block;font-size:12px;color:#33475F;">{{ lv.label }}</span>
@@ -21,7 +21,7 @@
       <!-- what you can ask for; every card says who performs it -->
       <h2 style="font-size:19px;font-weight:700;margin:28px 0 0;">What you can ask for</h2>
       <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ slDirectoryPointer }}</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px;" data-testid="line-services">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px;margin-top:12px;" data-testid="line-services">
         <sc-for list="{{ slServices }}" as="sv" hint-placeholder-count="4">
           <div style="{{ sv.cardStyle }}" data-testid="{{ sv.testId }}" data-provision="{{ sv.provision }}">
             <div style="min-width:0;">
@@ -63,7 +63,7 @@
                 </div>
                 <p style="color:#33475F;font-size:13px;margin:6px 0 0;max-width:720px;">{{ slConsignmentNotice }}</p>
 
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px;margin-top:14px;">
                   <label style="{{ slLabelStyle }}grid-column:1/-1;">What is moving<input type="text" value="{{ slCDescription }}" sc-camel-on-change="{{ slOnCDescription }}" data-testid="c-description" placeholder="Deck spares and hose reels, 4 pallets" style="{{ slInputStyle }}"></label>
                   <label style="{{ slLabelStyle }}">Collection from<input type="text" value="{{ slCOrigin }}" sc-camel-on-change="{{ slOnCOrigin }}" data-testid="c-origin" placeholder="Grangemouth" style="{{ slInputStyle }}"></label>
                   <label style="{{ slLabelStyle }}">Delivery point<sc-raw-select value="{{ slCDeliveryPoint }}" sc-camel-on-change="{{ slOnCDeliveryPoint }}" style="{{ slInputStyle }}"><sc-for list="{{ slDeliveryPoints }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
@@ -142,14 +142,14 @@
 
           <!-- ── logistics · warehousing / project cargo ── -->
           <sc-if value="{{ slIsWarehousing }}" hint-placeholder-val="{{ false }}">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;">
               <sc-for list="{{ slWarehousing }}" as="w" hint-placeholder-count="3">
                 <div style="{{ slCardStyle }}"><p style="font-size:13.5px;font-weight:700;margin:0;">{{ w.title }}</p><p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ w.body }}</p></div>
               </sc-for>
             </div>
           </sc-if>
           <sc-if value="{{ slIsProjectCargo }}" hint-placeholder-val="{{ false }}">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;">
               <sc-for list="{{ slProjectCargo }}" as="w" hint-placeholder-count="3">
                 <div style="{{ slCardStyle }}"><p style="font-size:13.5px;font-weight:700;margin:0;">{{ w.title }}</p><p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ w.body }}</p></div>
               </sc-for>
@@ -171,7 +171,7 @@
                 </div>
                 <p style="color:#33475F;font-size:13px;margin:6px 0 0;max-width:720px;">{{ slDeclarationNotice }}</p>
 
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px;margin-top:14px;">
                   <label style="{{ slLabelStyle }}">Entry type<sc-raw-select value="{{ slDKind }}" sc-camel-on-change="{{ slOnDKind }}" style="{{ slInputStyle }}"><sc-for list="{{ slKindOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
                   <label style="{{ slLabelStyle }}">Against a movement<sc-raw-select value="{{ slDConsignmentRef }}" sc-camel-on-change="{{ slOnDConsignment }}" data-testid="declaration-consignment" style="{{ slInputStyle }}"><sc-for list="{{ slMovementOptions }}" as="o" hint-placeholder-count="2"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
                   <label style="{{ slLabelStyle }}grid-column:1/-1;">What the goods are<input type="text" value="{{ slDGoods }}" sc-camel-on-change="{{ slOnDGoods }}" data-testid="d-goods" placeholder="What the item is, what it is made of, what it does" style="{{ slInputStyle }}"></label>
@@ -247,7 +247,7 @@
           <sc-if value="{{ slIsDocuments }}" hint-placeholder-val="{{ false }}">
             <div>
               <p style="border:1px solid #E5EAF1;border-radius:10px;background:#FAFBFD;padding:12px 16px;color:#33475F;font-size:13px;margin:0;max-width:760px;">{{ slInformsNotAdvises }}</p>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;margin-top:16px;">
                 <sc-for list="{{ slDocumentChecklist }}" as="dc" hint-placeholder-count="6">
                   <div style="{{ slCardStyle }}"><p style="font-size:13.5px;font-weight:700;margin:0;">{{ dc.title }}</p><p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ dc.body }}</p></div>
                 </sc-for>
@@ -268,7 +268,7 @@
               <button style="{{ cat.style }}" sc-camel-on-click="{{ cat.on }}">{{ cat.label }}</button>
             </sc-for>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px;" data-testid="line-suppliers">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px;margin-top:12px;" data-testid="line-suppliers">
             <sc-for list="{{ slSuppliers }}" as="sp" hint-placeholder-count="3">
               <div style="{{ slCardStyle }}">
                 <p style="font-size:14.5px;font-weight:700;margin:0;"><button style="background:none;border:none;padding:0;font:inherit;color:#0A2540;cursor:pointer;text-align:left;" style-hover="color:#0E5E8A;text-decoration:underline;" sc-camel-on-click="{{ sp.onOpen }}">{{ sp.name }}</button></p>

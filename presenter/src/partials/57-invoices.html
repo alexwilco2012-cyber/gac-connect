@@ -5,7 +5,7 @@
       <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:720px;">Every supplier invoice routes to the client before it matches in GAC Agent. Seven days to allocate the billing party and any split; left alone, it matches as it stands.</p>
       <p style="color:#33475F;margin:6px 0 0;font-size:13.5px;max-width:720px;">Where a call straddles a delivery or a redelivery, one disbursement carries costs for two parties. The platform holds the on-hire and off-hire moments from the charter, allocates each cost to the side that owned the vessel when it fell, and lets you move any line before it matches.</p>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px;margin-top:20px;">
         <sc-for list="{{ invRules }}" as="ir" hint-placeholder-count="3">
           <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
             <p style="font-size:13.5px;font-weight:700;margin:0;">{{ ir.title }}</p>
