@@ -142,6 +142,9 @@ class Component extends DCLogic {
     this._onHash = () => {
       const p = this._parseHash();
       this.setState({ route: p.route || (this.props.startScreen ?? 'home'), profileId: p.profileId, routeSection: p.section || null });
+      /* The platform shell scrolls its main column, not the window. */
+      const sc = document.getElementById('gac-scroll');
+      if (sc) sc.scrollTo({ top: 0 });
       window.scrollTo({ top: 0 });
     };
     window.addEventListener('hashchange', this._onHash);
@@ -401,6 +404,57 @@ class Component extends DCLogic {
 
   /* ---------- format helpers ---------- */
   _gbp(n) { return '£' + n.toLocaleString('en-GB'); }
+
+  /* ---- compliance watch (mirrors src/lib/svs.ts complianceWatch) --------
+     Derived from the supplier certificates, never hand-counted: the SVS
+     banner, the dashboard feed and the top-bar bell all read this one list,
+     so a cert change in the data moves every surface at once. Blocked first,
+     then soonest expiry. */
+  _complianceWatch() {
+    const out = [];
+    this.SUPPLIERS.forEach((sup) => {
+      const certs = sup.certs || [];
+      const lapsed = certs.filter((c) => c.state === 'lapsed');
+      const due = certs.filter((c) => c.state === 'due').slice()
+        .sort((a, b) => (a.days || 0) - (b.days || 0));
+      if (!lapsed.length && !due.length) return;
+      const blocked = lapsed.length > 0;
+      const cert = blocked ? lapsed[0] : due[0];
+      out.push({
+        name: sup.name, blocked: blocked,
+        certName: cert.label, days: cert.days
+      });
+    });
+    return out.sort((a, b) => {
+      if (a.blocked !== b.blocked) return a.blocked ? -1 : 1;
+      return (a.days || 0) - (b.days || 0);
+    });
+  }
+
+  /* "GWO" stays upper-case; "Insurance" reads as "insurance" mid-sentence. */
+  _certName(n) {
+    return /^[A-Z0-9]{2,}$/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1);
+  }
+
+  _watchLine(w) {
+    const c = this._certName(w.certName);
+    if (w.blocked) return w.name + ' — ' + c + ' lapsed';
+    return w.name + ' — ' + c + (/s$/.test(w.certName) ? ' expire' : ' expires') + ' in ' + w.days + ' days';
+  }
+
+  /* Sparkline points for a 100x28 viewBox — the same hand-rolled shape the
+     site draws, as a polyline "x,y x,y" string the template binds directly. */
+  _spark(points) {
+    const W = 100, H = 28, PAD = 2;
+    const min = Math.min.apply(null, points), max = Math.max.apply(null, points);
+    const span = (max - min) || 1;
+    const step = (W - PAD * 2) / ((points.length - 1) || 1);
+    return points.map((p, i) => {
+      const x = PAD + i * step;
+      const y = PAD + (1 - (p - min) / span) * (H - PAD * 2);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+  }
   _esgStyle(e) {
     const c = e === 'A' ? '#047857' : e === 'B' ? '#3E7C2F' : '#B45309';
     return 'font-weight:700;color:' + c + ';';
@@ -620,7 +674,7 @@ class Component extends DCLogic {
     for (let i = 0; i < this.ADV_SLIDES; i++) { advSlots['advCls' + (i + 1)] = advCls(i); advSlots['advHid' + (i + 1)] = advHid(i); }
     if (!this._advGoCache) this._advGoCache = ADV_DOT_LABELS.map((_, i) => (e) => this._advDot(i, e));
 
-    return {
+    const vals = {
       /* brand */
       brandName: brandName, brandMainUpper: brandMainUpper, brandSubUpper: brandSubUpper,
       brandUpper: brandName.toUpperCase(),
@@ -687,7 +741,108 @@ class Component extends DCLogic {
       hbGo: () => { const id = this.state.hbSel; if (!id) return; const r = this.HARBOUR[id].route; this.setState({ hbSel: null }); this.nav(r); },
 
       /* dashboard */
-      todayLabel: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }),
+      /* ---- restyled dashboard (26 Aug, mirrors the site) --------------
+         Sidebar item styling per route, KPI tiles with sparklines, the
+         Needs-you feed and the 48-hour strip. Everything variable-width in
+         the strip lives in the label column so every track lines up. */
+      ...(function (self) {
+        const SIDE = [
+          ['dashboard', 'Dashboard'], ['agency', 'Agency'], ['logistics', 'Logistics'],
+          ['customs', 'Customs'], ['procurement', 'Procurement'], ['marketplace', 'Marketplace'],
+          ['quotes', 'Quotes'], ['invoices', 'Invoices'], ['svs', 'SVS'], ['tiers', 'Tiers']
+        ];
+        const base = 'display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:8px;'
+          + 'font-weight:600;font-size:13.5px;background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;';
+        const out = {};
+        SIDE.forEach(function (row) {
+          const key = row[0].replace(/-(\w)/g, function (m, c) { return c.toUpperCase(); });
+          const cap = key.charAt(0).toUpperCase() + key.slice(1);
+          const on = self._navHeld(row[0], route);
+          out['ns' + cap] = base + (on
+            ? 'color:#FFFFFF;background:rgba(255,255,255,.10);box-shadow:inset 3px 0 0 #C9A227;'
+            : 'color:#B9C8D6;');
+          out['np' + cap] = on ? 'true' : 'false';
+        });
+        return out;
+      })(this),
+
+      /* Top-bar search hands off to the marketplace on SUBMIT, not on every
+         keystroke: navigating as someone types is a change of context on
+         input (WCAG 3.2.2) and yanks the screen away mid-word. */
+      onTopSearchType: (e) => { this.setState({ query: e.target.value }); },
+      onTopSearchSubmit: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (this.state.route !== 'marketplace') this.nav('marketplace');
+      },
+
+      /* ---- compliance watch, derived once and shared -------------------
+         The SVS banner, the Needs-you feed and the bell all read this, so
+         they can never disagree about how many suppliers are flagged. */
+      ...(function (self) {
+        const watch = self._complianceWatch();
+        const blocked = watch.filter(function (w) { return w.blocked; }).length;
+        return {
+          svsAlertCount: String(watch.length),
+          svsAlertLine: watch.map(function (w) {
+            return self._watchLine(w) + (w.blocked
+              ? ' (booking blocked until evidence uploaded).'
+              : ' (renewal reminder sent).');
+          }).join(' '),
+          watchCount: watch.length,
+          watchHeadline: watch.length === 0
+            ? 'Compliance — all clear'
+            : watch.length + (watch.length === 1 ? ' supplier' : ' suppliers') + ' on compliance watch',
+          watchDetail: watch.length === 0
+            ? 'Every supplier certificate is current.'
+            : watch.map(function (w) { return self._watchLine(w); }).join(' · '),
+          watchChip: blocked > 0,
+          watchChipLabel: blocked + ' blocked from booking'
+        };
+      })(this),
+
+      /* KPI tiles — series are illustrative seven-week histories ending on
+         the headline value, same as the site's DASHBOARD_KPIS. Flat keys so
+         each tile can carry its own literal icon in the partial. */
+      ...(function (self) {
+        const K = [
+          { label: 'Active jobs', value: '14', delta: '+3 this week', tone: 'up', pts: [9, 10, 12, 11, 13, 11, 14] },
+          { label: 'Open quote requests', value: '6', delta: '2 replies awaiting review', tone: 'flat', pts: [2, 4, 3, 5, 4, 6, 6] },
+          { label: 'SVS-verified suppliers', value: '52', delta: '4 onboarding', tone: 'up', pts: [44, 46, 47, 48, 50, 51, 52] },
+          { label: 'Admin time saved (mo.)', value: '31 hrs', delta: 'vs manual workflow', tone: 'flat', pts: [22, 24, 26, 27, 29, 30, 31] }
+        ];
+        const out = {};
+        K.forEach(function (k, i) {
+          const n = 'kpi' + (i + 1);
+          out[n + 'Label'] = k.label;
+          out[n + 'Value'] = k.value;
+          out[n + 'Delta'] = k.delta;
+          out[n + 'Spark'] = self._spark(k.pts);
+          out[n + 'ChipStyle'] = 'display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;'
+            + 'font-weight:700;white-space:nowrap;'
+            + (k.tone === 'up' ? 'background:#E7F4EF;color:#047857;' : 'background:#E8F1F7;color:#0E5E8A;');
+        });
+        return out;
+      })(this),
+
+      /* 48-hour strip. Offsets are hours from the demo "now" (Thursday
+         08:00); the label column carries every fact the drawing shows. */
+      dashCalls: [
+        { name: 'MV Caledonian Star', sched: 'Aberdeen · ETA Fri 08:00 · Berth: Regent Quay', pill: 'Procurement list ready', tone: 'info', at: 24, mark: 'ETA Fri 08:00' },
+        { name: 'MV Boreal', sched: 'Peterhead · ETA Fri 14:30 · Berth: Smith Quay', pill: '2 certs expiring on booked supplier', tone: 'warn', at: 30.5, mark: 'ETA Fri 14:30' },
+        { name: 'MV Granite Coast', sched: 'Aberdeen · ETD Sat 06:00 · Customs: T1 in progress', pill: 'All documents complete', tone: 'ok', at: 46, mark: 'ETD Sat 06:00' }
+      ].map(function (v) {
+        const bg = v.tone === 'info' ? '#0E5E8A' : v.tone === 'warn' ? '#B45309' : '#047857';
+        const pillBg = v.tone === 'info' ? '#E8F1F7' : v.tone === 'warn' ? '#FBF0E1' : '#E7F4EF';
+        const pillFg = v.tone === 'info' ? '#0E5E8A' : v.tone === 'warn' ? '#B45309' : '#047857';
+        const pctv = (v.at / 48) * 100;
+        v.markStyle = 'position:absolute;top:50%;transform:translateY(-50%) translateX(' + (pctv > 88 ? '-96%' : '-50%') + ');'
+          + 'left:' + pctv.toFixed(2) + '%;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;'
+          + 'white-space:nowrap;color:#FFFFFF;background:' + bg + ';';
+        v.pillStyle = 'display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:11.5px;'
+          + 'font-weight:700;background:' + pillBg + ';color:' + pillFg + ';';
+        return v;
+      }),
+
       sent: !!st.sent,
       sendLabel: st.sent ? 'Requests sent ✓' : 'Send quote requests',
       sendBtnStyle: st.sent
@@ -869,5 +1024,17 @@ class Component extends DCLogic {
         this.setState({ tourStep: i + 1 }); this.nav(this.TOUR[i + 1].route);
       }
     };
+
+    /* The bell is derived last, once the feature modules' bindings have been
+       merged in: it counts what needs a decision — invoices still inside
+       their seven-day window plus compliance alerts. Letters in flight are
+       progress, not action, so they are deliberately not counted. */
+    const bell = (vals.dashInvCount || 0) + (vals.watchCount || 0);
+    vals.bellCount = String(bell);
+    vals.bellHasCount = bell > 0;
+    vals.bellLabel = bell > 0
+      ? 'Notifications: ' + bell + ' items need you — open the Needs-you list'
+      : 'Notifications: nothing needs you';
+    return vals;
   }
 }

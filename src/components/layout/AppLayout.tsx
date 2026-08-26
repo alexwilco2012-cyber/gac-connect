@@ -67,7 +67,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
             collapsed ? (
               <div aria-hidden="true" className="mx-2 my-3 h-px bg-white/10" />
             ) : (
-              <p className="mt-5 mb-1.5 px-3 text-[10.5px] font-bold tracking-[0.14em] text-white/40 uppercase">
+              <p className="mt-5 mb-1.5 px-3 text-[10.5px] font-bold tracking-[0.14em] text-white/[0.62] uppercase">
                 {group.heading}
               </p>
             )

@@ -4,7 +4,7 @@
       <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Compliance at a glance</h1>
       <p style="color:#33475F;margin:4px 0 0;font-size:14px;">Certification is a mandatory vetting field. Expiries trigger automatic alerts at 90, 30, and 7 days; lapsed suppliers cannot be booked.</p>
 
-      <div style="border-left:4px solid #B45309;background:#FBF0E1;border-radius:8px;padding:12px 16px;margin:14px 0;font-size:13.5px;"><strong>2 alerts:</strong> Granite NDT Ltd — GWO expires in 21 days (renewal reminder sent). Peterhead Diving Services — insurance lapsed (booking blocked until evidence uploaded).</div>
+      <div style="border-left:4px solid #B45309;background:#FBF0E1;border-radius:8px;padding:12px 16px;margin:14px 0;font-size:13.5px;"><strong>{{ svsAlertCount }} alerts:</strong> {{ svsAlertLine }}</div>
 
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;" role="group" aria-label="Filter by status">
         <sc-for list="{{ svsChips }}" as="fc" hint-placeholder-count="4">
