@@ -21,8 +21,8 @@ const ADDRESSES = new Set(addressesOf(routes));
 describe('the guided tour', () => {
   it('walks the demo path in the order the presenter takes a room through', () => {
     expect(TOUR_STEPS.map((s) => s.route)).toEqual([
-      '/app',
-      '/app',
+      '/app/internal',
+      '/app/internal',
       '/app/marketplace',
       '/app/agency/crew-change',
       '/app/logistics',

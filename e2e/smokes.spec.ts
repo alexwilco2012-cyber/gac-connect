@@ -9,16 +9,21 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('1 · loader skips and the dashboard renders', async ({ page }) => {
+test('1 · loader skips and /app opens on the marketplace', async ({ page }) => {
   await page.goto('/app');
   const loader = page.getByTestId('loader');
   await expect(loader).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(loader).toBeHidden();
-  await expect(page.getByRole('heading', { name: 'Morning, agent' })).toBeVisible();
+
+  // Marketplace first, workflow second: the front door is the directory.
+  await expect(page).toHaveURL(/\/app\/marketplace$/);
+  await expect(
+    page.getByRole('heading', { name: 'Every service on the quay, vetted before you see it' }),
+  ).toBeVisible();
   await expect(page.getByText('Proof of concept · illustrative data')).toBeVisible();
   // Loader shows once per session: revisiting must not replay it.
-  await page.goto('/app/marketplace');
+  await page.goto('/app/dashboard');
   await page.goto('/app');
   await expect(page.getByTestId('loader')).toHaveCount(0);
 });

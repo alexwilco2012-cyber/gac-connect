@@ -47,3 +47,23 @@ export function orderThirdParty(list: Supplier[], sort: SortKey): Supplier[] {
   );
   return [...promoted, ...rest];
 }
+
+/**
+ * How many vetted suppliers each category holds, in the category order the
+ * data declares (never alphabetised — 'All' has to stay first). Derived, so a
+ * supplier added to the data moves the tile without anyone editing a number.
+ * Categories with nothing in them are dropped: an empty tile invites a click
+ * that leads to the empty state.
+ */
+export function categoryCounts(
+  suppliers: readonly Supplier[],
+  categories: readonly string[],
+): { category: string; count: number }[] {
+  return categories
+    .filter((c) => c !== 'All')
+    .map((category) => ({
+      category,
+      count: suppliers.filter((s) => s.category === category).length,
+    }))
+    .filter((c) => c.count > 0);
+}

@@ -9,7 +9,10 @@
  * contains.
  *
  * Keep this in step with the presenter's own TOUR (presenter/src/app/data.js):
- * the two surfaces should tell the same story in the same order.
+ * the two surfaces should tell the same story in the same order. The copy is
+ * what has to match; the addresses are the site's own, and the first two stops
+ * moved to `/app/internal` when the agent desk did (26 Aug) without a word of
+ * the narration changing.
  */
 
 export interface TourStep {
@@ -23,13 +26,13 @@ export interface TourStep {
 
 export const TOUR_STEPS: TourStep[] = [
   {
-    route: '/app',
+    route: '/app/internal',
     anchor: 'kpis',
     title: 'Where every call stands',
     body: 'Open jobs, quote requests out, suppliers vetted, and the admin hours this replaces. One glance, before anyone asks.',
   },
   {
-    route: '/app',
+    route: '/app/internal',
     anchor: 'predictive',
     title: 'The morning starts done',
     body: 'GA already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.',

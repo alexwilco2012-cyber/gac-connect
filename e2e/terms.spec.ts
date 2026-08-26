@@ -107,7 +107,21 @@ test('3 · the client persona never sees commission on the platform screens', as
   // The rules strip carries the rating rule instead.
   await expect(page.getByText('Rate the job when it closes')).toBeVisible();
 
-  await page.goto('/app');
+  // The client's own dashboard — where commission would do the most damage.
+  await page.goto('/app/dashboard');
+  await expect(page.getByRole('heading', { name: 'Browne Energy' })).toBeVisible();
+  await expect(page.getByTestId('client-feed-invoices')).toContainText(
+    'Left alone, an invoice matches as it stands.',
+  );
+  await expect(page.getByText(/commission/i)).toHaveCount(0);
+
+  // The supplier view is the one place it belongs, and it says so plainly.
+  await page.getByRole('button', { name: 'Supplier view' }).click();
+  await expect(page.getByTestId('supplier-plan')).toContainText('10% commission');
+  await expect(page.getByTestId('supplier-keeps')).toHaveText('£3,960');
+
+  // The agent desk carries no commission either.
+  await page.goto('/app/internal');
   await expect(page.getByRole('heading', { name: 'Morning, agent' })).toBeVisible();
   await expect(page.getByTestId('dashboard-invoices')).toContainText(
     'Left alone, an invoice matches as it stands.',

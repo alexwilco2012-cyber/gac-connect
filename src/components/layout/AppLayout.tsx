@@ -13,24 +13,38 @@ import { Wordmark } from './Wordmark';
 
 /**
  * Platform shell (dashboard restyle, 25 Aug): grouped left sidebar plus a
- * light top bar, replacing the horizontal tab strip. Ten items never fit a
+ * light top bar, replacing the horizontal tab strip. Eleven items never fit a
  * tab row at 1280 — the sidebar groups them the way the business reads:
  * the four lines GAC sells and invoices, the spine every line runs through
  * (find, compare, pay), then the commercial and compliance views. Customs
  * keeps its own entry so the 2 / 4 / 7 tier reads straight off the nav.
+ *
+ * Marketplace leads (26 Aug): GAC Connect is a marketplace first and a workflow
+ * second, so the directory is the first item and the front door, and Dashboard
+ * — now the client and supplier view — sits under it. Internal is pinned to the
+ * foot of the column, below a rule and out of the client's reading path,
+ * because the agent desk is the one part of this nav a client or a supplier
+ * would never open.
  *
  * The chrome is real, not decorative: search routes to the marketplace, the
  * bell is fed by the same data as the dashboard's feed, and the avatar
  * offers the persona, the calculator and the tour. Everything survives
  * being poked — that is the demo's whole trick.
  */
-const NAV_GROUPS: {
-  heading: string | null;
-  items: { to: string; label: string; icon: IconName; end?: boolean }[];
-}[] = [
+interface NavItem {
+  to: string;
+  label: string;
+  icon: IconName;
+  end?: boolean;
+}
+
+const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
   {
     heading: null,
-    items: [{ to: '/app', label: 'Dashboard', icon: 'layout-dashboard', end: true }],
+    items: [
+      { to: '/app/marketplace', label: 'Marketplace', icon: 'store' },
+      { to: '/app/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+    ],
   },
   {
     heading: 'Service lines',
@@ -44,7 +58,6 @@ const NAV_GROUPS: {
   {
     heading: 'Work',
     items: [
-      { to: '/app/marketplace', label: 'Marketplace', icon: 'store' },
       { to: '/app/quotes', label: 'Quotes', icon: 'message-square-quote' },
       { to: '/app/invoices', label: 'Invoices', icon: 'receipt' },
     ],
@@ -58,9 +71,44 @@ const NAV_GROUPS: {
   },
 ];
 
+/** The agent desk. Kept out of NAV_GROUPS so it renders at the foot of the
+ *  column, after the spacer, rather than in the reading order above it. */
+const INTERNAL_ITEM: NavItem = { to: '/app/internal', label: 'Internal', icon: 'briefcase' };
+
+function SidebarLink({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  onNavigate?: () => void;
+}) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.end}
+      onClick={onNavigate}
+      title={collapsed ? item.label : undefined}
+      className={({ isActive }) =>
+        `flex min-h-11 items-center gap-3 rounded-lg py-2.5 text-[13.5px] font-semibold no-underline transition-colors ${
+          collapsed ? 'justify-center px-0' : 'px-3'
+        } ${
+          isActive
+            ? 'bg-white/10 text-white shadow-[inset_3px_0_0_var(--gold)]'
+            : 'text-[#B9C8D6] hover:bg-white/8 hover:text-white'
+        }`
+      }
+    >
+      <Icon name={item.icon} size={18} className="shrink-0" />
+      <span className={collapsed ? 'sr-only' : undefined}>{item.label}</span>
+    </NavLink>
+  );
+}
+
 function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
   return (
-    <nav aria-label="Platform" className="flex-1 overflow-y-auto px-2.5 pb-4">
+    <nav aria-label="Platform" className="flex flex-1 flex-col overflow-y-auto px-2.5 pb-4">
       {NAV_GROUPS.map((group, gi) => (
         <div key={group.heading ?? 'pinned'}>
           {group.heading ? (
@@ -77,29 +125,29 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
           <ul className="m-0 list-none space-y-0.5 p-0">
             {group.items.map((item) => (
               <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  end={item.end}
-                  onClick={onNavigate}
-                  title={collapsed ? item.label : undefined}
-                  className={({ isActive }) =>
-                    `flex min-h-11 items-center gap-3 rounded-lg py-2.5 text-[13.5px] font-semibold no-underline transition-colors ${
-                      collapsed ? 'justify-center px-0' : 'px-3'
-                    } ${
-                      isActive
-                        ? 'bg-white/10 text-white shadow-[inset_3px_0_0_var(--gold)]'
-                        : 'text-[#B9C8D6] hover:bg-white/8 hover:text-white'
-                    }`
-                  }
-                >
-                  <Icon name={item.icon} size={18} className="shrink-0" />
-                  <span className={collapsed ? 'sr-only' : undefined}>{item.label}</span>
-                </NavLink>
+                <SidebarLink item={item} collapsed={collapsed} onNavigate={onNavigate} />
               </li>
             ))}
           </ul>
         </div>
       ))}
+
+      {/* The agent desk, pushed to the foot of the column. `mt-auto` needs a
+          minimum gap of its own: on a short viewport the nav scrolls and the
+          two blocks would otherwise touch. */}
+      <div className="mt-auto pt-6">
+        <div aria-hidden="true" className="mx-2 mb-2 h-px bg-white/10" />
+        {collapsed ? null : (
+          <p className="mb-1.5 px-3 text-[10.5px] font-bold tracking-[0.14em] text-white/[0.62] uppercase">
+            GAC only
+          </p>
+        )}
+        <ul className="m-0 list-none p-0">
+          <li>
+            <SidebarLink item={INTERNAL_ITEM} collapsed={collapsed} onNavigate={onNavigate} />
+          </li>
+        </ul>
+      </div>
     </nav>
   );
 }

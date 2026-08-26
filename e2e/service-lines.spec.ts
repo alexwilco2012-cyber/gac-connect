@@ -26,8 +26,43 @@ test('the nav carries the four service lines and no loose service tabs', async (
   for (const gone of ['Crew change', 'Certification', 'Bunkers', 'Launches']) {
     await expect(nav(page).getByRole('link', { name: gone, exact: true })).toHaveCount(0);
   }
-  // Ten items still fit at 1280.
-  await expect(nav(page).getByRole('link')).toHaveCount(10);
+  // Eleven items still fit at 1280.
+  await expect(nav(page).getByRole('link')).toHaveCount(11);
+});
+
+test('the nav leads with the marketplace and ends with the agent desk', async ({ page }) => {
+  await page.goto('/app');
+  await page.keyboard.press('Escape');
+
+  const links = nav(page).getByRole('link');
+  // Marketplace first, workflow second — the ordering is the product decision.
+  await expect(links.first()).toHaveText('Marketplace');
+  await expect(links.nth(1)).toHaveText('Dashboard');
+  // Internal is pinned to the foot of the column, under its own rule.
+  await expect(links.last()).toHaveText('Internal');
+
+  await links.last().click();
+  await expect(page).toHaveURL(/\/app\/internal$/);
+  await expect(page.getByRole('heading', { name: 'Morning, agent' })).toBeVisible();
+});
+
+test('the dashboard is the client and supplier view, and remembers which', async ({ page }) => {
+  await page.goto('/app/dashboard');
+  await page.keyboard.press('Escape');
+
+  await expect(page.getByRole('heading', { name: 'Browne Energy' })).toBeVisible();
+  await expect(page.getByTestId('client-lines')).toContainText('Logistics');
+
+  // Level 1 explicitly: the listing preview repeats the name as an h3.
+  const supplierTitle = page.getByRole('heading', { name: 'Silver City Welding', level: 1 });
+  await page.getByRole('button', { name: 'Supplier view' }).click();
+  await expect(supplierTitle).toBeVisible();
+  await expect(page.getByTestId('supplier-inbox')).toContainText('Onboard pipework repair');
+
+  // The choice survives a reload, so a demo picks up where it was left.
+  await page.reload();
+  await page.keyboard.press('Escape');
+  await expect(supplierTitle).toBeVisible();
 });
 
 test('an address minted before the restructure still lands, section and all', async ({ page }) => {

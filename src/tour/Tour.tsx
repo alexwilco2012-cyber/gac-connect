@@ -188,7 +188,9 @@ export function TourInvite() {
           type="button"
           onClick={() => {
             startTour();
-            navigate('/app');
+            // The engine syncs the route to the step; going to the first stop
+            // directly saves a hop through whatever `/app` happens to open on.
+            navigate(TOUR_STEPS[0]!.route);
           }}
           className="min-h-[44px] cursor-pointer rounded-lg border-none bg-sea px-4 py-2 text-[13px] font-bold text-white hover:bg-[#0B4C70]"
         >

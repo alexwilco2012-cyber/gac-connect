@@ -16,12 +16,20 @@ import Landing from './screens/marketing/Landing';
  * Procurement — mirroring how GAC sells and invoices, and the 2 / 4 / 7 tier.
  * Everything that moved keeps its old address as a redirect that carries the
  * query string, so shared deep links and printed references still resolve.
+ *
+ * `/app` is the marketplace (26 Aug). GAC Connect is a marketplace first and a
+ * workflow second, so the front door is the directory, not a work queue: the
+ * index redirects rather than rendering, keeping one canonical address for the
+ * marketplace so the nav highlight and every shared link agree. `/app/dashboard`
+ * is the client and supplier view; `/app/internal` is the agent desk that used
+ * to hold the index.
  */
 const importers = {
   ForClients: () => import('./screens/marketing/ForClients'),
   ForSuppliers: () => import('./screens/marketing/ForSuppliers'),
   About: () => import('./screens/marketing/About'),
   Dashboard: () => import('./screens/app/Dashboard'),
+  Internal: () => import('./screens/app/Internal'),
   Marketplace: () => import('./screens/app/Marketplace'),
   SupplierProfile: () => import('./screens/app/SupplierProfile'),
   Agency: () => import('./screens/app/Agency'),
@@ -45,6 +53,7 @@ const ForClients = lazy(importers.ForClients);
 const ForSuppliers = lazy(importers.ForSuppliers);
 const About = lazy(importers.About);
 const Dashboard = lazy(importers.Dashboard);
+const Internal = lazy(importers.Internal);
 const Marketplace = lazy(importers.Marketplace);
 const SupplierProfile = lazy(importers.SupplierProfile);
 const Agency = lazy(importers.Agency);
@@ -92,7 +101,9 @@ export const routes: RouteObject[] = [
         path: 'app',
         element: lazily(<AppLayout />),
         children: [
-          { index: true, element: lazily(<Dashboard />) },
+          // Marketplace first: the front door is the directory, not a queue.
+          { index: true, element: <RouteRedirect to="/app/marketplace" /> },
+          { path: 'dashboard', element: lazily(<Dashboard />) },
 
           // Service lines
           { path: 'agency', element: lazily(<Agency />) },
@@ -113,6 +124,9 @@ export const routes: RouteObject[] = [
           { path: 'tiers', element: lazily(<TierCalculator />) },
           { path: 'svs', element: lazily(<Svs />) },
           { path: 'analytics', element: lazily(<Analytics />) },
+
+          // The GAC desk — agents only, foot of the sidebar
+          { path: 'internal', element: lazily(<Internal />) },
 
           // Addresses that pre-date the service lines
           { path: 'crew-change', element: <RouteRedirect to="/app/agency/crew-change" /> },

@@ -17,7 +17,7 @@ test('the tour is offered off the dashboard, and walks all twelve stops', async 
   const card = page.getByRole('dialog', { name: /^Tour step/ });
   await expect(card).toBeVisible();
   await expect(card).toContainText('Tour · 1 of 12');
-  await expect(page).toHaveURL(/\/app$/);
+  await expect(page).toHaveURL(/\/app\/internal$/);
 
   // Step through, checking the stops that carry the service-line story.
   const checkpoints: Record<number, RegExp> = {
@@ -67,6 +67,6 @@ test('the landing page offers the tour without scrolling, and starts it', async 
   await expect(invite).toBeInViewport();
 
   await invite.click();
-  await expect(page).toHaveURL(/\/app$/);
+  await expect(page).toHaveURL(/\/app\/internal$/);
   await expect(page.getByRole('dialog', { name: /^Tour step/ })).toContainText('Tour · 1 of 12');
 });

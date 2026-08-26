@@ -42,6 +42,9 @@ function readInvoiceDecisions(): Record<string, InvoiceDecision> {
   return out;
 }
 
+/** Which side of the platform the Dashboard is showing. */
+export type DashboardView = 'client' | 'supplier';
+
 export interface Toast {
   id: number;
   message: string;
@@ -70,6 +73,10 @@ interface AppState {
   // Supplier ratings submitted on job close-out — persisted, keyed by job
   jobRatings: Record<string, number>;
   rateJob(jobId: string, stars: number): void;
+
+  // Dashboard audience — persisted, so a demo stays where it was left
+  dashboardView: DashboardView;
+  setDashboardView(v: DashboardView): void;
 
   // Tour — persisted dismissal
   tourDismissed: boolean;
@@ -143,6 +150,13 @@ export const useApp = create<AppState>((set, get) => ({
     const jobRatings = { ...get().jobRatings, [jobId]: clamped };
     persistent.set('jobRatings', jobRatings);
     set({ jobRatings });
+  },
+
+  dashboardView:
+    persistent.get<DashboardView>('dashboardView', 'client') === 'supplier' ? 'supplier' : 'client',
+  setDashboardView(v) {
+    persistent.set('dashboardView', v);
+    set({ dashboardView: v });
   },
 
   tourDismissed: persistent.get<boolean>('tourDismissed', false),
