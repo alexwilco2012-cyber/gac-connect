@@ -23,4 +23,52 @@
      covers what it points at, so the coach-mark docks across the bottom. */
   @media (min-width: 1080px) { .gac-nav-fade { display: none; } }
   @media (max-width: 640px) { .gac-tour-card { left: 10px !important; right: 10px !important; bottom: 10px !important; width: auto !important; max-width: none !important; } }
+  /* ---- platform shell responsiveness (26 Aug) -------------------------
+     The shell ported from the site brought its desktop half only. The site
+     hides its sidebar below lg and swaps in an off-canvas drawer; the deck
+     collapses to icons instead — navigation stays reachable at every width
+     without a drawer's focus-trap machinery, which a deck driven from a
+     lectern does not need. */
+  @media (max-width: 1023px) {
+    .gac-side { width: 64px !important; }
+    .gac-side .gac-side-label,
+    .gac-side .gac-side-heading,
+    .gac-side .gac-wordmark-sub { display: none !important; }
+    .gac-side nav button { justify-content: center; padding-left: 0 !important; padding-right: 0 !important; }
+    .gac-side .gac-side-brand { justify-content: center; padding: 0 !important; }
+  }
+  /* The 320px search box is the first thing to go when the bar tightens. */
+  @media (max-width: 899px) { .gac-topsearch { display: none !important; } }
+
+  /* Below 640 the sidebar stops being a column and becomes a horizontal icon
+     bar above the content. A 64px rail leaves 311px for screens whose grids
+     declare minmax(340px, 1fr), which cannot shrink that far and overflow;
+     stacking gives the content the full width back and keeps every nav item
+     one tap away, which a hidden drawer would not. */
+  @media (max-width: 639px) {
+    .gac-shell-row { flex-direction: column !important; }
+    .gac-side {
+      width: 100% !important; height: auto !important;
+      flex-direction: row !important; align-items: center; flex-shrink: 0 !important;
+    }
+    .gac-side .gac-side-brand { display: none !important; }
+    .gac-side nav {
+      flex: 1; display: flex; flex-direction: row; gap: 2px;
+      padding: 6px 8px !important; overflow-x: auto; overflow-y: hidden;
+    }
+    .gac-side nav button { width: auto !important; flex: 0 0 auto; }
+  }
+
+  /* Three axis labels need ~142px; the 24-hour tick stands down until the
+     card is wide enough to hold it (the site does the same from xl). */
+  @media (max-width: 1199px) { .gac-strip-tick-mid { display: none !important; } }
+
+  /* 48-hour strip: the label column already carries every fact the drawing
+     shows, so below 640px the drawing goes and the labels take the width
+     (the site's `hidden sm:block` / `sm:w-[192px]`). */
+  @media (max-width: 639px) {
+    .gac-strip-axis, .gac-strip-track, .gac-strip-legend { display: none !important; }
+    .gac-strip-label { width: auto !important; flex: 1 1 auto !important; }
+  }
+
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

@@ -766,11 +766,12 @@ class Component extends DCLogic {
         return out;
       })(this),
 
-      /* Top-bar search hands off to the marketplace, like the site's. The
-         box drives the same query state the marketplace filters on. */
-      onTopSearch: (e) => {
-        const v = e.target.value;
-        this.setState({ query: v });
+      /* Top-bar search hands off to the marketplace on SUBMIT, not on every
+         keystroke: navigating as someone types is a change of context on
+         input (WCAG 3.2.2) and yanks the screen away mid-word. */
+      onTopSearchType: (e) => { this.setState({ query: e.target.value }); },
+      onTopSearchSubmit: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
         if (this.state.route !== 'marketplace') this.nav('marketplace');
       },
 
@@ -842,7 +843,6 @@ class Component extends DCLogic {
         return v;
       }),
 
-      todayLabel: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }),
       sent: !!st.sent,
       sendLabel: st.sent ? 'Requests sent ✓' : 'Send quote requests',
       sendBtnStyle: st.sent
@@ -1032,7 +1032,9 @@ class Component extends DCLogic {
     const bell = (vals.dashInvCount || 0) + (vals.watchCount || 0);
     vals.bellCount = String(bell);
     vals.bellHasCount = bell > 0;
-    vals.bellLabel = bell > 0 ? 'Notifications (' + bell + ')' : 'Notifications';
+    vals.bellLabel = bell > 0
+      ? 'Notifications: ' + bell + ' items need you — open the Needs-you list'
+      : 'Notifications: nothing needs you';
     return vals;
   }
 }

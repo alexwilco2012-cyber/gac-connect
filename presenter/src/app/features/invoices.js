@@ -489,6 +489,9 @@ function invFocus(id) { setTimeout(() => { const el = document.getElementById(id
          dashInvCount also feeds the top-bar bell (component.js derives it
          after the feature vals merge). */
       dashInvCount: awaiting.length,
+      dashInvDetail: awaiting.length === 0
+        ? 'Everything received has matched in GAC Agent.'
+        : 'Left alone, an invoice matches as it stands.',
       dashInvAwaiting: awaiting.length > 0,
       dashInvLine: awaiting.length === 0
         ? 'No invoices awaiting your review.'

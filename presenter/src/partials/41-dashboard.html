@@ -2,7 +2,7 @@
     <main data-screen-label="Dashboard" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div>
-          <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ todayLabel }} · Aberdeen</p>
+          <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Thursday · Aberdeen</p>
           <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Morning, agent</h1>
           <p style="color:#33475F;margin:4px 0 0;font-size:14px;">2 vessels arriving tomorrow. <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:14px;cursor:pointer;padding:0;font-family:inherit;" sc-camel-on-click="{{ goProcurement }}" data-testid="dashboard-procurement-link">1 procurement list ready to send</button>.</p>
         </div>
@@ -10,7 +10,7 @@
       </div>
 
       <!-- KPI tiles: icon medallion, number, toned delta chip, sparkline -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin-top:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:18px;margin-top:20px;">
         <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
             <div style="min-width:0;">
@@ -73,7 +73,7 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;margin-top:18px;align-items:start;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:18px;margin-top:18px;align-items:start;">
         <div style="display:grid;gap:18px;">
           <!-- Predictive procurement -->
           <div style="background:linear-gradient(180deg,#E8F1F7,#FFFFFF 70%);border:1px solid #CFE2EE;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
@@ -104,14 +104,14 @@
 
             <div aria-hidden="true" class="gac-strip-axis" style="margin-left:204px;position:relative;height:16px;margin-top:14px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#33475F;">
               <span style="position:absolute;left:0;white-space:nowrap;">Now</span>
-              <span style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Fri 08:00</span>
+              <span class="gac-strip-tick-mid" style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Fri 08:00</span>
               <span style="position:absolute;right:0;white-space:nowrap;">Sat 08:00</span>
             </div>
 
             <div style="margin-top:6px;display:grid;gap:12px;">
               <sc-for list="{{ dashCalls }}" as="v" hint-placeholder-count="3">
                 <div style="display:flex;align-items:center;gap:12px;">
-                  <div style="width:192px;flex-shrink:0;min-width:0;">
+                  <div class="gac-strip-label" style="width:192px;flex-shrink:0;min-width:0;">
                     <p style="font-size:13.5px;font-weight:700;margin:0;line-height:1.25;">{{ v.name }}</p>
                     <p style="color:#33475F;font-size:11.5px;margin:2px 0 0;line-height:1.25;">{{ v.sched }}</p>
                     <p style="margin:5px 0 0;"><span style="{{ v.pillStyle }}">{{ v.pill }}</span></p>
@@ -142,7 +142,7 @@
                 </span>
                 <div style="min-width:0;flex:1;">
                   <p style="font-size:14px;margin:0;"><button style="background:none;border:none;padding:0;font-family:inherit;font-size:14px;font-weight:700;color:#0A2540;cursor:pointer;text-align:left;" style-hover="color:#0E5E8A;" sc-camel-on-click="{{ goInvoices }}" data-testid="dashboard-invoices-link">{{ dashInvLine }} ›</button></p>
-                  <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">Left alone, an invoice matches as it stands.</p>
+                  <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">{{ dashInvDetail }}</p>
                   <sc-if value="{{ dashInvTightest }}" hint-placeholder-val="{{ true }}">
                     <p style="margin:6px 0 0;"><span style="{{ dashInvTightestStyle }}">{{ dashInvTightestLabel }}</span></p>
                   </sc-if>
