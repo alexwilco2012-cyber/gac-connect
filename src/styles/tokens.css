@@ -33,8 +33,9 @@
   --radius: 14px;
   --shadow: 0 1px 3px rgba(10, 37, 64, 0.07);
   --font-body: 'Segoe UI', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
-  /* App-surface body face (dashboard restyle): self-hosted Inter, same
-     offline-cached rule as Space Grotesk. Marketing keeps the system stack. */
+  /* Body face (dashboard restyle): self-hosted Inter, same offline-cached rule
+     as Space Grotesk. Both surfaces run it since the landing refresh (27 Aug);
+     --font-body is the fallback for anything outside the two layouts. */
   --font-app: 'Inter', 'Segoe UI', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
   --font-display: 'Space Grotesk', 'Segoe UI', 'Avenir Next', Arial, sans-serif;
 }

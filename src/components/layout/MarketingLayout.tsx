@@ -14,7 +14,10 @@ export default function MarketingLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    // Inter, the face the platform took on in the 25 Aug restyle. Marketing ran
+    // the Segoe UI system stack until the landing refresh (27 Aug); the two
+    // surfaces reading in different type was the most visible half of the gap.
+    <div className="flex min-h-dvh flex-col font-app">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:font-bold"
