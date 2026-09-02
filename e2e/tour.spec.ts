@@ -61,9 +61,10 @@ test('the tour can be declined and picked up again later', async ({ page }) => {
 });
 
 test('the landing page offers the tour without scrolling, and starts it', async ({ page }) => {
-  // Where the QR on the closing slide lands.
+  // Where the QR on the closing slide lands. The offer is a line in the hero
+  // now rather than a bar above it, but the rule is unchanged: no scrolling.
   await page.goto('/');
-  const invite = page.getByRole('button', { name: 'Start the guided tour' });
+  const invite = page.getByRole('button', { name: /Take the \d+-stop guided tour/ });
   await expect(invite).toBeInViewport();
 
   await invite.click();

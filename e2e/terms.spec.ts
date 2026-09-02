@@ -20,8 +20,11 @@ test('1 · FLT listing carries the hire terms; the request captures the booked w
   await page.goto('/app/marketplace');
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: 'FLT', exact: true }).click();
+  // The hire terms travel with the listing — on the profile since 2 Sep,
+  // which is where the row's detail moved and where a client books from.
+  await page.getByRole('button', { name: 'Browse FLT' }).click();
   await expect(page.getByRole('heading', { name: 'Quayside Forklift Hire' })).toBeVisible();
+  await page.getByRole('link', { name: 'Quayside Forklift Hire' }).click();
   const terms = page.getByTestId('service-terms');
   await expect(terms).toHaveCount(1);
   await expect(terms).toContainText('not included in the quoted price');

@@ -277,9 +277,10 @@ test('crew change › launches: capacity and freight, on a section of its own', 
   ).toHaveCount(0);
   await page.goto('/app/marketplace');
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Taxis', exact: true }).click();
+  await page.getByRole('button', { name: 'Browse Taxis' }).click();
   await expect(page.getByRole('heading', { name: 'Regent Quay Cars' })).toBeVisible();
-  await expect(page.getByTestId('listing-facts').first()).toContainText('flight-tracked');
+  await page.getByRole('link', { name: 'Regent Quay Cars' }).click();
+  await expect(page.getByTestId('listing-facts')).toContainText('flight-tracked');
 });
 
 test('crew change: a link minted before taxis and launches were split still lands right', async ({

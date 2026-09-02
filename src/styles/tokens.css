@@ -117,10 +117,13 @@ html {
   html {
     scroll-behavior: auto;
   }
+  /* Delays are zeroed alongside durations: an entrance animation that is
+     instant but still waits 2.7s to start is a blank quay for 2.7s. */
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
@@ -209,6 +212,245 @@ body {
 }
 .harbour-panel-fade {
   animation: screen-fade-up 0.22s ease;
+}
+
+/* ============================================================
+   Harbour entrance (landing refresh, 2 Sep). The quayside assembles
+   itself once on mount — sea first, then the vessels and plant that work
+   it, then the route and the pin. Everything is a CSS animation with a
+   delay rather than a script: the reduced-motion rule above collapses the
+   whole sequence to nothing without a second code path.
+   ============================================================ */
+@keyframes scene-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes stars-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes sea-rise {
+  0% {
+    transform: translateY(360px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes sea-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-140px);
+  }
+}
+@keyframes sail-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-240%);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes drive-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-320%);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes rise-in {
+  0% {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rig-in {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pin-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ring-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+@keyframes route-draw {
+  0% {
+    stroke-dashoffset: 900;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.55;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.55;
+  }
+}
+@keyframes wake {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 0.3;
+    transform: translateX(3px);
+  }
+}
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Anything transformed inside an SVG needs its own box and origin, or the
+   transform resolves against the whole viewBox and the part flies off. */
+.svg-anim {
+  transform-box: fill-box;
+}
+
+/* ============================================================
+   Consolidation reveal (landing refresh, 2 Sep): the motif builds
+   pillar by pillar when the section enters the viewport, and the roof
+   only turns gold once all four are standing. State drives it, so each
+   animation starts the moment its step lands rather than counting on a
+   long chain of CSS delays staying in step with the ladder beside it.
+   ============================================================ */
+@keyframes pillar-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(90px) scaleY(0.4);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+@keyframes label-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes roof-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes roof-gold {
+  0% {
+    fill: #e9edf2;
+    stroke: #cbd6e2;
+  }
+  100% {
+    fill: #c9a227;
+    stroke: #7a6210;
+  }
+}
+/* The tier number restating itself when a pillar is toggled: without it the
+   digit swaps silently and the change reads as a re-render, not an answer. */
+@keyframes pop {
+  0% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes glint {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
 }
 
 /* Route-enter fade (02 §motion): 250ms fade-up, once per mount */

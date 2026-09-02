@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PillarsRoof } from '../../components/motif/PillarsRoof';
 import { Button, ButtonLink } from '../../components/ui/Button';
@@ -50,6 +51,9 @@ import { useLogistics } from '../../store/logistics';
 
 /** The demo supplier whose side of the platform the supplier view shows. */
 const DEMO_SUPPLIER_ID = 'silver-city-welding';
+
+/** The demo client. Fictional operator, like everything else here (03 §3.4). */
+const DEMO_CLIENT = 'Browne Energy';
 
 /** The job value the supplier's keep-more example is worked on — the crane
  *  quote the rest of the demo settles on, so the two figures agree. */
@@ -112,6 +116,35 @@ function ViewSwitch({
   );
 }
 
+/**
+ * A supporting number: label, figure, and one pill saying what it is about.
+ *
+ * Deliberately smaller than `StatCard` — 22px against the consolidation card's
+ * 44px. The screen has one number that matters, and a row of equal-weight tiles
+ * beside it is how it stopped having one.
+ */
+function SideStat({
+  label,
+  value,
+  chip,
+  tone = 'info',
+}: {
+  label: string;
+  value: string;
+  chip: string;
+  tone?: 'info' | 'warn';
+}) {
+  return (
+    <Card className="px-[22px] py-[18px]">
+      <p className="text-[12px] text-ink-soft">{label}</p>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="mt-0.5 font-display text-[22px] font-bold">{value}</p>
+        <Pill tone={tone}>{chip}</Pill>
+      </div>
+    </Card>
+  );
+}
+
 /** One row of the "waiting on you" feed — the same hook the bell reads. */
 function FeedRow({ item }: { item: NeedsYouItem }) {
   const clear = item.count === 0 && !item.actionable;
@@ -150,19 +183,27 @@ function FeedRow({ item }: { item: NeedsYouItem }) {
   );
 }
 
-/** A service line with whatever the client currently has running on it. */
+/**
+ * A service line with whatever the client currently has running on it.
+ *
+ * A line the client has not consolidated goes grey rather than disappearing:
+ * the point of the row is that the line exists and is empty, and the detail
+ * says what adding it is worth on the tier ladder.
+ */
 function LineRow({
   to,
   icon,
   name,
   count,
   detail,
+  on = true,
 }: {
   to: string;
   icon: IconName;
   name: string;
   count: number;
   detail: string;
+  on?: boolean;
 }) {
   return (
     <li className="border-b border-dashed border-line-strong last:border-b-0">
@@ -172,7 +213,9 @@ function LineRow({
       >
         <span
           aria-hidden="true"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sea-soft text-sea"
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors duration-[350ms] ${
+            on ? 'bg-sea-soft text-sea' : 'bg-[#F1F4F8] text-[#8FA3B8]'
+          }`}
         >
           <Icon name={icon} size={17} />
         </span>
@@ -192,18 +235,119 @@ function LineRow({
   );
 }
 
-function ClientView() {
+/**
+ * The consolidation card — the screen's one big number, and the only control
+ * on it.
+ *
+ * It was a read-only summary in the right-hand column, which made the tier
+ * something the client is told rather than something they can see the shape of.
+ * The three pillars are switches now: hold Customs and the roof turns gold and
+ * the number goes to 7; drop Logistics and it falls to 2 rather than 6, because
+ * the ladder is non-cumulative and the motif ought to be able to demonstrate
+ * that rather than assert it (03 §3.1).
+ *
+ * The arithmetic stays in `lib/tier`. This is the same illustrative selection
+ * the Tier Calculator writes, so a demonstrator who changes it here finds the
+ * calculator agreeing when they open it.
+ */
+function ConsolidationCard() {
   const tier = useApp((s) => s.tier);
   const spend = useApp((s) => s.spend);
+  const toggleTierService = useApp((s) => s.toggleTierService);
+
+  const pct = tierPct(tier);
+  const fullStack = isFullStack(tier);
+  const saving = annualSaving(spend, tier);
+
+  // One spark at the apex the moment Full Stack is reached — not on every
+  // render that happens to find it already there.
+  const [glints, setGlints] = useState(0);
+  const wasFull = useRef(fullStack);
+  useEffect(() => {
+    if (fullStack && !wasFull.current) setGlints((n) => n + 1);
+    wasFull.current = fullStack;
+  }, [fullStack]);
+
+  const hint = fullStack
+    ? 'All three lines held: Full Stack.'
+    : tier.customs && !tier.logistics
+      ? 'Customs alone does not reach 7%: the ladder runs Agency, then Logistics, then Customs.'
+      : 'Reach Customs and the roof turns gold.';
+
+  return (
+    <Card
+      data-tour="consolidation"
+      variant={fullStack ? 'inhouse' : 'default'}
+      className="transition-colors duration-[400ms]"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        {/* Both halves are allowed to shrink, so the motif sits beside the
+            number at full width and drops under it only when it must. */}
+        <div className="min-w-0 flex-[1_1_240px]">
+          <p className="text-[12px] text-ink-soft">Tier discount held · {DEMO_CLIENT} · live</p>
+          <p
+            key={pct}
+            data-testid="dashboard-tier-pct"
+            className={`mt-0.5 animate-[pop_0.35s_ease] font-display text-[44px] leading-none font-bold tracking-[-0.02em] transition-colors duration-[400ms] ${
+              fullStack ? 'text-gold-deep' : 'text-ink'
+            }`}
+          >
+            {pct}%
+          </p>
+          <p className="mt-2 text-[12.5px] text-ink-soft">
+            est. <strong className="text-ink">{gbp(saving)}</strong> saved this year on {gbp(spend)}{' '}
+            GAC service spend
+          </p>
+          {fullStack ? (
+            <p className="mt-2.5">
+              <Pill tone="inhouse">★ Full Stack client</Pill>
+            </p>
+          ) : null}
+        </div>
+
+        <div className="max-w-[320px] flex-[1_1_260px]">
+          <PillarsRoof
+            pillars={[
+              { label: 'Agency', on: tier.agency, onToggle: () => toggleTierService('agency') },
+              {
+                label: 'Logistics',
+                on: tier.logistics,
+                onToggle: () => toggleTierService('logistics'),
+              },
+              { label: 'Customs', on: tier.customs, onToggle: () => toggleTierService('customs') },
+              // Included at any tier, so never a switch.
+              { label: 'Procurement', on: true },
+            ]}
+            fullStack={fullStack}
+            glint={glints > 0 && fullStack ? 'glint .7s ease-out both' : undefined}
+            className="w-full overflow-visible"
+          />
+          <p className="mt-1.5 text-center text-[12px] text-ink-soft">
+            Tap a pillar to add or remove a line. {hint}
+          </p>
+        </div>
+      </div>
+
+      <div className="my-3.5 h-px bg-line" />
+      <p className="text-[12.5px] text-ink-soft">
+        The tier is non-cumulative: you hold the highest single tier you qualify for. Procurement
+        and Assets are included at any tier.{' '}
+        <Link to="/app/tiers" className="font-semibold text-sea">
+          Open the tier calculator
+        </Link>
+        .
+      </p>
+    </Card>
+  );
+}
+
+function ClientView() {
+  const tier = useApp((s) => s.tier);
   const invoiceDecisions = useApp((s) => s.invoiceDecisions);
   const consignments = useLogistics((s) => s.consignments);
   const declarations = useCustoms((s) => s.declarations);
   const crewRequests = useCrewChange((s) => s.requests);
   const feed = useNeedsYou();
-
-  const pct = tierPct(tier);
-  const fullStack = isFullStack(tier);
-  const saving = annualSaving(spend, tier);
 
   const awaiting = INVOICES.filter(
     (inv) => invoiceState(inv.receivedDaysAgo, invoiceDecisions[inv.id]) === 'awaiting',
@@ -219,34 +363,28 @@ function ClientView() {
 
   return (
     <>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Port calls in the window"
-          value={String(VESSELS.length)}
-          delta="Aberdeen and Peterhead"
-          deltaTone="info"
-          icon="ship"
-        />
-        <StatCard
-          label="Quotes to compare"
-          value={String(QUOTES.length)}
-          delta="Crane hire — MV Caledonian Star"
-          deltaTone="info"
-          icon="message-square-quote"
-        />
-        <StatCard
-          label="Invoices in your window"
-          value={String(awaiting.length)}
-          delta={tightest === null ? 'All matched' : windowLabel(tightest)}
-          deltaTone="info"
-          icon="receipt"
-        />
-        <StatCard
-          label="Tier discount held"
-          value={`${pct}%`}
-          delta={`${gbp(saving)} a year`}
-          icon="layers"
-        />
+      {/* One number leads and the consolidation is the thing you can touch;
+          everything else on the row supports it. */}
+      <div className="mt-6 grid items-start gap-5 lg:grid-cols-[1.6fr_minmax(280px,1fr)]">
+        <ConsolidationCard />
+        <div className="grid gap-3">
+          <SideStat
+            label="Port calls in the window"
+            value={String(VESSELS.length)}
+            chip="Aberdeen and Peterhead"
+          />
+          <SideStat
+            label="Quotes to compare"
+            value={String(QUOTES.length)}
+            chip="Crane hire · MV Caledonian Star"
+          />
+          <SideStat
+            label="Invoices in your window"
+            value={String(awaiting.length)}
+            chip={tightest === null ? 'All matched' : windowLabel(tightest)}
+            tone={tightest !== null && daysLeft(tightest) <= 2 ? 'warn' : 'info'}
+          />
+        </div>
       </div>
 
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-[1.6fr_1fr]">
@@ -266,29 +404,40 @@ function ClientView() {
                 to="/app/agency"
                 icon="anchor"
                 name="Agency"
-                count={VESSELS.length}
-                detail="Port calls, berths and crew change"
+                on={tier.agency}
+                count={tier.agency ? VESSELS.length : 0}
+                detail={
+                  tier.agency
+                    ? 'Port calls, berths and crew change'
+                    : 'Not consolidated. Add Agency to reach the 2% tier'
+                }
               />
               <LineRow
                 to="/app/logistics"
                 icon="truck"
                 name="Logistics"
-                count={moving}
+                on={tier.logistics}
+                count={tier.logistics ? moving : 0}
                 detail={
-                  moving === 0
-                    ? 'Nothing in transit — book a movement'
-                    : 'Consignments on their way to the quay'
+                  !tier.logistics
+                    ? 'Not consolidated. Add Logistics to reach the 4% tier'
+                    : moving === 0
+                      ? 'Nothing in transit — book a movement'
+                      : 'Consignments on their way to the quay'
                 }
               />
               <LineRow
                 to="/app/customs"
                 icon="stamp"
                 name="Customs"
-                count={clearing}
+                on={tier.customs}
+                count={tier.customs ? clearing : 0}
                 detail={
-                  clearing === 0
-                    ? 'No declarations open'
-                    : 'Declarations working through to clearance'
+                  !tier.customs
+                    ? 'Not consolidated. Customs is the 7% pillar'
+                    : clearing === 0
+                      ? 'No declarations open'
+                      : 'Declarations working through to clearance'
                 }
               />
               <LineRow
@@ -344,43 +493,6 @@ function ClientView() {
                 <FeedRow key={item.id} item={item} />
               ))}
             </ul>
-          </Card>
-
-          <Card data-tour="consolidation">
-            <CardHeader title="Your consolidation" subtitle="Browne Energy · live tier state" />
-            <PillarsRoof
-              pillars={[
-                { label: 'Agency', on: tier.agency },
-                { label: 'Logistics', on: tier.logistics },
-                { label: 'Customs', on: tier.customs },
-                { label: 'Procurement', on: true },
-              ]}
-              fullStack={fullStack}
-              className="mx-auto mt-2 w-full max-w-[300px] sm:w-[240px]"
-            />
-            <div className="mt-2 text-center">
-              {fullStack ? <Pill tone="inhouse">★ Full Stack client</Pill> : null}
-              <p
-                className={`font-display text-[34px] font-bold tracking-tight ${
-                  fullStack ? 'text-gold-deep' : ''
-                }`}
-              >
-                {pct}%
-              </p>
-              <p className="text-[12.5px] text-ink-soft">
-                tier discount held · est. {gbp(saving)} saved this year on {gbp(spend)} GAC service
-                spend
-              </p>
-            </div>
-            <div className="my-3.5 h-px bg-line" />
-            <p className="text-[12.5px] text-ink-soft">
-              The tier is non-cumulative: you hold the highest single tier you qualify for. Try the
-              mechanics in the{' '}
-              <Link to="/app/tiers" className="font-semibold text-sea">
-                Tier Calculator
-              </Link>
-              .
-            </p>
           </Card>
 
           <Card>
@@ -580,7 +692,7 @@ export default function Dashboard() {
         <div>
           <Eyebrow>{client ? 'Client dashboard' : 'Supplier dashboard'}</Eyebrow>
           <h1 className="mt-1 font-display text-2xl font-bold">
-            {client ? 'Browne Energy' : 'Silver City Welding'}
+            {client ? DEMO_CLIENT : supplierById(DEMO_SUPPLIER_ID)!.name}
           </h1>
           <p className="mt-1 max-w-[620px] text-[14px] text-ink-soft">
             {client

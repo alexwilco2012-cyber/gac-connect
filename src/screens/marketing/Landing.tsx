@@ -1,51 +1,45 @@
-import { PillarsRoof } from '../../components/motif/PillarsRoof';
+import { useSearchParams } from 'react-router-dom';
 import { TourInvite } from '../../tour/Tour';
 import { ButtonLink } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import { OPERATORS } from '../../data/vessels';
-import { InteractiveHarbour } from './harbour/InteractiveHarbour';
+import { ConsolidationMotif } from './ConsolidationMotif';
 import { LandingHero } from './LandingHero';
 import { PlatformPreview } from './PlatformPreview';
 
 /**
- * The landing page (refreshed 27 Aug, to catch up with the 25–26 Aug platform
- * restyle).
+ * The landing page (refreshed 2 Sep).
  *
- * The order is marketing anatomy, not a feature list: the offer, then the
- * product itself, then why it needs to exist, then how it works, then the
- * commercial reason to consolidate. The harbour keeps its job — but as the
- * second way in rather than the first, because a visitor who has just seen the
- * marketplace running is readier to play with an illustration than one who has
- * seen nothing yet. `InteractiveHarbour` is dropped in whole and unchanged.
+ * The order is marketing anatomy, not a feature list: the offer and the quay
+ * together, then the product itself, then why it needs to exist, then how it
+ * works, then the commercial reason to consolidate. The harbour is no longer a
+ * section of its own — it is the hero's right-hand half, which is the only
+ * place on the page it was ever going to be touched.
  *
- * Two things stay where they are on purpose: `TourInvite` is the first thing
- * under the header (the presenter's closing QR lands here, and the offer has
- * to be visible without scrolling), and every counter on the page is derived,
- * never typed.
+ * Two things stay true: every counter is derived rather than typed, and the
+ * tour is offered above the fold, where the presenter's closing QR lands. That
+ * offer is now a line in the hero rather than a bar above it; the bar itself
+ * survives for `?tour` arrivals, who have asked for it explicitly.
  */
 
-const PROBLEMS: { title: string; icon: IconName; body: string }[] = [
+const PROBLEMS: { title: string; body: string }[] = [
   {
     title: 'Slow',
-    icon: 'timer',
-    body: 'Sourcing a crane or a medic for a port call means phone calls and email chains measured in hours, against a vessel arriving on a clock.',
+    body: 'A crane or a medic for a port call takes hours of calls and email chains, against a vessel arriving on a clock.',
   },
   {
     title: 'Opaque',
-    icon: 'message-square-quote',
-    body: 'Quotes arrive in different formats at different times. Comparing them honestly is manual work, so it rarely happens.',
+    body: 'Quotes land in different formats at different times. Comparing them properly is manual work, so it rarely happens.',
   },
   {
     title: 'No data',
-    icon: 'layout-dashboard',
-    body: 'Every port call re-learns what the last one already knew. Procurement history sits in inboxes, not in a system.',
+    body: 'Every port call re-learns what the last one knew. Procurement history lives in inboxes, not in a system.',
   },
   {
     title: 'Manual compliance',
-    icon: 'file-check',
-    body: 'Certificates expire quietly. Checking a supplier’s insurance and training records is a spreadsheet job that competes with the day job.',
+    body: 'Certificates expire quietly. Checking a supplier’s insurance and training is a spreadsheet job that competes with the day job.',
   },
 ];
 
@@ -67,25 +61,11 @@ const SOLUTION: { title: string; icon: IconName; body: string }[] = [
   },
 ];
 
-const FULL_PILLARS = [
-  { label: 'Agency', on: true },
-  { label: 'Logistics', on: true },
-  { label: 'Customs', on: true },
-  { label: 'Procurement', on: true },
-];
-
-/** The ladder as the rule actually works: you take the best rung you reach,
- *  you do not add them up (03 §3.1 — non-cumulative max(2,4,7)). */
-const TIER_LADDER = [
-  { label: 'Agency', pct: '2%' },
-  { label: '+ Logistics', pct: '4%' },
-  { label: '+ Customs', pct: '7%' },
-];
-
-function Medallion({ icon, tone }: { icon: IconName; tone: 'sea' | 'warn' | 'gold' }) {
+/** The page's only medallions, now that the problem columns have dropped
+ *  theirs — so they read as the vocabulary of the answer, not decoration. */
+function Medallion({ icon, tone }: { icon: IconName; tone: 'sea' | 'gold' }) {
   const tones = {
     sea: 'bg-sea-soft text-sea',
-    warn: 'bg-warn-soft text-warn',
     gold: 'bg-gold-soft text-gold-deep',
   } as const;
   return (
@@ -99,38 +79,43 @@ function Medallion({ icon, tone }: { icon: IconName; tone: 'sea' | 'warn' | 'gol
 }
 
 export default function Landing() {
+  const [params] = useSearchParams();
+
   return (
     <main className="screen-enter">
-      {/* Above everything, not below it: this is where the closing slide's QR
-          lands, and the offer has to be visible without scrolling. */}
-      <TourInvite />
+      {/* Arriving with ?tour is asking for the walkthrough, so the bar stands
+          up and says so. Everyone else is offered it inside the hero. */}
+      {params.has('tour') ? <TourInvite /> : null}
 
       <LandingHero />
 
       {/* The product itself, pulled up into the hero band. */}
       <div className="mx-auto max-w-[1180px] px-6">
-        <div className="-mt-[110px]">
+        <div className="-mt-[110px] animate-[fade-up_0.9s_1.1s_cubic-bezier(0.4,0,0.2,1)_both]">
           <PlatformPreview />
         </div>
         <p className="mt-3.5 text-center text-[12.5px] text-ink-soft">
-          The marketplace as it stands today. Every screen behind it is open — no sign-up, no sales
+          The marketplace as it stands today. Every screen behind it is open. No sign-up, no sales
           call.
         </p>
       </div>
 
-      {/* Problem */}
+      {/* Problem — numbered columns, because four rules of a broken process
+          are a list, not four features asking to be compared. */}
       <section className="mx-auto max-w-[1180px] px-6 py-16 md:py-20">
         <Eyebrow>The problem</Eyebrow>
-        <h2 className="mt-2 max-w-[640px] font-display text-[clamp(24px,3.4vw,36px)] leading-tight font-bold">
+        <h2 className="mt-2 max-w-[640px] font-display text-[clamp(24px,3.4vw,36px)] leading-tight font-bold text-balance">
           Offshore procurement still runs on phone calls
         </h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {PROBLEMS.map((p) => (
-            <Card key={p.title}>
-              <Medallion icon={p.icon} tone="warn" />
-              <h3 className="mt-3.5 font-display text-[17px] font-bold">{p.title}</h3>
-              <p className="mt-2 text-[13.5px] text-ink-soft">{p.body}</p>
-            </Card>
+        <div className="mt-9 grid gap-x-6 gap-y-8 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+          {PROBLEMS.map((p, i) => (
+            <div key={p.title} className="border-t-2 border-ink pt-4">
+              <p className="font-display text-[13px] font-bold tracking-[0.08em] text-sea">
+                {String(i + 1).padStart(2, '0')}
+              </p>
+              <h3 className="mt-2.5 font-display text-[19px] font-bold">{p.title}</h3>
+              <p className="mt-2 text-[13.5px] text-ink-soft text-pretty">{p.body}</p>
+            </div>
           ))}
         </div>
       </section>
@@ -154,7 +139,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Motif, large */}
+      {/* Motif, large — and built as you reach it. */}
       <section className="mx-auto max-w-[1180px] px-6 py-16 text-center md:py-20">
         <div className="flex justify-center">
           <Eyebrow>The consolidation story</Eyebrow>
@@ -162,38 +147,10 @@ export default function Landing() {
         <h2 className="mx-auto mt-2 max-w-[560px] font-display text-[clamp(24px,3.4vw,36px)] leading-tight font-bold">
           The more you bring under one roof, the less you pay
         </h2>
-        <PillarsRoof
-          pillars={FULL_PILLARS}
-          fullStack
-          className="mx-auto mt-8 w-[min(420px,88vw)]"
-        />
-        <ul className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
-          {TIER_LADDER.map((t, i) => (
-            <li key={t.label} className="flex items-center gap-2.5">
-              {i > 0 ? (
-                <Icon
-                  name="arrow-right"
-                  size={16}
-                  className="text-line-strong"
-                  aria-hidden="true"
-                />
-              ) : null}
-              <span className="inline-flex items-center gap-2.5 rounded-brand border border-line bg-white px-4 py-2.5 shadow-card">
-                <span className="text-[13.5px] font-semibold text-ink-soft">{t.label}</span>
-                <strong
-                  className={`font-display text-[20px] font-bold ${
-                    i === TIER_LADDER.length - 1 ? 'text-gold-deep' : 'text-sea'
-                  }`}
-                >
-                  {t.pct}
-                </strong>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="mx-auto mt-6 max-w-[520px] text-[14px] text-ink-soft">
-          Consolidating GAC Agency, Logistics, and Customs holds the highest single tier you qualify
-          for — up to 7% off platform-booked GAC charges. The tiers do not stack; you take the best
+        <ConsolidationMotif />
+        <p className="mx-auto mt-5 max-w-[520px] text-[14px] text-ink-soft text-pretty">
+          Consolidating GAC Agency, Logistics and Customs holds the highest single tier you qualify
+          for, up to 7% off platform-booked GAC charges. The tiers do not stack; you take the best
           one you reach.
         </p>
         <div className="mt-6">
@@ -201,22 +158,6 @@ export default function Landing() {
             How the tier discount works
           </ButtonLink>
         </div>
-      </section>
-
-      {/* The harbour — the second way in. The scene, its hotspots and its side
-          panel are unchanged; only its place on the page has moved. */}
-      <section className="border-t border-line bg-white">
-        <div className="mx-auto max-w-[1180px] px-6 pt-16 md:pt-20">
-          <Eyebrow>Another way in</Eyebrow>
-          <h2 className="mt-2 max-w-[560px] font-display text-[clamp(24px,3.4vw,36px)] leading-tight font-bold">
-            Or start from the quay
-          </h2>
-          <p className="mt-3 max-w-[620px] text-[14px] text-ink-soft">
-            Every part of the harbour is a service line. Click the lorry, the ship, the crane — each
-            one opens what GAC does there, and what consolidating it is worth.
-          </p>
-        </div>
-        <InteractiveHarbour />
       </section>
 
       {/* Social proof — fictional operators */}
@@ -236,28 +177,29 @@ export default function Landing() {
             ))}
           </div>
           <p className="mt-4 text-center text-[11.5px] text-ink-soft/70">
-            Illustrative operators — all names on this site are fictional.
+            Illustrative operators. All names on this site are fictional.
           </p>
         </div>
       </section>
 
-      {/* Closing call — the page's one action, repeated */}
-      <section className="bg-gradient-to-br from-ink to-[#06132B] text-white">
-        <div className="mx-auto max-w-[1180px] px-6 py-16">
-          <Eyebrow dark>See it working</Eyebrow>
-          <h2 className="mt-2 max-w-[640px] font-display text-[clamp(24px,3.4vw,36px)] leading-tight font-bold">
-            Nothing here is behind a login
-          </h2>
-          <p className="mt-3 max-w-[620px] text-[14.5px] text-[#C6D4E2]">
-            Twelve stops walk a full port call — vessel arriving, services booked, certificates
-            checked, invoice matched. Or ignore the tour and click anything you like.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <ButtonLink to="/app" variant="gold">
-              Explore the platform
-              <Icon name="arrow-right" size={16} />
-            </ButtonLink>
+      {/* Closing call — paper, not a second ink band. The hero owns the dark;
+          repeating it here makes the page bookended rather than finished. */}
+      <section className="border-t border-line bg-paper">
+        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-6 px-6 py-16">
+          <div className="max-w-[620px]">
+            <Eyebrow>See it working</Eyebrow>
+            <h2 className="mt-2 font-display text-[clamp(24px,3.4vw,36px)] leading-tight font-bold">
+              Nothing here is behind a login
+            </h2>
+            <p className="mt-3 text-[14.5px] text-ink-soft text-pretty">
+              Twelve stops walk a full port call: vessel arriving, services booked, certificates
+              checked, invoice matched. Or ignore the tour and click anything you like.
+            </p>
           </div>
+          <ButtonLink to="/app" variant="gold" className="min-h-12 px-5 text-[14px]">
+            Explore the platform
+            <Icon name="arrow-right" size={16} />
+          </ButtonLink>
         </div>
       </section>
     </main>

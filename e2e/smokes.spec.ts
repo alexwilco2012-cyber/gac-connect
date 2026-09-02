@@ -40,10 +40,16 @@ test('2 · marketplace search and filter obey the grouping rules', async ({ page
   await expect(thirdPartyHeading).toBeVisible();
   await expect(page.getByText('▲ Promoted').first()).toBeVisible();
 
-  // Category chip filters.
-  await page.getByRole('button', { name: 'Cranes', exact: true }).click();
+  // A category tile filters, and the chip beside Sort says what is on.
+  await page.getByRole('button', { name: 'Browse Cranes' }).click();
   await expect(page.getByRole('heading', { name: 'Caledonia Lifting Ltd' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Silver City Welding' })).toHaveCount(0);
+  const clearCranes = page.getByRole('button', { name: 'Clear the Cranes filter' });
+  await expect(clearCranes).toBeVisible();
+
+  // Clearing the chip puts the tiles back.
+  await clearCranes.click();
+  await expect(page.getByTestId('category-tiles')).toBeVisible();
 
   // Search that matches nothing shows the invite empty state.
   await page.getByLabel('Search marketplace').fill('zzzz-no-such-service');
@@ -51,7 +57,6 @@ test('2 · marketplace search and filter obey the grouping rules', async ({ page
   await expect(page.getByRole('link', { name: 'Invite a supplier' })).toBeVisible();
 
   // Blocked supplier is visible but unbookable in the list.
-  await page.getByRole('button', { name: 'All', exact: true }).click();
   await page.getByLabel('Search marketplace').fill('Peterhead');
   await expect(page.getByRole('heading', { name: 'Peterhead Diving Services' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Unavailable' })).toBeDisabled();
@@ -103,36 +108,43 @@ test('4 · tier calculator shows £35,000 at £500k Full Stack', async ({ page }
   await expect(page.getByTestId('tier-pct')).toHaveText('4%');
 });
 
-test('6 · interactive harbour: hotspots, menu, Escape, and CTA rewiring', async ({ page }) => {
+test('6 · interactive harbour: hotspots swap the hero copy, Escape puts it back', async ({
+  page,
+}) => {
   await page.goto('/');
 
-  await expect(
-    page.getByRole('heading', { name: 'Every service on this quay. One platform.' }),
-  ).toBeVisible();
+  const headline = page.getByRole('heading', {
+    name: 'Offshore services. Found, vetted, booked.',
+  });
+  await expect(headline).toBeVisible();
 
-  // Click the lorry → Logistics detail card with the tiers CTA.
+  // Click the lorry → the copy column becomes the Logistics detail card.
   await page.getByRole('button', { name: /Lorry — GAC Logistics/ }).click();
   await expect(page.getByRole('heading', { name: 'GAC Logistics' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'See tier savings →' })).toHaveAttribute(
     'href',
     '/app/tiers',
   );
+  await expect(headline).toHaveCount(0);
 
-  // Escape returns to the default panel.
+  // Escape restores the copy.
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('heading', { name: 'Tap any part of the harbour' })).toBeVisible();
+  await expect(headline).toBeVisible();
 
-  // Menu selection → Marketplace detail with marketplace CTA.
-  await page.getByRole('button', { name: /The Marketplace/ }).click();
+  // The rig is the marketplace, and clicking it twice deselects it.
+  await page.getByRole('button', { name: /Offshore platform/ }).click();
   await expect(page.getByRole('heading', { name: 'The Offshore Marketplace' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Browse the marketplace →' })).toHaveAttribute(
     'href',
     '/app/marketplace',
   );
-
-  // Marketplace is selected — clicking its own hotspot deselects it.
   await page.getByRole('button', { name: /Offshore platform/ }).click();
-  await expect(page.getByRole('heading', { name: 'Tap any part of the harbour' })).toBeVisible();
+  await expect(headline).toBeVisible();
+
+  // "All services" closes it too.
+  await page.getByRole('button', { name: /Lorry — GAC Logistics/ }).click();
+  await page.getByRole('button', { name: 'All services' }).click();
+  await expect(headline).toBeVisible();
 });
 
 test('5 · SVS blocked supplier is unbookable from its profile', async ({ page }) => {
@@ -235,7 +247,7 @@ test('8 · quote request: client-set deadline advice, medical cross-sell, hotel 
   await page.goto('/app/marketplace');
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: 'Medical', exact: true }).click();
+  await page.getByRole('button', { name: 'Browse Medical' }).click();
   await page.getByRole('button', { name: 'Request quote' }).first().click();
   const dialog = page.getByRole('dialog', { name: /Request a quote — Aberdeen Offshore Medical/ });
   await expect(dialog).toBeVisible();
@@ -263,12 +275,13 @@ test('9 · Gold Band shows only where earned; ratings carry counts; plans carry 
 }) => {
   await page.goto('/app/marketplace');
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Cranes', exact: true }).click();
+  await page.getByRole('button', { name: 'Browse Cranes' }).click();
   await expect(page.getByText('◆ GAC Gold Band').first()).toBeVisible();
   await expect(page.getByText('127 ratings').first()).toBeVisible();
 
   // Promoted Premium supplier without the audit passed does not carry the marque.
-  await page.getByRole('button', { name: 'Welding', exact: true }).click();
+  await page.getByRole('button', { name: 'Clear the Cranes filter' }).click();
+  await page.getByRole('button', { name: 'Browse Welding' }).click();
   await expect(page.getByText('▲ Promoted').first()).toBeVisible();
   await expect(page.getByText('◆ GAC Gold Band')).toHaveCount(0);
 
@@ -287,9 +300,12 @@ test('10 · hotels are a standalone category with the availability caveat and me
   await page.goto('/app/marketplace');
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: 'Hotels', exact: true }).click();
+  await page.getByRole('button', { name: 'Browse Hotels' }).click();
   await expect(page.getByRole('heading', { name: 'Granite Quay Hotel' })).toBeVisible();
-  await expect(page.getByTestId('booking-note').first()).toContainText('subject to availability');
+
+  // The booking caveat travels with the listing, on the profile since 2 Sep.
+  await page.getByRole('link', { name: 'Granite Quay Hotel' }).click();
+  await expect(page.getByTestId('booking-note')).toContainText('subject to availability');
 
   await page.getByRole('button', { name: 'Request quote' }).first().click();
   const dialog = page.getByRole('dialog', { name: /Request a quote — Granite Quay Hotel/ });

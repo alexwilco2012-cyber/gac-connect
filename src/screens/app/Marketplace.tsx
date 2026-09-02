@@ -4,15 +4,13 @@ import { RequestQuoteModal } from '../../components/RequestQuoteModal';
 import type { RequestTarget } from '../../components/RequestQuoteModal';
 import { Button, ButtonLink } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { Chip } from '../../components/ui/Chip';
 import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import { GoldBandPill, Pill, StatusPill } from '../../components/ui/Pill';
 import { Rating } from '../../components/ui/Rating';
-import { categoryCounts, listingFacts, orderThirdParty } from '../../lib/marketplace';
+import { categoryCounts, orderThirdParty } from '../../lib/marketplace';
 import type { SortKey } from '../../lib/marketplace';
 import { deriveStatus, goldBandActive, isBookable } from '../../lib/svs';
-import { serviceTermsFor } from '../../data/serviceTerms';
 import { ESG_PLANNED_NOTE } from '../../data/related';
 import { CATEGORIES, IN_HOUSE_LINES, SUPPLIERS } from '../../data/suppliers';
 import type { Supplier } from '../../data/suppliers';
@@ -56,34 +54,31 @@ const IN_HOUSE_ICON: Record<string, IconName> = {
   'gac-procurement': 'clipboard-list',
 };
 
-/** Category tile icons. Anything unmapped falls back to the store mark. */
-const CATEGORY_ICON: Record<string, IconName> = {
-  Cranes: 'layers',
-  FLT: 'truck',
-  Launches: 'ship',
-  Taxis: 'truck',
-  Haulage: 'truck',
-  Medical: 'shield-check',
-  Scaffolding: 'layers',
-  Diving: 'anchor',
-  NDT: 'file-check',
-  Welding: 'briefcase',
-  Catering: 'store',
-  Hotels: 'briefcase',
-  Waste: 'truck',
-  Bunkers: 'ship',
-};
-
-/** Two initials for a supplier monogram — enough to make rows scannable
- *  without inventing logos for companies that do not exist. */
+/**
+ * Two initials, for a supplier or a category tile.
+ *
+ * The tiles used to carry icons, which meant one lorry glyph standing for
+ * Haulage, Taxis and Waste at once — three different things wearing the same
+ * badge. A monogram says "category" and lets the word do the naming.
+ */
 function monogram(name: string): string {
   const words = name
     .replace(/[^A-Za-z ]/g, '')
     .split(/\s+/)
     .filter(Boolean);
-  return ((words[0]?.[0] ?? '') + (words[1]?.[0] ?? '')).toUpperCase() || '·';
+  if (words.length > 1) return ((words[0]?.[0] ?? '') + (words[1]?.[0] ?? '')).toUpperCase();
+  return name.slice(0, 2).toUpperCase() || '·';
 }
 
+/**
+ * One supplier, cut to what a client scans for: who, whether they can be
+ * booked, how they rate, and the button.
+ *
+ * Fact chips, booking notes, hire terms and the ESG grade moved to the profile
+ * (2 Sep). Nine rows each carrying five sub-lists is a directory you read
+ * rather than scan, and the detail was competing with the one decision the row
+ * exists to support — open the profile, or ask for a price.
+ */
 function SupplierRow({
   supplier,
   onRequest,
@@ -94,70 +89,51 @@ function SupplierRow({
   const status = deriveStatus(supplier.certs);
   const bookable = isBookable(supplier.certs);
   const goldBand = goldBandActive(supplier.goldBand, supplier.certs);
-  const facts = listingFacts(supplier);
-  const terms = serviceTermsFor(supplier.category);
 
   return (
     <Card
       variant={supplier.promoted ? 'promoted' : 'default'}
-      className="mb-3 flex flex-col justify-between gap-4 transition-shadow hover:shadow-[0_8px_28px_rgba(10,37,64,0.09)] sm:flex-row"
+      className={`mb-2.5 flex flex-wrap items-center gap-3.5 px-5 py-4 transition-shadow hover:shadow-[0_8px_28px_rgba(10,37,64,0.09)] ${
+        bookable ? '' : 'opacity-75'
+      }`}
     >
-      <div className="flex min-w-0 gap-3.5">
-        <span
-          aria-hidden="true"
-          className={`hidden h-11 w-11 shrink-0 place-items-center rounded-brand font-display text-[15px] font-bold sm:grid ${
-            supplier.promoted ? 'bg-promoted-soft text-promoted' : 'bg-sea-soft text-sea'
-          }`}
-        >
-          {monogram(supplier.name)}
-        </span>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-display text-[16px] font-bold">
-              <Link
-                to={`/app/marketplace/${supplier.id}`}
-                className="text-ink no-underline hover:text-sea hover:underline"
-              >
-                {supplier.name}
-              </Link>
-            </h3>
-            {supplier.promoted ? <Pill tone="promoted">▲ Promoted</Pill> : null}
-            {goldBand ? <GoldBandPill /> : null}
-            <StatusPill status={status} />
-          </div>
-          <p className="mt-1.5 text-[13.5px] text-ink-soft">{supplier.description}</p>
-          {facts.length > 0 ? (
-            <ul className="mt-1.5 flex flex-wrap gap-1.5" data-testid="listing-facts">
-              {facts.map((f) => (
-                <li
-                  key={f.label}
-                  className="rounded-md border border-line bg-paper px-2 py-0.5 text-[12px] text-ink-soft"
-                >
-                  {f.label} <strong className="text-ink">{f.value}</strong>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {supplier.bookingNote ? (
-            <p className="mt-1 text-[12px] text-ink-soft" data-testid="booking-note">
-              {supplier.bookingNote}
-            </p>
-          ) : null}
-          {terms ? (
-            <p className="mt-1 text-[12px] text-ink-soft" data-testid="service-terms">
-              {terms}
-            </p>
-          ) : null}
-          <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3.5 text-[13px] text-ink-soft">
-            <Rating rating={supplier.rating} count={supplier.ratingCount} size="sm" />
-            <span>
-              ESG <strong>{supplier.esg}</strong>
-            </span>
-            <span>{supplier.category}</span>
-          </p>
+      <span
+        aria-hidden="true"
+        className={`grid h-11 w-11 shrink-0 place-items-center rounded-brand font-display text-[15px] font-bold ${
+          supplier.promoted ? 'bg-promoted-soft text-promoted' : 'bg-sea-soft text-sea'
+        }`}
+      >
+        {monogram(supplier.name)}
+      </span>
+
+      <div className="min-w-0 flex-[1_1_260px]">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-display text-[16px] font-bold">
+            <Link
+              to={`/app/marketplace/${supplier.id}`}
+              className="text-ink no-underline hover:text-sea hover:underline"
+            >
+              {supplier.name}
+            </Link>
+          </h3>
+          {supplier.promoted ? <Pill tone="promoted">▲ Promoted</Pill> : null}
+          {goldBand ? <GoldBandPill /> : null}
+          <StatusPill status={status} />
         </div>
+        <p className="mt-1 flex flex-wrap items-baseline gap-x-3.5 text-[13px] text-ink-soft">
+          <Rating rating={supplier.rating} count={supplier.ratingCount} size="sm" />
+          <span>{supplier.category}</span>
+          <span>{supplier.description}</span>
+        </p>
       </div>
-      <div className="flex flex-col items-start gap-2 sm:items-end">
+
+      <div className="flex items-center gap-3">
+        <Link
+          to={`/app/marketplace/${supplier.id}`}
+          className="text-[12.5px] font-semibold text-sea"
+        >
+          Profile
+        </Link>
         {bookable ? (
           <Button
             variant="ghost"
@@ -170,12 +146,6 @@ function SupplierRow({
             Unavailable
           </Button>
         )}
-        <Link
-          to={`/app/marketplace/${supplier.id}`}
-          className="text-[12.5px] font-semibold text-sea"
-        >
-          View profile →
-        </Link>
       </div>
     </Card>
   );
@@ -210,6 +180,12 @@ export default function Marketplace() {
     else next.set('category', c);
     setParams(next, { replace: true });
   };
+  /** Drop whatever is narrowing the list — category, typed term, or both —
+   *  and put the browse tiles back. */
+  const clearFilter = () => {
+    setQuery('');
+    setCategory('All');
+  };
   const [sort, setSort] = useState<SortKey>('rating');
   const [esg, setEsg] = useState<EsgFilter>('all');
   const [target, setTarget] = useState<RequestTarget | null>(null);
@@ -236,7 +212,6 @@ export default function Marketplace() {
   }, [q, category, sort, esg]);
 
   const counts = useMemo(() => categoryCounts(SUPPLIERS, CATEGORIES), []);
-  const bookableCount = useMemo(() => SUPPLIERS.filter((s) => isBookable(s.certs)).length, []);
 
   const hasPromoted = third.some((s) => s.promoted);
   const hasGoldBand = third.some((s) => goldBandActive(s.goldBand, s.certs));
@@ -248,66 +223,42 @@ export default function Marketplace() {
 
   return (
     <div className="screen-enter">
-      {/* Hero — the front door. Dark band so the platform reads as a place you
-          have arrived at, and the counters are read off the data rather than
-          written down. */}
-      <section className="-mx-4 -mt-7 mb-6 bg-gradient-to-br from-ink to-[#06132B] px-4 py-9 text-white sm:-mx-6 sm:px-8 sm:py-11">
-        <Eyebrow dark>The Offshore Marketplace</Eyebrow>
-        <h1 className="mt-2 max-w-[640px] font-display text-[clamp(24px,3.6vw,34px)] leading-[1.15] font-bold">
-          Every service on the quay, vetted before you see it
-        </h1>
-        <p className="mt-2.5 max-w-[600px] text-[14.5px] text-[#C6D4E2]">
-          Cranes, medics, launches, scaffolding, welding, catering — found, compared and booked in
-          one place. GAC’s own lines carry the tier discount; everything else has passed the
-          Supplier Vetting System.
-        </p>
+      {/* The band, not a hero (2 Sep). A visitor who has reached this screen
+          has already been sold to on the landing page or has arrived from the
+          QR; what they want here is the search box, so it sits on the same
+          line as the name of the place rather than under a paragraph and four
+          counters repeating what the front page just said. */}
+      <section className="-mx-4 -mt-7 mb-6 bg-gradient-to-br from-ink to-[#06132B] px-4 py-6 text-white sm:-mx-6 sm:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+          <div>
+            <Eyebrow dark>The Offshore Marketplace</Eyebrow>
+            <h1 className="mt-1 font-display text-[22px] leading-[1.15] font-bold">
+              Every service on the quay, vetted before you see it
+            </h1>
+          </div>
 
-        <div className="mt-6 max-w-[620px]" data-tour="search">
-          <label htmlFor="marketplace-search" className="sr-only">
-            Search marketplace
-          </label>
-          <div className="relative">
-            <Icon
-              name="search"
-              size={18}
-              className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-soft"
-            />
-            <input
-              id="marketplace-search"
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search services, suppliers, or categories… e.g. crane hire Aberdeen"
-              aria-label="Search marketplace"
-              className="min-h-[52px] w-full rounded-brand border-none bg-white px-4 py-3 pl-11 text-[15px] text-ink shadow-[0_10px_30px_rgba(0,0,0,0.22)] placeholder:text-ink-soft"
-            />
+          <div className="max-w-[520px] flex-[1_1_320px]" data-tour="search">
+            <label htmlFor="marketplace-search" className="sr-only">
+              Search marketplace
+            </label>
+            <div className="relative">
+              <Icon
+                name="search"
+                size={18}
+                className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-soft"
+              />
+              <input
+                id="marketplace-search"
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search services, suppliers, or categories… e.g. crane hire Aberdeen"
+                aria-label="Search marketplace"
+                className="min-h-12 w-full rounded-xl border-none bg-white px-4 py-3 pl-11 text-[14.5px] text-ink shadow-[0_10px_30px_rgba(0,0,0,0.22)] placeholder:text-ink-soft"
+              />
+            </div>
           </div>
         </div>
-
-        <ul className="mt-6 flex flex-wrap gap-x-8 gap-y-3.5 text-[13px] text-[#C6D4E2]">
-          <li>
-            <strong className="block font-display text-[22px] font-bold text-white">
-              {counts.length}
-            </strong>
-            service categories
-          </li>
-          <li>
-            <strong className="block font-display text-[22px] font-bold text-white">
-              {bookableCount}
-            </strong>
-            suppliers bookable today
-          </li>
-          <li>
-            <strong className="block font-display text-[22px] font-bold text-gold-bright">
-              {IN_HOUSE_LINES.length}
-            </strong>
-            GAC in-house lines
-          </li>
-          <li>
-            <strong className="block font-display text-[22px] font-bold text-white">£0</strong>
-            for clients to use it
-          </li>
-        </ul>
       </section>
 
       {/* Browse by category — the tiles are a way in, so they only stand in
@@ -329,9 +280,9 @@ export default function Marketplace() {
                 >
                   <span
                     aria-hidden="true"
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sea-soft text-sea"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sea-soft font-display text-[13px] font-bold text-sea"
                   >
-                    <Icon name={CATEGORY_ICON[c.category] ?? 'store'} size={17} />
+                    {monogram(c.category)}
                   </span>
                   <span className="min-w-0">
                     <span className="block text-[13.5px] font-bold text-ink">{c.category}</span>
@@ -346,18 +297,33 @@ export default function Marketplace() {
         </section>
       ) : null}
 
-      {/* Filters — the state the results are actually showing */}
-      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2.5">
+      {/* Filters — the state the results are actually showing. The filter is
+          one chip beside the controls rather than a row of every category:
+          the tiles above are the browse path, and once you are past them what
+          matters is what you picked and how to drop it. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
         <h2 className="font-display text-[15.5px] font-bold">
           {browsing ? 'All services' : category === 'All' ? 'Search results' : category}
         </h2>
-        <div className="flex flex-wrap gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {browsing ? null : (
+            <button
+              type="button"
+              onClick={clearFilter}
+              aria-label={`Clear the ${category === 'All' ? query.trim() : category} filter`}
+              className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] border-ink bg-ink px-3 py-1 text-[12.5px] font-bold text-white"
+            >
+              <span aria-hidden="true">
+                {category === 'All' ? `“${query.trim()}”` : category} ×
+              </span>
+            </button>
+          )}
           <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-soft">
             Sort
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+              className="min-h-10 rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-1.5 text-[13.5px] font-semibold text-ink"
             >
               <option value="rating">Rating</option>
               <option value="esg">ESG grade (planned)</option>
@@ -369,7 +335,7 @@ export default function Marketplace() {
             <select
               value={esg}
               onChange={(e) => setEsg(e.target.value as EsgFilter)}
-              className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+              className="min-h-10 rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-1.5 text-[13.5px] font-semibold text-ink"
             >
               <option value="all">All grades</option>
               <option value="ab">A–B only</option>
@@ -380,14 +346,6 @@ export default function Marketplace() {
       </div>
 
       <p className="mt-2 text-[12px] text-ink-soft">{ESG_PLANNED_NOTE}</p>
-
-      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Service categories">
-        {CATEGORIES.map((c) => (
-          <Chip key={c} pressed={category === c} onClick={() => setCategory(c)}>
-            {c}
-          </Chip>
-        ))}
-      </div>
 
       {hasGoldBand ? (
         <p className="mt-3 text-[12px] text-ink-soft">

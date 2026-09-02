@@ -11,6 +11,7 @@ import { Rating } from '../../components/ui/Rating';
 import { listingFacts } from '../../lib/marketplace';
 import { deriveStatus, goldBandActive, isBookable } from '../../lib/svs';
 import { GOLD_BAND } from '../../data/goldBand';
+import { ESG_PLANNED_NOTE } from '../../data/related';
 import { serviceTermsFor } from '../../data/serviceTerms';
 import { supplierById } from '../../data/suppliers';
 
@@ -63,6 +64,9 @@ export default function SupplierProfile() {
             </span>
             <span>{supplier.category}</span>
           </p>
+          {/* The marketplace row stopped carrying the grade (2 Sep), so the
+              caveat that goes with it has to travel here with it. */}
+          <p className="mt-1.5 max-w-[560px] text-[12px] text-ink-soft">{ESG_PLANNED_NOTE}</p>
         </div>
         <div className="flex flex-col items-end gap-1.5">
           {bookable ? (
@@ -147,7 +151,10 @@ export default function SupplierProfile() {
               </ul>
             ) : null}
             {supplier.bookingNote ? (
-              <p className="mt-2 rounded-lg border border-line bg-paper px-3 py-2 text-[12.5px] text-ink-soft">
+              <p
+                className="mt-2 rounded-lg border border-line bg-paper px-3 py-2 text-[12.5px] text-ink-soft"
+                data-testid="booking-note"
+              >
                 <strong className="text-ink">Booking terms.</strong> {supplier.bookingNote}
               </p>
             ) : null}

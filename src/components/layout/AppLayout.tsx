@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { BRAND_MARK, POC_RIBBON } from '../../config/brand';
+import { INVOICES } from '../../data/invoices';
+import { QUOTES } from '../../data/quotes';
+import { invoiceState } from '../../lib/invoices';
 import { useNeedsYou } from '../../lib/needsYou';
 import { persistent } from '../../lib/storage';
 import { useFocusTrap } from '../../lib/useFocusTrap';
@@ -26,6 +29,14 @@ import { Wordmark } from './Wordmark';
  * because the agent desk is the one part of this nav a client or a supplier
  * would never open.
  *
+ * Three groups, not four (2 Sep): Work and Commercial were two headings over
+ * two items each, which is a heading per pair rather than a grouping. They read
+ * as one run of things you do with a booking once you have made it. The PoC
+ * ribbon came down off the top of every screen in the same pass and now sits at
+ * the foot of the sidebar: it is a standing note about the whole demo, not a
+ * banner over each screen, and it costs the content 30px of height it was
+ * paying on every route.
+ *
  * The chrome is real, not decorative: search routes to the marketplace, the
  * bell is fed by the same data as the dashboard's feed, and the avatar
  * offers the persona, the calculator and the tour. Everything survives
@@ -36,6 +47,8 @@ interface NavItem {
   label: string;
   icon: IconName;
   end?: boolean;
+  /** Which live count, if any, rides on this item. */
+  badge?: 'quotes' | 'invoices';
 }
 
 const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
@@ -56,15 +69,10 @@ const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
     ],
   },
   {
-    heading: 'Work',
+    heading: 'Work and commercial',
     items: [
-      { to: '/app/quotes', label: 'Quotes', icon: 'message-square-quote' },
-      { to: '/app/invoices', label: 'Invoices', icon: 'receipt' },
-    ],
-  },
-  {
-    heading: 'Commercial',
-    items: [
+      { to: '/app/quotes', label: 'Quotes', icon: 'message-square-quote', badge: 'quotes' },
+      { to: '/app/invoices', label: 'Invoices', icon: 'receipt', badge: 'invoices' },
       { to: '/app/svs', label: 'SVS', icon: 'shield-check' },
       { to: '/app/tiers', label: 'Tiers', icon: 'layers' },
     ],
@@ -75,15 +83,34 @@ const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
  *  column, after the spacer, rather than in the reading order above it. */
 const INTERNAL_ITEM: NavItem = { to: '/app/internal', label: 'Internal', icon: 'briefcase' };
 
+/** The count riding on a nav item, when there is one to ride. Quotes is
+ *  neutral — three replies to compare is work, not a deadline. Invoices goes
+ *  warn, because a review window closes whether or not anyone looks. */
+function NavBadge({ count, tone }: { count: number; tone: 'neutral' | 'warn' }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`ml-auto grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold text-white ${
+        tone === 'warn' ? 'bg-warn' : 'bg-white/12'
+      }`}
+    >
+      {count}
+    </span>
+  );
+}
+
 function SidebarLink({
   item,
   collapsed,
+  counts,
   onNavigate,
 }: {
   item: NavItem;
   collapsed: boolean;
+  counts: NavCounts;
   onNavigate?: () => void;
 }) {
+  const count = item.badge ? counts[item.badge] : 0;
   return (
     <NavLink
       to={item.to}
@@ -101,12 +128,39 @@ function SidebarLink({
       }
     >
       <Icon name={item.icon} size={18} className="shrink-0" />
-      <span className={collapsed ? 'sr-only' : undefined}>{item.label}</span>
+      {/* Expanded, the badge carries the count and the label stays a label.
+          Collapsed there is no room for a badge on a 64px rail, so the count
+          rides in the screen-reader label instead of being dropped. */}
+      <span className={collapsed ? 'sr-only' : undefined}>
+        {collapsed && count > 0 ? `${item.label} (${count})` : item.label}
+      </span>
+      {!collapsed && count > 0 ? (
+        <NavBadge count={count} tone={item.badge === 'invoices' ? 'warn' : 'neutral'} />
+      ) : null}
     </NavLink>
   );
 }
 
+/** Live counts for the nav badges, read off the same data the screens do. */
+interface NavCounts {
+  quotes: number;
+  invoices: number;
+}
+
+function useNavCounts(): NavCounts {
+  const invoiceDecisions = useApp((s) => s.invoiceDecisions);
+  return {
+    quotes: QUOTES.length,
+    // Only what is still inside the client's seven-day window: a matched
+    // invoice is not waiting on anyone, and the badge would be a lie.
+    invoices: INVOICES.filter(
+      (inv) => invoiceState(inv.receivedDaysAgo, invoiceDecisions[inv.id]) === 'awaiting',
+    ).length,
+  };
+}
+
 function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
+  const counts = useNavCounts();
   return (
     <nav aria-label="Platform" className="flex flex-1 flex-col overflow-y-auto px-2.5 pb-4">
       {NAV_GROUPS.map((group, gi) => (
@@ -125,7 +179,12 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
           <ul className="m-0 list-none space-y-0.5 p-0">
             {group.items.map((item) => (
               <li key={item.to}>
-                <SidebarLink item={item} collapsed={collapsed} onNavigate={onNavigate} />
+                <SidebarLink
+                  item={item}
+                  collapsed={collapsed}
+                  counts={counts}
+                  onNavigate={onNavigate}
+                />
               </li>
             ))}
           </ul>
@@ -144,7 +203,12 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
         )}
         <ul className="m-0 list-none p-0">
           <li>
-            <SidebarLink item={INTERNAL_ITEM} collapsed={collapsed} onNavigate={onNavigate} />
+            <SidebarLink
+              item={INTERNAL_ITEM}
+              collapsed={collapsed}
+              counts={counts}
+              onNavigate={onNavigate}
+            />
           </li>
         </ul>
       </div>
@@ -358,10 +422,10 @@ export default function AppLayout() {
   }
 
   return (
-    // App-shell scroll model: the page never scrolls — the main column does.
-    // A window-scrolled sticky sidebar pokes past the viewport by the ribbon's
-    // height and clips its own Collapse control; this way the sidebar is always
-    // whole, and the PoC ribbon (a guardrail) is permanently on screen.
+    // App-shell scroll model: the page never scrolls — the main column does,
+    // so the sidebar is always whole rather than poking past the viewport and
+    // clipping its own controls. The PoC ribbon (a guardrail) rides at the foot
+    // of that sidebar, which means it is permanently on screen too.
     <div className="flex h-dvh flex-col font-app">
       <Loader />
       <Tour />
@@ -371,10 +435,6 @@ export default function AppLayout() {
       >
         Skip to content
       </a>
-      <div className="shrink-0 border-b border-[#EADFB4] bg-gold-soft px-3 py-1.5 text-center text-[12.5px] font-semibold tracking-[0.02em] text-gold-deep">
-        {POC_RIBBON}
-      </div>
-
       <div className="flex min-h-0 flex-1 items-stretch">
         {/* Sidebar — desktop only; the drawer below covers small screens */}
         <aside
@@ -395,6 +455,17 @@ export default function AppLayout() {
             )}
           </div>
           <SidebarNav collapsed={collapsed} />
+          {/* Not gold-on-gold-soft any more: on the ink column, gold-bright is
+              the readable shade and the one already reserved for it. It wraps
+              on the collapsed rail rather than hiding — the ribbon is a
+              guardrail, so it stays on screen in every state of the shell. */}
+          <p
+            className={`border-t border-white/10 py-2.5 text-[11px] font-semibold tracking-[0.02em] text-gold-bright ${
+              collapsed ? 'px-2 text-center leading-[1.35]' : 'px-3.5'
+            }`}
+          >
+            {POC_RIBBON}
+          </p>
           <div className="border-t border-white/10 p-2.5">
             <button
               type="button"
@@ -510,6 +581,9 @@ export default function AppLayout() {
               </button>
             </div>
             <SidebarNav collapsed={false} onNavigate={() => setDrawerOpen(false)} />
+            <p className="border-t border-white/10 px-3.5 py-2.5 text-[11px] font-semibold tracking-[0.02em] text-gold-bright">
+              {POC_RIBBON}
+            </p>
           </aside>
         </>
       ) : null}

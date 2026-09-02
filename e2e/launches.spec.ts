@@ -104,16 +104,19 @@ test('launches: the no-freight operator says freight is quoted separately', asyn
   await expect(dialog).toBeHidden();
 });
 
-test('marketplace: the Launches chip lists the three operators with capacity chips', async ({
+test('marketplace: the Launches tile lists the three operators, capacity on the profile', async ({
   page,
 }) => {
   await page.goto('/app/marketplace');
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: 'Launches', exact: true }).click();
+  await page.getByRole('button', { name: 'Browse Launches' }).click();
   await expect(page.getByRole('heading', { name: 'Granite Launches' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Torry Workboats' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Deveron Launch Services' })).toBeVisible();
-  await expect(page.getByTestId('listing-facts').first()).toContainText('Max capacity');
-  await expect(page.getByTestId('listing-facts').first()).toContainText('Freight');
+
+  // The rows are scannable; capacity and freight live one click in.
+  await page.getByRole('link', { name: 'Granite Launches' }).click();
+  await expect(page.getByTestId('listing-facts')).toContainText('Max capacity');
+  await expect(page.getByTestId('listing-facts')).toContainText('Freight');
 });
