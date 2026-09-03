@@ -1,40 +1,64 @@
   <sc-if value="{{ isMarketplace }}" hint-placeholder-val="{{ false }}">
     <main data-screen-label="Marketplace" style="max-width:1180px;margin:0 auto;padding:0 0 80px;animation:fadeUp .25s ease;">
-      <!-- The front door (26 Aug): the platform opens here now, so the screen
-           has to say what GAC Connect is before it says what it can filter.
-           Mirrors the site's src/screens/app/Marketplace.tsx hero. -->
-      <div style="background:linear-gradient(135deg,#0A2540,#06132B);color:#FFFFFF;padding:40px 24px 42px;">
-        <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#FFC72C;margin:0;">The Offshore Marketplace</p>
-        <h1 style="font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-.01em;margin:8px 0 0;max-width:640px;font-family:'Space Grotesk',sans-serif;">Every service on the quay, vetted before you see it</h1>
-        <p style="color:#C6D4E2;margin:10px 0 0;font-size:14.5px;max-width:600px;">Cranes, medics, launches, scaffolding, welding, catering — found, compared and booked in one place. GAC’s own lines carry the tier discount; everything else has passed the Supplier Vetting System.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:0 34px;margin-top:26px;">
-          <div style="margin-bottom:12px;"><span style="display:block;font-size:22px;font-weight:800;font-family:'Space Grotesk',sans-serif;">{{ mktCatCount }}</span><span style="font-size:13px;color:#C6D4E2;">service categories</span></div>
-          <div style="margin-bottom:12px;"><span style="display:block;font-size:22px;font-weight:800;font-family:'Space Grotesk',sans-serif;">{{ mktBookableCount }}</span><span style="font-size:13px;color:#C6D4E2;">suppliers bookable today</span></div>
-          <div style="margin-bottom:12px;"><span style="display:block;font-size:22px;font-weight:800;color:#FFC72C;font-family:'Space Grotesk',sans-serif;">{{ mktInhouseCount }}</span><span style="font-size:13px;color:#C6D4E2;">GAC in-house lines</span></div>
-          <div style="margin-bottom:12px;"><span style="display:block;font-size:22px;font-weight:800;font-family:'Space Grotesk',sans-serif;">£0</span><span style="font-size:13px;color:#C6D4E2;">for clients to use it</span></div>
+      <!-- A band, not a hero (2 Sep). Anyone on this screen has already been
+           sold to on the landing page or has arrived from the QR; what they
+           want here is the search box, so it sits on the same line as the name
+           of the place rather than under a paragraph and four counters
+           repeating what the front page just said. -->
+      <div style="background:linear-gradient(135deg,#0A2540,#06132B);color:#FFFFFF;padding:26px 24px;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px;">
+          <div>
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#FFC72C;margin:0;">The Offshore Marketplace</p>
+            <h1 style="font-size:22px;line-height:1.15;font-weight:700;letter-spacing:-.01em;margin:4px 0 0;font-family:'Space Grotesk',sans-serif;">Every service on the quay, vetted before you see it</h1>
+          </div>
+          <div style="position:relative;flex:1 1 320px;max-width:520px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33475F" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position:absolute;top:50%;left:16px;transform:translateY(-50%);pointer-events:none;"><path d="m21 21-4.34-4.34"></path><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"></path></svg>
+            <input type="search" value="{{ query }}" sc-camel-on-change="{{ onQuery }}" placeholder="Search services, suppliers, or categories… e.g. crane hire Aberdeen" aria-label="Search marketplace" style="min-height:48px;width:100%;border:none;border-radius:12px;padding:10px 16px 10px 44px;font-size:14.5px;background:#FFFFFF;font-family:inherit;color:#0A2540;box-shadow:0 10px 30px rgba(0,0,0,.22);">
+          </div>
         </div>
       </div>
 
       <div style="padding:24px 24px 0;">
-      <div style="display:flex;gap:10px;margin:0 0 10px;flex-wrap:wrap;">
-        <input type="search" value="{{ query }}" sc-camel-on-change="{{ onQuery }}" placeholder="Search services, suppliers, or categories… e.g. crane hire Aberdeen" aria-label="Search marketplace" style="flex:1;min-width:220px;border:1.5px solid #CBD6E2;border-radius:8px;padding:10px 14px;font-size:14.5px;background:#FFFFFF;font-family:inherit;color:#0A2540;">
-        <sc-raw-select value="{{ sort }}" sc-camel-on-change="{{ onSort }}" aria-label="Sort results" style="border:1.5px solid #CBD6E2;border-radius:8px;padding:10px 12px;font-size:13.5px;background:#FFFFFF;font-family:inherit;color:#0A2540;font-weight:600;">
-          <option value="featured">Sort: featured</option>
-          <option value="rating">Sort: rating</option>
-          <option value="esg">Sort: ESG (planned)</option>
-          <option value="name">Sort: name</option>
-        </sc-raw-select>
-        <button style="{{ esgBtnStyle }}" sc-camel-on-click="{{ toggleEsg }}" aria-pressed="{{ esgPressed }}">High ESG (A–B) only</button>
-        <span style="flex-basis:100%;font-size:12px;color:#5B6B80;">ESG ratings are planned, not live. GAC does not score suppliers for ESG today — the grades here show how they would read once ESG reporting is established within GAC.</span>
+      <!-- Browse by category: the way in, so the tiles stand in front of the
+           default view only. Monograms, not icons — one lorry glyph was
+           standing for Haulage, Taxis and Waste at once. -->
+      <sc-if value="{{ mktBrowsing }}" hint-placeholder-val="{{ true }}">
+        <h2 style="font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:700;margin:0;">Browse by category</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin:12px 0 28px;">
+          <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="8">
+            <button type="button" sc-camel-on-click="{{ t.on }}" aria-label="{{ t.aria }}" style="display:flex;width:100%;align-items:center;gap:12px;border-radius:14px;border:1px solid #E5EAF1;background:#FFFFFF;padding:14px;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s;" style-hover="border-color:#0E5E8A;background:#E8F1F7;">
+              <span aria-hidden="true" style="display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;border-radius:8px;background:#E8F1F7;color:#0E5E8A;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;">{{ t.mono }}</span>
+              <span style="min-width:0;">
+                <span style="display:block;font-size:13.5px;font-weight:700;color:#0A2540;">{{ t.label }}</span>
+                <span style="display:block;font-size:12px;color:#33475F;">{{ t.countLabel }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- The filter is one chip beside the controls rather than a row of every
+           category: the tiles above are the browse path, and once you are past
+           them what matters is what you picked and how to drop it. -->
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin:0 0 10px;">
+        <h2 style="font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:700;margin:0;">{{ mktResultsTitle }}</h2>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
+          <sc-if value="{{ mktFiltered }}" hint-placeholder-val="{{ false }}">
+            <button type="button" sc-camel-on-click="{{ clearMktFilter }}" aria-label="{{ mktFilterAria }}" style="display:inline-flex;min-height:36px;align-items:center;gap:6px;border-radius:999px;border:1.5px solid #0A2540;background:#0A2540;padding:4px 12px;font-size:12.5px;font-weight:700;color:#FFFFFF;cursor:pointer;font-family:inherit;"><span aria-hidden="true">{{ mktFilterLabel }} ×</span></button>
+          </sc-if>
+          <sc-raw-select value="{{ sort }}" sc-camel-on-change="{{ onSort }}" aria-label="Sort results" style="min-height:40px;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 12px;font-size:13.5px;background:#FFFFFF;font-family:inherit;color:#0A2540;font-weight:600;">
+            <option value="featured">Sort: featured</option>
+            <option value="rating">Sort: rating</option>
+            <option value="esg">Sort: ESG (planned)</option>
+            <option value="name">Sort: name</option>
+          </sc-raw-select>
+          <button style="{{ esgBtnStyle }}" sc-camel-on-click="{{ toggleEsg }}" aria-pressed="{{ esgPressed }}">High ESG (A–B) only</button>
+        </div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;" role="group" aria-label="Service categories">
-        <sc-for list="{{ chips }}" as="ch" hint-placeholder-count="6">
-          <button style="{{ ch.style }}" sc-camel-on-click="{{ ch.on }}" aria-pressed="{{ ch.pressed }}">{{ ch.label }}</button>
-        </sc-for>
-      </div>
+      <p style="font-size:12px;color:#5B6B80;margin:0 0 18px;">ESG ratings are planned, not live. GAC does not score suppliers for ESG today — the grades here show how they would read once ESG reporting is established within GAC.</p>
 
       <sc-if value="{{ hasInhouse }}" hint-placeholder-val="{{ false }}">
-        <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9A7B14;margin:6px 0 10px;">GAC in-house — premium listings</p>
+        <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9A7B14;margin:6px 0 10px;">GAC in-house · premium listings</p>
         <sc-for list="{{ inhouseList }}" as="s" hint-placeholder-count="2">
           <div style="{{ s.cardStyle }}">
             <div>
@@ -59,32 +83,30 @@
       <sc-if value="{{ hasThird }}" hint-placeholder-val="{{ false }}">
         <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:18px 0 10px;">Vetted marketplace suppliers <sc-if value="{{ promotedIncluded }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;color:#8A7FB0;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-left:8px;">includes promoted placement</span></sc-if></p>
         <sc-for list="{{ thirdList }}" as="s" hint-placeholder-count="3">
+          <!-- Cut to what a client scans for (2 Sep): who, whether they can be
+               booked, how they rate, and the button. Fact chips, hire terms and
+               the ESG grade moved to the profile — nine rows each carrying five
+               sub-lists is a directory you read rather than scan. -->
           <div style="{{ s.cardStyle }}">
-            <div>
-              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                <button style="background:none;border:none;padding:0;font-size:16px;font-weight:700;color:#0A2540;cursor:pointer;font-family:inherit;text-align:left;" style-hover="color:#0E5E8A;" sc-camel-on-click="{{ s.onOpen }}" title="View supplier profile">{{ s.name }}</button>
+            <span aria-hidden="true" style="{{ s.monoStyle }}">{{ s.mono }}</span>
+            <div style="min-width:0;flex:1 1 260px;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <button style="background:none;border:none;padding:0;font-size:16px;font-weight:700;color:#0A2540;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-align:left;" style-hover="color:#0E5E8A;" sc-camel-on-click="{{ s.onOpen }}" title="View supplier profile">{{ s.name }}</button>
                 <sc-if value="{{ s.promoted }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#EFE9FB;color:#5B3FA8;border:1px solid #D9CCF5;">▲ Promoted</span></sc-if>
                 <sc-if value="{{ s.goldBand }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#0A2540;color:#FFC72C;border:1px solid #C9A227;white-space:nowrap;">◆ GAC Gold Band</span></sc-if>
                 <sc-if value="{{ s.blocked }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBEAEA;color:#B91C1C;">✗ Booking blocked</span></sc-if>
                 <sc-if value="{{ s.verified }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></sc-if>
                 <sc-if value="{{ s.due }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF0E1;color:#B45309;">⚠ Renewal due</span></sc-if>
               </div>
-              <p style="color:#33475F;font-size:13.5px;margin:6px 0 0;">{{ s.desc }}</p>
-              <sc-if value="{{ s.hasFacts }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;" data-testid="listing-facts">
-                  <sc-for list="{{ s.facts }}" as="f" hint-placeholder-count="3"><span style="border:1px solid #E5EAF1;background:#FAFBFD;border-radius:6px;padding:2px 8px;font-size:12px;color:#33475F;">{{ f.label }} <strong style="color:#0A2540;">{{ f.value }}</strong></span></sc-for>
-                </div>
-              </sc-if>
-              <sc-if value="{{ s.hasTerms }}" hint-placeholder-val="{{ false }}"><p style="color:#33475F;font-size:12px;margin:4px 0 0;" data-testid="service-terms">{{ s.terms }}</p></sc-if>
-              <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;font-size:13px;color:#33475F;">
+              <p style="display:flex;flex-wrap:wrap;align-items:baseline;gap:0 14px;margin:4px 0 0;font-size:13px;color:#33475F;">
                 <span><span style="color:#9A7B14;font-weight:700;">{{ s.ratingLabel }}</span> <span style="color:#33475F;">{{ s.ratingCountLabel }}</span></span>
-                <span>ESG <span style="{{ s.esgStyle }}">{{ s.esg }}</span></span>
                 <span>{{ s.cat }}</span>
-              </div>
+                <span>{{ s.desc }}</span>
+              </p>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;padding:0;font-family:inherit;" sc-camel-on-click="{{ s.onOpen }}">Profile</button>
               <button style="{{ s.actionStyle }}" sc-camel-on-click="{{ s.onAction }}" disabled="{{ s.blocked }}">{{ s.actionLabel }}</button>
-              <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;padding:0;" sc-camel-on-click="{{ s.onOpen }}">View profile →</button>
             </div>
           </div>
         </sc-for>

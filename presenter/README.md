@@ -24,9 +24,12 @@ readable source. If the deck ever has to be genuinely closed, it comes off the
 public site and is presented from `dist/presenter.html` offline, or moves to a
 host with real auth.
 
-The QR in printed materials now points at the **platform**
-(`https://alexwilco2012-cyber.github.io/gac-connect/app`), not the deck: the
-panel scans it after the presentation and lands in the demo (owner, 19 Aug).
+The QR in printed materials points at the **landing page**
+(`https://alexwilco2012-cyber.github.io/gac-connect/`), not the deck and not
+`/app`: the panel scans it after the presentation and arrives where the offer
+is stated, with the tour on the first screen (owner, 20 Aug — it opened `/app`
+briefly, but a dashboard is where you land when you already know what the
+thing is).
 
 ## Everyday workflow
 

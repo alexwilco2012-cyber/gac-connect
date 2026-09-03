@@ -37,6 +37,11 @@ class Component extends DCLogic {
       tourDismissed: this._get('tour-dismissed', false),
       tourStep: null,
       hbSel: null,
+      /* Landing consolidation reveal (2 Sep): the motif builds pillar by pillar
+         when the section reaches the viewport, and the tier ladder beside it
+         lights from the same count, so the drawing and the rungs cannot drift.
+         0..4 pillars up, then the roof. */
+      consolLit: 0, consolRoof: false,
       /* which side of the Dashboard is showing - the client's or the
          supplier's (26 Aug). Persisted so a rehearsal picks up where it was
          left, exactly as the site does. */
@@ -75,13 +80,58 @@ class Component extends DCLogic {
   _get(k, d) { try { const v = localStorage.getItem('gac-connect:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }
   _set(k, v) { try { localStorage.setItem('gac-connect:' + k, JSON.stringify(v)); } catch (e) {} }
 
+  /* Two initials, for a supplier or a category tile. The tiles used to carry
+     icons, which meant one lorry glyph standing for Haulage, Taxis and Waste
+     at once — a monogram says "category" and lets the word do the naming. */
+  _monogram(name) {
+    const words = String(name).replace(/[^A-Za-z ]/g, '').split(/\s+/).filter(Boolean);
+    if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
+    return String(name).slice(0, 2).toUpperCase();
+  }
+
   /* ---------- interactive harbour (landing hero) ---------- */
   _hbPick(id) { return () => this.setState({ hbSel: this.state.hbSel === id ? null : id }); }
   _hbF(field) { const id = this.state.hbSel; return id ? this.HARBOUR[id][field] : ''; }
   _hbB(i) { const id = this.state.hbSel; return id ? this.HARBOUR[id].bullets[i] : ''; }
+  /* The label chips arrive last, once everything they name has. */
+  get HB_CHIP_DELAY() {
+    return { assets: '4.1s', agency: '4.2s', marketplace: '4.3s', procurement: '4.4s', customs: '4.5s', logistics: '4.6s' };
+  }
   _hbChip(id) {
-    return 'pointer-events:none;position:absolute;top:-16px;left:50%;transform:translateX(-50%);z-index:3;border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(4,16,31,.4);transition:background-color .2s;' +
-      (this.state.hbSel === id ? 'background:#FFC72C;color:#0A2540;' : 'background:#FFFFFF;color:#0A2540;');
+    return 'pointer-events:none;position:absolute;top:-16px;left:50%;transform:translateX(-50%);z-index:3;border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(4,16,31,.4);transition:background-color .2s;'
+      + 'opacity:0;animation:fadeIn .5s ' + (this.HB_CHIP_DELAY[id] || '4.1s') + ' ease forwards;'
+      + (this.state.hbSel === id ? 'background:#FFC72C;color:#0A2540;' : 'background:#FFFFFF;color:#0A2540;');
+  }
+
+  /* ---------- landing consolidation reveal ----------
+     Started by an IntersectionObserver on [data-consol], re-attached whenever
+     the landing screen is (re)rendered. Once only: a motif that rebuilds every
+     time you scroll past it stops being a reveal and becomes a fidget. */
+  _watchConsolidation() {
+    if (this._consolDone || typeof IntersectionObserver === 'undefined') return;
+    const el = document.querySelector('[data-consol]');
+    if (!el || this._consolEl === el) return;
+    this._consolEl = el;
+    const still = typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (still) {
+      /* No build-up to watch, so show the finished claim rather than an
+         empty frame: `animation:none` would leave every part at opacity 0. */
+      this._consolDone = true;
+      this.setState({ consolLit: 4, consolRoof: true });
+      return;
+    }
+    if (this._consolIo) this._consolIo.disconnect();
+    this._consolIo = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      this._consolIo.disconnect();
+      this._consolDone = true;
+      /* 0.2s, then one every 0.55s; the roof follows the fourth pillar. */
+      this._consolTimers = [1, 2, 3, 4].map((n, i) =>
+        setTimeout(() => this.setState({ consolLit: n }), 200 + i * 550));
+      this._consolTimers.push(setTimeout(() => this.setState({ consolRoof: true }), 200 + 4 * 550));
+    }, { threshold: 0.45 });
+    this._consolIo.observe(el);
   }
   _hbGlow(id) {
     return 'display:block;width:100%;height:auto;transition:filter .25s;' +
@@ -185,9 +235,13 @@ class Component extends DCLogic {
     window.addEventListener('keydown', this._onPresKey);
     if (this.state.presOn) document.body.style.overflow = 'hidden';
     if (this.state.loader === 'visible') this._loaderTimer = setTimeout(() => this._hideLoader(), 4800);
+    this._watchConsolidation();
     this._selfTest();
   }
   componentDidUpdate() {
+    /* The landing screen may have just been rendered (or re-rendered after a
+       hotspot swap), so the observer has a fresh element to watch. */
+    this._watchConsolidation();
     /* Dialog focus parity with the site's Modal: when any [role=dialog] appears,
        move focus to its first control (remembering what had focus); when the
        last dialog goes, give focus back. Runs after every commit, so it costs
@@ -213,6 +267,8 @@ class Component extends DCLogic {
     window.removeEventListener('keydown', this._onPresKey);
     clearTimeout(this._loaderTimer); clearTimeout(this._loaderTimer2);
     clearTimeout(this._toastTimer); clearTimeout(this._routeTimer);
+    if (this._consolIo) this._consolIo.disconnect();
+    (this._consolTimers || []).forEach(clearTimeout);
     clearTimeout(this._presT); clearTimeout(this._navT);
     document.body.style.overflow = '';
   }
@@ -529,17 +585,17 @@ class Component extends DCLogic {
     const thirdList = third.map((s) => {
       const status = this.deriveStatus(s);
       const blocked = status === 'blocked';
-      const facts = this._listingFacts(s);
       return {
-        name: s.name, desc: s.desc, cat: s.cat, esg: s.esg, esgStyle: this._esgStyle(s.esg),
+        name: s.name, desc: s.desc, cat: s.cat,
         ratingLabel: s.rating.toFixed(1) + ' ★',
         ratingCountLabel: '· ' + s.ratingCount + ' ratings',
-        facts: facts, hasFacts: facts.length > 0,
-        terms: this._termsFor(s.cat), hasTerms: !!this._termsFor(s.cat),
         goldBand: s.goldBand === 'held' && !blocked,
         promoted: !!s.promoted, blocked: blocked, due: status === 'due', verified: !blocked,
-        cardStyle: 'display:grid;grid-template-columns:1fr auto;gap:14px;padding:16px 18px;margin-bottom:12px;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);' +
-          (s.promoted ? 'border:1.5px solid #C9BCF0;background:linear-gradient(180deg,#FBFAFF,#FFFFFF 60%);' : 'border:1px solid #E5EAF1;background:#FFFFFF;') + (blocked ? 'opacity:.92;' : ''),
+        mono: this._monogram(s.name),
+        monoStyle: 'display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border-radius:14px;font-family:\'Space Grotesk\',sans-serif;font-size:15px;font-weight:700;'
+          + (s.promoted ? 'background:#EFE9FB;color:#5B3FA8;' : 'background:#E8F1F7;color:#0E5E8A;'),
+        cardStyle: 'display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:16px 20px;margin-bottom:10px;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);' +
+          (s.promoted ? 'border:1.5px solid #C9BCF0;background:linear-gradient(180deg,#FBFAFF,#FFFFFF 60%);' : 'border:1.5px solid #E5EAF1;background:#FFFFFF;') + (blocked ? 'opacity:.75;' : ''),
         actionLabel: blocked ? 'Unavailable' : 'Request quote',
         actionStyle: blocked
           ? 'background:#FFFFFF;color:#9AA8B8;border:1.5px solid #E5EAF1;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:not-allowed;white-space:nowrap;'
@@ -549,12 +605,20 @@ class Component extends DCLogic {
       };
     });
 
-    const chips = this.CATEGORIES.map((c) => ({
-      label: c, pressed: st.chip === c ? 'true' : 'false',
-      style: 'border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;' +
-        (st.chip === c ? 'background:#0A2540;border:1.5px solid #0A2540;color:#FFFFFF;' : 'background:#FFFFFF;border:1.5px solid #CBD6E2;color:#33475F;'),
-      on: () => this.setState({ chip: c })
-    }));
+    /* Tiles count what is actually stocked, like the counters above: a
+       category with nothing in it is not one a client can shop. */
+    const tiles = this.CATEGORIES.filter((c) => c !== 'All')
+      .map((c) => ({ label: c, n: this.SUPPLIERS.filter((sp) => sp.tags.includes(c)).length }))
+      .filter((t) => t.n > 0)
+      .map((t) => ({
+        label: t.label, mono: this._monogram(t.label),
+        aria: 'Browse ' + t.label,
+        countLabel: t.n + (t.n === 1 ? ' supplier' : ' suppliers'),
+        on: () => this.setState({ chip: t.label })
+      }));
+    /* Past browsing once a category or a search is on: the chip beside Sort
+       carries the state from there. */
+    const browsing = st.chip === 'All' && q === '';
 
     /* calculator */
     const calc = st.calc;
@@ -567,6 +631,19 @@ class Component extends DCLogic {
     else if (pct === 7) tierNote = 'Qualifying tier: GAC Customs (7%) — already the top tier. Adding the other pillars deepens consolidation at the same rate.';
     else if (pct === 4) tierNote = 'Qualifying tier: GAC Logistics (4%). Adding Customs lifts the client to the 7% top tier.';
     else tierNote = 'Qualifying tier: GAC Agency (2%). Adding Logistics lifts the client to 4%; adding Customs to 7%.';
+
+    /* Pillar, then its label a third of a second later. State starts each
+       one, so there is no chain of CSS delays to keep in step with the
+       ladder beside it. */
+    const CONSOL_RISE = 'pillarRise .8s cubic-bezier(.34,1.56,.64,1) both';
+    const CONSOL_LABEL = 'labelIn .5s .35s ease both';
+    const consolStep = (n, anim) => ((st.consolLit || 0) >= n ? anim : 'none');
+    const ladderPill = (lit, gold) =>
+      'display:inline-flex;align-items:center;gap:10px;border-radius:14px;padding:10px 16px;'
+      + 'box-shadow:0 1px 3px rgba(10,37,64,.07);transition:border-color .4s,background .4s,opacity .4s;'
+      + (gold ? 'border:1.5px solid #C9A227;background:#FBF6E3;opacity:1;'
+        : lit ? 'border:1.5px solid #0E5E8A;background:#F4F8FB;opacity:1;'
+          : 'border:1.5px solid #E5EAF1;background:#FFFFFF;opacity:.45;');
 
     const setCalc = (patch) => {
       const next = Object.assign({}, this.state.calc, patch);
@@ -733,6 +810,32 @@ class Component extends DCLogic {
       ...this._featureVals(st),
 
       /* interactive harbour (landing hero) */
+      /* The hero's search hands off to the marketplace exactly as the top bar
+         does — the first thing anyone types on the landing screen lands them
+         inside the platform rather than doing nothing. */
+      onLandingSearch: (e) => { if (e && e.preventDefault) e.preventDefault(); this.nav('marketplace'); },
+
+      /* Consolidation reveal. Each part's animation is 'none' until its step
+         lands, and the ladder reads the same count, so the two cannot
+         disagree about how many pillars are standing. */
+      consolLabel: (st.consolLit || 0) + ' of 4 pillars active under one roof'
+        + (st.consolRoof ? ', Full Stack' : ''),
+      consolP1: consolStep(1, CONSOL_RISE), consolP2: consolStep(2, CONSOL_RISE),
+      consolP3: consolStep(3, CONSOL_RISE), consolP4: consolStep(4, CONSOL_RISE),
+      consolL1: consolStep(1, CONSOL_LABEL), consolL2: consolStep(2, CONSOL_LABEL),
+      consolL3: consolStep(3, CONSOL_LABEL), consolL4: consolStep(4, CONSOL_LABEL),
+      consolRoof: st.consolRoof
+        ? 'roofDrop .7s cubic-bezier(.34,1.3,.64,1) both, roofGold .6s .55s ease both'
+        : 'none',
+      consolWord: st.consolRoof ? 'fadeIn .5s .8s ease forwards' : 'none',
+      consolGlint: st.consolRoof ? 'glint .7s .6s ease-out both' : 'none',
+      ladderA: ladderPill(st.consolLit >= 1, false),
+      ladderB: ladderPill(st.consolLit >= 2, false),
+      ladderC: ladderPill(st.consolLit >= 3, st.consolRoof),
+      ladderAColor: '#0E5E8A',
+      ladderBColor: '#0E5E8A',
+      ladderCColor: st.consolRoof ? '#9A7B14' : '#0E5E8A',
+
       hbListVis: !st.hbSel,
       hbCardVis: !!st.hbSel,
       hbClear: () => this.setState({ hbSel: null }),
@@ -780,6 +883,25 @@ class Component extends DCLogic {
           return 'display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;'
             + 'font-size:11.5px;font-weight:700;background:' + bg + ';color:' + fg + ';';
         };
+        const tierOn = self.state.calc;
+        const kpiChip = function (tone) {
+          const bg = tone === 'warn' ? '#FBF0E1' : '#E8F1F7';
+          const fg = tone === 'warn' ? '#B45309' : '#0E5E8A';
+          return 'display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;'
+            + 'font-weight:700;white-space:nowrap;background:' + bg + ';color:' + fg + ';';
+        };
+        const line = function (name, route, on, count, detail, nudge) {
+          return {
+            name: name,
+            detail: on ? detail : nudge,
+            count: on ? count : '0',
+            nameColor: on ? '#0A2540' : '#8FA3B8',
+            countStyle: 'display:inline-grid;place-items:center;min-width:28px;height:28px;'
+              + 'border-radius:999px;padding:0 8px;font-size:12.5px;font-weight:700;'
+              + (on ? 'background:#0A2540;color:#FFFFFF;' : 'background:#FAFBFD;color:#33475F;'),
+            go: self._go(route)
+          };
+        };
         const quoteSent = function (what, who) {
           return function () {
             self.toastMsg('Quote sent for ' + what + ' \u2014 ' + who
@@ -801,17 +923,22 @@ class Component extends DCLogic {
           setDashClient: function () { self.setState({ dashView: 'client' }); self._set('dash-view', 'client'); },
           setDashSupplier: function () { self.setState({ dashView: 'supplier' }); self._set('dash-view', 'supplier'); },
 
-          /* client - what GAC has running, line by line */
+          /* client - what GAC has running, line by line. A line the client
+             has not consolidated goes grey with a count of 0 and a nudge
+             naming the tier it would reach: the point of the row is that the
+             line exists and is empty, so hiding it would make the dashboard
+             smaller as the client buys less, which is backwards. */
           dashLines: [
-            { name: 'Agency', detail: 'Port calls, berths and crew change', count: '3', go: self._go('agency') },
-            { name: 'Logistics', detail: 'Consignments on their way to the quay', count: '2', go: self._go('logistics') },
-            { name: 'Customs', detail: 'Declarations working through to clearance', count: '1', go: self._go('customs') },
-            { name: 'Procurement', detail: 'One list ready to send to Compass', count: '1', go: self._go('procurement') }
+            line('Agency', 'agency', tierOn.agency, '3', 'Port calls, berths and crew change', 'Not consolidated. Add Agency to reach the 2% tier'),
+            line('Logistics', 'logistics', tierOn.logistics, '2', 'Consignments on their way to the quay', 'Not consolidated. Add Logistics to reach the 4% tier'),
+            line('Customs', 'customs', tierOn.customs, '1', 'Declarations working through to clearance', 'Not consolidated. Customs is the 7% pillar'),
+            line('Procurement', 'procurement', true, '1', 'One list ready to send to Compass', '')
           ],
+          /* 22px beside the consolidation card's 44px: one number leads. */
           clientKpis: [
-            { label: 'Port calls in the window', value: '3', delta: 'Aberdeen and Peterhead' },
-            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Caledonian Star' },
-            { label: 'Invoices in your window', value: '2', delta: 'Tightest closes in 2 days' }
+            { label: 'Port calls in the window', value: '3', delta: 'Aberdeen and Peterhead', chipStyle: kpiChip('info') },
+            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Caledonian Star', chipStyle: kpiChip('info') },
+            { label: 'Invoices in your window', value: '2', delta: 'Tightest closes in 2 days', chipStyle: kpiChip('warn') }
           ],
 
           /* supplier - reach, the inbox, the listing, the vault, the plan */
@@ -985,6 +1112,31 @@ class Component extends DCLogic {
       showTourPrompt: isPlatform && !st.tourDismissed && st.tourStep === null,
       showTourRestart: isPlatform && st.tourDismissed && st.tourStep === null,
 
+      /* Sidebar count for Quotes (2 Sep) — neutral, because three replies
+         to compare is work rather than a deadline. Invoices' badge is derived
+         after the feature merge below, beside the bell it agrees with. */
+      navQuoteCount: String(this.QUOTES.length),
+
+      /* The dashboard's consolidation card. The arithmetic stays in the tier
+         helpers; the switches write the same calculator state the Tiers screen
+         does, so a demonstrator who changes it here finds that screen agreeing. */
+      consolCardStyle: full
+        ? 'border:1.5px solid #C9A227;background:linear-gradient(180deg,#FFFDF4,#FFFFFF 60%);'
+        : 'border:1px solid #E5EAF1;background:#FFFFFF;',
+      saveOnly: this._gbp(save),
+      dashConsolLabel: [calc.agency, calc.logistics, calc.customs, true].filter(Boolean).length
+        + ' of 4 pillars active under one roof' + (full ? ', Full Stack' : ''),
+      dashConsolHint: full
+        ? 'All three lines held: Full Stack.'
+        : (calc.customs && !calc.logistics)
+          ? 'Customs alone does not reach 7%: the ladder runs Agency, then Logistics, then Customs.'
+          : 'Reach Customs and the roof turns gold.',
+      /* One spark at the apex while Full Stack is held. */
+      dashGlint: full ? 'glint .7s ease-out both' : 'none',
+      keyAgency: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCalc({ agency: !this.state.calc.agency }); } },
+      keyLogistics: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCalc({ logistics: !this.state.calc.logistics }); } },
+      keyCustoms: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCalc({ customs: !this.state.calc.customs }); } },
+
       /* pillars widget (bound live to calculator state) */
       p1Fill: calc.agency ? '#0E5E8A' : '#D7DFE8',
       p2Fill: calc.logistics ? '#0E5E8A' : '#D7DFE8',
@@ -1007,7 +1159,13 @@ class Component extends DCLogic {
       esgBtnStyle: 'border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;' +
         (st.esgOnly ? 'background:#0A2540;border:1.5px solid #0A2540;color:#FFFFFF;' : 'background:#FFFFFF;border:1.5px solid #CBD6E2;color:#33475F;'),
       toggleEsg: () => this.setState({ esgOnly: !this.state.esgOnly }),
-      chips: chips,
+      tiles: tiles,
+      mktBrowsing: browsing,
+      mktFiltered: !browsing,
+      mktResultsTitle: browsing ? 'All services' : (st.chip === 'All' ? 'Search results' : st.chip),
+      mktFilterLabel: st.chip === 'All' ? '\u201C' + st.query.trim() + '\u201D' : st.chip,
+      mktFilterAria: 'Clear the ' + (st.chip === 'All' ? st.query.trim() : st.chip) + ' filter',
+      clearMktFilter: () => this.setState({ chip: 'All', query: '' }),
       inhouseList: inhouseList, hasInhouse: inhouseList.length > 0,
       thirdList: thirdList, hasThird: thirdList.length > 0,
       promotedIncluded: thirdList.some((s) => s.promoted),
@@ -1153,6 +1311,7 @@ class Component extends DCLogic {
        merged in: it counts what needs a decision — invoices still inside
        their seven-day window plus compliance alerts. Letters in flight are
        progress, not action, so they are deliberately not counted. */
+    vals.navInvoiceCount = String(vals.dashInvCount || 0);
     const bell = (vals.dashInvCount || 0) + (vals.watchCount || 0);
     vals.bellCount = String(bell);
     vals.bellHasCount = bell > 0;
