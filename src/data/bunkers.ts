@@ -30,7 +30,7 @@ export const BUNKER_PORTS = ['Aberdeen', 'Peterhead', 'Montrose'] as const;
 
 /** The last stem each vessel took — the consumption history the enquiry pre-fills from. */
 export const LAST_STEM: Record<string, { grade: BunkerGrade; quantityMt: number; when: string }> = {
-  'elan': { grade: 'LSMGO', quantityMt: 180, when: 'Aberdeen, 26 Jul' },
+  elan: { grade: 'LSMGO', quantityMt: 180, when: 'Aberdeen, 26 Jul' },
   boreal: { grade: 'MGO', quantityMt: 90, when: 'Peterhead, 3 Aug' },
   'granite-coast': { grade: 'VLSFO', quantityMt: 320, when: 'Aberdeen, 11 Aug' },
 };

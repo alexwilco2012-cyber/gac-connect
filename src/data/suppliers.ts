@@ -315,10 +315,7 @@ export const SUPPLIERS: Supplier[] = [
     esg: 'A',
     certs: fullCerts(['BOSIET', 'HUET', 'Medical certificates']),
     plan: 'professional',
-    recentJobs: [
-      'Medical cover — MV Elan port call',
-      'Topside medic — Browne Energy shutdown',
-    ],
+    recentJobs: ['Medical cover — MV Elan port call', 'Topside medic — Browne Energy shutdown'],
   },
   {
     id: 'caledonia-scaffolding',
