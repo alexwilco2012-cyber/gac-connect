@@ -427,7 +427,7 @@ class Component extends DCLogic {
     const related = (this.RELATED[rq.cat] || []).filter((r) => rq.related[r.id]);
     const hotelChosen = related.some((r) => r.meals);
     const mealLine = 'meal allowance ' + this._gbp(this._mealPerDay(rq.nights)) + '/day, ' + rq.nights + (rq.nights === 1 ? ' night' : ' nights');
-    const parts = [(isHotel ? 'Booking request' : 'Quote request') + ' sent to ' + rq.name + ' — ' + service + ', MV Caledonian Star.', 'Reply-by window: ' + win.label + '.'];
+    const parts = [(isHotel ? 'Booking request' : 'Quote request') + ' sent to ' + rq.name + ' — ' + service + ', MV Elan.', 'Reply-by window: ' + win.label + '.'];
     if (isHotel) parts.push('Rate indicative and subject to availability — your agent confirms the booking on the platform' + (rq.meals ? ' (' + mealLine + ')' : '') + '.');
     if (this._isOverrunCat(rq.cat)) parts.push('Price covers the booked window ' + (rq.bookedWindow || '').trim() + '; overrun not included, subject to change, supplier T&Cs included.');
     if (related.length) parts.push(related.length + ' related ' + (related.length === 1 ? 'service' : 'services') + ' passed to your GAC agent' + (hotelChosen && rq.meals ? ' (' + mealLine + ')' : '') + '.');
@@ -949,7 +949,7 @@ class Component extends DCLogic {
           /* 22px beside the consolidation card's 44px: one number leads. */
           clientKpis: [
             { label: 'Port calls in the window', value: '3', delta: 'Aberdeen and Peterhead', chipStyle: kpiChip('info') },
-            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Caledonian Star', chipStyle: kpiChip('info') },
+            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Elan', chipStyle: kpiChip('info') },
             { label: 'Invoices in your window', value: '2', delta: 'Tightest closes in 2 days', chipStyle: kpiChip('warn') }
           ],
 
@@ -1090,7 +1090,7 @@ class Component extends DCLogic {
       /* 48-hour strip. Offsets are hours from the demo "now" (Thursday
          08:00); the label column carries every fact the drawing shows. */
       dashCalls: [
-        { name: 'MV Caledonian Star', sched: 'Aberdeen · ETA Fri 08:00 · Berth: Regent Quay', pill: 'Procurement list ready', tone: 'info', at: 24, mark: 'ETA Fri 08:00' },
+        { name: 'MV Elan', sched: 'Aberdeen · ETA Fri 08:00 · Berth: Regent Quay', pill: 'Procurement list ready', tone: 'info', at: 24, mark: 'ETA Fri 08:00' },
         { name: 'MV Boreal', sched: 'Peterhead · ETA Fri 14:30 · Berth: Smith Quay', pill: '2 certs expiring on booked supplier', tone: 'warn', at: 30.5, mark: 'ETA Fri 14:30' },
         { name: 'MV Granite Coast', sched: 'Aberdeen · ETD Sat 06:00 · Customs: T1 in progress', pill: 'All documents complete', tone: 'ok', at: 46, mark: 'ETD Sat 06:00' }
       ].map(function (v) {
@@ -1114,7 +1114,7 @@ class Component extends DCLogic {
       sendQuoteRequests: () => {
         if (this.state.sent) return;
         this.setState({ sent: true }); this._set('sent', true);
-        this.toastMsg('9 quote requests issued for MV Caledonian Star. Replies will populate the comparison view.', 'SENT');
+        this.toastMsg('9 quote requests issued for MV Elan. Replies will populate the comparison view.', 'SENT');
         this._routeTimer = setTimeout(() => this.nav('quotes'), 1500);
       },
       /* offered on any platform screen, not the dashboard alone: the closing

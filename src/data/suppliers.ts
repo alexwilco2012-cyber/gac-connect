@@ -97,7 +97,7 @@ export const SUPPLIERS: Supplier[] = [
     goldBand: 'held',
     goldBandDate: 'Audit renewed May 2026',
     recentJobs: [
-      'Crane hire — MV Caledonian Star, Aberdeen',
+      'Crane hire — MV Elan, Aberdeen',
       'Heavy lift support — Browne Energy quayside works',
       'Lift plan and appointed person — Wilkinson Drilling mobilisation',
     ],
@@ -141,7 +141,7 @@ export const SUPPLIERS: Supplier[] = [
     certs: fullCerts(['LOLER', 'Insurance', 'Operator certificates']),
     plan: 'free',
     recentJobs: [
-      'FLT with operator, 1 day — MV Caledonian Star stores load',
+      'FLT with operator, 1 day — MV Elan stores load',
       'Telehandler hire — Grizzell Marine quayside laydown',
     ],
   },
@@ -167,7 +167,7 @@ export const SUPPLIERS: Supplier[] = [
       availability: '24 h · 1 h notice',
     },
     recentJobs: [
-      'Crew change, 9 pax + stores — MV Caledonian Star at anchor',
+      'Crew change, 9 pax + stores — MV Elan at anchor',
       'Spares run — Wilkinson Drilling standby vessel',
     ],
   },
@@ -238,7 +238,7 @@ export const SUPPLIERS: Supplier[] = [
     bookingNote:
       'Airport pickups are timed to the tracked flight — a delay moves the pickup automatically, and the driver waits at arrivals.',
     recentJobs: [
-      'Airport → Regent Quay, 6 crew — MV Caledonian Star on-signers',
+      'Airport → Regent Quay, 6 crew — MV Elan on-signers',
       'Hotel → quay minibus — Grizzell Marine crew change',
     ],
   },
@@ -280,7 +280,7 @@ export const SUPPLIERS: Supplier[] = [
     ],
     recentJobs: [
       'Spares collection, Grangemouth → GAC Aberdeen warehouse',
-      'Quayside delivery, 6 pallets — MV Caledonian Star',
+      'Quayside delivery, 6 pallets — MV Elan',
     ],
   },
   {
@@ -316,7 +316,7 @@ export const SUPPLIERS: Supplier[] = [
     certs: fullCerts(['BOSIET', 'HUET', 'Medical certificates']),
     plan: 'professional',
     recentJobs: [
-      'Medical cover — MV Caledonian Star port call',
+      'Medical cover — MV Elan port call',
       'Topside medic — Browne Energy shutdown',
     ],
   },
@@ -390,7 +390,7 @@ export const SUPPLIERS: Supplier[] = [
     esg: 'B',
     certs: fullCerts(['Insurance', 'Food hygiene certificates']),
     plan: 'free',
-    recentJobs: ['Crew provisions — MV Caledonian Star'],
+    recentJobs: ['Crew provisions — MV Elan'],
   },
   {
     id: 'granite-quay-hotel',
@@ -406,7 +406,7 @@ export const SUPPLIERS: Supplier[] = [
     bookingNote:
       'GAC rate is indicative and subject to availability. If the hotel is fully booked, your agent steps in to secure an alternative and confirms it on the platform.',
     recentJobs: [
-      'Crew rooms, 2 nights — MV Caledonian Star off-signers',
+      'Crew rooms, 2 nights — MV Elan off-signers',
       'Medical stand-down stay — Browne Energy crew member',
     ],
   },

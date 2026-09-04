@@ -376,7 +376,7 @@ function ClientView() {
           <SideStat
             label="Quotes to compare"
             value={String(QUOTES.length)}
-            chip="Crane hire · MV Caledonian Star"
+            chip="Crane hire · MV Elan"
           />
           <SideStat
             label="Invoices in your window"

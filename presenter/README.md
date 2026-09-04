@@ -124,7 +124,7 @@ over `app/features/*.js` as over the core files.
 ## The opening
 
 Redesigned 2026-09-04 ("one port call"). The presenter opens with a
-fifteen-slide sequence that follows one vessel, MV Caledonian Star, due in
+fifteen-slide sequence that follows one vessel, MV Elan, due in
 Aberdeen at 0800 tomorrow, from the question of what she needs to the
 platform that answers it. Two typographic voices: the italic serif
 (Instrument Serif) narrates the metaphor and the port call; Space Grotesk in

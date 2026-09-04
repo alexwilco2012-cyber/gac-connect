@@ -8,7 +8,7 @@ import type { Page } from '@playwright/test';
  * a reload; Reset demo restores the draft.
  */
 
-const SUBJECT = 'Procurement request PR-1042 — MV Caledonian Star, Aberdeen — needed Fri 08:00';
+const SUBJECT = 'Procurement request PR-1042 — MV Elan, Aberdeen — needed Fri 08:00';
 
 /**
  * Compass supplies the whole list: no second supplier, and no mark-up, may

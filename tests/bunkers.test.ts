@@ -34,7 +34,7 @@ import type { BunkerEnquiryForm } from '../src/lib/bunkers';
  */
 
 const form = (over: Partial<BunkerEnquiryForm> = {}): BunkerEnquiryForm => ({
-  vesselId: 'caledonian-star',
+  vesselId: 'elan',
   port: 'Aberdeen',
   grade: 'LSMGO',
   quantityMt: '180',

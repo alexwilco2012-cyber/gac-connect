@@ -20,7 +20,7 @@ const LAUNCH_PORT_NOTES = {
   Macduff: 'Cover for the Moray Firth anchorages and vessels working the firth. Transits are longer and daylight running is the norm, so plan the return leg with the operator.'
 };
 const LAUNCH_VESSELS = [
-  { id: 'caledonian-star', name: 'MV Caledonian Star', port: 'Aberdeen' },
+  { id: 'elan', name: 'MV Elan', port: 'Aberdeen' },
   { id: 'boreal', name: 'MV Boreal', port: 'Peterhead' },
   { id: 'granite-coast', name: 'MV Granite Coast', port: 'Aberdeen' }
 ];

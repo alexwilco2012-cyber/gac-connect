@@ -146,7 +146,7 @@ function vesselFor(request: ProcurementRequest) {
   return VESSELS.find((v) => v.id === request.vesselId) ?? VESSELS[0]!;
 }
 
-/** "PR-1042 — MV Caledonian Star, Aberdeen — needed Fri 08:00" without the leading noun. */
+/** "PR-1042 — MV Elan, Aberdeen — needed Fri 08:00" without the leading noun. */
 export function requestSummary(request: ProcurementRequest): string {
   const v = vesselFor(request);
   return `${request.ref} — ${v.name}, ${v.port} — needed ${request.neededBy}`;
