@@ -46,7 +46,7 @@ class Component extends DCLogic {
          supplier's (26 Aug). Persisted so a rehearsal picks up where it was
          left, exactly as the site does. */
       dashView: this._get('dash-view', 'client') === 'supplier' ? 'supplier' : 'client',
-      /* Advantage opening: presOn shows the overlay, advSlide 0..3 is the active
+      /* Advantage opening: presOn shows the overlay, advSlide 0..11 is the active
          slide, advOp/advPe drive the fade-out into the platform. */
       presOn: presWanted, advSlide: 0, advOp: '1', advPe: 'auto'
     };
@@ -278,7 +278,7 @@ class Component extends DCLogic {
      lives in st.advSlide and the CSS does the rest via the .active class. The
      one deliberate difference is the closer's CTA, which fades the overlay into
      the embedded platform home instead of linking to the live site. */
-  get ADV_SLIDES() { return 11; }
+  get ADV_SLIDES() { return 12; }
   _advGo(i) {
     if (!this.state.presOn || this._advLeaving) return;
     if (i < 0 || i >= this.ADV_SLIDES || i === this.state.advSlide) return;
@@ -748,18 +748,21 @@ class Component extends DCLogic {
     const adv = st.advSlide;
     const pad2 = (n) => (n < 10 ? '0' : '') + n;
     const LAST = this.ADV_SLIDES - 1;
-    const advCls = (i) => 'slide slide-' + (i + 1) + (i === LAST ? ' closer' : '') + (adv === i ? ' active' : '');
+    /* slide-0 is the opener (contents page); the story slides keep their slide-1..11
+       class names so the per-slide CSS choreography does not move with the index. */
+    const advCls = (i) => 'slide slide-' + i + (i === LAST ? ' closer' : '') + (adv === i ? ' active' : '');
     const advHid = (i) => (adv === i ? 'false' : 'true');
     const ADV_DOT_LABELS = [
-      'Slide 1 — chess', 'Slide 2 — the board today', 'Slide 3 — what we are proposing',
-      'Slide 4 — how it fixes it', 'Slide 5 — the numbers', 'Slide 6 — strategy and finance',
-      'Slide 7 — F1', 'Slide 8 — QHSSE', 'Slide 9 — Hyrox',
-      'Slide 10 — our people', 'Slide 11 — GAC Connect'
+      'Slide 1 — GAC Connect contents',
+      'Slide 2 — chess', 'Slide 3 — the board today', 'Slide 4 — what we are proposing',
+      'Slide 5 — how it fixes it', 'Slide 6 — the numbers', 'Slide 7 — strategy and finance',
+      'Slide 8 — F1', 'Slide 9 — QHSSE', 'Slide 10 — Hyrox',
+      'Slide 11 — our people', 'Slide 12 — GAC Connect'
     ];
-    /* One advCls<n>/advHid<n> binding per slide, built from the count so adding
-       a slide is a partial plus a dot label and nothing else. */
+    /* One advCls<n>/advHid<n> binding per slide (n = index, opener is 0), built
+       from the count so adding a slide is a partial plus a dot label and nothing else. */
     const advSlots = {};
-    for (let i = 0; i < this.ADV_SLIDES; i++) { advSlots['advCls' + (i + 1)] = advCls(i); advSlots['advHid' + (i + 1)] = advHid(i); }
+    for (let i = 0; i < this.ADV_SLIDES; i++) { advSlots['advCls' + i] = advCls(i); advSlots['advHid' + i] = advHid(i); }
     if (!this._advGoCache) this._advGoCache = ADV_DOT_LABELS.map((_, i) => (e) => this._advDot(i, e));
 
     const vals = {
@@ -774,6 +777,9 @@ class Component extends DCLogic {
       advEnter: () => this._advEnter(),
       ctaRef: this.ctaRef,
       advCounter: pad2(adv + 1) + ' / ' + pad2(this.ADV_SLIDES),
+      /* the opener is its own wordmark: the header drops the mark and the hint arrives late */
+      advHdrCls: 'hdr' + (adv === 0 ? ' hdr-opener' : ''),
+      advFtrCls: 'ftr' + (adv === 0 ? ' ftr-opener' : ''),
       ...advSlots,
       advDots: ADV_DOT_LABELS.map((label, i) => ({
         cls: 'dot' + (adv === i ? ' on' : ''), label: label, go: this._advGoCache[i]

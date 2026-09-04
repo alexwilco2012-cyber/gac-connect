@@ -42,21 +42,26 @@
 @keyframes advWaveBob{to{transform:translateY(7px)}}
 
 /* ============ Chrome (header / footer) ============ */
-.adv .hdr{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:26px 34px;z-index:20;pointer-events:none}
-.adv .wordmark{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:.14em}
+.adv .hdr{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:34px 44px;z-index:20;pointer-events:none}
+.adv .wordmark{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:.14em}
 .adv .wordmark b{color:var(--gold);font-weight:700}
 .adv .wordmark span{color:var(--mist)}
-.adv .wordmark small{display:block;font-family:var(--body);font-weight:500;font-size:9.5px;letter-spacing:.32em;color:var(--dim);margin-top:4px}
-.adv .counter{font-family:var(--disp);font-weight:500;font-size:13px;letter-spacing:.22em;color:var(--dim);font-variant-numeric:tabular-nums}
-.adv .ftr{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:22px 34px;z-index:20}
-.adv .conf{font-size:10px;letter-spacing:.24em;color:rgba(143,166,188,.65);pointer-events:none}
-.adv .hint{font-size:11px;letter-spacing:.06em;color:rgba(143,166,188,.85);pointer-events:none}
-.adv .hint kbd{font-family:var(--body);font-size:10px;border:1px solid rgba(143,166,188,.4);border-radius:5px;padding:1.5px 6px;margin:0 2px;color:var(--mist)}
-.adv .dots{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:21}
-.adv .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(234,242,248,.35);background:transparent;cursor:pointer;padding:0;transition:all .3s var(--ease)}
+.adv .wordmark small{display:block;font-family:var(--body);font-weight:500;font-size:12px;letter-spacing:.32em;color:var(--dim);margin-top:4px}
+.adv .counter{font-family:var(--disp);font-weight:500;font-size:17px;letter-spacing:.22em;color:var(--dim);font-variant-numeric:tabular-nums}
+.adv .ftr{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:30px 44px;z-index:20}
+.adv .conf{font-size:13px;letter-spacing:.24em;color:rgba(143,166,188,.65);pointer-events:none}
+.adv .hint{font-size:14px;letter-spacing:.06em;color:rgba(143,166,188,.85);pointer-events:none}
+.adv .hint kbd{font-family:var(--body);font-size:13px;border:1px solid rgba(143,166,188,.4);border-radius:5px;padding:2px 7px;margin:0 2px;color:var(--mist)}
+.adv .dots{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;gap:14px;z-index:21}
+.adv .dot{width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(234,242,248,.35);background:transparent;cursor:pointer;padding:0;transition:all .3s var(--ease)}
 .adv .dot:hover{border-color:var(--gold)}
 .adv .dot.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(255,199,44,.7)}
 .adv .dot:focus-visible{outline:2px solid rgba(255,199,44,.7);outline-offset:3px}
+/* the opener (slide 0) is its own wordmark: the header keeps only the counter, and
+   the click/Esc hint arrives after the running order has landed */
+.adv .hdr.hdr-opener{justify-content:flex-end}
+.adv .hdr.hdr-opener .wordmark{display:none}
+.adv .ftr.ftr-opener .hint{animation:advFadeIn .8s ease 2.2s both}
 
 /* ============ Slides ============ */
 .adv .slide{
@@ -71,20 +76,20 @@
   opacity:1;visibility:visible;transform:none;pointer-events:auto;
   transition:opacity .7s var(--ease), transform .7s var(--ease), visibility 0s 0s;
 }
-.adv .kicker{font-weight:600;font-size:11.5px;letter-spacing:.34em;color:var(--gold);text-transform:uppercase}
-.adv .kicker .sep{color:var(--dim);margin:0 6px}
+.adv .kicker{font-weight:600;font-size:15px;letter-spacing:.34em;color:var(--gold);text-transform:uppercase}
+.adv .kicker .sep{color:var(--dim);margin:0 10px}
 .adv h1{font-family:var(--disp);font-weight:500;line-height:1.14;letter-spacing:-.01em}
-.adv h1 .l1{display:block;font-size:clamp(1.3rem,2.7vw,1.9rem);color:var(--mist);font-weight:500}
-.adv h1 .l2{display:block;font-size:clamp(1.8rem,4.1vw,3rem);color:var(--gold);font-weight:700;margin-top:.35em;text-wrap:balance}
-.adv .illu{width:min(92vw,880px)}
-.adv .illu svg{display:block;width:100%;height:auto;max-height:46vh}
+.adv h1 .l1{display:block;font-size:clamp(1.6rem,3.4vw,2.5rem);color:var(--mist);font-weight:500}
+.adv h1 .l2{display:block;font-size:clamp(2.2rem,5.2vw,3.875rem);color:var(--gold);font-weight:700;margin-top:.35em;text-wrap:balance}
+.adv .illu{width:min(94vw,1060px)}
+.adv .illu svg{display:block;width:100%;height:auto;max-height:50vh}
 .adv .chip{
   display:inline-flex;align-items:center;gap:9px;
   border:1px solid rgba(255,199,44,.35);background:rgba(255,199,44,.07);
-  color:var(--gold);border-radius:999px;padding:9px 20px;
-  font-weight:600;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);border-radius:999px;padding:12px 26px;
+  font-weight:600;font-size:16px;letter-spacing:.12em;text-transform:uppercase;
 }
-.adv .chip svg{flex:none}
+.adv .chip svg{flex:none;width:18px;height:18px}
 
 /* entrance stagger */
 .adv .slide.active .kicker{animation:advRise .6s var(--ease) .05s both}
@@ -97,8 +102,8 @@
 .adv .tb{transform-box:fill-box;transform-origin:center}
 
 /* ============ SVG shared text ============ */
-.adv .svglabel{font-family:var(--body);font-weight:600;letter-spacing:.28em;font-size:11px}
-.adv .svgtiny{font-family:var(--body);font-weight:600;letter-spacing:.14em;font-size:8.5px}
+.adv .svglabel{font-family:var(--body);font-weight:600;letter-spacing:.28em;font-size:12.5px}
+.adv .svgtiny{font-family:var(--body);font-weight:600;letter-spacing:.14em;font-size:10px}
 
 /* ============ Slide 1 · Chess ============ */
 .adv .chess .sq-a{fill:rgba(234,242,248,.075)}
@@ -193,53 +198,55 @@
 @supports not (offset-path: path("M0,0 L1,1")){.adv .hy .runner{display:none}}
 
 /* ============ Slide 11 · Closer ============ */
-.adv .closer h1 .l1{font-size:clamp(1.5rem,3.4vw,2.3rem)}
-.adv .closer h1 .l2{font-size:clamp(2.1rem,5.4vw,3.9rem)}
-.adv .recap{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:980px}
+.adv .closer h1 .l1{font-size:clamp(1.9rem,4.2vw,3rem)}
+.adv .closer h1 .l2{font-size:clamp(2.6rem,6.6vw,5rem)}
+.adv .recap{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;max-width:1400px}
+.adv .closer .recap{max-width:1300px}
 .adv .rcard{
-  flex:1 1 250px;max-width:305px;text-align:left;
+  flex:1 1 340px;max-width:430px;text-align:left;box-sizing:border-box;
   border:1px solid rgba(14,94,138,.55);background:rgba(234,242,248,.045);
-  border-radius:16px;padding:18px 20px;backdrop-filter:blur(6px);
+  border-radius:20px;padding:26px 28px;backdrop-filter:blur(6px);
 }
-.adv .rcard .ric{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:rgba(255,199,44,.1);border:1px solid rgba(255,199,44,.3);margin-bottom:12px}
-.adv .rcard h3{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--mist);letter-spacing:.01em;margin-bottom:6px}
-.adv .rcard p{font-size:12.5px;line-height:1.55;color:var(--dim)}
+.adv .rcard .ric{display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:13px;background:rgba(255,199,44,.1);border:1px solid rgba(255,199,44,.3);margin-bottom:16px}
+.adv .rcard .ric svg{width:28px;height:28px}
+.adv .rcard h3{font-family:var(--disp);font-weight:700;font-size:20px;color:var(--mist);letter-spacing:.01em;margin-bottom:10px}
+.adv .rcard p{font-size:16px;line-height:1.55;color:var(--dim)}
 .adv .slide.active .recap .rcard{animation:advRise .65s var(--ease) both}
 .adv .slide.active .recap .rcard:nth-child(1){animation-delay:.55s}
 .adv .slide.active .recap .rcard:nth-child(2){animation-delay:.68s}
 .adv .slide.active .recap .rcard:nth-child(3){animation-delay:.81s}
-.adv .cta-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.adv .cta-wrap{display:flex;flex-direction:column;align-items:center;gap:18px}
 .adv .slide.active .cta-wrap{animation:advRise .7s var(--ease) 1s both}
 .adv .cta{
   display:inline-flex;align-items:center;gap:12px;cursor:pointer;
-  font-family:var(--disp);font-weight:700;font-size:16.5px;letter-spacing:.03em;line-height:normal;
+  font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:.03em;line-height:normal;
   color:#231A02;text-decoration:none;appearance:none;-webkit-appearance:none;
   background:linear-gradient(180deg,#FFD65E 0%,#F2BC24 100%);
-  padding:16px 34px;border-radius:999px;border:none;
+  padding:20px 44px;border-radius:999px;border:none;
   box-shadow:0 14px 44px rgba(255,199,44,.35), inset 0 1px 0 rgba(255,255,255,.55);
   transition:transform .25s var(--ease), box-shadow .25s var(--ease), filter .25s var(--ease);
 }
 .adv .cta:hover{transform:translateY(-2px);box-shadow:0 20px 54px rgba(255,199,44,.45), inset 0 1px 0 rgba(255,255,255,.55);filter:brightness(1.05)}
 .adv .cta:focus-visible{outline:3px solid rgba(255,199,44,.65);outline-offset:4px}
-.adv .cta svg{transition:transform .25s var(--ease)}
+.adv .cta svg{width:22px;height:22px;transition:transform .25s var(--ease)}
 .adv .cta:hover svg{transform:translateX(4px)}
 .adv .cta.pulse{animation:advCtaPulse .5s var(--ease)}
 @keyframes advCtaPulse{35%{transform:scale(1.06)}}
-.adv .cta-note{font-size:11px;letter-spacing:.1em;color:var(--dim)}
+.adv .cta-note{font-size:14px;letter-spacing:.1em;color:var(--dim)}
 /* The closer carries two ways in: the button for the presenter, the code for the
    room. The QR points at the platform (/gac-connect/app), never at the deck. */
-.adv .close-row{display:flex;align-items:center;justify-content:center;gap:clamp(20px,4vw,52px);flex-wrap:wrap}
-.adv .qr-wrap{display:flex;align-items:center;gap:14px}
+.adv .close-row{display:flex;align-items:center;justify-content:center;gap:clamp(28px,5vw,70px);flex-wrap:wrap}
+.adv .qr-wrap{display:flex;align-items:center;gap:18px}
 .adv .qr-plate{
-  background:#FFFFFF;border-radius:14px;padding:9px;line-height:0;
+  background:#FFFFFF;border-radius:16px;padding:11px;line-height:0;
   box-shadow:0 10px 34px rgba(4,12,26,.45);border:1px solid rgba(255,199,44,.5);
 }
-.adv .qr-plate .qr{display:block;width:clamp(92px,11vh,124px);height:auto}
-.adv .qr-note{text-align:left;max-width:170px}
-.adv .qr-note b{display:block;font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--mist)}
-.adv .qr-note span{display:block;margin-top:5px;font-size:11.5px;line-height:1.45;color:var(--dim)}
+.adv .qr-plate .qr{display:block;width:160px;height:160px}
+.adv .qr-note{text-align:left;max-width:220px}
+.adv .qr-note b{display:block;font-family:var(--disp);font-weight:700;font-size:17px;color:var(--mist)}
+.adv .qr-note span{display:block;margin-top:6px;font-size:15px;line-height:1.45;color:var(--dim)}
 .adv .slide.active .qr-wrap{animation:advRise .7s var(--ease) 1.15s both}
-.adv .tagline{font-family:var(--disp);font-weight:500;font-size:13px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.adv .tagline{font-family:var(--disp);font-weight:500;font-size:17px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
 .adv .slide.active .tagline{animation:advRise .6s var(--ease) .42s both}
 
 /* ============ Story slides 2-6, 8, 10 (shared furniture) ============
@@ -247,14 +254,14 @@
    the metaphor in front of them (chess, F1, Hyrox) and so
    carry cards instead of an illustration. Both reuse .slide, .kicker, h1 and
    .chip unchanged; everything below is the extra furniture they need. */
-.adv .svgbody{font-family:var(--body);font-weight:500;font-size:11.5px;letter-spacing:.01em}
-.adv .svgnum{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:-.01em}
+.adv .svgbody{font-family:var(--body);font-weight:500;font-size:13px;letter-spacing:.01em}
+.adv .svgnum{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.01em}
 
 /* facts row (slide 7) */
-.adv .facts{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(16px,4vw,54px)}
-.adv .fact{min-width:104px}
-.adv .fact b{display:block;font-family:var(--disp);font-weight:700;font-size:clamp(1.35rem,2.9vw,2rem);line-height:1.05;color:var(--gold);font-variant-numeric:tabular-nums}
-.adv .fact span{display:block;margin-top:7px;font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.adv .facts{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(24px,5vw,80px)}
+.adv .fact{min-width:140px}
+.adv .fact b{display:block;font-family:var(--disp);font-weight:700;font-size:clamp(1.7rem,3.6vw,2.75rem);line-height:1.05;color:var(--gold);font-variant-numeric:tabular-nums}
+.adv .fact span{display:block;margin-top:9px;font-size:13px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
 .adv .slide.active .facts .fact{animation:advRise .6s var(--ease) both}
 .adv .slide.active .facts .fact:nth-child(1){animation-delay:1.5s}
 .adv .slide.active .facts .fact:nth-child(2){animation-delay:1.62s}
@@ -262,18 +269,18 @@
 .adv .slide.active .facts .fact:nth-child(4){animation-delay:1.86s}
 
 /* bullet cards + footnote (slides 8-10) */
-.adv .rcard ul{list-style:none;display:flex;flex-direction:column;gap:7px}
-.adv .rcard li{position:relative;padding-left:15px;font-size:12px;line-height:1.5;color:var(--dim)}
-.adv .rcard li::before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--gold);opacity:.75}
-.adv .note{max-width:940px;font-size:12.5px;line-height:1.65;color:rgba(143,166,188,.92);text-wrap:pretty}
+.adv .rcard ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.adv .rcard li{position:relative;padding-left:20px;font-size:16px;line-height:1.5;color:var(--dim)}
+.adv .rcard li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.75}
+.adv .note{max-width:1240px;font-size:17px;line-height:1.65;color:rgba(143,166,188,.92);text-wrap:pretty}
 .adv .note b{color:var(--mist);font-weight:600}
 .adv .slide.active .note{animation:advRise .65s var(--ease) 1.05s both}
 
 /* the card slides are text-dense: smaller headline, and they scroll if they must */
 .adv .slide-6,.adv .slide-8,.adv .slide-10{justify-content:safe center;overflow-y:auto}
-.adv .slide-6 h1 .l1,.adv .slide-8 h1 .l1,.adv .slide-10 h1 .l1{font-size:clamp(1.1rem,2.2vw,1.5rem)}
-.adv .slide-6 h1 .l2,.adv .slide-8 h1 .l2,.adv .slide-10 h1 .l2{font-size:clamp(1.5rem,3.3vw,2.3rem)}
-.adv .slide-6 .recap,.adv .slide-8 .recap,.adv .slide-10 .recap{max-width:1010px}
+.adv .slide-6 h1 .l1,.adv .slide-8 h1 .l1,.adv .slide-10 h1 .l1{font-size:clamp(1.35rem,2.8vw,2rem)}
+.adv .slide-6 h1 .l2,.adv .slide-8 h1 .l2,.adv .slide-10 h1 .l2{font-size:clamp(1.9rem,4.2vw,3.125rem)}
+.adv .slide-6 .recap,.adv .slide-8 .recap,.adv .slide-10 .recap{max-width:1400px}
 
 /* ============ Slide 2 · The board today ============ */
 .adv .slide.active .prob .pr-ask{animation:advRise .55s var(--ease) .5s both}
@@ -352,14 +359,61 @@
 .adv .slide.active .bars .bx-be{animation:advRise .55s var(--ease) 2s both}
 .adv .slide-5.slide.active .chip{animation-delay:2.4s}
 
+/* ============ Slide 0 · Opener / contents ============
+   The one left-aligned slide in the deck: the name set large on the left, the
+   three-part running order behind a gold rule on the right. Values are the
+   1920 x 1080 design figures, kept fluid so the frame holds at 1366 x 768. */
+.adv .slide-0{
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,4.2vw,80px);align-items:center;
+  padding:clamp(92px,15vh,160px) clamp(22px,7.3vw,140px) clamp(110px,16vh,170px);text-align:left;
+}
+.adv .op-name{display:flex;flex-direction:column;gap:30px;min-width:0}
+.adv .op-mark{font-family:var(--disp);font-weight:700;font-size:clamp(4rem,10.4vw,12.5rem);line-height:.9;letter-spacing:-.02em}
+.adv .op-mark span{display:block}
+.adv .op-l1{color:var(--gold)}
+.adv .op-l2{color:var(--mist)}
+.adv .op-parts{position:relative;display:flex;flex-direction:column;gap:44px;padding-left:44px;min-width:0}
+.adv .op-rule{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);transform-origin:top}
+.adv .op-label{font-weight:600;font-size:13px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.adv .op-list{list-style:none;display:flex;flex-direction:column;gap:44px}
+.adv .op-row{display:grid;grid-template-columns:72px 1fr;gap:6px 22px;align-items:baseline}
+.adv .op-num{font-family:var(--disp);font-weight:500;font-size:24px;color:var(--gold);font-variant-numeric:tabular-nums}
+.adv .op-title{font-family:var(--disp);font-weight:500;font-size:clamp(1.5rem,2vw,2.375rem);color:var(--mist)}
+.adv .op-desc{grid-column:2;font-size:clamp(15px,.94vw,18px);line-height:1.4;color:var(--dim)}
+/* entrance: name first, then the rule draws down and the running order lands on it */
+.adv .slide-0.active .op-l1{animation:advRise .8s var(--ease) .2s both}
+.adv .slide-0.active .op-l2{animation:advRise .8s var(--ease) .35s both}
+.adv .slide-0.active .tagline{animation:advRise .6s var(--ease) .6s both}
+.adv .slide-0.active .op-rule{animation:introRuleY 1.1s var(--ease) .7s both}
+.adv .slide-0.active .op-label{animation:advRise .6s var(--ease) .8s both}
+.adv .slide-0.active .op-row{animation:advRise .65s var(--ease) both}
+.adv .slide-0.active .op-row:nth-child(1){animation-delay:1.05s}
+.adv .slide-0.active .op-row:nth-child(2){animation-delay:1.25s}
+.adv .slide-0.active .op-row:nth-child(3){animation-delay:1.45s}
+@keyframes introRuleY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
 /* ============ Responsive ============ */
 @media (max-width:720px){
   .adv .hdr{padding:18px 20px}.adv .ftr{padding:16px 20px}
   .adv .hint{display:none}
+  .adv .wordmark{font-size:17px}.adv .wordmark small{font-size:9.5px}
+  .adv .counter{font-size:13px}
+  .adv .conf{font-size:9px;letter-spacing:.16em;white-space:nowrap}
+  .adv .dots{bottom:44px;gap:9px}
+  .adv .dot{width:8px;height:8px}
   .adv .slide{padding:76px 14px 96px;gap:14px}
   .adv .slide.closer{justify-content:safe center;overflow-y:auto}
+  .adv .slide-0{display:flex;flex-direction:column;align-items:flex-start;justify-content:safe center;overflow-y:auto;gap:28px;padding:76px 22px 96px}
+  .adv .op-name{gap:16px}
+  .adv .op-mark{font-size:clamp(3.4rem,18vw,4.6rem)}
+  .adv .op-parts{gap:22px;padding-left:20px}
+  .adv .op-list{gap:18px}
+  .adv .op-row{grid-template-columns:44px 1fr;gap:3px 12px}
+  .adv .op-num{font-size:16px}
+  .adv .op-title{font-size:1.25rem}
+  .adv .op-desc{font-size:13px}
   .adv .closer h1 .l2{font-size:clamp(1.6rem,7vw,2.2rem)}
-  .adv .tagline{font-size:10px;letter-spacing:.22em}
+  .adv .tagline{font-size:10px;letter-spacing:.18em;text-wrap:balance}
   .adv .recap{flex-direction:column;gap:8px;width:100%;max-width:380px}
   .adv .rcard{display:flex;gap:12px;align-items:flex-start;flex:none;max-width:none;padding:11px 14px}
   .adv .rcard .ric{width:32px;height:32px;flex:none;margin-bottom:0}
@@ -382,18 +436,44 @@
 }
 @media (max-height:780px){
   .adv .slide{gap:clamp(8px,1.8vh,16px);padding-top:84px;padding-bottom:96px}
-  .adv .chip{padding:7px 16px;font-size:11px}
-  .adv h1 .l2{font-size:clamp(1.6rem,3.6vw,2.5rem)}
-  .adv .illu svg{max-height:42vh}
-  .adv .rcard{padding:14px 16px}
-  .adv .rcard li{font-size:11.5px;line-height:1.42;gap:5px}
-  .adv .note{font-size:11.5px;line-height:1.5}
+  .adv .chip{padding:9px 20px;font-size:13px}
+  .adv h1 .l2{font-size:clamp(2rem,4.6vw,3.2rem)}
+  .adv .illu svg{max-height:44vh}
+  .adv .rcard{padding:20px 22px}
+  .adv .rcard li{font-size:14px;line-height:1.42;gap:5px}
+  .adv .note{font-size:14px;line-height:1.5}
+  .adv .slide-0{padding-top:84px;padding-bottom:110px}
+  .adv .op-parts,.adv .op-list{gap:28px}
+  /* a 1366 x 768 laptop: the chrome tightens and the two tallest slides (the
+     numbers, the closer) step down so they still fit without scrolling; both
+     scroll rather than clip if a stranger viewport is shorter still */
+  .adv .hdr{padding:24px 44px}
+  .adv .ftr{padding:22px 44px}
+  .adv .dots{bottom:26px}
+  .adv .slide-5,.adv .slide.closer{justify-content:safe center;overflow-y:auto}
+  .adv .slide-5 .illu svg{max-height:36vh}
+  .adv .fact b{font-size:clamp(1.5rem,2.9vw,2.2rem)}
+  .adv .closer{gap:10px}
+  .adv .closer h1 .l1{font-size:clamp(1.5rem,3vw,2rem)}
+  .adv .closer h1 .l2{font-size:clamp(2rem,4.4vw,3rem)}
+  .adv .tagline{font-size:13px}
+  .adv .closer .rcard .ric{width:40px;height:40px;margin-bottom:10px}
+  .adv .closer .rcard .ric svg{width:22px;height:22px}
+  .adv .closer .rcard h3{font-size:17px;margin-bottom:6px}
+  .adv .closer .rcard p{font-size:14px;line-height:1.45}
+  .adv .cta{font-size:19px;padding:16px 36px}
+  .adv .cta-wrap{gap:12px}
+  .adv .qr-plate .qr{width:104px;height:104px}
+  .adv .qr-plate{padding:8px}
+  .adv .qr-note b{font-size:15px}
+  .adv .qr-note span{font-size:13px}
 }
 
 /* ============ Reduced motion ============ */
 /* base.css already kills every animation/transition site-wide under this query;
    these are the Advantage's static end-states so the slides still read. */
 @media (prefers-reduced-motion: reduce){
+  .adv .op-rule{transform:none}
   .adv .hy .runner{display:none}
   .adv .f1 .lt1,.adv .f1 .lt2,.adv .f1 .lt3,.adv .f1 .lt4,.adv .f1 .lt5{fill:#FF453A}
   .adv .f1 .car-go{transform:translateX(462px)}
