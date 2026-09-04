@@ -21,8 +21,12 @@ export function HarbourScene({
   onSelect: (id: ServiceId) => void;
   onClear: () => void;
 }) {
+  // On a phone the scene runs edge to edge and sits nearer square: inset in a
+  // 430px-tall card it was mostly empty sky, with the whole quay crammed into
+  // the bottom third at thumbnail size. The art is width-limited, so a
+  // shorter box costs it nothing and the bleed gains it a sixth.
   return (
-    <div className="relative h-[clamp(430px,54vw,760px)] w-full animate-[scene-in_0.9s_ease_both] overflow-hidden rounded-2xl bg-[#04101F] shadow-[0_1px_3px_rgba(10,37,64,0.12),0_10px_30px_rgba(10,37,64,0.14)]">
+    <div className="relative -mx-6 h-[clamp(360px,54vw,760px)] animate-[scene-in_0.9s_ease_both] overflow-hidden bg-[#04101F] shadow-[0_1px_3px_rgba(10,37,64,0.12),0_10px_30px_rgba(10,37,64,0.14)] sm:mx-0 sm:w-full sm:rounded-2xl">
       <SceneBackground onClear={onClear} />
 
       {HOTSPOTS.map((h) => {
@@ -33,7 +37,9 @@ export function HarbourScene({
           <button
             key={h.id}
             type="button"
-            className="harbour-hotspot absolute z-[2] flex cursor-pointer items-end border-none bg-transparent p-0 transition-transform duration-200"
+            // The before: pseudo pads the tap target 8px past the art below sm;
+            // the customs booth is a 40px-wide button on a phone without it.
+            className="harbour-hotspot absolute z-[2] flex cursor-pointer items-end border-none bg-transparent p-0 transition-transform duration-200 before:absolute before:-inset-2 before:content-[''] sm:before:inset-0"
             style={
               {
                 left: h.left,

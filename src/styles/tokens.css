@@ -201,7 +201,13 @@ body {
 .harbour-flick-late {
   animation-delay: 0.4s;
 }
-.harbour-hotspot:hover,
+/* The lift is a hover affordance. On a touch screen :hover sticks after a
+   tap, which would leave the tapped lorry floating until the next tap. */
+@media (hover: hover) {
+  .harbour-hotspot:hover {
+    transform: translateY(var(--lift, -5px));
+  }
+}
 .harbour-hotspot:focus-visible {
   transform: translateY(var(--lift, -5px));
 }

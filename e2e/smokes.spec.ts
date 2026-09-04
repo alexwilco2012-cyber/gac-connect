@@ -147,6 +147,43 @@ test('6 · interactive harbour: hotspots swap the hero copy, Escape puts it back
   await expect(headline).toBeVisible();
 });
 
+test.describe('6b · interactive harbour on a phone', () => {
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true });
+
+  test('a tap opens the detail under the scene, and the headline stays', async ({ page }) => {
+    await page.goto('/');
+    const headline = page.getByRole('heading', {
+      name: 'Offshore services. Found, vetted, booked.',
+    });
+    await expect(headline).toBeVisible();
+
+    // Scroll so the scene sits at the top of the screen, the way a reader
+    // arrives at it, with the card's slot well below the fold.
+    const lorry = page.getByRole('button', { name: /Lorry — GAC Logistics/ });
+    await page.getByRole('button', { name: /Crane/ }).evaluate((el) => {
+      el.scrollIntoView({ block: 'start' });
+    });
+    await lorry.tap();
+
+    // Stacked, the copy column is a screen above the harbour, so the card
+    // opens under the scene instead and the page snaps to it: the card's top
+    // lands just under the sticky header.
+    const card = page.getByRole('heading', { name: 'GAC Logistics' });
+    await expect(card).toBeVisible();
+    await expect(card).toBeInViewport();
+    await expect(headline).toHaveCount(1);
+    const headerH = (await page.locator('header').first().boundingBox())!.height;
+    const panel = page.locator('.harbour-panel-fade');
+    await expect
+      .poll(async () => Math.round((await panel.boundingBox())!.y), { timeout: 3000 })
+      .toBeLessThanOrEqual(headerH + 14);
+    expect((await panel.boundingBox())!.y).toBeGreaterThanOrEqual(headerH);
+
+    await page.getByRole('button', { name: 'All services' }).click();
+    await expect(card).toHaveCount(0);
+  });
+});
+
 test('5 · SVS blocked supplier is unbookable from its profile', async ({ page }) => {
   await page.goto('/app/svs');
   await page.keyboard.press('Escape');
