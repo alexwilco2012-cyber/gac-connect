@@ -157,19 +157,27 @@ test.describe('6b · interactive harbour on a phone', () => {
     });
     await expect(headline).toBeVisible();
 
+    // Scroll so the scene sits at the top of the screen, the way a reader
+    // arrives at it, with the card's slot well below the fold.
     const lorry = page.getByRole('button', { name: /Lorry — GAC Logistics/ });
-    await lorry.scrollIntoViewIfNeeded();
+    await page.getByRole('button', { name: /Crane/ }).evaluate((el) => {
+      el.scrollIntoView({ block: 'start' });
+    });
     await lorry.tap();
 
     // Stacked, the copy column is a screen above the harbour, so the card
-    // opens under the scene instead and is scrolled into view.
+    // opens under the scene instead and the page snaps to it: the card's top
+    // lands just under the sticky header.
     const card = page.getByRole('heading', { name: 'GAC Logistics' });
     await expect(card).toBeVisible();
     await expect(card).toBeInViewport();
     await expect(headline).toHaveCount(1);
-    const cardBox = (await card.boundingBox())!;
-    const sceneBox = (await lorry.boundingBox())!;
-    expect(cardBox.y).toBeGreaterThan(sceneBox.y);
+    const headerH = (await page.locator('header').first().boundingBox())!.height;
+    const panel = page.locator('.harbour-panel-fade');
+    await expect
+      .poll(async () => Math.round((await panel.boundingBox())!.y), { timeout: 3000 })
+      .toBeLessThanOrEqual(headerH + 14);
+    expect((await panel.boundingBox())!.y).toBeGreaterThanOrEqual(headerH);
 
     await page.getByRole('button', { name: 'All services' }).click();
     await expect(card).toHaveCount(0);

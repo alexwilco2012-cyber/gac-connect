@@ -60,11 +60,21 @@ export function LandingHero() {
   const clearSel = useCallback(() => setSel(null), []);
 
   // Stacked, the card lands under a scene the reader is already looking at,
-  // so it may open half below the fold. Bring it up, gently.
+  // so it opens below the fold. Snap the page so the card sits just under the
+  // sticky header. The offset is computed rather than left to scrollIntoView,
+  // which on a phone was landing the card anywhere from half-hidden to past.
   useEffect(() => {
     if (!sel || !stacked) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    detailRef.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+    const frame = requestAnimationFrame(() => {
+      const card = detailRef.current;
+      if (!card) return;
+      const header = document.querySelector('header');
+      const headerH = header ? header.getBoundingClientRect().height : 0;
+      const top = card.getBoundingClientRect().top + window.scrollY - headerH - 12;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
   }, [sel, stacked]);
 
   useEffect(() => {
