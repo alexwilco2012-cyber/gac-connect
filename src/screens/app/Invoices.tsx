@@ -54,10 +54,10 @@ function StatePill({
   matchedLabel: string;
 }) {
   if (state === 'matched') {
-    return <Pill tone="verified">✓ Matched to GA · {matchedLabel}</Pill>;
+    return <Pill tone="verified">✓ Matched to GAC Agent · {matchedLabel}</Pill>;
   }
   if (state === 'auto-matched') {
-    return <Pill tone="neutral">Matched to GA as it stood · window closed</Pill>;
+    return <Pill tone="neutral">Matched to GAC Agent as it stood · window closed</Pill>;
   }
   const tight = daysLeft(receivedDaysAgo) <= 2;
   return <Pill tone={tight ? 'warn' : 'info'}>{windowLabel(receivedDaysAgo)}</Pill>;
@@ -242,7 +242,7 @@ function AllocatedCard({ invoice }: { invoice: AllocatedInvoice }) {
     const label = invoice.allocations.find((a) => a.id === chosenId)?.label ?? appliedLabel;
     matchInvoice(invoice.id, chosenId);
     pushToast(
-      `${invoice.id} matched to GA — ${label}. Billing party applied against ${invoice.poRef}; changes from here carry an administrative fee at published rates.`,
+      `${invoice.id} matched to GAC Agent — ${label}. Billing party applied against ${invoice.poRef}; changes from here carry an administrative fee at published rates.`,
       'GA',
     );
   }
@@ -253,8 +253,8 @@ function AllocatedCard({ invoice }: { invoice: AllocatedInvoice }) {
         <fieldset className="mt-4 rounded-lg border border-line bg-paper p-3.5">
           <legend className="px-1 text-[12.5px] font-bold">Billing party</legend>
           <p className="text-[12.5px] text-ink-soft">
-            Allocate this invoice before it matches. The split held on the GA vessel profile is
-            pre-selected.
+            Allocate this invoice before it matches. The split held on the GAC Agent vessel profile
+            is pre-selected.
           </p>
           <div className="mt-2 space-y-1.5">
             {invoice.allocations.map((a) => (
@@ -271,13 +271,15 @@ function AllocatedCard({ invoice }: { invoice: AllocatedInvoice }) {
                   className="h-4 w-4 accent-sea"
                 />
                 <span className="font-semibold">{a.label}</span>
-                {a.fromVesselProfile ? <Pill tone="info">From GA vessel profile</Pill> : null}
+                {a.fromVesselProfile ? (
+                  <Pill tone="info">From GAC Agent vessel profile</Pill>
+                ) : null}
               </label>
             ))}
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Button onClick={confirm} data-testid={`match-${invoice.id}`}>
-              Confirm &amp; match to GA
+              Confirm &amp; match to GAC Agent
             </Button>
             <span className="text-[12.5px] text-ink-soft">
               Matches in GAC Agent against {invoice.poRef} under the billing party you choose
@@ -323,7 +325,7 @@ function SplitCard({ invoice }: { invoice: SplitInvoice }) {
     const applied = splitTotals(invoice.lines, working);
     matchInvoiceSplit(invoice.id, working);
     pushToast(
-      `${invoice.id} matched to GA — ${invoice.hire.chartererShort} ${gbp(applied.charterer)}, ${invoice.hire.ownerShort} ${gbp(applied.owner)}, split by line against ${invoice.poRef}; changes from here carry an administrative fee at published rates.`,
+      `${invoice.id} matched to GAC Agent — ${invoice.hire.chartererShort} ${gbp(applied.charterer)}, ${invoice.hire.ownerShort} ${gbp(applied.owner)}, split by line against ${invoice.poRef}; changes from here carry an administrative fee at published rates.`,
       'GA',
     );
   }
@@ -456,7 +458,7 @@ function SplitCard({ invoice }: { invoice: SplitInvoice }) {
         {awaiting ? (
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Button onClick={confirm} data-testid={`match-${invoice.id}`}>
-              Confirm &amp; match to GA
+              Confirm &amp; match to GAC Agent
             </Button>
             <span className="text-[12.5px] text-ink-soft">
               Both parties are applied against {invoice.poRef} in GAC Agent, line by line — no

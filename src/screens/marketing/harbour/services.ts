@@ -111,10 +111,10 @@ export const HARBOUR_SERVICES: Record<ServiceId, HarbourService> = {
     dot: '#3B82F6',
     tag: 'GAC in-house · included at any tier',
     title: 'GAC Procurement',
-    desc: 'Consolidated purchasing through GAC’s vetted supplier network — from consumables to project spares, one warehouse door.',
+    desc: 'Consolidated purchasing through Compass, GAC’s own ship chandler — from consumables to project spares, one list and one invoice, under GAC.',
     bullets: [
-      'Consolidated purchasing',
-      'Vetted supplier network',
+      'One list, sent straight to Compass',
+      'Compass sources and supplies every line',
       'Consumables to project spares',
     ],
     cta: 'Send a list to Compass',

@@ -37,6 +37,6 @@ describe('landing proof counters', () => {
 
   it('reserves gold for the in-house counter alone (02 §motif)', () => {
     expect(landingStats().filter((s) => s.inHouse)).toHaveLength(1);
-    expect(landingStats().find((s) => s.inHouse)?.label).toBe('GAC in-house lines');
+    expect(landingStats().find((s) => s.inHouse)?.label).toBe('GAC in-house listings');
   });
 });

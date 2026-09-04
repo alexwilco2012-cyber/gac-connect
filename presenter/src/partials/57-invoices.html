@@ -113,7 +113,7 @@
                 </div>
                 <sc-if value="{{ ic.awaiting }}" hint-placeholder-val="{{ true }}">
                   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
-                    <button style="{{ invBtnPrimary }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ ic.confirm }}" data-testid="{{ ic.matchTestId }}">Confirm &amp; match to GA</button>
+                    <button style="{{ invBtnPrimary }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ ic.confirm }}" data-testid="{{ ic.matchTestId }}">Confirm &amp; match to GAC Agent</button>
                     <span style="font-size:12.5px;color:#33475F;">{{ ic.confirmHint }}</span>
                   </div>
                 </sc-if>
@@ -130,12 +130,12 @@
                       <label for="{{ al.inputId }}" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13.5px;cursor:pointer;">
                         <input type="radio" id="{{ al.inputId }}" name="{{ al.group }}" checked="{{ al.checked }}" sc-camel-on-change="{{ al.onPick }}" style="width:16px;height:16px;accent-color:#0E5E8A;cursor:pointer;">
                         <span style="font-weight:600;">{{ al.label }}</span>
-                        <sc-if value="{{ al.fromProfile }}" hint-placeholder-val="{{ false }}"><span style="{{ invPillInfo }}">From GA vessel profile</span></sc-if>
+                        <sc-if value="{{ al.fromProfile }}" hint-placeholder-val="{{ false }}"><span style="{{ invPillInfo }}">From GAC Agent vessel profile</span></sc-if>
                       </label>
                     </sc-for>
                   </div>
                   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px;">
-                    <button style="{{ invBtnPrimary }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ ic.confirm }}" data-testid="{{ ic.matchTestId }}">Confirm &amp; match to GA</button>
+                    <button style="{{ invBtnPrimary }}" style-hover="background:#0B4C70;" sc-camel-on-click="{{ ic.confirm }}" data-testid="{{ ic.matchTestId }}">Confirm &amp; match to GAC Agent</button>
                     <span style="font-size:12.5px;color:#33475F;">{{ ic.confirmHint }}</span>
                   </div>
                 </div>

@@ -30,7 +30,7 @@ export function landingStats(): LandingStat[] {
     },
     {
       value: String(IN_HOUSE_LINES.length),
-      label: 'GAC in-house lines',
+      label: 'GAC in-house listings',
       inHouse: true,
     },
     // Not derived: the business rule itself (03 §3.1 — clients pay nothing).

@@ -468,7 +468,8 @@ export const IN_HOUSE_LINES: InHouseLine[] = [
   {
     id: 'gac-procurement',
     name: 'GAC Procurement',
-    description: 'Sourcing and purchasing support for consumables and project materials.',
+    description:
+      'Consolidated purchasing through Compass, GAC’s own ship chandler, from consumables to project spares.',
     tierLabel: 'Included at any tier',
   },
 ];

@@ -198,7 +198,7 @@ test('5 · SVS blocked supplier is unbookable from its profile', async ({ page }
   await expect(page.getByText('Insurance · lapsed')).toBeVisible();
 });
 
-test('7 · invoice review: seven-day window, allocation, match to GA, agent rating', async ({
+test('7 · invoice review: seven-day window, allocation, match to GAC Agent, agent rating', async ({
   page,
 }) => {
   await page.goto('/app/invoices');
@@ -218,8 +218,10 @@ test('7 · invoice review: seven-day window, allocation, match to GA, agent rati
   // Allocate and match the crane invoice under the chosen billing party.
   const crane = page.getByTestId('invoice-INV-4471');
   await crane.getByRole('radio', { name: /Browne Energy — 100%/ }).check();
-  await crane.getByRole('button', { name: 'Confirm & match to GA' }).click();
-  await expect(page.getByText(/INV-4471 matched to GA — Browne Energy — 100%/)).toBeVisible();
+  await crane.getByRole('button', { name: 'Confirm & match to GAC Agent' }).click();
+  await expect(
+    page.getByText(/INV-4471 matched to GAC Agent — Browne Energy — 100%/),
+  ).toBeVisible();
   await expect(crane).toHaveAttribute('data-state', 'matched');
   await expect(crane.getByText(/Changes after matching carry an administrative fee/)).toBeVisible();
   // Still nothing about commission once matched — toast and matched state included.
@@ -261,9 +263,11 @@ test('7b · port disbursement splits by line at the off-hire, and the halves rec
   await expect(page.getByTestId('moved-INV-4483-lines-in')).toBeVisible();
 
   // Both parties applied against the one PO, and the table stays as the record.
-  await call.getByRole('button', { name: 'Confirm & match to GA' }).click();
+  await call.getByRole('button', { name: 'Confirm & match to GAC Agent' }).click();
   await expect(
-    page.getByText(/INV-4483 matched to GA — Wilkinson Drilling £3,100, Stronach Subsea £4,200/),
+    page.getByText(
+      /INV-4483 matched to GAC Agent — Wilkinson Drilling £3,100, Stronach Subsea £4,200/,
+    ),
   ).toBeVisible();
   await expect(call).toHaveAttribute('data-state', 'matched');
   await expect(call.getByText('Split by line:')).toBeVisible();

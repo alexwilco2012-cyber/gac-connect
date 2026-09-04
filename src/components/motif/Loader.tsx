@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { BRAND_MARK, BRAND_PRODUCT } from '../../config/brand';
+import { BRAND_MARK, BRAND_PRODUCT, SITE_TAGLINE } from '../../config/brand';
 import { useApp } from '../../store/app';
 import './loader.css';
 
@@ -217,7 +217,7 @@ export function Loader() {
           ))}
         </svg>
         <div className="loader-sub">{BRAND_PRODUCT.toUpperCase()}</div>
-        <div className="loader-tag">Offshore Services · Connected</div>
+        <div className="loader-tag">{SITE_TAGLINE}</div>
       </div>
 
       <div className="loader-sea">

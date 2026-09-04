@@ -188,8 +188,8 @@ export default function Internal() {
           >
             <CardHeader
               title="MV Elan — Aberdeen, ETA 08:00 tomorrow"
-              subtitle="Predictive procurement · what this vessel typically needs on an Aberdeen call, from GA history. SVS-verified suppliers are pre-selected for each."
-              action={<Pill tone="info">GA vessel profile loaded</Pill>}
+              subtitle="Predictive procurement · what this vessel typically needs on an Aberdeen call, from GAC Agent history. SVS-verified suppliers are pre-selected for each."
+              action={<Pill tone="info">GAC Agent vessel profile loaded</Pill>}
             />
             <ul role="list" className="my-3">
               {PREDICTED_NEEDS.map((n) => {

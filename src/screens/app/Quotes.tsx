@@ -26,7 +26,7 @@ const NEXT_STEPS = [
   },
   {
     title: 'Invoice review',
-    body: 'The supplier invoice routes to you first: seven days to allocate the billing party and splits, then it matches to GA.',
+    body: 'The supplier invoice routes to you first: seven days to allocate the billing party and splits, then it matches to GAC Agent.',
   },
 ];
 

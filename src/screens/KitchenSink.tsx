@@ -53,7 +53,7 @@ export default function KitchenSink() {
           <Pill tone="promoted">▲ Promoted</Pill>
           <Pill tone="warn">⚠ Renewal due</Pill>
           <Pill tone="danger">✗ Blocked</Pill>
-          <Pill tone="info">GA vessel profile loaded</Pill>
+          <Pill tone="info">GAC Agent vessel profile loaded</Pill>
           <Pill tone="neutral">Neutral</Pill>
           <GoldBandPill />
           <span>
