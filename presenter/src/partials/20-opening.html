@@ -8,14 +8,34 @@
         <path d="M0,84 C180,54 340,110 520,80 C700,50 860,108 1030,78 C1100,66 1160,84 1200,76 L1200,120 L0,120 Z" fill="rgba(255,199,44,.05)"/>
       </svg>
 
-      <header class="hdr">
+      <header class="{{ advHdrCls }}">
         <div class="wordmark"><b>GAC</b> <span>CONNECT</span><small>OFFSHORE SERVICES · CONNECTED</small></div>
         <div class="counter">{{ advCounter }}</div>
       </header>
 
+      <!-- ══════════════ SLIDE 0 · OPENER / CONTENTS ══════════════
+           The frame on screen while the room settles: the name set large on the
+           left, the three-part running order behind a gold rule on the right. -->
+      <section class="{{ advCls0 }}" role="group" aria-label="Slide 1 of 12 — GAC Connect contents" aria-hidden="{{ advHid0 }}" data-screen-label="Slide 1 — Opener">
+        <div class="op-name">
+          <div class="kicker">GAC UK &amp; Ireland<span class="sep">·</span>FP03 capital approval</div>
+          <div class="op-mark" aria-label="GAC Connect"><span class="op-l1" aria-hidden="true">GAC</span><span class="op-l2" aria-hidden="true">Connect</span></div>
+          <div class="tagline">Offshore services · Found, vetted, booked</div>
+        </div>
+        <div class="op-parts">
+          <div class="op-rule" aria-hidden="true"></div>
+          <div class="op-label">In three parts</div>
+          <ol class="op-list">
+            <li class="op-row"><span class="op-num">01</span><span class="op-title">Seeing the board</span><span class="op-desc">Chess. Reading the market three moves ahead.</span></li>
+            <li class="op-row"><span class="op-num">02</span><span class="op-title">The head start</span><span class="op-desc">Formula 1. Moving before the lights go out.</span></li>
+            <li class="op-row"><span class="op-num">03</span><span class="op-title">Stations we skip</span><span class="op-desc">Hyrox. Whole legs of the race already ours.</span></li>
+          </ol>
+        </div>
+      </section>
+
       <!-- ══════════════ SLIDE 1 · CHESS ══════════════ -->
-      <section class="{{ advCls1 }}" role="group" aria-label="Slide 1 of 11 — chess" aria-hidden="{{ advHid1 }}" data-screen-label="Slide 1 — Chess">
-        <div class="kicker">Imagine<span class="sep">·</span>01</div>
+      <section class="{{ advCls1 }}" role="group" aria-label="Slide 2 of 12 — chess" aria-hidden="{{ advHid1 }}" data-screen-label="Slide 2 — Chess">
+        <div class="kicker">Part one<span class="sep">·</span>Seeing the board</div>
         <h1>
           <span class="l1">Imagine playing a game of chess,</span>
           <span class="l2">and you can see your opponent’s next three moves.</span>
@@ -142,8 +162,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 2 · THE PROBLEM ══════════════ -->
-      <section class="{{ advCls2 }}" role="group" aria-label="Slide 2 of 11 — the board today" aria-hidden="{{ advHid2 }}" data-screen-label="Slide 2 — The board today">
-        <div class="kicker">The board today<span class="sep">·</span>02</div>
+      <section class="{{ advCls2 }}" role="group" aria-label="Slide 3 of 12 — the board today" aria-hidden="{{ advHid2 }}" data-screen-label="Slide 3 — The board today">
+        <div class="kicker">Part one<span class="sep">·</span>The board today</div>
         <h1>
           <span class="l1">Today, nobody in this market can see the board.</span>
           <span class="l2">Every shortlist lives in somebody’s head.</span>
@@ -217,8 +237,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 3 · WHAT WE ARE PROPOSING ══════════════ -->
-      <section class="{{ advCls3 }}" role="group" aria-label="Slide 3 of 11 — what we are proposing" aria-hidden="{{ advHid3 }}" data-screen-label="Slide 3 — The proposal">
-        <div class="kicker">What we’re proposing<span class="sep">·</span>03</div>
+      <section class="{{ advCls3 }}" role="group" aria-label="Slide 4 of 12 — what we are proposing" aria-hidden="{{ advHid3 }}" data-screen-label="Slide 4 — The proposal">
+        <div class="kicker">Part one<span class="sep">·</span>What we’re proposing</div>
         <h1>
           <span class="l1">Four pillars are already standing.</span>
           <span class="l2">GAC Connect is the roof.</span>
@@ -274,8 +294,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 4 · HOW IT FIXES IT ══════════════ -->
-      <section class="{{ advCls4 }}" role="group" aria-label="Slide 4 of 11 — how it fixes it" aria-hidden="{{ advHid4 }}" data-screen-label="Slide 4 — How it fixes it">
-        <div class="kicker">How it fixes it<span class="sep">·</span>04</div>
+      <section class="{{ advCls4 }}" role="group" aria-label="Slide 5 of 12 — how it fixes it" aria-hidden="{{ advHid4 }}" data-screen-label="Slide 5 — How it fixes it">
+        <div class="kicker">Part one<span class="sep">·</span>How it fixes it</div>
         <h1>
           <span class="l1">The platform does the chasing.</span>
           <span class="l2">Two hours of admin becomes fifteen minutes.</span>
@@ -284,11 +304,11 @@
           <svg class="flow" sc-camel-view-box="0 0 900 430" aria-hidden="true">
             <!-- before / after -->
             <g class="fl-clock">
-              <rect x="176" y="24" width="252" height="36" rx="18" fill="rgba(234,242,248,.04)" stroke="rgba(143,166,188,.4)" stroke-width="1.2"/>
+              <rect x="166" y="24" width="272" height="36" rx="18" fill="rgba(234,242,248,.04)" stroke="rgba(143,166,188,.4)" stroke-width="1.2"/>
               <text x="302" y="47" text-anchor="middle" class="svglabel" fill="#8FA6BC" style="letter-spacing:.18em">FOUR DAYS OF CHASING</text>
-              <path d="M 444 42 H 466 M 461 37 L 467 42 L 461 47" stroke="#FFC72C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-              <rect x="482" y="24" width="242" height="36" rx="18" fill="rgba(255,199,44,.1)" stroke="#FFC72C" stroke-width="1.3"/>
-              <text x="603" y="47" text-anchor="middle" class="svglabel" fill="#FFC72C" style="letter-spacing:.18em">ONE AFTERNOON</text>
+              <path d="M 452 42 H 474 M 469 37 L 475 42 L 469 47" stroke="#FFC72C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="490" y="24" width="242" height="36" rx="18" fill="rgba(255,199,44,.1)" stroke="#FFC72C" stroke-width="1.3"/>
+              <text x="611" y="47" text-anchor="middle" class="svglabel" fill="#FFC72C" style="letter-spacing:.18em">ONE AFTERNOON</text>
             </g>
 
             <!-- steps: five equal cards, 18px apart, 24 -> 876 -->
@@ -354,8 +374,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 5 · THE NUMBERS ══════════════ -->
-      <section class="{{ advCls5 }}" role="group" aria-label="Slide 5 of 11 — the numbers" aria-hidden="{{ advHid5 }}" data-screen-label="Slide 5 — The numbers">
-        <div class="kicker">The numbers<span class="sep">·</span>05</div>
+      <section class="{{ advCls5 }}" role="group" aria-label="Slide 6 of 12 — the numbers" aria-hidden="{{ advHid5 }}" data-screen-label="Slide 6 — The numbers">
+        <div class="kicker">Part one<span class="sep">·</span>The numbers</div>
         <h1>
           <span class="l1">£370,000 to build it. One year in the red.</span>
           <span class="l2">£5.38m operating profit by Year 3.</span>
@@ -403,7 +423,7 @@
             <!-- break-even marker -->
             <g class="bx-be">
               <line x1="330" y1="60" x2="330" y2="336" stroke="rgba(255,199,44,.45)" stroke-width="1.4" stroke-dasharray="6 5"/>
-              <rect x="246" y="42" width="168" height="26" rx="13" fill="rgba(255,199,44,.1)" stroke="rgba(255,199,44,.5)" stroke-width="1.2"/>
+              <rect x="236" y="42" width="188" height="26" rx="13" fill="rgba(255,199,44,.1)" stroke="rgba(255,199,44,.5)" stroke-width="1.2"/>
               <text x="330" y="59" text-anchor="middle" class="svgtiny" fill="#FFC72C" style="letter-spacing:.2em">BREAK-EVEN IN YEAR 2</text>
             </g>
           </svg>
@@ -421,8 +441,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 6 · STRATEGY & FINANCE ══════════════ -->
-      <section class="{{ advCls6 }}" role="group" aria-label="Slide 6 of 11 — strategy and finance" aria-hidden="{{ advHid6 }}" data-screen-label="Slide 6 — Strategy and finance">
-        <div class="kicker">Strategy &amp; finance<span class="sep">·</span>06</div>
+      <section class="{{ advCls6 }}" role="group" aria-label="Slide 7 of 12 — strategy and finance" aria-hidden="{{ advHid6 }}" data-screen-label="Slide 7 — Strategy and finance">
+        <div class="kicker">Part one<span class="sep">·</span>Strategy &amp; finance</div>
         <h1>
           <span class="l1">Why we can see three moves ahead:</span>
           <span class="l2">we already own the data nobody else has.</span>
@@ -470,8 +490,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 7 · F1 ══════════════ -->
-      <section class="{{ advCls7 }}" role="group" aria-label="Slide 7 of 11 — Formula 1" aria-hidden="{{ advHid7 }}" data-screen-label="Slide 7 — F1">
-        <div class="kicker">Imagine<span class="sep">·</span>07</div>
+      <section class="{{ advCls7 }}" role="group" aria-label="Slide 8 of 12 — Formula 1" aria-hidden="{{ advHid7 }}" data-screen-label="Slide 8 — F1">
+        <div class="kicker">Part two<span class="sep">·</span>The head start</div>
         <h1>
           <span class="l1">Imagine starting an F1 race,</span>
           <span class="l2">and you get a 30-second head start.</span>
@@ -539,12 +559,12 @@
 
             <!-- +30s chip -->
             <g class="t30 tb">
-              <rect x="618" y="150" width="168" height="36" rx="18" fill="rgba(255,199,44,.1)" stroke="#FFC72C" stroke-width="1.3"/>
-              <circle cx="642" cy="168" r="8" fill="none" stroke="#FFC72C" stroke-width="1.6"/>
-              <line x1="642" y1="168" x2="642" y2="162.5" stroke="#FFC72C" stroke-width="1.6" stroke-linecap="round"/>
-              <line x1="642" y1="168" x2="646" y2="170.5" stroke="#FFC72C" stroke-width="1.6" stroke-linecap="round"/>
-              <rect x="639.5" y="156.5" width="5" height="2.5" rx="1" fill="#FFC72C"/>
-              <text x="660" y="173" class="svglabel" fill="#FFC72C" style="letter-spacing:.18em">+30 SECONDS</text>
+              <rect x="612" y="150" width="184" height="36" rx="18" fill="rgba(255,199,44,.1)" stroke="#FFC72C" stroke-width="1.3"/>
+              <circle cx="636" cy="168" r="8" fill="none" stroke="#FFC72C" stroke-width="1.6"/>
+              <line x1="636" y1="168" x2="636" y2="162.5" stroke="#FFC72C" stroke-width="1.6" stroke-linecap="round"/>
+              <line x1="636" y1="168" x2="640" y2="170.5" stroke="#FFC72C" stroke-width="1.6" stroke-linecap="round"/>
+              <rect x="633.5" y="156.5" width="5" height="2.5" rx="1" fill="#FFC72C"/>
+              <text x="654" y="173" class="svglabel" fill="#FFC72C" style="letter-spacing:.18em">+30 SECONDS</text>
             </g>
           </svg>
         </div>
@@ -555,8 +575,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 8 · QHSSE ══════════════ -->
-      <section class="{{ advCls8 }}" role="group" aria-label="Slide 8 of 11 — quality, health, safety, security and environment" aria-hidden="{{ advHid8 }}" data-screen-label="Slide 8 — QHSSE">
-        <div class="kicker">QHSSE<span class="sep">·</span>08</div>
+      <section class="{{ advCls8 }}" role="group" aria-label="Slide 9 of 12 — quality, health, safety, security and environment" aria-hidden="{{ advHid8 }}" data-screen-label="Slide 9 — QHSSE">
+        <div class="kicker">Part two<span class="sep">·</span>QHSSE</div>
         <h1>
           <span class="l1">You don’t get the head start by cutting corners.</span>
           <span class="l2">The car passed scrutineering hours ago.</span>
@@ -600,8 +620,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 9 · HYROX ══════════════ -->
-      <section class="{{ advCls9 }}" role="group" aria-label="Slide 9 of 11 — Hyrox" aria-hidden="{{ advHid9 }}" data-screen-label="Slide 9 — Hyrox">
-        <div class="kicker">Imagine<span class="sep">·</span>09</div>
+      <section class="{{ advCls9 }}" role="group" aria-label="Slide 10 of 12 — Hyrox" aria-hidden="{{ advHid9 }}" data-screen-label="Slide 10 — Hyrox">
+        <div class="kicker">Part three<span class="sep">·</span>Stations we skip</div>
         <h1>
           <span class="l1">Imagine racing the HYROX championship,</span>
           <span class="l2">and you don’t have to do two of the stations.</span>
@@ -630,7 +650,7 @@
                   <text x="195" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">SLED PUSH</text>
                 </g>
                 <g transform="translate(195,166) rotate(-10)"><g class="stamp s1 tb">
-                  <rect x="-49" y="-12" width="98" height="24" rx="5" fill="#FFC72C"/>
+                  <rect x="-54" y="-13" width="108" height="26" rx="5" fill="#FFC72C"/>
                   <text x="0" y="4" text-anchor="middle" class="svgtiny" fill="#0A2540" style="font-weight:800">DONE FOR YOU</text>
                 </g></g>
               </g>
@@ -684,7 +704,7 @@
                   <text x="705" y="214" text-anchor="middle" class="svgtiny" fill="#8FA6BC">LUNGES</text>
                 </g>
                 <g transform="translate(705,166) rotate(-10)"><g class="stamp s2 tb">
-                  <rect x="-49" y="-12" width="98" height="24" rx="5" fill="#FFC72C"/>
+                  <rect x="-54" y="-13" width="108" height="26" rx="5" fill="#FFC72C"/>
                   <text x="0" y="4" text-anchor="middle" class="svgtiny" fill="#0A2540" style="font-weight:800">DONE FOR YOU</text>
                 </g></g>
               </g>
@@ -729,8 +749,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 10 · OUR PEOPLE ══════════════ -->
-      <section class="{{ advCls10 }}" role="group" aria-label="Slide 10 of 11 — our people" aria-hidden="{{ advHid10 }}" data-screen-label="Slide 10 — Our people">
-        <div class="kicker">Our people<span class="sep">·</span>10</div>
+      <section class="{{ advCls10 }}" role="group" aria-label="Slide 11 of 12 — our people" aria-hidden="{{ advHid10 }}" data-screen-label="Slide 11 — Our people">
+        <div class="kicker">Part three<span class="sep">·</span>Our people</div>
         <h1>
           <span class="l1">Two stations come off the course.</span>
           <span class="l2">The agent’s job changes shape.</span>
@@ -776,8 +796,8 @@
       </section>
 
       <!-- ══════════════ SLIDE 11 · CLOSER ══════════════ -->
-      <section class="{{ advCls11 }}" role="group" aria-label="Slide 11 of 11 — GAC Connect" aria-hidden="{{ advHid11 }}" data-screen-label="Slide 11 — Closer">
-        <div class="kicker">GAC Connect<span class="sep">·</span>The Point</div>
+      <section class="{{ advCls11 }}" role="group" aria-label="Slide 12 of 12 — GAC Connect" aria-hidden="{{ advHid11 }}" data-screen-label="Slide 12 — Closer">
+        <div class="kicker">GAC Connect<span class="sep">·</span>The point</div>
         <h1>
           <span class="l1">GAC Connect is exactly this.</span>
           <span class="l2">We have the advantage. Let’s take it.</span>
@@ -821,7 +841,7 @@
         </div>
       </section>
 
-      <footer class="ftr">
+      <footer class="{{ advFtrCls }}">
         <div class="conf">GAC UK &amp; IRELAND · FP03 · CONFIDENTIAL</div>
         <div class="hint"><kbd>Click</kbd> or <kbd>→</kbd> to continue · <kbd>Esc</kbd> to skip</div>
       </footer>

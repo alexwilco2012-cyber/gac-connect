@@ -72,7 +72,7 @@ is filled per output: preload hints + `window.__resources` (site), just
 | Loading screen shown while the single-file bundle unpacks | `wrapper/loader.html` (rarely touched) |
 
 `src/partials/` is in document order: `10-loader` (chain-forge entrance, only
-shown when the opening is off), `20-opening` (the opening sequence: eleven
+shown when the opening is off), `20-opening` (the opening sequence: twelve
 slides shown before the platform — see below), `30-chrome` (header/nav),
 `40-…59-…` one file per screen (home/harbour, dashboard — the client and
 supplier view since 26 Aug — marketplace, tiers,
@@ -123,21 +123,23 @@ over `app/features/*.js` as over the core files.
 
 ## The opening
 
-The presenter opens with an eleven-slide sequence:
+The presenter opens with a twelve-slide sequence. The kickers name the part each
+slide belongs to; the numbers below are the counter's:
 
 | | | |
 |---|---|---|
-| 01 | Chess | see the opponent's next three moves |
-| 02 | The board today | nobody in this market can see it; every shortlist is in somebody's head |
-| 03 | The proposal | four pillars and a roof |
-| 04 | How it fixes it | the same job as a five-step flow |
-| 05 | The numbers | revenue against operating result, Years 1-3, break-even marked |
-| 06 | Strategy and finance | GA already holds every service ever bought; the chess loop closes in the card title |
-| 07 | F1 | a 30-second head start |
-| 08 | QHSSE | the head start exists because the car passed scrutineering |
-| 09 | Hyrox | two of the eight stations done for you |
-| 10 | Our people | which two, and how the role changes shape |
-| 11 | Closer | three recap cards and an **Enter the platform** button |
+| 01 | Opener | contents page: the name, and the three parts behind a gold rule |
+| 02 | Chess | see the opponent's next three moves |
+| 03 | The board today | nobody in this market can see it; every shortlist is in somebody's head |
+| 04 | The proposal | four pillars and a roof |
+| 05 | How it fixes it | the same job as a five-step flow |
+| 06 | The numbers | revenue against operating result, Years 1-3, break-even marked |
+| 07 | Strategy and finance | GA already holds every service ever bought; the chess loop closes in the card title |
+| 08 | F1 | a 30-second head start |
+| 09 | QHSSE | the head start exists because the car passed scrutineering |
+| 10 | Hyrox | two of the eight stations done for you |
+| 11 | Our people | which two, and how the role changes shape |
+| 12 | Closer | three recap cards and an **Enter the platform** button |
 
 The metaphors (01, 07, 09) and the closer are the **Advantage** slides, ported
 2026-08-15 from the standalone `GAC Connect Advantage.html` and kept verbatim as
