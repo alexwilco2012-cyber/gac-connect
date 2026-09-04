@@ -224,6 +224,27 @@
 .adv .sl-bars.active .note{animation-delay:2.2s}
 .adv .sl-bars{justify-content:safe center;overflow-y:auto}
 
+/* the figures fill the page: numbers and bars left, the revenue table right */
+.adv .cols-fig{align-items:start;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.adv .sl-bars .bignums{gap:clamp(16px,2.6vw,40px)}
+.adv .sl-bars .bn b{font-size:clamp(1.7rem,3.2vw,2.9rem)}
+.adv .sl-bars .illu-bars{max-width:none;margin-top:6px}
+.adv .sl-bars .illu-bars svg{max-height:30vh}
+.adv .sl-bars .note{max-width:none}
+.adv .rev{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.adv .rev th{font-family:var(--disp);font-weight:600;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:right;padding:6px 0 8px;border-bottom:1px solid rgba(143,166,188,.25)}
+.adv .rev th:first-child{text-align:left}
+.adv .rev td{padding:8px 0 8px 14px;border-bottom:1px solid rgba(143,166,188,.16);font-size:12.5px;line-height:1.35;text-align:right;white-space:nowrap;font-family:var(--disp);font-weight:600;color:var(--mist)}
+.adv .rev td:first-child{text-align:left;padding-left:0;white-space:normal;font-family:var(--body);font-weight:400;color:var(--dim)}
+.adv .rev .total td{border-top:1px solid rgba(255,199,44,.5);border-bottom:none;color:var(--mist)}
+.adv .rev .total td:first-child{color:var(--mist);font-weight:600}
+.adv .rev .result td{border-top:none;color:var(--gold)}
+.adv .rev .result td:first-child{color:var(--gold)}
+.adv .sl-bars.active .colhead{animation:advRise .5s var(--ease) 1.2s both}
+.adv .sl-bars.active .rev{animation:advRise .7s var(--ease) 1.4s both}
+.adv .sl-bars.active .note{animation-delay:2s}
+.adv .sl-house .state{max-width:none}
+
 /* ============ 12 · The cash ============ */
 .adv .cs-axis{stroke:rgba(143,166,188,.5);stroke-width:1.5}
 .adv .cs-fac{stroke:rgba(255,199,44,.55);stroke-width:1.4;stroke-dasharray:6 5}
@@ -246,7 +267,6 @@
 .adv .steps span{font-size:12.5px;line-height:1.45;color:var(--dim);text-wrap:pretty}
 .adv .capex{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .adv .capex td{padding:9px 0;border-bottom:1px solid rgba(143,166,188,.18);font-size:13px;color:var(--dim);vertical-align:top}
-.adv .capex td:first-child{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.12em;color:rgba(143,166,188,.7);width:70px;padding-top:11px}
 .adv .capex td:last-child{text-align:right;font-family:var(--disp);font-weight:700;color:var(--mist);white-space:nowrap;padding-left:16px}
 .adv .capex .total td{border-bottom:none;border-top:1px solid rgba(255,199,44,.5);color:var(--mist);font-weight:600}
 .adv .capex .total td:last-child{color:var(--gold);font-size:16px}
@@ -480,7 +500,8 @@
   .adv .state-big{font-size:clamp(1.4rem,6.4vw,2rem)}
   .adv .illu svg{max-height:34vh}
   .adv .cols{grid-template-columns:minmax(0,1fr);gap:14px}
-  .adv .sl-cash .cols,.adv .cols-ask{grid-template-columns:minmax(0,1fr)}
+  .adv .sl-cash .cols,.adv .cols-ask,.adv .cols-fig{grid-template-columns:minmax(0,1fr)}
+  .adv .rev td,.adv .rev th{font-size:11px;padding:6px 0 6px 8px}
   .adv .col-illu svg,.adv .col-wide svg{max-height:30vh}
   .adv .facts3{grid-template-columns:minmax(0,1fr);gap:10px}
   .adv .f{padding-top:10px;gap:4px}

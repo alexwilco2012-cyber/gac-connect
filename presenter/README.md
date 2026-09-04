@@ -145,9 +145,9 @@ when the overlay fades.
 | 08 | Pay-off II | scrutineering was hours ago: the gate, 90/30/7 alerts, Gold Band |
 | 09 | Chapter III · Hyrox | two of the eight stations done for you |
 | 10 | Pay-off III | the agent's job changes shape: two roles, £250k, £15k training |
-| 11 | The figures | (£195k) · £1.77m · £5.38m, revenue against result, six revenue lines |
+| 11 | The figures | (£195k) · £1.77m · £5.38m and the bars left, the six revenue lines as a table right |
 | 12 | The cash | £565k needed, £750k provisioned, cumulative profit inside Year 2 |
-| 13 | The ask | £370,000 via FP03: six steps, the capex table, ten named risks |
+| 13 | The ask | £370,000 of capital expenditure: six steps, where it goes, ten named risks |
 | 14 | The point | the three pay-off lines stacked; "We have the advantage. Let's take it." |
 | 15 | The reveal | back to 0800: **Enter the platform** and the QR |
 
