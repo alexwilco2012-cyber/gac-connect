@@ -7,7 +7,7 @@ import { BRAND_NAME } from '../../config/brand';
 const STEPS = [
   {
     title: 'The arrival is flagged',
-    body: 'An ETA lands and the vessel profile loads from GA history. The platform already knows what this vessel needed on its last call to this port.',
+    body: 'An ETA lands and the vessel profile loads from GAC Agent history. The platform already knows what this vessel needed on its last call to this port.',
   },
   {
     title: 'The list pre-fills itself',
@@ -18,7 +18,7 @@ const STEPS = [
     body: 'One click sends the quote requests. Replies populate a side-by-side comparison — even quotes sent as plain Outlook emails are parsed and matched to the job.',
   },
   {
-    title: 'The booking becomes the PO',
+    title: 'The booking becomes the purchase order',
     body: 'Accept a quote, both parties e-sign, and the purchase order generates in GAC Agent with the client billing split applied from the vessel profile. No re-keying.',
   },
   {

@@ -52,7 +52,7 @@ const SOLUTION: { title: string; icon: IconName; body: string }[] = [
   {
     title: 'GAC in-house services',
     icon: 'anchor',
-    body: 'Agency, Logistics, Customs, Assets, and Procurement surface first where relevant — with a tier discount that rewards consolidating spend.',
+    body: 'The four service lines — Agency, Logistics, Customs and Procurement — surface first where relevant, with GAC’s own equipment pool alongside and a tier discount that rewards consolidating spend.',
   },
   {
     title: 'Compliance built in',

@@ -261,9 +261,9 @@ export function LaunchesPanel({
       <div className="mt-6 flex flex-wrap items-center gap-4 rounded-brand bg-ink px-4.5 py-3.5 text-[13.5px] text-[#D8E2EC]">
         <span className="rounded-md bg-white/12 px-2 py-0.5 text-[11.5px] font-bold">GA</span>
         <span className="flex-1">
-          A launch run is booked like any other marketplace service — quote, e-sign, PO in GAC
-          Agent, invoice review — and the operator’s capacity and freight terms travel with the
-          booking.
+          A launch run is booked like any other marketplace service — quote, e-sign, purchase order
+          in GAC Agent, invoice review — and the operator’s capacity and freight terms travel with
+          the booking.
         </span>
       </div>
 

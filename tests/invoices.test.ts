@@ -38,7 +38,7 @@ describe('Invoice review — the seven-day client window (v12 §5)', () => {
     expect(invoiceState(2, { allocationId: 'split-60-40' })).toBe('matched');
   });
 
-  it('with the window passed and no action, it matches to GA as it stands', () => {
+  it('with the window passed and no action, it matches to GAC Agent as it stands', () => {
     expect(invoiceState(7, undefined)).toBe('auto-matched');
     expect(invoiceState(30, undefined)).toBe('auto-matched');
   });

@@ -320,9 +320,9 @@ function invFocus(id) { setTimeout(() => { const el = document.getElementById(id
 
       /* Countdown while the window is open; the outcome once it has closed. */
       const pill = state === 'matched'
-        ? { style: invPill('verified'), label: split ? '✓ Matched to GA · split by line' : '✓ Matched to GA · ' + appliedLabel }
+        ? { style: invPill('verified'), label: split ? '✓ Matched to GAC Agent · split by line' : '✓ Matched to GAC Agent · ' + appliedLabel }
         : state === 'auto-matched'
-          ? { style: invPill('neutral'), label: 'Matched to GA as it stood · window closed' }
+          ? { style: invPill('neutral'), label: 'Matched to GAC Agent as it stood · window closed' }
           : { style: invPill(tight ? 'warn' : 'info'), label: invWindowLabel(inv.receivedDaysAgo) };
 
       const allocations = (inv.allocations || []).map((a) => ({
@@ -414,7 +414,7 @@ function invFocus(id) { setTimeout(() => { const el = document.getElementById(id
         allocTitle: split ? 'Split at the off-hire' : 'Billing party',
         allocIntro: split
           ? inv.hire.note
-          : 'Allocate this invoice before it matches. The split held on the GA vessel profile is pre-selected.',
+          : 'Allocate this invoice before it matches. The split held on the GAC Agent vessel profile is pre-selected.',
         /* split-by-line block — the table stays on screen once matched, read
            only, because what went to whom is the thing the client comes back to
            check on a disbursement */
@@ -440,12 +440,12 @@ function invFocus(id) { setTimeout(() => { const el = document.getElementById(id
             const parties = (this.state.invLineParties || {})[inv.id] || invDefaultParties(inv);
             const t = invSplitTotals(inv, parties);
             matchSplit(inv.id, parties);
-            this.toastMsg(inv.id + ' matched to GA — ' + inv.hire.chartererShort + ' ' + this._gbp(t.charterer) + ', ' + inv.hire.ownerShort + ' ' + this._gbp(t.owner) + ', split by line against ' + inv.poRef + '; changes from here carry an administrative fee at published rates.', 'GA');
+            this.toastMsg(inv.id + ' matched to GAC Agent — ' + inv.hire.chartererShort + ' ' + this._gbp(t.charterer) + ', ' + inv.hire.ownerShort + ' ' + this._gbp(t.owner) + ', split by line against ' + inv.poRef + '; changes from here carry an administrative fee at published rates.', 'GA');
             return;
           }
           const pick = (this.state.invChosen || {})[inv.id] || inv.defaultAllocationId;
           matchInvoice(inv.id, pick);
-          this.toastMsg(inv.id + ' matched to GA — ' + invAllocationLabel(inv, pick) + '. Billing party applied against ' + inv.poRef + '; changes from here carry an administrative fee at published rates.', 'GA');
+          this.toastMsg(inv.id + ' matched to GAC Agent — ' + invAllocationLabel(inv, pick) + '. Billing party applied against ' + inv.poRef + '; changes from here carry an administrative fee at published rates.', 'GA');
         },
         appliedLabel: appliedLabel,
         asReceived: state === 'auto-matched',

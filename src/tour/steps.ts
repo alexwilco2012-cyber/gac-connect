@@ -35,7 +35,7 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/app/internal',
     anchor: 'predictive',
     title: 'The morning starts done',
-    body: 'GA already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.',
+    body: 'GAC Agent already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.',
   },
   {
     route: '/app/marketplace',
@@ -71,7 +71,7 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/app/quotes',
     anchor: 'queue',
     title: 'Quotes compare themselves',
-    body: 'Replies land side by side, including ones sent as plain Outlook emails. Accepting one raises the PO in GA with the split already applied.',
+    body: 'Replies land side by side, including ones sent as plain Outlook emails. Accepting one raises the purchase order in GAC Agent with the split already applied.',
   },
   {
     route: '/app/invoices',

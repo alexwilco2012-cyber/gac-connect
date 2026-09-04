@@ -13,11 +13,12 @@ export default function About() {
       <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-ink-soft">
         <p>
           {BRAND_NAME} is a digital marketplace for offshore energy services: vetted suppliers on
-          one side, operators and their vessels on the other, and GAC’s own service lines — Agency,
-          Logistics, Customs, Assets, and Procurement — woven through the middle. It turns the
-          phone-and-email procurement cycle around a port call into a single workflow with
-          comparison, e-signature, and audit built in. Suppliers pay a commission only on work won
-          through the platform, banded by their subscription tier; clients pay nothing to use it.
+          one side, operators and their vessels on the other, and GAC’s own four service lines —
+          Agency, Logistics, Customs and Procurement — woven through the middle, with GAC’s
+          equipment pool alongside. It turns the phone-and-email procurement cycle around a port
+          call into a single workflow with comparison, e-signature, and audit built in. Suppliers
+          pay a commission only on work won through the platform, banded by their subscription tier;
+          clients pay nothing to use it.
         </p>
         <p>
           This site is a <strong className="text-ink">proof of concept</strong>. Every supplier,
@@ -30,10 +31,11 @@ export default function About() {
         <h2 className="font-display text-[18px] font-bold">The SVS philosophy</h2>
         <p className="mt-2 text-[14px] text-ink-soft">
           Nothing reaches the client unchecked. The Supplier Vetting System makes certification a
-          mandatory field rather than a checkbox: BOSIET, HUET, GWO, LOLER, insurance, and medical
-          certificates are tracked with expiry alerts at 90, 30, and 7 days. A supplier with a
-          lapsed certificate is blocked from booking — visibly, everywhere — until evidence is
-          uploaded. Promotion, plan level, and rating never override compliance.
+          mandatory field rather than a checkbox: offshore survival and helicopter escape training
+          (BOSIET, HUET), wind-industry safety training (GWO), lifting certificates (LOLER),
+          insurance, and medical certificates are tracked with expiry alerts at 90, 30, and 7 days.
+          A supplier with a lapsed certificate is blocked from booking — visibly, everywhere — until
+          evidence is uploaded. Promotion, plan level, and rating never override compliance.
         </p>
         <p className="mt-2 text-[14px] text-ink-soft">
           Above standard verification sits GAC Gold Band, an audit tier for Premium suppliers —
