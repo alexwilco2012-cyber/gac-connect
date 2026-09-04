@@ -65,7 +65,7 @@ SITE_PATHS = {  # source-tree prefix -> URL prefix relative to presenter.html
 # preloads must carry the SAME integrity + crossorigin the runtime puts on its
 # script tags, or the browser refuses to reuse them ("integrity mismatch").
 SITE_PRELOAD_SCRIPTS = ["vendor/react.production.min.js", "vendor/react-dom.production.min.js"]
-SITE_PRELOAD_FONTS = ["assets/fonts/space-grotesk-latin.woff2", "assets/fonts/inter-variable.woff2"]
+SITE_PRELOAD_FONTS = ["assets/fonts/space-grotesk-latin.woff2", "assets/fonts/inter-variable.woff2", "assets/fonts/instrument-serif-italic-latin.woff2"]
 # dc-runtime.js pins React with these constants (grep'd at build time so a
 # vendor file that no longer matches -- e.g. a CRLF checkout -- fails the
 # build here, with a clear message, instead of failing silently in the browser).
@@ -94,6 +94,11 @@ ASSETS = [
      "mime": "font/woff2", "gzip": False},
     # Inter variable, body face of the Advantage opening (added 2026-08-15)
     {"path": "assets/fonts/inter-variable.woff2", "uuid": "61abad79-ea20-4061-af65-27ebefbb1209",
+     "mime": "font/woff2", "gzip": False},
+    # Instrument Serif, the deck's narrating voice (added 2026-09-04)
+    {"path": "assets/fonts/instrument-serif-italic-latin.woff2", "uuid": "3f0c2a8e-6d51-4b7e-9c1a-2e7d5b4f8a01",
+     "mime": "font/woff2", "gzip": False},
+    {"path": "assets/fonts/instrument-serif-latin.woff2", "uuid": "9b6e1d4c-2a37-4f58-8e0b-7c1f3a5d9e02",
      "mime": "font/woff2", "gzip": False},
 ]
 

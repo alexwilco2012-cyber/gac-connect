@@ -126,7 +126,7 @@ export default function Internal() {
     const window_ = replyWindowById(replyWindowId);
     const short = deadlineAdvice(window_.hours).tone === 'warn';
     pushToast(
-      `9 quote requests sent for MV Caledonian Star. Reply-by window ${window_.label}. Replies will populate the comparison view automatically.${
+      `9 quote requests sent for MV Elan. Reply-by window ${window_.label}. Replies will populate the comparison view automatically.${
         short ? ' Short windows rarely draw a full set of replies.' : ''
       }`,
     );
@@ -187,7 +187,7 @@ export default function Internal() {
             data-tour="predictive"
           >
             <CardHeader
-              title="MV Caledonian Star — Aberdeen, ETA 08:00 tomorrow"
+              title="MV Elan — Aberdeen, ETA 08:00 tomorrow"
               subtitle="Predictive procurement · what this vessel typically needs on an Aberdeen call, from GA history. SVS-verified suppliers are pre-selected for each."
               action={<Pill tone="info">GA vessel profile loaded</Pill>}
             />
@@ -323,7 +323,7 @@ export default function Internal() {
         <div className="mb-2.5 rounded-lg border border-line p-3">
           <p className="text-[13px] font-bold">Caledonia Lifting Ltd</p>
           <p className="mt-0.5 text-[12.5px] text-ink-soft">
-            RE: Quote request — crane hire, MV Caledonian Star, Aberdeen
+            RE: Quote request — crane hire, MV Elan, Aberdeen
           </p>
           <p className="mt-1.5 text-[12px]">
             Morning, we can do Friday 06:00 with the 130t mobile. £4,400 all-in as discussed…
@@ -346,7 +346,7 @@ export default function Internal() {
         <div className="rounded-lg border border-line p-3">
           <p className="text-[13px] font-bold">Aberdeen Harbour VTS</p>
           <p className="mt-0.5 text-[12.5px] text-ink-soft">
-            MV Caledonian Star — berth confirmation Regent Quay
+            MV Elan — berth confirmation Regent Quay
           </p>
           <p className="mt-1.5 text-[12px]">
             Confirming berth allocation for Friday 08:00 arrival…

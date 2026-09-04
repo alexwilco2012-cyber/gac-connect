@@ -142,9 +142,7 @@ export default function Quotes() {
   return (
     <div className="screen-enter">
       <Eyebrow>Quote comparison</Eyebrow>
-      <h1 className="mt-1 font-display text-2xl font-bold">
-        Crane hire — MV Caledonian Star, Aberdeen
-      </h1>
+      <h1 className="mt-1 font-display text-2xl font-bold">Crane hire — MV Elan, Aberdeen</h1>
       <p className="mt-1 text-[14px] text-ink-soft">
         3 of 3 suppliers replied inside the deadline. One reply was parsed automatically from
         Outlook — no manual logging.
@@ -216,8 +214,8 @@ export default function Quotes() {
             <span className="rounded-md bg-white/12 px-2 py-0.5 text-[11.5px] font-bold">GA</span>
             <span className="flex-1">
               <strong className="text-white">GAC Agent is ready.</strong> On acceptance, a purchase
-              order is generated automatically against MV Caledonian Star with the 60/40 Browne
-              Energy / Grizzell Marine billing split applied from the vessel profile. No re-keying.
+              order is generated automatically against MV Elan with the 60/40 Browne Energy /
+              Grizzell Marine billing split applied from the vessel profile. No re-keying.
             </span>
             {acceptedQuoteId ? (
               <Button variant="dark-outline" onClick={resetQuote} className="!min-h-[36px] !py-1">

@@ -181,7 +181,7 @@ function ccTaxiPorts(launchPorts) {
   return TR_TRANSFER_PORTS.filter((p) => CC_PORTS.includes(p) || launchPorts.includes(p));
 }
 const CC_VESSELS = [
-  { id: 'caledonian-star', name: 'MV Caledonian Star', port: 'Aberdeen' },
+  { id: 'elan', name: 'MV Elan', port: 'Aberdeen' },
   { id: 'boreal', name: 'MV Boreal', port: 'Peterhead' },
   { id: 'granite-coast', name: 'MV Granite Coast', port: 'Aberdeen' }
 ];
@@ -216,12 +216,12 @@ const CC_STAGE_NOTES = {
 /* Obviously fictional prefills. */
 const CC_LOI_DEMO_FORM = {
   familyName: 'Demo', forenames: 'Crew Member', nationality: 'Demo nationality', dateOfBirth: '01/01/1990',
-  passportNumber: 'X0000000', passportExpiry: '01/01/2030', vesselId: 'caledonian-star', port: 'Aberdeen',
+  passportNumber: 'X0000000', passportExpiry: '01/01/2030', vesselId: 'elan', port: 'Aberdeen',
   joiningDate: '22/08/2026', arrivingFlight: 'XX 000 · arriving Aberdeen 22/08/2026 14:35', visaNational: true
 };
 const CC_REPAT_DEMO_FORM = {
   familyName: 'Demo', forenames: 'Crew Member', dateOfBirth: '01/01/1990', nationality: 'Demo nationality',
-  passportNumber: 'X0000000', vesselId: 'caledonian-star', port: 'Aberdeen', disembarkationDate: '22/08/2026',
+  passportNumber: 'X0000000', vesselId: 'elan', port: 'Aberdeen', disembarkationDate: '22/08/2026',
   joinedOutsideUk: '', flights: ['XX 001 · Aberdeen → London 23/08/2026 07:10', '', '']
 };
 

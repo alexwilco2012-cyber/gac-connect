@@ -41,14 +41,14 @@ const PR_STAGE_PILL = {
 
 /* ── data (data/procurement.ts + data/vessels.ts) — all fictional ── */
 const PR_VESSELS = [
-  { id: 'caledonian-star', name: 'MV Caledonian Star', operatorLine: 'Browne Energy / Grizzell Marine (60/40)', port: 'Aberdeen' },
+  { id: 'elan', name: 'MV Elan', operatorLine: 'Browne Energy / Grizzell Marine (60/40)', port: 'Aberdeen' },
   { id: 'boreal', name: 'MV Boreal', operatorLine: 'Stronach Subsea', port: 'Peterhead' },
   { id: 'granite-coast', name: 'MV Granite Coast', operatorLine: 'Wilkinson Drilling', port: 'Aberdeen' }
 ];
 /* The draft the dashboard calls "1 procurement list ready to send". */
 const PR_DEFAULT_REQUEST = {
   ref: 'PR-1042',
-  vesselId: 'caledonian-star',
+  vesselId: 'elan',
   deliveryPoint: 'Regent Quay, Aberdeen',
   neededBy: 'Fri 08:00',
   lines: [
@@ -163,7 +163,7 @@ function prInvoiceTotals(lines) {
   return { total: lines.reduce((sum, l) => sum + l.priceGBP, 0) };
 }
 function prVesselFor(request) { return PR_VESSELS.find((v) => v.id === request.vesselId) || PR_VESSELS[0]; }
-/* "PR-1042 — MV Caledonian Star, Aberdeen — needed Fri 08:00" */
+/* "PR-1042 — MV Elan, Aberdeen — needed Fri 08:00" */
 function prRequestSummary(request) {
   const v = prVesselFor(request);
   return request.ref + ' — ' + v.name + ', ' + v.port + ' — needed ' + request.neededBy;

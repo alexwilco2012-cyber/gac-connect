@@ -58,7 +58,7 @@ is filled per output: preload hints + `window.__resources` (site), just
 
 | Change | File |
 |---|---|
-| Opening slides (chess / F1 / Hyrox / closer): copy, SVG, recap cards, CTA | `src/partials/20-opening.html` |
+| Opening slides (cold open, chapters, pay-offs, figures, ask, reveal): copy, SVG, facts, CTA | `src/partials/20-opening.html` |
 | Opening look & motion (tokens, keyframes, timings, responsive) | `src/styles/opening.css` (every rule scoped under `.adv`) |
 | Opening behaviour (keys, dots, CTA → platform fade) | `src/app/component.js` → the `_adv*` methods + `_onPresKey` |
 | Any platform screen copy | the matching file in `src/partials/` |
@@ -72,7 +72,7 @@ is filled per output: preload hints + `window.__resources` (site), just
 | Loading screen shown while the single-file bundle unpacks | `wrapper/loader.html` (rarely touched) |
 
 `src/partials/` is in document order: `10-loader` (chain-forge entrance, only
-shown when the opening is off), `20-opening` (the opening sequence: eleven
+shown when the opening is off), `20-opening` (the opening sequence: fifteen
 slides shown before the platform — see below), `30-chrome` (header/nav),
 `40-…59-…` one file per screen (home/harbour, dashboard — the client and
 supplier view since 26 Aug — marketplace, tiers,
@@ -123,51 +123,58 @@ over `app/features/*.js` as over the core files.
 
 ## The opening
 
-The presenter opens with an eleven-slide sequence:
+Redesigned 2026-09-04 ("one port call"). The presenter opens with a
+fifteen-slide sequence that follows one vessel, MV Elan, due in
+Aberdeen at 0800 tomorrow, from the question of what she needs to the
+platform that answers it. Two typographic voices: the italic serif
+(Instrument Serif) narrates the metaphor and the port call; Space Grotesk in
+gold states the platform fact. The harbour is a single SVG layer on the root
+(`.hb`), shown under slides 01, 02 and 15, so the vessel is still there when
+the deck comes back to her and dissolves into the landing page's own harbour
+when the overlay fades.
 
 | | | |
 |---|---|---|
-| 01 | Chess | see the opponent's next three moves |
-| 02 | The board today | nobody in this market can see it; every shortlist is in somebody's head |
-| 03 | The proposal | four pillars and a roof |
-| 04 | How it fixes it | the same job as a five-step flow |
-| 05 | The numbers | revenue against operating result, Years 1-3, break-even marked |
-| 06 | Strategy and finance | GA already holds every service ever bought; the chess loop closes in the card title |
-| 07 | F1 | a 30-second head start |
-| 08 | QHSSE | the head start exists because the car passed scrutineering |
-| 09 | Hyrox | two of the eight stations done for you |
-| 10 | Our people | which two, and how the role changes shape |
-| 11 | Closer | three recap cards and an **Enter the platform** button |
+| 01 | Cold open | "0800 tomorrow. What does she need?" No logo yet; the harbour |
+| 02 | Title | GAC Connect over the same harbour |
+| 03 | Today | that call starts with a phone list (illustration carried over) |
+| 04 | Four pillars and a roof | the one architectural slide (illustration carried over) |
+| 05 | Chapter I · chess | see the opponent's next three moves |
+| 06 | Pay-off I | we already own the data: GA history, predictive procurement, four lines under one roof |
+| 07 | Chapter II · F1 | a thirty-second head start |
+| 08 | Pay-off II | scrutineering was hours ago: the gate, 90/30/7 alerts, Gold Band |
+| 09 | Chapter III · Hyrox | two of the eight stations done for you |
+| 10 | Pay-off III | the agent's job changes shape: two roles, £250k, £15k training |
+| 11 | The figures | (£195k) · £1.77m · £5.38m and the bars left, the six revenue lines as a table right |
+| 12 | The cash | £565k needed, £750k provisioned, cumulative profit inside Year 2 |
+| 13 | The ask | £370,000 of capital expenditure: six steps, where it goes, ten named risks |
+| 14 | The point | the three pay-off lines stacked; "We have the advantage. Let's take it." |
+| 15 | The reveal | back to 0800: **Enter the platform** and the QR |
 
-The metaphors (01, 07, 09) and the closer are the **Advantage** slides, ported
-2026-08-15 from the standalone `GAC Connect Advantage.html` and kept verbatim as
-`reference/GAC Connect Advantage.standalone.html`: same markup, CSS and timings,
-scoped under `.adv` and driven by the same `.active` class. The only deliberate
-difference is the CTA, which enters the embedded platform instead of linking to
-the live site.
+The metaphors (05, 07, 09) keep their illustrations and timings from the
+2026-08-15 Advantage build, scoped under `.adv` and driven by the same
+`.active` class; slides 03, 04 and 11 carry the "board today", "house" and
+"bars" drawings over too. Everything else is new. The figures sit after all
+three chapters, so the advantages are the reasons to believe the numbers.
 
 **Each metaphor sits immediately before the slide it pays off** (owner's call,
-2026-08-20): chess before strategy and finance, F1 before QHSSE, Hyrox before
-our people. That is what makes the metaphors load-bearing rather than
-decorative, and it means every headline on 02, 06, 08 and 10 is a handoff line —
-they answer the slide in front of them and should not be reworded in isolation.
-Chess is the exception: it stays at the front as the cold open, and its payoff
-lands on slide 06 in the card titled "The moves they can't see" rather than in
-the headline. Slides 06, 08 and 10 carry cards rather than an illustration and
-reuse `.recap`/`.rcard` from the closer.
+2026-08-20), and every pay-off headline is a handoff line that answers the
+chapter card in front of it; do not reword one in isolation. The footer rail
+(I · Board, II · Grid, III · Course) lights chapter by chapter from the root's
+`ch1..ch3` classes; the `s-open` and `s-title` root classes hide the header
+and rail on the first two slides.
 
 Two copy rules the owner set on 2026-08-20, both worth keeping:
 
-- **No prop travels between non-adjacent slides.** Slide 04 used to open "the
-  same crane, on the platform", reaching back over slide 03 to a detail in slide
-  02's illustration; anyone who had not held the prop just heard an odd line. The
-  crane stays on 02 as concrete detail and is referred to nowhere else.
+- **No prop travels between non-adjacent slides.** The one exception is the
+  vessel herself, which is the deck's spine: she is named on 01, in the header
+  thread from 03 onwards, and on 15.
 - **Slide 10 is about role design, not job protection.** It is shown to the
   people who decide headcount, so a promise that nobody loses a job reads as
   naive to that room and answers a question they were not asking. The slide says
   the agent's job changes shape, names the released capacity as a decision for
   them, and states the Year 1 assumption (capacity spent on more volume through
-  the same team) that the Section 8 uplift is modelled on.
+  the same team) that the uplift is modelled on.
 
 Click / `→` / Space advance; `←` back; `Esc` jumps to the closer; on the closer,
 advancing pulses the button and `Enter` or the button fades the overlay into the
@@ -175,7 +182,7 @@ platform home (interactive harbour). It shows when the URL hash is empty or
 `#/present`; any other route skips it. Toggle with `presenter` in
 `src/app/props.json`.
 
-The closer carries a **QR code pointing at the platform** (`…/gac-connect/app`, never at the
+The closer carries a **QR code pointing at the landing page** (`…/gac-connect/`, never at the
 deck) as inline SVG paths rather than a base64 image — it stays crisp at projector
 size, costs no payload, and takes the deck's own colours. Regenerate it only if
 the platform address changes, and decode the result before shipping it.

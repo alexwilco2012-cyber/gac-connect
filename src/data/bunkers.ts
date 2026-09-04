@@ -30,7 +30,7 @@ export const BUNKER_PORTS = ['Aberdeen', 'Peterhead', 'Montrose'] as const;
 
 /** The last stem each vessel took — the consumption history the enquiry pre-fills from. */
 export const LAST_STEM: Record<string, { grade: BunkerGrade; quantityMt: number; when: string }> = {
-  'caledonian-star': { grade: 'LSMGO', quantityMt: 180, when: 'Aberdeen, 26 Jul' },
+  elan: { grade: 'LSMGO', quantityMt: 180, when: 'Aberdeen, 26 Jul' },
   boreal: { grade: 'MGO', quantityMt: 90, when: 'Peterhead, 3 Aug' },
   'granite-coast': { grade: 'VLSFO', quantityMt: 320, when: 'Aberdeen, 11 Aug' },
 };
@@ -97,7 +97,7 @@ export const EMPTY_ENQUIRY: BunkerEnquiryForm = {
 
 /** The demo-fill button — a plausible enquiry, obviously an example. */
 export const DEMO_ENQUIRY: BunkerEnquiryForm = {
-  vesselId: 'caledonian-star',
+  vesselId: 'elan',
   port: 'Aberdeen',
   grade: 'LSMGO',
   quantityMt: '180',

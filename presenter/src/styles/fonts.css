@@ -1,3 +1,18 @@
+/* Instrument Serif (the deck's narrating voice, 2026-09-04): latin only */
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/instrument-serif-italic-latin.woff2") format('woff2');
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/instrument-serif-latin.woff2") format('woff2');
+}
 /* Inter variable (Advantage opening body face; weights 100-900) */
 @font-face {
   font-family: 'Inter';
