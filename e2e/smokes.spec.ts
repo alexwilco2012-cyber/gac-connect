@@ -147,6 +147,35 @@ test('6 · interactive harbour: hotspots swap the hero copy, Escape puts it back
   await expect(headline).toBeVisible();
 });
 
+test.describe('6b · interactive harbour on a phone', () => {
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true });
+
+  test('a tap opens the detail under the scene, and the headline stays', async ({ page }) => {
+    await page.goto('/');
+    const headline = page.getByRole('heading', {
+      name: 'Offshore services. Found, vetted, booked.',
+    });
+    await expect(headline).toBeVisible();
+
+    const lorry = page.getByRole('button', { name: /Lorry — GAC Logistics/ });
+    await lorry.scrollIntoViewIfNeeded();
+    await lorry.tap();
+
+    // Stacked, the copy column is a screen above the harbour, so the card
+    // opens under the scene instead and is scrolled into view.
+    const card = page.getByRole('heading', { name: 'GAC Logistics' });
+    await expect(card).toBeVisible();
+    await expect(card).toBeInViewport();
+    await expect(headline).toHaveCount(1);
+    const cardBox = (await card.boundingBox())!;
+    const sceneBox = (await lorry.boundingBox())!;
+    expect(cardBox.y).toBeGreaterThan(sceneBox.y);
+
+    await page.getByRole('button', { name: 'All services' }).click();
+    await expect(card).toHaveCount(0);
+  });
+});
+
 test('5 · SVS blocked supplier is unbookable from its profile', async ({ page }) => {
   await page.goto('/app/svs');
   await page.keyboard.press('Escape');

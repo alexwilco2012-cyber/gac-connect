@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SITE_TAGLINE } from '../../config/brand';
 import { Button } from '../../components/ui/Button';
@@ -24,15 +24,48 @@ import type { ServiceId } from './harbour/services';
  * headline, search and counters for that service's detail card; closing it — ×,
  * "All services", Escape, or a click on the water — puts them back. One column
  * rather than a third one nobody looks at, and `aria-live` announces the swap.
+ *
+ * That only holds while the two columns sit side by side. Once the page stacks
+ * (below `lg`), the copy is a screen or more above the harbour, so swapping it
+ * is a tap that visibly does nothing. Stacked, the headline stays put and the
+ * detail card opens directly under the scene, scrolled into view.
  */
+
+/** Matches Tailwind's `lg`: the point at which the hero goes side by side. */
+const SIDE_BY_SIDE = '(min-width: 1024px)';
+
+function useStacked() {
+  const [stacked, setStacked] = useState(
+    () => typeof window !== 'undefined' && !window.matchMedia(SIDE_BY_SIDE).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(SIDE_BY_SIDE);
+    const on = () => setStacked(!mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return stacked;
+}
+
 export function LandingHero() {
   const navigate = useNavigate();
   const startTour = useApp((s) => s.startTour);
   const [q, setQ] = useState('');
   const [sel, setSel] = useState<ServiceId | null>(null);
   const stats = landingStats();
+  const stacked = useStacked();
+  const detailRef = useRef<HTMLDivElement>(null);
 
   const clearSel = useCallback(() => setSel(null), []);
+
+  // Stacked, the card lands under a scene the reader is already looking at,
+  // so it may open half below the fold. Bring it up, gently.
+  useEffect(() => {
+    if (!sel || !stacked) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    detailRef.current?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }, [sel, stacked]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -50,17 +83,18 @@ export function LandingHero() {
 
   return (
     // The 150px foot carries the platform preview, which pulls up into it.
-    <section className="bg-gradient-to-br from-ink to-[#06132B] pt-11 pb-[150px] text-white">
+    <section className="bg-gradient-to-br from-ink to-[#06132B] pt-8 pb-[150px] text-white lg:pt-11">
       <div className="mx-auto max-w-[1280px] px-6">
         {/* The copy leads in the DOM as well as on the page: on a narrow screen
             it stacks first, and a keyboard reaches the headline and the search
-            before the six hotspots. */}
-        <div className="flex flex-wrap items-stretch gap-8">
+            before the six hotspots. The stacking point is explicit (`lg`) so
+            the layout and `useStacked` cannot disagree about where it is. */}
+        <div className="flex flex-col items-stretch gap-8 lg:flex-row">
           <aside
             aria-live="polite"
-            className="flex min-w-[300px] flex-[1_1_380px] animate-[fade-up_0.8s_0.5s_cubic-bezier(0.4,0,0.2,1)_both] flex-col justify-center gap-3.5"
+            className="flex min-w-0 animate-[fade-up_0.8s_0.5s_cubic-bezier(0.4,0,0.2,1)_both] flex-col justify-center gap-3.5 lg:flex-[1_1_380px]"
           >
-            {sel ? (
+            {sel && !stacked ? (
               <ServiceDetail id={sel} onClear={clearSel} />
             ) : (
               <>
@@ -68,7 +102,7 @@ export function LandingHero() {
                 <h1 className="mt-2.5 max-w-[560px] font-display text-[clamp(32px,4.2vw,52px)] leading-[1.06] font-bold tracking-[-0.02em] text-balance">
                   {SITE_TAGLINE}
                 </h1>
-                <p className="mt-4 max-w-[520px] text-[15.5px] leading-[1.6] text-[#C6D4E2] text-pretty">
+                <p className="mt-3 max-w-[520px] text-[15px] leading-[1.6] text-[#C6D4E2] text-pretty lg:mt-4 lg:text-[15.5px]">
                   Cranes, medics, launches, haulage, customs clearance, compared and booked against
                   the vessel’s clock. GAC’s own lines carry the tier discount; every other supplier
                   has cleared the Supplier Vetting System before you see the listing.
@@ -120,7 +154,7 @@ export function LandingHero() {
                   , a port call from the vessel arriving to the invoice being matched.
                 </p>
 
-                <ul className="mt-8 flex flex-wrap gap-x-10 gap-y-3.5 text-[13px] text-[#C6D4E2]">
+                <ul className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-[13px] text-[#C6D4E2] lg:mt-8 lg:gap-x-10 lg:gap-y-3.5">
                   {stats.map((s) => (
                     <li key={s.label}>
                       <strong
@@ -138,11 +172,22 @@ export function LandingHero() {
             )}
           </aside>
 
-          <div className="min-w-0 flex-[1.5_1_520px]">
+          <div className="min-w-0 lg:flex-[1.5_1_520px]">
             <HarbourScene sel={sel} onSelect={setSel} onClear={clearSel} />
+            {/* Stacked, the detail card belongs here, under the thing that was
+                tapped; the headline above stays where it was. */}
+            <div ref={detailRef} aria-live="polite" className="lg:hidden">
+              {sel && stacked ? (
+                <div className="mt-4 flex flex-col gap-3.5">
+                  <ServiceDetail id={sel} onClear={clearSel} />
+                </div>
+              ) : null}
+            </div>
             <p className="mx-0.5 mt-2.5 text-[12px] text-[#8FA3B8]">
-              Proof of concept · illustrative data · original illustration in GAC colours. Click the
-              lorry, the ship, the crane: each is a service line.
+              Proof of concept · illustrative data · original illustration in GAC colours.{' '}
+              <span className="lg:hidden">Tap</span>
+              <span className="hidden lg:inline">Click</span> the lorry, the ship, the crane: each
+              is a service line.
             </p>
           </div>
         </div>
