@@ -278,7 +278,7 @@ class Component extends DCLogic {
      lives in st.advSlide and the CSS does the rest via the .active class. The
      one deliberate difference is the closer's CTA, which fades the overlay into
      the embedded platform home instead of linking to the live site. */
-  get ADV_SLIDES() { return 11; }
+  get ADV_SLIDES() { return 15; }
   _advGo(i) {
     if (!this.state.presOn || this._advLeaving) return;
     if (i < 0 || i >= this.ADV_SLIDES || i === this.state.advSlide) return;
@@ -751,11 +751,21 @@ class Component extends DCLogic {
     const advCls = (i) => 'slide slide-' + (i + 1) + (i === LAST ? ' closer' : '') + (adv === i ? ' active' : '');
     const advHid = (i) => (adv === i ? 'false' : 'true');
     const ADV_DOT_LABELS = [
-      'Slide 1 — chess', 'Slide 2 — the board today', 'Slide 3 — what we are proposing',
-      'Slide 4 — how it fixes it', 'Slide 5 — the numbers', 'Slide 6 — strategy and finance',
-      'Slide 7 — F1', 'Slide 8 — QHSSE', 'Slide 9 — Hyrox',
-      'Slide 10 — our people', 'Slide 11 — GAC Connect'
+      'Slide 1 — 0800 tomorrow', 'Slide 2 — GAC Connect', 'Slide 3 — today', 'Slide 4 — four pillars and a roof',
+      'Slide 5 — chess', 'Slide 6 — we already own the data',
+      'Slide 7 — F1', 'Slide 8 — scrutineering was hours ago',
+      'Slide 9 — Hyrox', 'Slide 10 — the agent’s job changes shape',
+      'Slide 11 — the figures', 'Slide 12 — the cash', 'Slide 13 — the ask',
+      'Slide 14 — the point', 'Slide 15 — enter the platform'
     ];
+    /* Root classes: s-open / s-title hide the chrome on the first two slides,
+       hb shows the harbour layer (slides 1, 2 and 15: the vessel the deck
+       follows), and the footer rail lights chapter by chapter: I is slides
+       5-6, II 7-8, III 9-10; from the figures on, all three read as done. */
+    const advChapter = adv >= 10 ? 4 : (adv >= 8 ? 3 : (adv >= 6 ? 2 : (adv >= 4 ? 1 : 0)));
+    const advRootCls = 'adv' + (adv === 0 ? ' s-open' : '') + (adv === 1 ? ' s-title' : '') +
+      ((adv === 0 || adv === 1 || adv === LAST) ? ' hb' : '') + (advChapter ? ' ch' + advChapter : '');
+    const advRailCls = (i) => 'rl' + (advChapter > i ? ' done' : '') + (advChapter === i ? ' on' : '');
     /* One advCls<n>/advHid<n> binding per slide, built from the count so adding
        a slide is a partial plus a dot label and nothing else. */
     const advSlots = {};
@@ -774,6 +784,8 @@ class Component extends DCLogic {
       advEnter: () => this._advEnter(),
       ctaRef: this.ctaRef,
       advCounter: pad2(adv + 1) + ' / ' + pad2(this.ADV_SLIDES),
+      advRootCls: advRootCls,
+      advRailCls1: advRailCls(1), advRailCls2: advRailCls(2), advRailCls3: advRailCls(3),
       ...advSlots,
       advDots: ADV_DOT_LABELS.map((label, i) => ({
         cls: 'dot' + (adv === i ? ' on' : ''), label: label, go: this._advGoCache[i]
