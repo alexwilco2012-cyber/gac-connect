@@ -1,5 +1,11 @@
 import { Link } from 'react-router-dom';
-import { HOTSPOT_ART, HOTSPOT_CHIP_DELAY, HOTSPOT_ENTRANCE, SceneBackground } from './HarbourArt';
+import {
+  HOTSPOT_ART,
+  HOTSPOT_CHIP_BELOW,
+  HOTSPOT_CHIP_DELAY,
+  HOTSPOT_ENTRANCE,
+  SceneBackground,
+} from './HarbourArt';
 import { HARBOUR_SERVICES, HOTSPOTS } from './services';
 import type { ServiceId } from './services';
 
@@ -26,7 +32,7 @@ export function HarbourScene({
   // the bottom third at thumbnail size. The art is width-limited, so a
   // shorter box costs it nothing and the bleed gains it a sixth.
   return (
-    <div className="relative -mx-6 h-[clamp(360px,54vw,760px)] animate-[scene-in_0.9s_ease_both] overflow-hidden bg-[#04101F] shadow-[0_1px_3px_rgba(10,37,64,0.12),0_10px_30px_rgba(10,37,64,0.14)] sm:mx-0 sm:w-full sm:rounded-2xl">
+    <div className="relative -mx-6 h-[clamp(360px,54vw,760px)] animate-[scene-in_0.9s_ease_both] overflow-hidden bg-[#040C1D] shadow-[0_1px_3px_rgba(10,37,64,0.12),0_10px_30px_rgba(10,37,64,0.14)] sm:mx-0 sm:w-full sm:rounded-2xl">
       <SceneBackground onClear={onClear} />
 
       {HOTSPOTS.map((h) => {
@@ -58,11 +64,13 @@ export function HarbourScene({
                 hover lift, which lives on the button itself. */}
             <span className="relative block w-full" style={{ animation: HOTSPOT_ENTRANCE[h.id] }}>
               {/* Below sm the chips would cover the scene they label, so only
-                  the selected one shows; from sm up they all do. */}
+                  the selected one shows; from sm up they all do. The booth and
+                  the warehouse stand under the vessel's berth, so their chips
+                  sit below them on the road rather than over her hull. */}
               <span
-                className={`pointer-events-none absolute -top-4 left-1/2 z-[3] -translate-x-1/2 rounded-full px-2 py-0.5 text-[10.5px] font-bold whitespace-nowrap text-ink opacity-0 shadow-[0_2px_10px_rgba(4,16,31,0.4)] transition-[background-color] duration-200 sm:px-3 sm:py-1 sm:text-[12.5px] ${
-                  selected ? 'block bg-gold-bright' : 'hidden bg-white sm:block'
-                }`}
+                className={`pointer-events-none absolute left-1/2 z-[3] -translate-x-1/2 rounded-full px-2 py-0.5 text-[10.5px] font-bold whitespace-nowrap text-ink opacity-0 shadow-[0_2px_10px_rgba(4,16,31,0.4)] transition-[background-color] duration-200 sm:px-3 sm:py-1 sm:text-[12.5px] ${
+                  HOTSPOT_CHIP_BELOW.has(h.id) ? '-bottom-3.5' : '-top-4'
+                } ${selected ? 'block bg-gold-bright' : 'hidden bg-white sm:block'}`}
                 style={{ animation: `fade-in .5s ${HOTSPOT_CHIP_DELAY[h.id]} ease forwards` }}
               >
                 {service.chipLabel}

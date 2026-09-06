@@ -526,6 +526,16 @@ export default function AppLayout() {
               >
                 <Icon name="search" size={19} />
               </button>
+              {/* The vessel pill (5 Sep): the one call the whole demo follows,
+                  with the quay lamp's flicker. The first thing the bar gives up. */}
+              <span className="hidden items-center gap-2 rounded-full bg-ink py-1.5 pr-3 pl-2 text-[12.5px] font-semibold whitespace-nowrap text-white min-[1180px]:inline-flex">
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 rounded-full bg-gold-bright"
+                  style={{ animation: 'lamp-flick 2.4s ease-in-out infinite' }}
+                />
+                MV Elan · Regent Quay · ETA 08:00
+              </span>
               <BellMenu />
               <span className="hidden text-[13px] text-ink-soft xl:inline">
                 A. Wilkinson · Aberdeen Agency

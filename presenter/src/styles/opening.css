@@ -554,3 +554,86 @@
   .adv .pg-l{fill:#FF453A}
   .adv .pd-bar{transform:none}
 }
+/* ============ v2 refinements (5 Sep) — appended after opening.css so it overrides ============ */
+.adv{--dim:#9FB3C8}
+.adv .conf{color:rgba(159,179,200,.8)}
+.adv .rail{color:rgba(159,179,200,.5)}
+.adv .rl.done{color:rgba(159,179,200,.8)}
+/* Illustration type, sized for a room, not a laptop */
+.adv .svglabel{font-size:14px;letter-spacing:.24em}
+.adv .svgtiny{font-size:12.5px;letter-spacing:.1em}
+.adv .svgbody{font-size:14px}
+.adv .svgnum{font-size:30px}
+.adv .svgnum2{font-size:17px}
+.adv .chess .coord{font-size:9px}
+.adv .house .svgbody{font-size:13px}
+/* The presenter's controls hint shows on the cold open only; the room never reads it again */
+.adv .ftr .hint{opacity:0;transition:opacity .5s var(--ease)}
+.adv.s-open .ftr .hint{opacity:1;animation:advFadeIn .8s ease 2.6s both}
+/* ---- the harbour, v2 ---- */
+.adv .harbour{transition:opacity 1.4s var(--ease)}
+.adv .hb-shimmer{animation:advShimmer 2.6s ease-in-out infinite alternate}
+.adv .hb-refl{animation:advShimmer 2.2s ease-in-out infinite alternate}
+@keyframes advShimmer{from{opacity:.5}to{opacity:1}}
+.adv .hb-ship{animation:advShipBob 5.2s ease-in-out infinite alternate}
+@keyframes advShipBob{to{transform:translateY(2.5px)}}
+/* She steams in during the cold open, holds mid-harbour through the deck, and comes alongside for the reveal */
+.adv .hb-ship-pos{transform:translateX(620px);transition:transform 40s linear}
+.adv.s-open .hb-ship-pos{transform:translateX(-400px);transition:none}
+.adv.s-open.kick .hb-ship-pos{transform:translateX(480px);transition:transform 40s cubic-bezier(.2,.7,.25,1)}
+.adv.s-title .hb-ship-pos{transform:translateX(620px);transition:transform 30s linear}
+.adv.s-reveal .hb-ship-pos{transform:translateX(960px);transition:transform 3.4s cubic-bezier(.25,.6,.2,1)}
+.adv .hb-wake{opacity:1;transition:opacity 1.2s ease 1.8s}
+.adv.s-reveal .hb-wake{opacity:0}
+.adv .hb-lines{opacity:0;transition:opacity .9s ease 3s}
+.adv.s-reveal .hb-lines{opacity:1}
+/* ---- pay-off I: the board in slide 5's own language; three L-shaped knight moves, drawn one after another ---- */
+.adv .pb-path{stroke-dasharray:220;stroke-dashoffset:220}
+.adv .sl-pay.active .pb-path.pb-p1{animation:advStrike .7s var(--ease) 1.1s both}
+.adv .sl-pay.active .pb-path.pb-p2{animation:advStrike .7s var(--ease) 1.85s both}
+.adv .sl-pay.active .pb-path.pb-p3{animation:advStrike .7s var(--ease) 2.6s both}
+.adv .pb-head{opacity:0}
+.adv .sl-pay.active .pb-head{animation:advPopIn .3s var(--ease) both}
+.adv .sl-pay.active .pb-head.pb-h1{animation-delay:1.7s}
+.adv .sl-pay.active .pb-head.pb-h2{animation-delay:2.45s}
+.adv .sl-pay.active .pb-head.pb-h3{animation-delay:3.2s}
+.adv .pb-ghost{opacity:0}
+.adv .sl-pay.active .pb-ghost{animation:advGhostIn .45s var(--ease) both, advGhostPulse 2.6s ease-in-out 4s infinite}
+.adv .sl-pay.active .pb-ghost.pb-g1{animation-delay:1.75s,4s}
+.adv .sl-pay.active .pb-ghost.pb-g2{animation-delay:2.5s,4s}
+.adv .sl-pay.active .pb-ghost.pb-k{animation-delay:3.25s,4s}
+.adv .sl-pay.active .pb-move.pb-m1{animation-delay:1.8s}
+.adv .sl-pay.active .pb-move.pb-m2{animation-delay:2.55s}
+.adv .sl-pay.active .pb-move.pb-m3{animation-delay:3.3s}
+.adv .sl-pay.active .pb-tag{animation-delay:3.5s}
+/* ---- the cash: milestones ---- */
+.adv .cs-ms{opacity:0}
+.adv .sl-cash.active .cs-ms{animation:advFadeIn .6s ease 1.5s both}
+/* ---- the figures and the ask build in two beats: the headline numbers first, the table on the next click ---- */
+.adv .sl-bars .cols-fig,.adv .sl-ask .cols-ask{transition:grid-template-columns .8s var(--ease)}
+.adv .sl-bars .cols-fig{grid-template-columns:minmax(0,1fr) minmax(0,0fr)}
+.adv.step1 .sl-bars .cols-fig{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.adv .sl-ask .cols-ask{grid-template-columns:minmax(0,1fr) minmax(0,0fr)}
+.adv.step1 .sl-ask .cols-ask{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+.adv .sl-bars .cols-fig > .col:nth-child(2),.adv .sl-ask .cols-ask > .col:nth-child(2){min-width:0;overflow:hidden;opacity:0;transform:translateX(24px);transition:opacity .6s var(--ease) .25s,transform .6s var(--ease) .25s}
+.adv.step1 .sl-bars .cols-fig > .col:nth-child(2),.adv.step1 .sl-ask .cols-ask > .col:nth-child(2){opacity:1;transform:none;overflow:visible}
+.adv .sl-bars.active .rev,.adv .sl-bars.active .colhead,.adv .sl-ask.active .capex,.adv .sl-ask.active .risks{animation:none}
+.adv .sl-ask .steps{max-width:760px}
+.adv .sl-bars .bignums{gap:clamp(24px,4vw,64px)}
+.adv .sl-bars .bn b{font-size:clamp(2rem,4.2vw,3.8rem)}
+.adv.step1 .sl-bars .bn b{font-size:clamp(1.7rem,3.2vw,2.9rem)}
+.adv .sl-bars .bn b{transition:font-size .8s var(--ease)}
+.adv .build-hint{position:absolute;right:var(--gx);bottom:74px;z-index:21;pointer-events:none;font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);opacity:.9}
+.adv .build-hint:empty{display:none}
+@media (max-width:860px){
+  .adv .sl-bars .cols-fig,.adv.step1 .sl-bars .cols-fig,.adv .sl-ask .cols-ask,.adv.step1 .sl-ask .cols-ask{grid-template-columns:minmax(0,1fr)}
+  .adv .build-hint{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .adv .hb-ship-pos{transform:translateX(620px)}
+  .adv.s-reveal .hb-ship-pos{transform:translateX(960px)}
+  .adv .pb-ghost,.adv .pb-head,.adv .cs-ms{opacity:1}
+  .adv .sl-bars .cols-fig{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .adv .sl-ask .cols-ask{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+  .adv .sl-bars .cols-fig > .col:nth-child(2),.adv .sl-ask .cols-ask > .col:nth-child(2){opacity:1;transform:none;overflow:visible}
+}

@@ -37,6 +37,17 @@ const NEXT_STEPS = [
  */
 const REQUEST_TERMS = serviceTermsFor(QUOTE_REQUEST.category);
 
+/** The PO number GAC Agent raises on acceptance — illustrative, like the rest. */
+const PO_NUMBER = '48211';
+
+/**
+ * Quote comparison (rebuilt to the 5 Sep design handoff): the slide-6 promise
+ * made real — three replies side by side, one parsed out of Outlook, and an
+ * acceptance that writes a PO into GAC Agent with the billing split already
+ * applied. Accepting one card books it, drops the other two to "Not selected",
+ * turns the GAC Agent band green and rewrites the queue; the e-sign modal and
+ * the what-happens-next loop are unchanged.
+ */
 function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => void }) {
   const acceptedQuoteId = useApp((s) => s.acceptedQuoteId);
   const accepted = acceptedQuoteId === quote.id;
@@ -53,39 +64,51 @@ function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => 
     ['ESG score (planned)', quote.esg],
   ];
 
+  const border = accepted
+    ? 'border-2 border-success'
+    : quote.best && acceptedQuoteId === null
+      ? 'border-2 border-sea'
+      : 'border border-line';
+
   return (
-    <Card className={quote.best ? 'border-[1.5px] border-success' : ''}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <strong className="font-display text-[15px]">{quote.supplierName}</strong>
-        <span className="flex flex-wrap items-center gap-1.5">
-          <Pill tone="verified">✓ GAC Verified</Pill>
-          {goldBand ? <GoldBandPill /> : null}
-        </span>
-      </div>
-      <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-ink-soft">
-        <span
-          aria-hidden="true"
-          className={`inline-block h-[7px] w-[7px] rounded-full ${
-            quote.source === 'outlook' ? 'bg-[#0F6CBD]' : 'bg-sea'
-          }`}
-        />
-        {quote.source === 'outlook' ? 'Parsed from Outlook reply' : 'Replied via platform'} ·{' '}
-        {quote.sourceTime}
-      </p>
-      <p className="mt-2.5 font-display text-[24px] font-bold">
-        {gbp(quote.priceGBP)}{' '}
-        {quote.best ? (
-          <span className="align-middle">
-            <Pill tone="info">Best match</Pill>
+    <Card className={`flex flex-col ${border} ${anotherAccepted ? 'opacity-55' : ''}`}>
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="min-w-0">
+          <p className="font-display text-[17px] leading-tight font-bold">{quote.supplierName}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-[12px] text-ink-soft">
+            <span
+              aria-hidden="true"
+              className={`inline-block h-[7px] w-[7px] shrink-0 rounded-full ${
+                quote.source === 'outlook' ? 'bg-gold' : 'bg-sea'
+              }`}
+            />
+            {quote.source === 'outlook' ? 'Parsed from Outlook reply' : 'Replied via platform'} ·{' '}
+            {quote.sourceTime}
+          </p>
+        </div>
+        {quote.best && acceptedQuoteId === null ? (
+          <span className="inline-flex items-center rounded-full bg-sea px-2.5 py-1 text-[11.5px] font-bold whitespace-nowrap text-white">
+            Best match
           </span>
         ) : null}
+      </div>
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
+        <Pill tone="verified">✓ GAC Verified</Pill>
+        {goldBand ? <GoldBandPill /> : null}
+        {quote.source === 'outlook' ? <Pill tone="info">Parsed from Outlook</Pill> : null}
+      </div>
+      <p className="mt-4 font-display text-[36px] leading-none font-bold tracking-[-0.02em]">
+        {gbp(quote.priceGBP)}
       </p>
-      <table className="mt-1.5 w-full border-collapse text-[13px]">
+      <p className="mt-1 text-[12px] text-ink-soft">
+        for the booked window · {QUOTE_REQUEST.bookedWindow}
+      </p>
+      <table className="mt-3.5 w-full flex-1 border-collapse text-[13.5px]">
         <tbody>
           {rows.map(([k, v]) => (
             <tr key={k} className="border-b border-dashed border-line last:border-b-0">
-              <td className="py-1.5 text-ink-soft">{k}</td>
-              <td className="py-1.5 text-right font-semibold">{v}</td>
+              <td className="py-[7px] text-ink-soft">{k}</td>
+              <td className="py-[7px] text-right font-semibold">{v}</td>
             </tr>
           ))}
           {REQUEST_TERMS ? (
@@ -93,27 +116,38 @@ function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => 
               className="border-b border-dashed border-line last:border-b-0"
               data-testid="quote-terms"
             >
-              <td className="py-1.5 align-top text-ink-soft">Terms</td>
-              <td className="py-1.5 text-right text-[12px] font-semibold">{OVERRUN_TERMS_SHORT}</td>
+              <td className="py-[7px] align-top text-ink-soft">Terms</td>
+              <td className="py-[7px] text-right text-[12px] font-semibold text-ink-soft">
+                {OVERRUN_TERMS_SHORT}
+              </td>
             </tr>
           ) : null}
         </tbody>
       </table>
-      <div className="mt-3">
+      <div className="mt-4">
         {accepted ? (
-          <Pill tone="verified">✓ Accepted — PO 48211 generated</Pill>
+          <Button
+            variant="primary"
+            className="w-full !cursor-default !bg-success hover:!bg-success"
+            disabled
+          >
+            Booked ✓ · PO {PO_NUMBER}
+          </Button>
+        ) : anotherAccepted ? (
+          <Button
+            variant="ghost"
+            className="w-full !cursor-default !border-transparent !bg-[#F1F4F8] !text-[#8FA3B8]"
+            disabled
+            title="Another quote has been accepted for this job"
+          >
+            Not selected
+          </Button>
         ) : (
           <Button
             variant={quote.best ? 'primary' : 'ghost'}
             className="w-full"
-            disabled={anotherAccepted || !bookable}
-            title={
-              !bookable
-                ? 'Blocked by SVS — compliance evidence required'
-                : anotherAccepted
-                  ? 'Another quote has been accepted for this job'
-                  : undefined
-            }
+            disabled={!bookable}
+            title={!bookable ? 'Blocked by SVS — compliance evidence required' : undefined}
             onClick={() => onAccept(quote)}
           >
             Accept quote
@@ -121,6 +155,30 @@ function QuoteCard({ quote, onAccept }: { quote: Quote; onAccept: (q: Quote) => 
         )}
       </div>
     </Card>
+  );
+}
+
+/** One cell of the window band above the cards. */
+function WindowCell({
+  label,
+  children,
+  gold,
+}: {
+  label: string;
+  children: ReactNode;
+  gold?: boolean;
+}) {
+  return (
+    <div className={`px-4 py-3 ${gold ? 'bg-gold-soft' : 'bg-white'}`}>
+      <p
+        className={`text-[10.5px] font-extrabold tracking-[0.14em] uppercase ${
+          gold ? 'text-gold-deep' : 'text-ink-soft'
+        }`}
+      >
+        {label}
+      </p>
+      <p className="mt-[3px] text-[14px] font-bold">{children}</p>
+    </div>
   );
 }
 
@@ -132,6 +190,8 @@ export default function Quotes() {
   const [signing, setSigning] = useState<Quote | null>(null);
   const [termsOpen, setTermsOpen] = useState(false);
 
+  const acceptedQuote = QUOTES.find((q) => q.id === acceptedQuoteId) ?? null;
+
   function confirmBooking() {
     if (!signing) return;
     acceptQuote(signing.id);
@@ -142,16 +202,43 @@ export default function Quotes() {
   return (
     <div className="screen-enter">
       <Eyebrow>Quote comparison</Eyebrow>
-      <h1 className="mt-1 font-display text-2xl font-bold">Crane hire — MV Elan, Aberdeen</h1>
-      <p className="mt-1 text-[14px] text-ink-soft">
+      <h1 className="mt-0.5 font-display text-[28px] font-bold tracking-[-0.015em]">
+        Crane hire — MV Elan, Aberdeen
+      </h1>
+      <p className="mt-1 text-[14.5px] text-ink-soft">
         3 of 3 suppliers replied inside the deadline. One reply was parsed automatically from
         Outlook — no manual logging.
       </p>
-      <p className="mt-1.5 text-[12.5px] text-ink-soft" data-testid="request-meta">
-        {`Sent ${QUOTE_REQUEST.sentAt} · reply-by ${QUOTE_REQUEST.replyBy} (${QUOTE_REQUEST.replyWindowLabel} to reply, set by the client) · needed ${QUOTE_REQUEST.neededBy}`}
-      </p>
+
+      {/* The window band: sent, reply-by, needed, the booked window the
+          prices cover, and the hire terms — so the presenter points instead
+          of describing. */}
+      <div
+        className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-px overflow-hidden rounded-xl border border-line bg-line"
+        data-testid="request-meta"
+      >
+        <WindowCell label="Sent">{QUOTE_REQUEST.sentAt}</WindowCell>
+        <WindowCell label="Reply-by">
+          {QUOTE_REQUEST.replyBy}{' '}
+          <span className="font-medium text-ink-soft">
+            · {QUOTE_REQUEST.replyWindowLabel}, set by the client
+          </span>
+        </WindowCell>
+        <WindowCell label="Needed">{QUOTE_REQUEST.neededBy}</WindowCell>
+        <WindowCell label="Booked window" gold>
+          {QUOTE_REQUEST.bookedWindow}
+        </WindowCell>
+        <div className="bg-white px-4 py-3">
+          <p className="text-[10.5px] font-extrabold tracking-[0.14em] text-ink-soft uppercase">
+            Terms
+          </p>
+          <p className="mt-[3px] text-[12.5px] leading-[1.35] text-ink-soft">
+            {OVERRUN_TERMS_SHORT}
+          </p>
+        </div>
+      </div>
       {REQUEST_TERMS ? (
-        <div className="mt-1 text-[12.5px] text-ink-soft" data-testid="request-terms">
+        <div className="mt-2 text-[12.5px] text-ink-soft" data-testid="request-terms">
           <p>
             Prices cover the booked window{' '}
             <strong className="text-ink">{QUOTE_REQUEST.bookedWindow}</strong> ·{' '}
@@ -174,95 +261,115 @@ export default function Quotes() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid items-start gap-5 lg:grid-cols-[220px_1fr]">
-        {/* Request queue sidebar */}
-        <Card className="order-2 lg:order-1" data-tour="queue">
-          <Eyebrow>Open requests</Eyebrow>
-          <ul className="mt-2">
-            {REQUEST_QUEUE.map((r) => (
-              <li
-                key={r.id}
-                className={`border-b border-dashed border-line py-2.5 last:border-b-0 ${
-                  r.active ? '' : 'opacity-70'
-                }`}
-              >
-                <p className="text-[13.5px] font-bold">
-                  {r.title}
-                  {r.active ? (
-                    <span className="ml-2 align-middle">
-                      <Pill tone="info">This view</Pill>
-                    </span>
-                  ) : null}
-                </p>
-                <p className="text-[12px] text-ink-soft">{r.vessel}</p>
-                <p className="text-[12px] text-ink-soft">{r.status}</p>
-              </li>
-            ))}
-          </ul>
-        </Card>
+      {/* Quote cards */}
+      <div className="mt-[18px] grid items-stretch gap-[18px] md:grid-cols-3">
+        {QUOTES.map((q) => (
+          <QuoteCard key={q.id} quote={q} onAccept={setSigning} />
+        ))}
+      </div>
 
-        {/* Quote cards */}
-        <div className="order-1 lg:order-2">
-          <div className="grid items-stretch gap-4 md:grid-cols-3">
-            {QUOTES.map((q) => (
-              <QuoteCard key={q.id} quote={q} onAccept={setSigning} />
-            ))}
-          </div>
-
-          {/* GA strip */}
-          <div className="mt-4 flex flex-wrap items-center gap-4 rounded-brand bg-ink px-4.5 py-3.5 text-[13.5px] text-[#D8E2EC]">
-            <span className="rounded-md bg-white/12 px-2 py-0.5 text-[11.5px] font-bold">GA</span>
-            <span className="flex-1">
+      {/* GA band — ready before acceptance, the raised PO after it */}
+      <div
+        className={`mt-[18px] flex flex-wrap items-center gap-3.5 rounded-xl px-4.5 py-3.5 text-[13.5px] text-[#D8E2EC] transition-colors duration-300 ${
+          acceptedQuote ? 'bg-[#0B3B2E]' : 'bg-ink'
+        }`}
+      >
+        <span className="shrink-0 rounded-md bg-white/12 px-2 py-0.5 text-[11.5px] font-bold">
+          GA
+        </span>
+        <span className="min-w-[240px] flex-1">
+          {acceptedQuote ? (
+            <>
+              <strong className="text-white">
+                Purchase order {PO_NUMBER} raised in GAC Agent.
+              </strong>{' '}
+              Against MV Elan, with the 60/40 Browne Energy / Grizzell Marine billing split applied
+              from the vessel profile. The agreement went to the supplier with the booked window and
+              terms. Nothing re-keyed.
+            </>
+          ) : (
+            <>
               <strong className="text-white">GAC Agent is ready.</strong> On acceptance, a purchase
               order is generated automatically against MV Elan with the 60/40 Browne Energy /
               Grizzell Marine billing split applied from the vessel profile. No re-keying.
-            </span>
-            {acceptedQuoteId ? (
-              <Button variant="dark-outline" onClick={resetQuote} className="!min-h-[36px] !py-1">
-                Reset demo
-              </Button>
-            ) : null}
-          </div>
+            </>
+          )}
+        </span>
+        {acceptedQuoteId ? (
+          <Button variant="dark-outline" onClick={resetQuote} className="!min-h-[36px] !py-1">
+            Reset demo
+          </Button>
+        ) : null}
+      </div>
 
-          {/* What happens next — the accountability loop behind acceptance */}
-          <Card className="mt-4" data-testid="what-happens-next">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Eyebrow>What happens next</Eyebrow>
-              <ButtonLink to="/app/invoices" variant="ghost" className="!min-h-[36px] !py-1">
-                See invoice review →
-              </ButtonLink>
-            </div>
-            <ol className="mt-3 grid gap-3 md:grid-cols-3">
-              {NEXT_STEPS.map((step, i) => {
-                const current = acceptedQuoteId !== null && i === 2;
-                return (
-                  <li
-                    key={step.title}
-                    aria-current={current ? 'step' : undefined}
-                    className={`list-none rounded-lg border p-3.5 ${
-                      current ? 'border-dashed border-sea bg-sea-soft' : 'border-line'
+      {/* Request queue for MV Elan — this job plus two other open requests */}
+      <Card className="mt-[18px]" data-tour="queue">
+        <Eyebrow>Request queue · MV Elan</Eyebrow>
+        <ul className="mt-2.5 grid gap-3 md:grid-cols-3">
+          {REQUEST_QUEUE.map((r) => {
+            const booked = r.active && acceptedQuote !== null;
+            return (
+              <li
+                key={r.id}
+                className={`list-none rounded-[10px] px-3.5 py-3 ${
+                  booked
+                    ? 'border-[1.5px] border-success bg-success-soft'
+                    : r.active
+                      ? 'border-[1.5px] border-sea bg-sea-soft'
+                      : 'border border-line'
+                }`}
+              >
+                <p className="text-[13.5px] font-bold">{r.title}</p>
+                <p className="mt-0.5 text-[12.5px] text-ink-soft">
+                  {booked
+                    ? `Booked · ${acceptedQuote.supplierName} · PO ${PO_NUMBER}`
+                    : r.active
+                      ? `${r.status} · reviewing now`
+                      : r.status}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+
+      {/* What happens next — the accountability loop behind acceptance */}
+      <Card className="mt-[18px]" data-testid="what-happens-next">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Eyebrow>What happens next</Eyebrow>
+          <ButtonLink to="/app/invoices" variant="ghost" className="!min-h-[36px] !py-1">
+            See invoice review →
+          </ButtonLink>
+        </div>
+        <ol className="mt-3 grid gap-3 md:grid-cols-3">
+          {NEXT_STEPS.map((step, i) => {
+            const current = acceptedQuoteId !== null && i === 2;
+            return (
+              <li
+                key={step.title}
+                aria-current={current ? 'step' : undefined}
+                className={`list-none rounded-lg border p-3.5 ${
+                  current ? 'border-dashed border-sea bg-sea-soft' : 'border-line'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className={`inline-grid h-7 w-7 shrink-0 place-items-center rounded-full font-display text-[12.5px] font-bold ${
+                      current ? 'bg-sea text-white' : 'bg-sea-soft text-sea'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        aria-hidden="true"
-                        className={`inline-grid h-7 w-7 shrink-0 place-items-center rounded-full font-display text-[12.5px] font-bold ${
-                          current ? 'bg-sea text-white' : 'bg-sea-soft text-sea'
-                        }`}
-                      >
-                        {i + 1}
-                      </span>
-                      {current ? <Pill tone="info">Up next</Pill> : null}
-                    </div>
-                    <p className="mt-2.5 text-[13.5px] font-bold">{step.title}</p>
-                    <p className="mt-1 text-[12.5px] text-ink-soft">{step.body}</p>
-                  </li>
-                );
-              })}
-            </ol>
-          </Card>
-        </div>
-      </div>
+                    {i + 1}
+                  </span>
+                  {current ? <Pill tone="info">Up next</Pill> : null}
+                </div>
+                <p className="mt-2.5 text-[13.5px] font-bold">{step.title}</p>
+                <p className="mt-1 text-[12.5px] text-ink-soft">{step.body}</p>
+              </li>
+            );
+          })}
+        </ol>
+      </Card>
 
       {/* Per-transaction agreement modal */}
       <Modal open={signing !== null} onClose={() => setSigning(null)} labelledBy="sign-title">

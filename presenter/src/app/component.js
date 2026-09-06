@@ -48,7 +48,11 @@ class Component extends DCLogic {
       dashView: this._get('dash-view', 'client') === 'supplier' ? 'supplier' : 'client',
       /* Advantage opening: presOn shows the overlay, advSlide 0..3 is the active
          slide, advOp/advPe drive the fade-out into the platform. */
-      presOn: presWanted, advSlide: 0, advOp: '1', advPe: 'auto'
+      presOn: presWanted, advSlide: 0, advOp: '1', advPe: 'auto',
+      /* v2 (5 Sep): advStep is the second beat on the figures and the ask;
+         kick gives the browser one frame at the vessel's start position so
+         her 40s steam-in transition actually runs on the cold open. */
+      advStep: 0, kick: false
     };
     /* Feature modules (app/features/*.js — the launches panel, Procurement,
        Crew change, added after the 17 Aug review) contribute their own initial state. */
@@ -95,11 +99,13 @@ class Component extends DCLogic {
   _hbB(i) { const id = this.state.hbSel; return id ? this.HARBOUR[id].bullets[i] : ''; }
   /* The label chips arrive last, once everything they name has. */
   get HB_CHIP_DELAY() {
-    return { assets: '4.1s', agency: '4.2s', marketplace: '4.3s', procurement: '4.4s', customs: '4.5s', logistics: '4.6s' };
+    return { assets: '2.2s', agency: '2.6s', marketplace: '2.4s', procurement: '2.5s', customs: '2.7s', logistics: '3.3s' };
   }
   _hbChip(id) {
-    return 'pointer-events:none;position:absolute;top:-16px;left:50%;transform:translateX(-50%);z-index:3;border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(4,16,31,.4);transition:background-color .2s;'
-      + 'opacity:0;animation:fadeIn .5s ' + (this.HB_CHIP_DELAY[id] || '4.1s') + ' ease forwards;'
+    /* the booth and the warehouse stand just under the vessel's berth, so their labels sit below them, on the road */
+    const pos = (id === 'customs' || id === 'procurement') ? 'bottom:-14px;' : 'top:-16px;';
+    return 'pointer-events:none;position:absolute;' + pos + 'left:50%;transform:translateX(-50%);z-index:3;border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:700;white-space:nowrap;box-shadow:0 2px 10px rgba(4,16,31,.4);transition:background-color .2s;'
+      + 'opacity:0;animation:fadeIn .5s ' + (this.HB_CHIP_DELAY[id] || '2.2s') + ' ease forwards;'
       + (this.state.hbSel === id ? 'background:#FFC72C;color:#0A2540;' : 'background:#FFFFFF;color:#0A2540;');
   }
 
@@ -233,6 +239,7 @@ class Component extends DCLogic {
       if (e.key === 'Escape') this._advGo(this.ADV_SLIDES - 1);
     };
     window.addEventListener('keydown', this._onPresKey);
+    this._kickT = setTimeout(() => this.setState({ kick: true }), 90);
     if (this.state.presOn) document.body.style.overflow = 'hidden';
     if (this.state.loader === 'visible') this._loaderTimer = setTimeout(() => this._hideLoader(), 4800);
     this._watchConsolidation();
@@ -269,7 +276,7 @@ class Component extends DCLogic {
     clearTimeout(this._toastTimer); clearTimeout(this._routeTimer);
     if (this._consolIo) this._consolIo.disconnect();
     (this._consolTimers || []).forEach(clearTimeout);
-    clearTimeout(this._presT); clearTimeout(this._navT);
+    clearTimeout(this._presT); clearTimeout(this._navT); clearTimeout(this._kickT);
     document.body.style.overflow = '';
   }
 
@@ -282,14 +289,18 @@ class Component extends DCLogic {
   _advGo(i) {
     if (!this.state.presOn || this._advLeaving) return;
     if (i < 0 || i >= this.ADV_SLIDES || i === this.state.advSlide) return;
-    this.setState({ advSlide: i });
+    this.setState({ advSlide: i, advStep: 0 });
   }
   _advNext() {
     if (!this.state.presOn || this._advLeaving) return;
     if (this.state.advSlide === this.ADV_SLIDES - 1) { this._advPulse(); return; }
+    /* the figures (11) and the ask (13) build in two beats */
+    if (this.BUILD_SLIDES.includes(this.state.advSlide) && this.state.advStep === 0) { this.setState({ advStep: 1 }); return; }
     this._advGo(this.state.advSlide + 1);
   }
-  _advPrev() { this._advGo(this.state.advSlide - 1); }
+  /* zero-indexed: the slides whose second column arrives on a second click */
+  get BUILD_SLIDES() { return [10, 12]; }
+  _advPrev() { if (this.state.advStep === 1) { this.setState({ advStep: 0 }); return; } this._advGo(this.state.advSlide - 1); }
   _advDot(i, e) {
     /* a MOUSE click on a dot drops focus afterwards so a following Enter advances
        the deck rather than re-activating the dot (e.detail is 0 for keyboard-
@@ -689,18 +700,26 @@ class Component extends DCLogic {
     /* quotes */
     const quotesList = this.QUOTES.map((qc) => {
       const isAccepted = st.accepted === qc.name;
+      const other = !!st.accepted && !isAccepted;
+      const sup = this.SUPPLIERS.find((s) => s.name === qc.name);
+      const BTN = 'border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:14px;font-family:inherit;transition:background .15s;margin-top:16px;';
       return {
         name: qc.name, price: qc.price, avail: qc.avail, capacity: qc.capacity, rating: qc.rating, esg: qc.esg, src: qc.src,
-        dotColor: qc.outlook ? '#0F6CBD' : '#047857',
-        best: !!qc.best,
+        dotColor: qc.outlook ? '#C9A227' : '#0E5E8A',
+        best: !!qc.best && !st.accepted,
+        /* the Gold Band is earned at the audit and lost on lapse: read it off the supplier record, never hard-coded */
+        gold: !!(sup && sup.goldBand === 'held' && this.deriveStatus(sup) !== 'blocked'),
+        parsed: !!qc.outlook,
         accepted: isAccepted,
-        cardStyle: 'display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);' +
-          (isAccepted ? 'border:1.5px solid #047857;background:linear-gradient(180deg,#F2FAF6,#FFFFFF 60%);' : (qc.best ? 'border:1.5px solid #0E5E8A;background:#FFFFFF;' : 'border:1px solid #E5EAF1;background:#FFFFFF;')),
-        actionLabel: isAccepted ? 'Booked ✓ · PO 48211' : 'Accept quote',
-        actionStyle: isAccepted
-          ? 'background:#E7F4EF;color:#047857;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:default;margin-top:auto;'
-          : (qc.best ? 'background:#0E5E8A;color:#FFFFFF;border:none;' : 'background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;') + 'border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;margin-top:auto;',
-        onAccept: () => this._openModal(qc.name, qc.price)
+        disabled: !!st.accepted,
+        cardStyle: 'display:flex;flex-direction:column;background:#FFFFFF;border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(10,37,64,.07);border:'
+          + (isAccepted ? '2px solid #047857' : (qc.best && !st.accepted) ? '2px solid #0E5E8A' : '1px solid #E5EAF1') + ';'
+          + (other ? 'opacity:.55;' : ''),
+        actionLabel: isAccepted ? 'Booked \u2713 \u00b7 PO 48211' : other ? 'Not selected' : 'Accept quote',
+        actionStyle: BTN + (isAccepted ? 'background:#047857;color:#FFFFFF;cursor:default;'
+          : other ? 'background:#F1F4F8;color:#8FA3B8;cursor:default;'
+          : qc.best ? 'background:#0E5E8A;color:#FFFFFF;cursor:pointer;' : 'background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;cursor:pointer;'),
+        onAccept: () => { if (this.state.accepted) return; this._openModal(qc.name, qc.price); }
       };
     });
 
@@ -764,7 +783,8 @@ class Component extends DCLogic {
        5-6, II 7-8, III 9-10; from the figures on, all three read as done. */
     const advChapter = adv >= 10 ? 4 : (adv >= 8 ? 3 : (adv >= 6 ? 2 : (adv >= 4 ? 1 : 0)));
     const advRootCls = 'adv' + (adv === 0 ? ' s-open' : '') + (adv === 1 ? ' s-title' : '') +
-      ((adv === 0 || adv === 1 || adv === LAST) ? ' hb' : '') + (advChapter ? ' ch' + advChapter : '');
+      ((adv === 0 || adv === 1 || adv === LAST) ? ' hb' : '') + (adv === LAST ? ' s-reveal' : '') + (advChapter ? ' ch' + advChapter : '') +
+      (st.advStep === 1 ? ' step1' : '') + (st.kick ? ' kick' : '');
     const advRailCls = (i) => 'rl' + (advChapter > i ? ' done' : '') + (advChapter === i ? ' on' : '');
     /* One advCls<n>/advHid<n> binding per slide, built from the count so adding
        a slide is a partial plus a dot label and nothing else. */
@@ -785,6 +805,8 @@ class Component extends DCLogic {
       ctaRef: this.ctaRef,
       advCounter: pad2(adv + 1) + ' / ' + pad2(this.ADV_SLIDES),
       advRootCls: advRootCls,
+      /* the gold cue that a click remains on a two-beat slide; empty otherwise, and CSS hides the empty box */
+      advBuildHint: (adv === 10 && st.advStep === 0) ? '\u2192 the six revenue lines' : (adv === 12 && st.advStep === 0) ? '\u2192 where the \u00a3370,000 goes' : '',
       advRailCls1: advRailCls(1), advRailCls2: advRailCls(2), advRailCls3: advRailCls(3),
       ...advSlots,
       advDots: ADV_DOT_LABELS.map((label, i) => ({
@@ -1059,7 +1081,9 @@ class Component extends DCLogic {
             ? 'Every supplier certificate is current.'
             : watch.map(function (w) { return self._watchLine(w); }).join(' · '),
           watchChip: blocked > 0,
-          watchChipLabel: blocked + ' blocked from booking'
+          watchChipLabel: blocked + ' blocked from booking',
+          watchIconStyle: 'width:32px;height:32px;flex-shrink:0;border-radius:8px;display:grid;place-items:center;margin-top:2px;'
+            + (blocked > 0 ? 'background:#FBEAEA;color:#B91C1C;' : 'background:#E8F1F7;color:#0E5E8A;')
         };
       })(this),
 
@@ -1069,9 +1093,9 @@ class Component extends DCLogic {
       ...(function (self) {
         const K = [
           { label: 'Active jobs', value: '14', delta: '+3 this week', tone: 'up', pts: [9, 10, 12, 11, 13, 11, 14] },
-          { label: 'Open quote requests', value: '6', delta: '2 replies awaiting review', tone: 'flat', pts: [2, 4, 3, 5, 4, 6, 6] },
+          { label: 'Open quote requests', value: st.sent ? '9' : '6', delta: st.sent ? '9 just issued for MV Elan' : '2 replies awaiting review', tone: 'flat', pts: [2, 4, 3, 5, 4, 6, st.sent ? 9 : 6] },
           { label: 'SVS-verified suppliers', value: '52', delta: '4 onboarding', tone: 'up', pts: [44, 46, 47, 48, 50, 51, 52] },
-          { label: 'Admin time saved (mo.)', value: '31 hrs', delta: 'vs manual workflow', tone: 'flat', pts: [22, 24, 26, 27, 29, 30, 31] }
+          { label: 'Admin time saved a month', value: '31 hrs', delta: 'vs the manual workflow', tone: 'flat', pts: [22, 24, 26, 27, 29, 30, 31] }
         ];
         const out = {};
         K.forEach(function (k, i) {
@@ -1089,32 +1113,33 @@ class Component extends DCLogic {
 
       /* 48-hour strip. Offsets are hours from the demo "now" (Thursday
          08:00); the label column carries every fact the drawing shows. */
-      dashCalls: [
-        { name: 'MV Elan', sched: 'Aberdeen · ETA Fri 08:00 · Berth: Regent Quay', pill: 'Procurement list ready', tone: 'info', at: 24, mark: 'ETA Fri 08:00' },
-        { name: 'MV Boreal', sched: 'Peterhead · ETA Fri 14:30 · Berth: Smith Quay', pill: '2 certs expiring on booked supplier', tone: 'warn', at: 30.5, mark: 'ETA Fri 14:30' },
-        { name: 'MV Granite Coast', sched: 'Aberdeen · ETD Sat 06:00 · Customs: T1 in progress', pill: 'All documents complete', tone: 'ok', at: 46, mark: 'ETD Sat 06:00' }
-      ].map(function (v) {
-        const bg = v.tone === 'info' ? '#0E5E8A' : v.tone === 'warn' ? '#B45309' : '#047857';
-        const pillBg = v.tone === 'info' ? '#E8F1F7' : v.tone === 'warn' ? '#FBF0E1' : '#E7F4EF';
-        const pillFg = v.tone === 'info' ? '#0E5E8A' : v.tone === 'warn' ? '#B45309' : '#047857';
-        const pctv = (v.at / 48) * 100;
-        v.markStyle = 'position:absolute;top:50%;transform:translateY(-50%) translateX(' + (pctv > 88 ? '-96%' : '-50%') + ');'
-          + 'left:' + pctv.toFixed(2) + '%;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;'
-          + 'white-space:nowrap;color:#FFFFFF;background:' + bg + ';';
-        v.pillStyle = 'display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:11.5px;'
-          + 'font-weight:700;background:' + pillBg + ';color:' + pillFg + ';';
-        return v;
-      }),
-
+      dashCalls: (function (self) {
+        const chip = function (bg, fg) {
+          return 'display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:' + bg + ';color:' + fg + ';';
+        };
+        /* a bar from the call's start to the strip's end (or the sailing),
+           in percent of the 48 hours; text is clipped, never wrapped */
+        const mark = function (left, width, bg, fg) {
+          return 'position:absolute;top:6px;bottom:6px;left:' + left + '%;width:' + width + '%;box-sizing:border-box;border-radius:6px;background:' + bg + ';color:' + fg
+            + ';font-size:11px;font-weight:700;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+        };
+        return [
+          { name: 'MV Elan', sched: 'Aberdeen \u00b7 ETA Fri 08:00 \u00b7 Regent Quay \u00b7 Browne Energy / Grizzell Marine', pill: self.state.sent ? '9 quote requests out' : 'Procurement list ready', pillStyle: chip('#E8F1F7', '#0E5E8A'), mark: 'Fri 08:00 \u2192', markStyle: mark(50, 48, '#0E5E8A', '#FFFFFF') },
+          { name: 'MV Boreal', sched: 'Peterhead \u00b7 ETA Fri 14:30 \u00b7 Smith Quay \u00b7 Stronach Subsea', pill: '2 certs expiring on booked supplier', pillStyle: chip('#FBF0E1', '#B45309'), mark: 'Fri 14:30 \u2192', markStyle: mark(63.5, 34.5, '#FBF0E1', '#B45309') },
+          { name: 'MV Granite Coast', sched: 'Aberdeen \u00b7 ETD Sat 06:00 \u00b7 Customs: T1 in progress \u00b7 Wilkinson Drilling', pill: 'All documents complete', pillStyle: chip('#E7F4EF', '#047857'), mark: 'Alongside \u00b7 sails Sat 06:00', markStyle: mark(0, 95.8, '#E7F4EF', '#047857') + 'padding-left:12px;' }
+        ];
+      })(this),
       sent: !!st.sent,
-      sendLabel: st.sent ? 'Requests sent ✓' : 'Send quote requests',
-      sendBtnStyle: st.sent
-        ? 'background:#E7F4EF;color:#047857;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:default;'
-        : 'background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;',
+      sendLabel: st.sent ? '\u2713 9 quote requests issued' : 'Send 9 quote requests',
+      sendNote: st.sent
+        ? 'Replies will populate the comparison view automatically \u2014 open Quotes when they land.'
+        : '3 suppliers for each of 3 services \u00b7 replies land side by side in Quotes',
+      sendBtnStyle: 'border:none;border-radius:8px;padding:11px 18px;font-weight:700;font-size:14px;font-family:inherit;transition:background .15s;'
+        + (st.sent ? 'background:#E7F4EF;color:#047857;cursor:default;' : 'background:#0E5E8A;color:#FFFFFF;cursor:pointer;'),
       sendQuoteRequests: () => {
-        if (this.state.sent) return;
+        if (this.state.sent) return;   /* idempotent: a second click does nothing */
         this.setState({ sent: true }); this._set('sent', true);
-        this.toastMsg('9 quote requests issued for MV Elan. Replies will populate the comparison view.', 'SENT');
+        this.toastMsg('9 quote requests issued for MV Elan \u00b7 reply-by Thu 12:00', 'SENT');
         this._routeTimer = setTimeout(() => this.nav('quotes'), 1500);
       },
       /* offered on any platform screen, not the dashboard alone: the closing
@@ -1202,6 +1227,14 @@ class Component extends DCLogic {
       quoteTermsShort: this.OVERRUN_TERMS_SHORT,
       quoteTermsFull: this.OVERRUN_TERMS,
       quoteBookedWindow: this.QUOTE_REQUEST.bookedWindow,
+      /* the GAC Agent band and the queue rewrite on acceptance */
+      gaBandStyle: 'margin-top:18px;border-radius:12px;padding:14px 18px;display:flex;gap:14px;align-items:center;font-size:13.5px;flex-wrap:wrap;color:#D8E2EC;transition:background .3s;background:' + (st.accepted ? '#0B3B2E' : '#0A2540') + ';',
+      gaHead: st.accepted ? 'Purchase order 48211 raised in GAC Agent.' : 'GAC Agent is ready.',
+      gaBody: st.accepted
+        ? 'Against MV Elan, with the 60/40 Browne Energy / Grizzell Marine billing split applied from the vessel profile. The agreement went to the supplier with the booked window and terms. Nothing re-keyed.'
+        : 'On acceptance, a purchase order is generated automatically against MV Elan with the 60/40 Browne Energy / Grizzell Marine billing split applied from the vessel profile. No re-keying.',
+      queueCraneLine: st.accepted ? 'Booked \u00b7 ' + st.accepted + ' \u00b7 PO 48211' : '3 of 3 replies in \u00b7 reviewing now',
+      queueCraneStyle: 'border-radius:10px;padding:12px 14px;' + (st.accepted ? 'border:1.5px solid #047857;background:#E7F4EF;' : 'border:1.5px solid #0E5E8A;background:#E8F1F7;'),
 
       /* supplier profile */
       profFound: !!prof,
@@ -1324,6 +1357,7 @@ class Component extends DCLogic {
        their seven-day window plus compliance alerts. Letters in flight are
        progress, not action, so they are deliberately not counted. */
     vals.navInvoiceCount = String(vals.dashInvCount || 0);
+    vals.dashInvIconStyle = 'width:32px;height:32px;flex-shrink:0;border-radius:8px;display:grid;place-items:center;margin-top:2px;background:#E8F1F7;color:#0E5E8A;';
     const bell = (vals.dashInvCount || 0) + (vals.watchCount || 0);
     vals.bellCount = String(bell);
     vals.bellHasCount = bell > 0;

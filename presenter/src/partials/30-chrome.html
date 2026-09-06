@@ -105,8 +105,14 @@
               <input type="search" value="{{ query }}" sc-camel-on-change="{{ onTopSearchType }}" placeholder="Search suppliers and services" aria-label="Search platform" style="min-height:44px;width:320px;max-width:30vw;border:1.5px solid #CBD6E2;border-radius:8px;padding:0 12px 0 34px;font-size:13px;background:#FAFBFD;font-family:inherit;color:#0A2540;">
             </form>
             <span style="flex:1;"></span>
+            <!-- The vessel pill (5 Sep): the one call the whole demo follows,
+                 with the quay lamp's flicker. Hidden below 1180px. -->
+            <span class="gac-vessel-pill" style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;background:#0A2540;color:#FFFFFF;font-size:12.5px;font-weight:600;white-space:nowrap;">
+              <span aria-hidden="true" style="width:8px;height:8px;border-radius:50%;background:#FFC72C;animation:lampFlick 2.4s ease-in-out infinite;"></span>MV Elan · Regent Quay · ETA 08:00
+            </span>
             <span style="position:relative;display:inline-flex;">
-              <button style="width:44px;height:44px;display:grid;place-items:center;border-radius:8px;border:none;background:none;color:#33475F;cursor:pointer;" style-hover="background:#E8F1F7;color:#0A2540;" sc-camel-on-click="{{ goDashboard }}" aria-label="{{ bellLabel }}">
+              <!-- the bell opens the list it counts: Needs-you, on the agent desk -->
+              <button style="width:44px;height:44px;display:grid;place-items:center;border-radius:8px;border:none;background:none;color:#33475F;cursor:pointer;" style-hover="background:#E8F1F7;color:#0A2540;" sc-camel-on-click="{{ goInternal }}" aria-label="{{ bellLabel }}">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
               </button>
               <sc-if value="{{ bellHasCount }}" hint-placeholder-val="{{ true }}">

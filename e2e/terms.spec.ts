@@ -97,7 +97,7 @@ test('2 · crane quotes carry the terms row and the agreement states the overrun
   // Escape cancels without accepting — nothing changes.
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
-  await expect(page.getByText('✓ Accepted — PO 48211 generated')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Booked ✓ · PO 48211' })).toHaveCount(0);
 });
 
 test('3 · the client persona never sees commission on the platform screens', async ({ page }) => {
