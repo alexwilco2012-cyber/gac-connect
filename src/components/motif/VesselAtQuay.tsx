@@ -3,6 +3,8 @@
  * hero art (5 Sep handoff). The same drawing as the deck's and the landing
  * hero's, in a 520×300 frame with its own quay lamp; the gradient id is
  * namespaced `desk-*` because the landing hero can share a page with it.
+ * The svg keeps its own aspect ratio and sits on the panel floor, so a tall
+ * left column cannot scale the ship up into the caption (owner, 6 Sep).
  * Original artwork in GAC colours (07_GUARDRAILS: no third-party art).
  */
 export function VesselAtQuay({
@@ -20,7 +22,7 @@ export function VesselAtQuay({
         viewBox="0 0 520 300"
         preserveAspectRatio="xMidYMax slice"
         aria-hidden="true"
-        className="absolute inset-0 block h-full w-full"
+        className="absolute inset-x-0 bottom-0 block aspect-[520/300] max-h-full w-full"
       >
         <defs>
           <linearGradient id="desk-refl" x1="0" y1="0" x2="0" y2="1">
@@ -85,7 +87,7 @@ export function VesselAtQuay({
           style={{ animation: 'shimmer 2.4s ease-in-out infinite alternate' }}
         ></rect>
         <g
-          transform="translate(40 60) scale(.9)"
+          transform="translate(56 77) scale(.82)"
           style={{ animation: 'ship-bob 5.2s ease-in-out infinite alternate' }}
         >
           <g style={{ animation: 'shimmer 2.2s ease-in-out infinite alternate' }}>
