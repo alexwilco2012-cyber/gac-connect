@@ -2,7 +2,7 @@ import type { ServiceId } from './services';
 
 /**
  * Original flat illustration in GAC colours. Redrawn to the 5 Sep design
- * handoff ("GAC Connect presenter v2"): the night harbour is now the same
+ * handoff (the presenter v2 refinement): the night harbour is now the same
  * picture the deck follows — a lit platform supply vessel alongside the far
  * quay, the crane beside her, the rig off to the left — so the presenter's
  * dissolve lands on the landing page's own hero. Transcribed from the
