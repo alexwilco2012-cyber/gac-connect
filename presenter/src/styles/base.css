@@ -18,6 +18,10 @@
   @keyframes lampFlick { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
   @keyframes shipBob { to { transform: translateY(2px); } }
   @keyframes shimmer { from { opacity: .5; } to { opacity: 1; } }
+  /* the landing hero's vessel, outside the deck: bob, reflections, quay lamps */
+  .hb-ship { animation: shipBob 5.2s ease-in-out infinite alternate; }
+  .hb-refl { animation: shimmer 2.2s ease-in-out infinite alternate; }
+  .hb-lamp { animation: lampFlick 2.4s ease-in-out infinite; }
   .harbour-flick, .harbour-flick-late { transform-box: fill-box; transform-origin: 50% center; animation: harbourFlick 1.6s ease-in-out infinite; }
   .harbour-flick-late { animation-delay: .4s; }
   /* ---- harbour entrance (2 Sep, mirrors the site's tokens.css) -----------

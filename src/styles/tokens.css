@@ -379,6 +379,48 @@ body {
 .svg-anim {
   transform-box: fill-box;
 }
+.svg-anim-top {
+  transform-box: fill-box;
+  transform-origin: top;
+}
+.svg-anim-bottom {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+/* The lit vessel (5 Sep handoff): she bobs, her lights lie on the water, the
+   quay lamps flicker. The same three rules the deck uses for the same drawing. */
+@keyframes lamp-flick {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes ship-bob {
+  to {
+    transform: translateY(2.5px);
+  }
+}
+@keyframes shimmer {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.hb-ship {
+  animation: ship-bob 5.2s ease-in-out infinite alternate;
+}
+.hb-refl {
+  animation: shimmer 2.2s ease-in-out infinite alternate;
+}
+.hb-lamp {
+  animation: lamp-flick 2.4s ease-in-out infinite;
+}
 
 /* ============================================================
    Consolidation reveal (landing refresh, 2 Sep): the motif builds

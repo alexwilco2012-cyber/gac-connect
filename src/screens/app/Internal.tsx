@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PillarsRoof } from '../../components/motif/PillarsRoof';
+import { VesselAtQuay } from '../../components/motif/VesselAtQuay';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { CardHeader } from '../../components/ui/CardHeader';
@@ -9,7 +10,6 @@ import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Icon } from '../../components/ui/Icon';
 import { Pill } from '../../components/ui/Pill';
 import { PortCallTimeline } from '../../components/ui/PortCallTimeline';
-import { StatCard } from '../../components/ui/StatCard';
 import { gbp } from '../../lib/format';
 import { useNeedsYou, type NeedsYouItem } from '../../lib/needsYou';
 import {
@@ -24,7 +24,7 @@ import { DASHBOARD_KPIS, PREDICTED_NEEDS, VESSELS } from '../../data/vessels';
 import { useApp } from '../../store/app';
 
 /**
- * Internal — the GAC agent desk (26 Aug).
+ * Internal — the GAC agent desk (26 Aug; rebuilt to the 5 Sep design handoff).
  *
  * This screen was the platform's front door until the owner's call that GAC
  * Connect is a marketplace first and a workflow second: a client or a supplier
@@ -33,6 +33,11 @@ import { useApp } from '../../store/app';
  * and supplier view, and this — the predictive procurement run, the 48-hour
  * strip, the Outlook add-in, the consolidation widget — moved to its own tab at
  * the foot of the sidebar, where the people it was actually written for work.
+ *
+ * What the agent sees at 08:00: what is arriving, what needs them, and the one
+ * action the demo turns on — issuing MV Elan's predicted procurement list. The
+ * vessel hero is the screen's centre of gravity, and the vessel in it is the
+ * same lit drawing the deck follows in.
  *
  * The `dashboard-*` testids stay as they are: e2e and shared deep links still
  * expect them, and renaming them would prove nothing.
@@ -53,6 +58,15 @@ const ROW_TESTID: Partial<Record<NeedsYouItem['id'], string>> = {
   letters: 'dashboard-crew',
 };
 
+/** The icon tile takes the row's tone: red once a supplier is blocked, amber
+ *  for a closing window, sea for everything that is simply waiting. */
+function tileTone(item: NeedsYouItem, clear: boolean): string {
+  if (clear) return 'bg-success-soft text-success';
+  if (item.chip?.tone === 'danger') return 'bg-danger-soft text-danger';
+  if (item.chip?.tone === 'warn') return 'bg-warn-soft text-warn';
+  return 'bg-sea-soft text-sea';
+}
+
 function NeedsYouRow({ item }: { item: NeedsYouItem }) {
   const clear = item.count === 0 && !item.actionable;
   return (
@@ -63,9 +77,7 @@ function NeedsYouRow({ item }: { item: NeedsYouItem }) {
     >
       <span
         aria-hidden="true"
-        className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
-          clear ? 'bg-success-soft text-success' : 'bg-sea-soft text-sea'
-        }`}
+        className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${tileTone(item, clear)}`}
       >
         <Icon name={clear ? 'circle-check' : item.icon} size={16} />
       </span>
@@ -101,7 +113,14 @@ function NeedsYouRow({ item }: { item: NeedsYouItem }) {
         ) : null}
         {item.chip ? (
           <p className="mt-1.5">
-            <Pill tone={item.chip.tone}>{item.chip.label}</Pill>
+            <Pill tone={item.chip.tone}>
+              {item.chip.tone === 'danger' ? '✗ ' : ''}
+              {item.chip.label}
+            </Pill>
+          </p>
+        ) : item.id === 'letters' ? (
+          <p className="mt-1.5">
+            <Pill tone="info">Letters · LOI, never OKTB</Pill>
           </p>
         ) : null}
       </div>
@@ -126,7 +145,7 @@ export default function Internal() {
     const window_ = replyWindowById(replyWindowId);
     const short = deadlineAdvice(window_.hours).tone === 'warn';
     pushToast(
-      `9 quote requests sent for MV Elan. Reply-by window ${window_.label}. Replies will populate the comparison view automatically.${
+      `9 quote requests issued for MV Elan · reply-by window ${window_.label}. Replies will populate the comparison view automatically.${
         short ? ' Short windows rarely draw a full set of replies.' : ''
       }`,
     );
@@ -135,11 +154,13 @@ export default function Internal() {
 
   return (
     <div className="screen-enter">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Eyebrow>Internal · Thursday · Aberdeen</Eyebrow>
-          <h1 className="mt-1 font-display text-2xl font-bold">Morning, agent</h1>
-          <p className="mt-1 text-[14px] text-ink-soft">
+          <h1 className="mt-0.5 font-display text-[28px] font-bold tracking-[-0.015em]">
+            Morning, agent
+          </h1>
+          <p className="mt-1 text-[14.5px] text-ink-soft">
             2 vessels arriving tomorrow.{' '}
             <Link
               to="/app/procurement"
@@ -164,93 +185,120 @@ export default function Internal() {
         </Button>
       </div>
 
-      {/* KPIs */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-tour="kpis">
+      {/* Stat row — one bordered card, four cells. The inset shadows draw the
+          cell rules, and the -1px margin keeps a wrapped 2×2 clean. */}
+      <div
+        className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] overflow-hidden rounded-brand border border-line bg-white shadow-card"
+        data-tour="kpis"
+      >
         {DASHBOARD_KPIS.map((k) => (
-          <StatCard
+          <div
             key={k.label}
-            label={k.label}
-            value={k.value}
-            delta={k.delta}
-            deltaTone={k.deltaTone}
-            icon={k.icon}
-            series={k.series}
-          />
+            className="-mb-px px-[22px] py-[18px] shadow-[inset_-1px_0_0_#E5EAF1,inset_0_-1px_0_#E5EAF1]"
+          >
+            <p className="text-[12px] text-ink-soft">{k.label}</p>
+            <p className="mt-1 font-display text-[32px] leading-[1.1] font-bold tracking-[-0.02em]">
+              {k.value}
+            </p>
+            <p className="mt-1.5">
+              <span
+                className={`inline-block rounded-full px-2 py-0.5 text-[11.5px] font-bold whitespace-nowrap ${
+                  k.deltaTone === 'info' ? 'bg-sea-soft text-sea' : 'bg-success-soft text-success'
+                }`}
+              >
+                {k.delta}
+              </span>
+            </p>
+          </div>
         ))}
       </div>
 
-      <div className="mt-5 grid items-start gap-5 lg:grid-cols-[1.6fr_1fr]">
-        <div className="space-y-5">
-          {/* Predictive procurement */}
-          <Card
-            className="border-[#CFE2EE] bg-gradient-to-b from-sea-soft to-white"
-            data-tour="predictive"
-          >
-            <CardHeader
-              title="MV Elan — Aberdeen, ETA 08:00 tomorrow"
-              subtitle="Predictive procurement · what this vessel typically needs on an Aberdeen call, from GAC Agent history. SVS-verified suppliers are pre-selected for each."
-              action={<Pill tone="info">GAC Agent vessel profile loaded</Pill>}
-            />
-            <ul role="list" className="my-3">
-              {PREDICTED_NEEDS.map((n) => {
-                const hint = relatedHint(n.service);
-                return (
-                  <li
-                    key={n.service}
-                    className="flex items-center justify-between gap-3 border-b border-dashed border-line-strong py-2 text-[14px] last:border-b-0"
-                  >
-                    <span>
-                      <strong>{n.service}</strong> · {n.matched} suppliers matched
-                      {hint ? (
-                        <span
-                          className="ml-2 text-[12px] font-semibold text-sea"
-                          data-testid="related-hint"
-                        >
-                          {hint}
-                        </span>
-                      ) : null}
-                    </span>
-                    <Pill tone="verified">✓ GAC Verified</Pill>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={sendQuoteRequests}>Send quote requests</Button>
-              <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-soft">
-                Reply-by
-                <select
-                  value={replyWindowId}
-                  onChange={(e) => setReplyWindowId(e.target.value)}
-                  aria-label="Reply-by window"
-                  className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+      {/* Vessel hero — the predicted list on the left, the vessel herself on
+          the night quay to the right. Collapses to one column below lg. */}
+      <div
+        className="mt-[18px] grid overflow-hidden rounded-brand border border-[#CFE2EE] bg-gradient-to-b from-sea-soft to-white to-[62%] shadow-card lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.62fr)]"
+        data-tour="predictive"
+      >
+        <div className="min-w-0 px-6 py-[22px]">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Eyebrow>Predictive procurement · from GAC Agent history</Eyebrow>
+            <span className="inline-flex items-center rounded-full border border-[#CFE2EE] bg-white px-2.5 py-[3px] text-[11.5px] font-bold text-sea">
+              GAC Agent vessel profile loaded
+            </span>
+          </div>
+          <h2 className="mt-2 font-display text-[24px] font-bold tracking-[-0.015em]">
+            MV Elan — Aberdeen, ETA 08:00 tomorrow
+          </h2>
+          <p className="mt-1 text-[13.5px] text-ink-soft">
+            Regent Quay · Browne Energy / Grizzell Marine, 60/40 · what she typically needs on an
+            Aberdeen call, with SVS-verified suppliers pre-selected for each.
+          </p>
+          <ul role="list" className="mt-3.5">
+            {PREDICTED_NEEDS.map((n) => {
+              const hint = relatedHint(n.service);
+              return (
+                <li
+                  key={n.service}
+                  className="flex items-center justify-between gap-3 border-b border-dashed border-line-strong py-2.5 text-[15px] last:border-b-0"
                 >
-                  {REPLY_WINDOWS.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <span className="text-[12.5px] text-ink-soft">
-                9 emails · replies will populate the comparison view automatically
-              </span>
-            </div>
-          </Card>
-
-          {/* Arrivals & departures — the 48-hour strip */}
-          <Card>
-            <CardHeader
-              title="Arrivals & departures"
-              subtitle="The next 48 hours across Aberdeen and Peterhead"
-            />
-            <div className="mt-3.5">
-              <PortCallTimeline vessels={VESSELS} />
-            </div>
-          </Card>
+                  <span>
+                    <strong>{n.service}</strong> · {n.matched} suppliers matched
+                    {hint ? (
+                      <span
+                        className="ml-2 text-[12px] font-semibold text-sea"
+                        data-testid="related-hint"
+                      >
+                        {hint}
+                      </span>
+                    ) : null}
+                  </span>
+                  <Pill tone="verified">✓ GAC Verified</Pill>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="mt-3.5 flex flex-wrap items-center gap-3.5">
+            <Button onClick={sendQuoteRequests}>Send 9 quote requests</Button>
+            <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-soft">
+              Reply-by
+              <select
+                value={replyWindowId}
+                onChange={(e) => setReplyWindowId(e.target.value)}
+                aria-label="Reply-by window"
+                className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+              >
+                {REPLY_WINDOWS.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className="text-[12.5px] text-ink-soft">
+              3 suppliers for each of 3 services · replies land side by side in Quotes
+            </span>
+          </div>
         </div>
+        <VesselAtQuay
+          eyebrow="Vessel profile"
+          title="Platform supply vessel · 12 crew"
+          detail="Last Aberdeen call: crane, medical, scaffolding · 14 orders on record"
+        />
+      </div>
 
-        <div className="space-y-5">
+      <div className="mt-[18px] grid items-start gap-[18px] lg:grid-cols-2">
+        {/* Arrivals & departures — the 48-hour strip */}
+        <Card>
+          <CardHeader
+            title="Arrivals & departures"
+            subtitle="The next 48 hours across Aberdeen and Peterhead"
+          />
+          <div className="mt-3.5">
+            <PortCallTimeline vessels={VESSELS} />
+          </div>
+        </Card>
+
+        <div className="space-y-[18px]">
           {/* Needs you — invoices in their window, the compliance watch, and
               letters in flight. Same hook as the top-bar bell. */}
           <Card>
@@ -267,35 +315,34 @@ export default function Internal() {
             </ul>
           </Card>
 
-          {/* Consolidation widget — live tier state */}
+          {/* Consolidation widget — the motif beside the number, live tier state */}
           <Card data-tour="consolidation">
             <CardHeader title="Client consolidation" subtitle="Browne Energy · live tier state" />
-            <PillarsRoof
-              pillars={[
-                { label: 'Agency', on: tier.agency },
-                { label: 'Logistics', on: tier.logistics },
-                { label: 'Customs', on: tier.customs },
-                { label: 'Procurement', on: true },
-              ]}
-              fullStack={fullStack}
-              // The pillar labels are 7.5 user units, so a fixed 240px box paints
-              // them at 7.5px on a phone. Letting the motif use the card's width
-              // scales the whole diagram, labels included.
-              className="mx-auto mt-2 w-full max-w-[300px] sm:w-[240px]"
-            />
-            <div className="mt-2 text-center">
-              {fullStack ? <Pill tone="inhouse">★ Full Stack client</Pill> : null}
-              <p
-                className={`font-display text-[34px] font-bold tracking-tight ${
-                  fullStack ? 'text-gold-deep' : ''
-                }`}
-              >
-                {pct}%
-              </p>
-              <p className="text-[12.5px] text-ink-soft">
-                tier discount held · est. {gbp(saving)} saved this year on {gbp(spend)} GAC service
-                spend
-              </p>
+            <div className="mt-3 flex flex-wrap items-center gap-[18px]">
+              <PillarsRoof
+                pillars={[
+                  { label: 'Agency', on: tier.agency },
+                  { label: 'Logistics', on: tier.logistics },
+                  { label: 'Customs', on: tier.customs },
+                  { label: 'Procurement', on: true },
+                ]}
+                fullStack={fullStack}
+                className="w-[200px] max-w-full shrink-0"
+              />
+              <div className="min-w-[140px] flex-1">
+                {fullStack ? <Pill tone="inhouse">★ Full Stack client</Pill> : null}
+                <p
+                  className={`mt-2 font-display text-[40px] leading-none font-bold tracking-[-0.02em] ${
+                    fullStack ? 'text-gold-deep' : ''
+                  }`}
+                >
+                  {pct}%
+                </p>
+                <p className="mt-1 text-[12.5px] text-ink-soft">
+                  tier discount held · est. {gbp(saving)} saved this year on {gbp(spend)} GAC
+                  service spend
+                </p>
+              </div>
             </div>
             <div className="my-3.5 h-px bg-line" />
             <p className="text-[12.5px] text-ink-soft">

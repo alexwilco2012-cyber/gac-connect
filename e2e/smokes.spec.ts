@@ -85,7 +85,8 @@ test('3 · quote accept opens the agreement and raises the billing-split toast',
   await expect(
     page.getByText(/PO 48211 generated in GAC Agent — billing split 60\/40 Browne/),
   ).toBeVisible();
-  await expect(page.getByText('✓ Accepted — PO 48211 generated')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Booked ✓ · PO 48211' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Not selected' })).toHaveCount(2);
 });
 
 test('4 · tier calculator shows £35,000 at £500k Full Stack', async ({ page }) => {
