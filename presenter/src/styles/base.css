@@ -14,6 +14,10 @@
   @keyframes harbourBob { 0%, 100% { transform: translateY(0) rotate(-.4deg); } 50% { transform: translateY(-5px) rotate(.4deg); } }
   @keyframes harbourFlick { 0%, 100% { opacity: .95; transform: scale(1); } 50% { opacity: .55; transform: scale(.82); } }
   .harbour-bob { transform-origin: 50% center; animation: harbourBob 4.5s ease-in-out infinite; }
+  /* the agent desk's vessel and the top-bar pill (platform v2, 5 Sep) */
+  @keyframes lampFlick { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+  @keyframes shipBob { to { transform: translateY(2px); } }
+  @keyframes shimmer { from { opacity: .5; } to { opacity: 1; } }
   .harbour-flick, .harbour-flick-late { transform-box: fill-box; transform-origin: 50% center; animation: harbourFlick 1.6s ease-in-out infinite; }
   .harbour-flick-late { animation-delay: .4s; }
   /* ---- harbour entrance (2 Sep, mirrors the site's tokens.css) -----------
@@ -77,6 +81,13 @@
   }
   /* The 320px search box is the first thing to go when the bar tightens. */
   @media (max-width: 899px) { .gac-topsearch { display: none !important; } }
+  /* The vessel pill is the first thing the top bar gives up. */
+  @media (max-width: 1179px) { .gac-vessel-pill { display: none !important; } }
+  /* The agent desk's vessel hero stacks once the two columns cannot share the width. */
+  @media (max-width: 1023px) {
+    .gac-hero { grid-template-columns: minmax(0, 1fr) !important; }
+    .gac-hero-art { min-height: 180px !important; }
+  }
 
   /* Below 640 the sidebar stops being a column and becomes a horizontal icon
      bar above the content. A 64px rail leaves 311px for screens whose grids
@@ -109,7 +120,8 @@
   /* 48-hour strip: the label column already carries every fact the drawing
      shows, so below 640px the drawing goes and the labels take the width
      (the site's `hidden sm:block` / `sm:w-[192px]`). */
-  @media (max-width: 639px) {
+  @media (max-width: 999px) { .gac-strip-track .gac-strip-mark { color: transparent !important; } }
+  @media (max-width: 899px) {
     .gac-strip-axis, .gac-strip-track, .gac-strip-legend { display: none !important; }
     .gac-strip-label { width: auto !important; flex: 1 1 auto !important; }
   }

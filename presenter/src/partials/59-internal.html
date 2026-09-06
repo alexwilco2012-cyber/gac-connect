@@ -1,148 +1,157 @@
   <!-- Internal — the GAC agent desk. This was the platform's front door until
        the owner's call that GAC Connect is a marketplace first and a workflow
        second (26 Aug); it now sits at the foot of the sidebar, where the people
-       it was written for work. Mirrors the site's src/screens/app/Internal.tsx. -->
+       it was written for work. Mirrors the site's src/screens/app/Internal.tsx.
+
+       Rebuilt to the 5 Sep design handoff (platform v2): a single stat row, a
+       vessel hero carrying the predictive-procurement run and the same lit
+       vessel the deck follows, then the 48-hour strip beside Needs-you and the
+       consolidation widget. Every figure and binding is the one the screen
+       already had — the send button, the strip, the feed and the bell all read
+       the same derived state as before. -->
   <sc-if value="{{ isInternal }}" hint-placeholder-val="{{ false }}">
-    <main data-screen-label="Internal" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <main data-screen-label="Internal — agent desk" style="max-width:1180px;width:100%;margin:0 auto;padding:28px 24px 80px;box-sizing:border-box;animation:fadeUp .25s ease;">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div>
           <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Internal · Thursday · Aberdeen</p>
-          <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Morning, agent</h1>
-          <p style="color:#33475F;margin:4px 0 0;font-size:14px;">2 vessels arriving tomorrow. <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:14px;cursor:pointer;padding:0;font-family:inherit;" sc-camel-on-click="{{ goProcurement }}" data-testid="dashboard-procurement-link">1 procurement list ready to send</button>.</p>
+          <h1 style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.015em;margin:2px 0 0;">Morning, agent</h1>
+          <p style="color:#33475F;margin:4px 0 0;font-size:14.5px;">2 vessels arriving tomorrow. <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:14.5px;cursor:pointer;padding:0;font-family:inherit;" sc-camel-on-click="{{ goProcurement }}" data-testid="dashboard-procurement-link">1 procurement list ready to send</button>.</p>
           <p style="color:#33475F;margin:6px 0 0;font-size:12.5px;">The GAC desk view — the working queue behind the client’s marketplace. Clients and suppliers see their own <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;padding:0;font-family:inherit;" sc-camel-on-click="{{ goDashboard }}">dashboard</button>, not this one.</p>
         </div>
-        <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ openDrawer }}">Open Outlook add-in preview</button>
+        <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ openDrawer }}">Open Outlook add-in preview</button>
       </div>
 
-      <!-- KPI tiles: icon medallion, number, toned delta chip, sparkline -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:18px;margin-top:20px;">
-        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-            <div style="min-width:0;">
-              <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi1Label }}</p>
-              <p style="font-size:26px;font-weight:800;margin:2px 0 0;font-family:'Space Grotesk',sans-serif;">{{ kpi1Value }}</p>
-              <p style="margin:6px 0 0;"><span style="{{ kpi1ChipStyle }}">{{ kpi1Delta }}</span></p>
-            </div>
-            <span aria-hidden="true" style="width:36px;height:36px;flex-shrink:0;border-radius:8px;background:#E8F1F7;color:#0E5E8A;display:grid;place-items:center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><path d="M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path></svg>
-            </span>
-          </div>
-          <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true" style="display:block;width:100%;height:28px;margin-top:12px;">
-            <polyline sc-camel-points="{{ kpi1Spark }}" fill="none" stroke="#0E5E8A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
-          </svg>
+      <!-- Stat row: one bordered card, four cells. The inset shadows draw the
+           cell rules, and the -1px margin keeps a wrapped 2×2 clean. -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));margin-top:20px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);overflow:hidden;">
+        <div style="padding:18px 22px;box-shadow:inset -1px 0 0 #E5EAF1, inset 0 -1px 0 #E5EAF1;margin-bottom:-1px;">
+          <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi1Label }}</p>
+          <p style="font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:4px 0 0;">{{ kpi1Value }}</p>
+          <p style="margin:6px 0 0;"><span style="{{ kpi1ChipStyle }}">{{ kpi1Delta }}</span></p>
         </div>
-        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-            <div style="min-width:0;">
-              <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi2Label }}</p>
-              <p style="font-size:26px;font-weight:800;margin:2px 0 0;font-family:'Space Grotesk',sans-serif;">{{ kpi2Value }}</p>
-              <p style="margin:6px 0 0;"><span style="{{ kpi2ChipStyle }}">{{ kpi2Delta }}</span></p>
-            </div>
-            <span aria-hidden="true" style="width:36px;height:36px;flex-shrink:0;border-radius:8px;background:#E8F1F7;color:#0E5E8A;display:grid;place-items:center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
-            </span>
-          </div>
-          <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true" style="display:block;width:100%;height:28px;margin-top:12px;">
-            <polyline sc-camel-points="{{ kpi2Spark }}" fill="none" stroke="#0E5E8A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
-          </svg>
+        <div style="padding:18px 22px;box-shadow:inset -1px 0 0 #E5EAF1, inset 0 -1px 0 #E5EAF1;margin-bottom:-1px;">
+          <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi2Label }}</p>
+          <p style="font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:4px 0 0;">{{ kpi2Value }}</p>
+          <p style="margin:6px 0 0;"><span style="{{ kpi2ChipStyle }}">{{ kpi2Delta }}</span></p>
         </div>
-        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-            <div style="min-width:0;">
-              <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi3Label }}</p>
-              <p style="font-size:26px;font-weight:800;margin:2px 0 0;font-family:'Space Grotesk',sans-serif;">{{ kpi3Value }}</p>
-              <p style="margin:6px 0 0;"><span style="{{ kpi3ChipStyle }}">{{ kpi3Delta }}</span></p>
-            </div>
-            <span aria-hidden="true" style="width:36px;height:36px;flex-shrink:0;border-radius:8px;background:#E8F1F7;color:#0E5E8A;display:grid;place-items:center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z"></path><path d="m9 12 2 2 4-4"></path></svg>
-            </span>
-          </div>
-          <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true" style="display:block;width:100%;height:28px;margin-top:12px;">
-            <polyline sc-camel-points="{{ kpi3Spark }}" fill="none" stroke="#0E5E8A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
-          </svg>
+        <div style="padding:18px 22px;box-shadow:inset -1px 0 0 #E5EAF1, inset 0 -1px 0 #E5EAF1;margin-bottom:-1px;">
+          <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi3Label }}</p>
+          <p style="font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:4px 0 0;">{{ kpi3Value }}</p>
+          <p style="margin:6px 0 0;"><span style="{{ kpi3ChipStyle }}">{{ kpi3Delta }}</span></p>
         </div>
-        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-            <div style="min-width:0;">
-              <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi4Label }}</p>
-              <p style="font-size:26px;font-weight:800;margin:2px 0 0;font-family:'Space Grotesk',sans-serif;">{{ kpi4Value }}</p>
-              <p style="margin:6px 0 0;"><span style="{{ kpi4ChipStyle }}">{{ kpi4Delta }}</span></p>
-            </div>
-            <span aria-hidden="true" style="width:36px;height:36px;flex-shrink:0;border-radius:8px;background:#E8F1F7;color:#0E5E8A;display:grid;place-items:center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4"></path><path d="M12 14v-4"></path><path d="M4 13a8 8 0 0 1 8-7 8 8 0 1 1-5.3 14L4 17.6"></path><path d="M9 17H4v5"></path></svg>
-            </span>
+        <div style="padding:18px 22px;box-shadow:inset -1px 0 0 #E5EAF1, inset 0 -1px 0 #E5EAF1;margin-bottom:-1px;">
+          <p style="color:#33475F;font-size:12px;margin:0;">{{ kpi4Label }}</p>
+          <p style="font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:4px 0 0;">{{ kpi4Value }}</p>
+          <p style="margin:6px 0 0;"><span style="{{ kpi4ChipStyle }}">{{ kpi4Delta }}</span></p>
+        </div>
+      </div>
+
+      <!-- Vessel hero — the screen's centre of gravity: the predicted list on
+           the left, the vessel herself on the night quay to the right. -->
+      <div class="gac-hero" style="margin-top:18px;background:linear-gradient(180deg,#E8F1F7,#FFFFFF 62%);border:1px solid #CFE2EE;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.62fr);gap:0;overflow:hidden;">
+        <div style="padding:22px 24px;min-width:0;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Predictive procurement · from GAC Agent history</p>
+            <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FFFFFF;color:#0E5E8A;border:1px solid #CFE2EE;">GAC Agent vessel profile loaded</span>
           </div>
-          <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true" style="display:block;width:100%;height:28px;margin-top:12px;">
-            <polyline sc-camel-points="{{ kpi4Spark }}" fill="none" stroke="#0E5E8A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>
+          <h2 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.015em;margin:8px 0 0;">MV Elan — Aberdeen, ETA 08:00 tomorrow</h2>
+          <p style="color:#33475F;font-size:13.5px;margin:4px 0 0;">Regent Quay · Browne Energy / Grizzell Marine, 60/40 · what she typically needs on an Aberdeen call, with SVS-verified suppliers pre-selected for each.</p>
+          <ul role="list" style="list-style:none;margin:14px 0 0;padding:0;">
+            <li style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #CBD6E2;font-size:15px;gap:8px;"><span><strong>Crane hire</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
+            <li style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #CBD6E2;font-size:15px;gap:8px;"><span><strong>Medical cover</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
+            <li style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:15px;gap:8px;"><span><strong>Scaffolding</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
+          </ul>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px;">
+            <button style="{{ sendBtnStyle }}" sc-camel-on-click="{{ sendQuoteRequests }}" disabled="{{ sent }}">{{ sendLabel }}</button>
+            <span style="color:#33475F;font-size:12.5px;">{{ sendNote }}</span>
+          </div>
+        </div>
+        <div class="gac-hero-art" style="position:relative;min-height:220px;background:linear-gradient(180deg,#071633 0%,#0A2540 60%,#0D2C50 100%);overflow:hidden;">
+          <!-- The same vessel as the deck and the landing hero, on the same
+               quay. Gradient ids are namespaced desk-* because the landing hero
+               can be in the DOM at the same time. -->
+          <svg sc-camel-view-box="0 0 520 300" sc-camel-preserve-aspect-ratio="xMidYMax slice" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;display:block;">
+            <defs><linearGradient id="desk-refl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC72C" stop-opacity=".42"></stop><stop offset="1" stop-color="#FFC72C" stop-opacity="0"></stop></linearGradient></defs>
+            <g fill="#FFFFFF"><circle cx="60" cy="40" r="1.4" opacity=".35"></circle><circle cx="180" cy="26" r="1.2" opacity=".3"></circle><circle cx="300" cy="52" r="1.4" opacity=".32"></circle><circle cx="440" cy="34" r="1.3" opacity=".3"></circle><circle cx="380" cy="90" r="1.1" opacity=".22"></circle></g>
+            <rect x="0" y="200" width="520" height="100" fill="#061428"></rect>
+            <line x1="0" y1="200" x2="520" y2="200" stroke="rgba(143,166,188,.3)" stroke-width="1"></line>
+            <path d="M-60 222 Q -30 216 0 222 T 60 222 T 120 222 T 180 222 T 240 222 T 300 222 T 360 222 T 420 222 T 480 222 T 540 222" fill="none" stroke="#FFFFFF" opacity=".08" stroke-width="1.5"></path>
+            <path d="M-60 258 Q -30 252 0 258 T 60 258 T 120 258 T 180 258 T 240 258 T 300 258 T 360 258 T 420 258 T 480 258 T 540 258" fill="none" stroke="#FFFFFF" opacity=".05" stroke-width="1.5"></path>
+            <rect x="400" y="186" width="120" height="14" fill="#0B1D36"></rect><line x1="400" y1="186" x2="520" y2="186" stroke="rgba(234,242,248,.28)" stroke-width="1.2"></line>
+            <rect x="466" y="150" width="3" height="36" fill="#152F55"></rect><rect x="466" y="148" width="20" height="3" fill="#152F55"></rect>
+            <circle cx="486" cy="150" r="3" fill="#FFC72C" style="animation:lampFlick 2.4s ease-in-out infinite;"></circle>
+            <rect x="484.5" y="200" width="3" height="34" fill="url(#desk-refl)" style="animation:shimmer 2.4s ease-in-out infinite alternate;"></rect>
+            <g transform="translate(40 60) scale(.9)" style="animation:shipBob 5.2s ease-in-out infinite alternate;">
+              <g style="animation:shimmer 2.2s ease-in-out infinite alternate;"><rect x="262" y="153" width="2.5" height="26" fill="url(#desk-refl)"></rect><rect x="290" y="153" width="2.5" height="30" fill="url(#desk-refl)"></rect><rect x="318" y="153" width="2.5" height="28" fill="url(#desk-refl)"></rect><rect x="118" y="153" width="2.5" height="16" fill="url(#desk-refl)"></rect><rect x="186" y="153" width="2.5" height="16" fill="url(#desk-refl)"></rect></g>
+              <path d="M 22 150 L 30 112 L 340 112 L 372 100 L 384 150 Z" fill="#12315B"></path>
+              <path d="M 28 122 L 30 112 L 340 112 L 372 100 L 376 118 Z" fill="#1A3C68"></path>
+              <path d="M 30 112 L 340 112 L 372 100" fill="none" stroke="rgba(234,242,248,.5)" stroke-width="1.4" stroke-linejoin="round"></path>
+              <line x1="34" y1="103" x2="246" y2="103" stroke="rgba(234,242,248,.3)" stroke-width="1.2"></line>
+              <rect x="66" y="96" width="44" height="16" fill="#0C2246" stroke="rgba(234,242,248,.2)" stroke-width="1"></rect><rect x="124" y="92" width="58" height="20" fill="#0C2246" stroke="rgba(234,242,248,.2)" stroke-width="1"></rect><rect x="196" y="98" width="32" height="14" fill="#0C2246" stroke="rgba(234,242,248,.2)" stroke-width="1"></rect>
+              <path d="M 252 74 L 176 112 L 252 112 Z" fill="rgba(255,199,44,.1)"></path>
+              <rect x="240" y="80" width="10" height="32" fill="#163560" stroke="rgba(234,242,248,.25)" stroke-width="1"></rect>
+              <rect x="250" y="64" width="92" height="48" fill="#1B3D6B" stroke="rgba(234,242,248,.4)" stroke-width="1.2"></rect>
+              <rect x="256" y="44" width="84" height="20" rx="2" fill="#22497C" stroke="rgba(234,242,248,.45)" stroke-width="1.2"></rect>
+              <g fill="#FFC72C" opacity=".95"><rect x="262" y="49" width="9" height="6"></rect><rect x="275" y="49" width="9" height="6"></rect><rect x="288" y="49" width="9" height="6"></rect><rect x="301" y="49" width="9" height="6"></rect><rect x="314" y="49" width="9" height="6"></rect><rect x="327" y="49" width="9" height="6"></rect></g>
+              <g fill="#FFC72C" opacity=".72"><rect x="260" y="72" width="6" height="5"></rect><rect x="272" y="72" width="6" height="5"></rect><rect x="284" y="72" width="6" height="5"></rect><rect x="296" y="72" width="6" height="5"></rect><rect x="308" y="72" width="6" height="5"></rect><rect x="320" y="72" width="6" height="5"></rect><rect x="332" y="72" width="6" height="5"></rect><rect x="260" y="90" width="6" height="5"></rect><rect x="284" y="90" width="6" height="5"></rect><rect x="296" y="90" width="6" height="5"></rect><rect x="320" y="90" width="6" height="5"></rect><rect x="332" y="90" width="6" height="5"></rect></g>
+              <circle cx="252" cy="70" r="2.4" fill="#FFC72C"></circle><circle cx="252" cy="70" r="7" fill="rgba(255,199,44,.18)"></circle>
+              <line x1="300" y1="44" x2="300" y2="12" stroke="#CBD6E2" stroke-width="2" opacity=".75"></line><line x1="286" y1="24" x2="314" y2="24" stroke="#CBD6E2" stroke-width="1.6" opacity=".75"></line>
+              <circle cx="300" cy="10" r="2.6" fill="#FFFFFF" style="animation:lampFlick 2.4s ease-in-out infinite;"></circle>
+              <circle cx="255" cy="47" r="2.2" fill="#FF453A"></circle><circle cx="28" cy="107" r="1.8" fill="#FFFFFF" opacity=".85"></circle>
+              <text x="354" y="123" text-anchor="middle" font-family="Inter, ui-sans-serif, sans-serif" font-size="7.5" font-weight="600" letter-spacing="2" fill="rgba(234,242,248,.6)">ELAN</text>
+            </g>
           </svg>
+          <div style="position:absolute;left:18px;top:16px;display:flex;flex-direction:column;gap:2px;">
+            <span style="font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#FFC72C;">Vessel profile</span>
+            <span style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#FFFFFF;">Platform supply vessel · 12 crew</span>
+            <span style="font-size:12px;color:#B9C8D6;">Last Aberdeen call: crane, medical, scaffolding · 14 orders on record</span>
+          </div>
         </div>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:18px;margin-top:18px;align-items:start;">
-        <div style="display:grid;gap:18px;">
-          <!-- Predictive procurement -->
-          <div style="background:linear-gradient(180deg,#E8F1F7,#FFFFFF 70%);border:1px solid #CFE2EE;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-              <div style="min-width:0;">
-                <h2 style="font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0;font-family:'Space Grotesk',sans-serif;">MV Elan — Aberdeen, ETA 08:00 tomorrow</h2>
-                <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">Predictive procurement · what this vessel typically needs on an Aberdeen call, from GAC Agent history. SVS-verified suppliers are pre-selected for each.</p>
-              </div>
-              <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E8F1F7;color:#0E5E8A;flex-shrink:0;">GAC Agent vessel profile loaded</span>
-            </div>
-            <ul role="list" style="list-style:none;margin:12px 0;padding:0;">
-              <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #CBD6E2;font-size:14px;gap:8px;"><span><strong>Crane hire</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
-              <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #CBD6E2;font-size:14px;gap:8px;"><span><strong>Medical cover</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
-              <li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px;gap:8px;"><span><strong>Scaffolding</strong> · 3 suppliers matched</span><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></li>
-            </ul>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <button style="{{ sendBtnStyle }}" sc-camel-on-click="{{ sendQuoteRequests }}" disabled="{{ sent }}">{{ sendLabel }}</button>
-              <span style="color:#33475F;font-size:12.5px;">9 emails · replies will populate the comparison view automatically</span>
-            </div>
+        <!-- Arrivals & departures: the 48-hour strip. Everything
+             variable-width sits in the label column so every track is the
+             same length and lines up with the axis. -->
+        <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
+          <h2 style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0;">Arrivals &amp; departures</h2>
+          <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">The next 48 hours across Aberdeen and Peterhead</p>
+
+          <div aria-hidden="true" class="gac-strip-axis" style="margin-left:204px;position:relative;height:16px;margin-top:14px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#33475F;">
+            <span style="position:absolute;left:0;white-space:nowrap;">Now</span>
+            <span class="gac-strip-tick-mid" style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Fri 08:00</span>
+            <span style="position:absolute;right:0;white-space:nowrap;">Sat 08:00</span>
           </div>
 
-          <!-- Arrivals & departures: the 48-hour strip. Everything
-               variable-width sits in the label column so every track is the
-               same length and lines up with the axis. -->
-          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-            <h2 style="font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0;font-family:'Space Grotesk',sans-serif;">Arrivals &amp; departures</h2>
-            <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">The next 48 hours across Aberdeen and Peterhead</p>
-
-            <div aria-hidden="true" class="gac-strip-axis" style="margin-left:204px;position:relative;height:16px;margin-top:14px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#33475F;">
-              <span style="position:absolute;left:0;white-space:nowrap;">Now</span>
-              <span class="gac-strip-tick-mid" style="position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;">Fri 08:00</span>
-              <span style="position:absolute;right:0;white-space:nowrap;">Sat 08:00</span>
-            </div>
-
-            <div style="margin-top:6px;display:grid;gap:12px;">
-              <sc-for list="{{ dashCalls }}" as="v" hint-placeholder-count="3">
-                <div style="display:flex;align-items:center;gap:12px;">
-                  <div class="gac-strip-label" style="width:192px;flex-shrink:0;min-width:0;">
-                    <p style="font-size:13.5px;font-weight:700;margin:0;line-height:1.25;">{{ v.name }}</p>
-                    <p style="color:#33475F;font-size:11.5px;margin:2px 0 0;line-height:1.25;">{{ v.sched }}</p>
-                    <p style="margin:5px 0 0;"><span style="{{ v.pillStyle }}">{{ v.pill }}</span></p>
-                  </div>
-                  <div aria-hidden="true" class="gac-strip-track" style="position:relative;flex:1;min-width:0;height:36px;border-radius:8px;background:#FAFBFD;overflow:hidden;">
-                    <span style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:#E5EAF1;"></span>
-                    <span style="position:absolute;top:0;bottom:0;left:0;width:3px;border-radius:999px;background:#0A2540;"></span>
-                    <span style="{{ v.markStyle }}">{{ v.mark }}</span>
-                  </div>
+          <div style="margin-top:6px;display:grid;gap:12px;">
+            <sc-for list="{{ dashCalls }}" as="v" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="gac-strip-label" style="width:192px;flex-shrink:0;min-width:0;">
+                  <p style="font-size:13.5px;font-weight:700;margin:0;line-height:1.25;">{{ v.name }}</p>
+                  <p style="color:#33475F;font-size:11.5px;margin:2px 0 0;line-height:1.25;">{{ v.sched }}</p>
+                  <p style="margin:5px 0 0;"><span style="{{ v.pillStyle }}">{{ v.pill }}</span></p>
                 </div>
-              </sc-for>
-            </div>
-            <p class="gac-strip-legend" style="color:#33475F;font-size:11.5px;margin:10px 0 0;"><span aria-hidden="true" style="display:inline-block;width:3px;height:10px;border-radius:999px;background:#0A2540;margin-right:6px;vertical-align:middle;"></span>Now · Thursday 08:00 — the strip covers the next 48 hours.</p>
+                <div aria-hidden="true" class="gac-strip-track" style="position:relative;flex:1;min-width:0;height:36px;border-radius:8px;background:#FAFBFD;overflow:hidden;">
+                  <span style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:#E5EAF1;"></span>
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:3px;border-radius:999px;background:#0A2540;"></span>
+                  <span class="gac-strip-mark" style="{{ v.markStyle }}">{{ v.mark }}</span>
+                </div>
+              </div>
+            </sc-for>
           </div>
+          <p class="gac-strip-legend" style="color:#33475F;font-size:11.5px;margin:10px 0 0;"><span aria-hidden="true" style="display:inline-block;width:3px;height:10px;border-radius:999px;background:#0A2540;margin-right:6px;vertical-align:middle;"></span>Now · Thursday 08:00 — the strip covers the next 48 hours.</p>
         </div>
 
         <div style="display:grid;gap:18px;">
           <!-- Needs you: the three status cards merged into one urgency-ordered
                feed. Reads the same derived data as the top-bar bell. -->
           <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-            <h2 style="font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0;font-family:'Space Grotesk',sans-serif;">Needs you</h2>
+            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0;">Needs you</h2>
             <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">Ordered by urgency · the bell reads the same list</p>
 
             <ul role="list" style="list-style:none;margin:12px 0 0;padding:0;">
               <li style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px dashed #CBD6E2;" data-testid="dashboard-invoices">
-                <span aria-hidden="true" style="width:32px;height:32px;flex-shrink:0;border-radius:8px;background:#E8F1F7;color:#0E5E8A;display:grid;place-items:center;margin-top:2px;">
+                <span aria-hidden="true" style="{{ dashInvIconStyle }}">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>
                 </span>
                 <div style="min-width:0;flex:1;">
@@ -155,14 +164,14 @@
               </li>
 
               <li style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px dashed #CBD6E2;">
-                <span aria-hidden="true" style="width:32px;height:32px;flex-shrink:0;border-radius:8px;background:#E8F1F7;color:#0E5E8A;display:grid;place-items:center;margin-top:2px;">
+                <span aria-hidden="true" style="{{ watchIconStyle }}">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
                 </span>
                 <div style="min-width:0;flex:1;">
                   <p style="font-size:14px;margin:0;"><button style="background:none;border:none;padding:0;font-family:inherit;font-size:14px;font-weight:700;color:#0A2540;cursor:pointer;text-align:left;" style-hover="color:#0E5E8A;" sc-camel-on-click="{{ goSvs }}">{{ watchHeadline }} ›</button></p>
                   <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">{{ watchDetail }}</p>
                   <sc-if value="{{ watchChip }}" hint-placeholder-val="{{ true }}">
-                    <p style="margin:6px 0 0;"><span style="display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBEAEA;color:#B91C1C;">{{ watchChipLabel }}</span></p>
+                    <p style="margin:6px 0 0;"><span style="display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBEAEA;color:#B91C1C;">✗ {{ watchChipLabel }}</span></p>
                   </sc-if>
                 </div>
               </li>
@@ -177,34 +186,37 @@
                     <button style="background:none;border:none;padding:0;font-family:inherit;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;" sc-camel-on-click="{{ goTaxis }}" data-testid="dashboard-taxis">Plan taxis</button>
                     <button style="background:none;border:none;padding:0;font-family:inherit;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;" sc-camel-on-click="{{ goLaunches }}" data-testid="dashboard-launches">Book a launch</button>
                   </p>
+                  <p style="margin:6px 0 0;"><span style="display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E8F1F7;color:#0E5E8A;">Letters · LOI, never OKTB</span></p>
                 </div>
               </li>
             </ul>
           </div>
 
           <!-- Client consolidation — the pillars motif stays: it is the
-               brand's own drawing of the tier mechanic. -->
+               brand's own drawing of the tier mechanic, beside the number. -->
           <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
-            <h2 style="font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0;font-family:'Space Grotesk',sans-serif;">Client consolidation</h2>
+            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0;">Client consolidation</h2>
             <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">Browne Energy · live tier state</p>
-            <svg sc-camel-view-box="0 0 240 150" role="img" aria-label="Four pillars and a roof diagram showing GAC service consolidation" style="display:block;margin:10px auto 2px;width:240px;max-width:100%;">
-              <polygon points="120,8 12,52 228,52" fill="{{ roofFill }}" stroke="{{ roofStroke }}" stroke-width="1" style="transition:fill .4s,stroke .4s;"></polygon>
-              <text x="120" y="42" text-anchor="middle" fill="#0A2540" style="font-size:10px;font-weight:800;letter-spacing:.08em;">{{ brandUpper }}</text>
-              <rect x="22" y="62" width="38" height="62" rx="3" fill="{{ p1Fill }}" style="transition:fill .35s;"></rect>
-              <rect x="74" y="62" width="38" height="62" rx="3" fill="{{ p2Fill }}" style="transition:fill .35s;"></rect>
-              <rect x="126" y="62" width="38" height="62" rx="3" fill="{{ p3Fill }}" style="transition:fill .35s;"></rect>
-              <rect x="178" y="62" width="38" height="62" rx="3" fill="{{ p4Fill }}" style="transition:fill .35s;"></rect>
-              <text x="41" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">AGENCY</text>
-              <text x="93" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">LOGISTICS</text>
-              <text x="145" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">CUSTOMS</text>
-              <text x="197" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">PROCURE</text>
-            </svg>
-            <div style="text-align:center;margin-top:8px;">
-              <sc-if value="{{ fullStack }}" hint-placeholder-val="{{ false }}">
-                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF6E3;color:#9A7B14;border:1px solid #E5D89A;">★ Full Stack client</span>
-              </sc-if>
-              <p style="font-size:34px;font-weight:800;letter-spacing:-.02em;margin:2px 0 0;color:{{ pctColor }};font-family:'Space Grotesk',sans-serif;">{{ tierPctLabel }}</p>
-              <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">{{ dashTierLine }}</p>
+            <div style="display:flex;align-items:center;gap:18px;margin-top:12px;flex-wrap:wrap;">
+              <svg sc-camel-view-box="0 0 240 150" role="img" aria-label="Four pillars and a roof diagram showing GAC service consolidation" style="display:block;width:200px;max-width:100%;flex-shrink:0;">
+                <polygon points="120,8 12,52 228,52" fill="{{ roofFill }}" stroke="{{ roofStroke }}" stroke-width="1" style="transition:fill .4s,stroke .4s;"></polygon>
+                <text x="120" y="42" text-anchor="middle" fill="#0A2540" style="font-size:10px;font-weight:800;letter-spacing:.08em;">{{ brandUpper }}</text>
+                <rect x="22" y="62" width="38" height="62" rx="3" fill="{{ p1Fill }}" style="transition:fill .35s;"></rect>
+                <rect x="74" y="62" width="38" height="62" rx="3" fill="{{ p2Fill }}" style="transition:fill .35s;"></rect>
+                <rect x="126" y="62" width="38" height="62" rx="3" fill="{{ p3Fill }}" style="transition:fill .35s;"></rect>
+                <rect x="178" y="62" width="38" height="62" rx="3" fill="{{ p4Fill }}" style="transition:fill .35s;"></rect>
+                <text x="41" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">AGENCY</text>
+                <text x="93" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">LOGISTICS</text>
+                <text x="145" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">CUSTOMS</text>
+                <text x="197" y="138" text-anchor="middle" fill="#33475F" style="font-size:9.5px;font-weight:700;letter-spacing:.04em;">PROCURE</text>
+              </svg>
+              <div style="flex:1;min-width:140px;">
+                <sc-if value="{{ fullStack }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF6E3;color:#9A7B14;border:1px solid #E5D89A;">★ Full Stack client</span>
+                </sc-if>
+                <p style="font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1;margin:8px 0 0;color:{{ pctColor }};">{{ tierPctLabel }}</p>
+                <p style="color:#33475F;font-size:12.5px;margin:4px 0 0;">{{ dashTierLine }}</p>
+              </div>
             </div>
             <div style="height:1px;background:#E5EAF1;margin:14px 0;"></div>
             <p style="color:#33475F;font-size:12.5px;margin:0;">The tier is non-cumulative: clients hold the highest single tier they qualify for. This widget follows the <button style="background:none;border:none;color:#0E5E8A;font-weight:700;font-size:12.5px;cursor:pointer;padding:0;" sc-camel-on-click="{{ goTiers }}">Tier Calculator</button> live.</p>
