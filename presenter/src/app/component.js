@@ -772,7 +772,7 @@ class Component extends DCLogic {
     const ADV_DOT_LABELS = [
       'Slide 1 — 0800 tomorrow', 'Slide 2 — GAC Connect', 'Slide 3 — today', 'Slide 4 — four pillars and a roof',
       'Slide 5 — chess', 'Slide 6 — we already own the data',
-      'Slide 7 — F1', 'Slide 8 — scrutineering was hours ago',
+      'Slide 7 — F1', 'Slide 8 — scrutinising was hours ago',
       'Slide 9 — Hyrox', 'Slide 10 — the agent’s job changes shape',
       'Slide 11 — the figures', 'Slide 12 — the cash', 'Slide 13 — the ask',
       'Slide 14 — the point', 'Slide 15 — enter the platform'
