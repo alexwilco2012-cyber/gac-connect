@@ -5,6 +5,7 @@
  * namespaced `desk-*` because the landing hero can share a page with it.
  * The svg keeps its own aspect ratio and sits on the panel floor, so a tall
  * left column cannot scale the ship up into the caption (owner, 6 Sep).
+ * Static by request: no bob, no lamp flicker, no shimmer (owner, 6 Sep).
  * Original artwork in GAC colours (07_GUARDRAILS: no third-party art).
  */
 export function VesselAtQuay({
@@ -71,26 +72,10 @@ export function VesselAtQuay({
         ></line>
         <rect x="466" y="150" width="3" height="36" fill="#152F55"></rect>
         <rect x="466" y="148" width="20" height="3" fill="#152F55"></rect>
-        <circle
-          cx="486"
-          cy="150"
-          r="3"
-          fill="#FFC72C"
-          style={{ animation: 'lamp-flick 2.4s ease-in-out infinite' }}
-        ></circle>
-        <rect
-          x="484.5"
-          y="200"
-          width="3"
-          height="34"
-          fill="url(#desk-refl)"
-          style={{ animation: 'shimmer 2.4s ease-in-out infinite alternate' }}
-        ></rect>
-        <g
-          transform="translate(56 77) scale(.82)"
-          style={{ animation: 'ship-bob 5.2s ease-in-out infinite alternate' }}
-        >
-          <g style={{ animation: 'shimmer 2.2s ease-in-out infinite alternate' }}>
+        <circle cx="486" cy="150" r="3" fill="#FFC72C"></circle>
+        <rect x="484.5" y="200" width="3" height="34" fill="url(#desk-refl)"></rect>
+        <g transform="translate(56 77) scale(.82)">
+          <g>
             <rect x="262" y="153" width="2.5" height="26" fill="url(#desk-refl)"></rect>
             <rect x="290" y="153" width="2.5" height="30" fill="url(#desk-refl)"></rect>
             <rect x="318" y="153" width="2.5" height="28" fill="url(#desk-refl)"></rect>
@@ -212,13 +197,7 @@ export function VesselAtQuay({
             strokeWidth="1.6"
             opacity=".75"
           ></line>
-          <circle
-            cx="300"
-            cy="10"
-            r="2.6"
-            fill="#FFFFFF"
-            style={{ animation: 'lamp-flick 2.4s ease-in-out infinite' }}
-          ></circle>
+          <circle cx="300" cy="10" r="2.6" fill="#FFFFFF"></circle>
           <circle cx="255" cy="47" r="2.2" fill="#FF453A"></circle>
           <circle cx="28" cy="107" r="1.8" fill="#FFFFFF" opacity=".85"></circle>
           <text
