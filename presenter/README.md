@@ -142,7 +142,7 @@ when the overlay fades.
 | 05 | Chapter I · chess | see the opponent's next three moves |
 | 06 | Pay-off I | we already own the data: GA history, predictive procurement, four lines under one roof |
 | 07 | Chapter II · F1 | a thirty-second head start |
-| 08 | Pay-off II | scrutineering was hours ago: the gate, 90/30/7 alerts, Gold Band |
+| 08 | Pay-off II | scrutinising was hours ago: the gate, 90/30/7 alerts, Gold Band |
 | 09 | Chapter III · Hyrox | two of the eight stations done for you |
 | 10 | Pay-off III | the agent's job changes shape: two roles, £250k, £15k training |
 | 11 | The figures | (£195k) · £1.77m · £5.38m and the bars left, the six revenue lines as a table right |
