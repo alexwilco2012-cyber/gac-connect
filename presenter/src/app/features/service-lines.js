@@ -137,7 +137,7 @@ const SL_DECLARATION_ACTIONS = {
   'Submitted to HMRC': { label: 'Simulate: HMRC clears the entry', steps: 1 }
 };
 const SL_CUSTOMS_INTRO = 'GAC prepares and submits the entry itself — no broker sits between you and HMRC. Raise a declaration against a movement and the platform carries it through to cleared. Submission and the HMRC response are simulated in this proof of concept.';
-const SL_INFORMS_NOT_ADVISES = 'GAC informs, it does not advise. The tariff classification, the customs valuation and the declared position remain yours as importer or exporter — GAC prepares and submits the entry against what you declare, and tells you when something is missing.';
+const SL_INFORMS_NOT_ADVISES = 'The platform does not give customs advice. Our customs team does: a question about tariff classification, customs valuation or the declared position goes to them, not to the agent on the desk. What the platform shows is what a declaration needs and where it has got to, and it tells you when something is missing.';
 const SL_DECLARATION_NOTICE = 'Illustrative — do not enter real commodity codes, EORI numbers or entry references in this proof of concept.';
 const SL_DOCUMENT_CHECKLIST = [
   { title: 'Commercial invoice', body: 'Seller, buyer, terms of delivery, currency and a line-by-line value. A pro-forma is accepted for goods moving without a sale, and it has to say so.' },

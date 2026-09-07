@@ -217,7 +217,7 @@ export default function ForSuppliers() {
       <section className="mt-14">
         <Eyebrow>{GOLD_BAND.eyebrow}</Eyebrow>
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h2 className="font-display text-[22px] font-bold">Earned, not bought</h2>
+          <h2 className="font-display text-[22px] font-bold">The Gold Band audit, £1,500 a year</h2>
           <GoldBandPill />
         </div>
         <p className="mt-3 max-w-[680px] text-[14px] text-ink-soft">{GOLD_BAND.summary}</p>

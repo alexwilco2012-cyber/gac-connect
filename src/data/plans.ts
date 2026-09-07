@@ -59,7 +59,7 @@ export const PLANS: PlanDef[] = [
     features: [
       { text: 'Everything in Professional', included: true },
       {
-        text: 'Eligible for the GAC Gold Band audit — earned annually, never bought',
+        text: 'Eligible for the GAC Gold Band audit — £1,500 a year, renewed annually',
         included: true,
       },
       { text: 'Homepage spotlight rotation', included: true },

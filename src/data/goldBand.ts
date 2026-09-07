@@ -1,6 +1,6 @@
 /**
  * GAC Gold Band — copy for the audit tier that sits above standard SVS
- * verification (proposal v12 §6). The rule itself lives in lib/svs.ts
+ * verification (proposal v18 §6: a paid annual audit at £1,500). The rule itself lives in lib/svs.ts
  * (goldBandActive): held only while compliance holds.
  */
 
@@ -9,7 +9,7 @@ export const GOLD_BAND = {
   marque: '◆ GAC Gold Band',
   eyebrow: 'GAC Gold Band · audit tier',
   summary:
-    'An audit tier above standard verification, open to Premium suppliers. Gold Band is earned, not bought: an enhanced audit renewed annually, so clients see at a glance which suppliers GAC has examined most closely.',
+    'A paid annual audit above standard verification, open to Premium suppliers at £1,500 a year: documentation, insurance, performance history and a site visit. Suppliers who pass carry the Gold Band badge in the marketplace, so clients see at a glance which suppliers GAC has looked at most closely. Standard verification stays free.',
   scope: [
     {
       title: 'Documentation',
@@ -28,7 +28,7 @@ export const GOLD_BAND = {
       body: 'How the crew works quayside and onboard, seen rather than declared.',
     },
   ],
-  rule: 'Renewed annually. Advertising cannot confer it, and lapsed compliance removes it — the same rule that governs every other trust mark on the platform.',
+  rule: 'Renewed annually. No supplier can advertise their way into it, and it comes off if compliance lapses — the same rule that governs every other badge on the platform.',
   scheduledNote:
     'Premium subscriber; the Gold Band audit is booked but not yet passed. Premium makes a supplier eligible — only the audit confers the marque.',
 } as const;

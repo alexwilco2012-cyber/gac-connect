@@ -9,9 +9,13 @@ import type { Declaration, DeclarationForm } from '../lib/customs';
 export const CUSTOMS_INTRO =
   'GAC prepares and submits the entry itself — no broker sits between you and HMRC. Raise a declaration against a movement and the platform carries it through to cleared. Submission and the HMRC response are simulated in this proof of concept.';
 
-/** The boundary, stated on the screen. GAC informs; the customs position is the client's. */
+/**
+ * The boundary, stated on the screen (rule changed 2026-09-07): the platform
+ * does not give customs advice; GAC's customs team does. The platform shows
+ * what a declaration needs and where it has got to.
+ */
 export const INFORMS_NOT_ADVISES =
-  'GAC informs, it does not advise. The tariff classification, the customs valuation and the declared position remain yours as importer or exporter — GAC prepares and submits the entry against what you declare, and tells you when something is missing.';
+  'The platform does not give customs advice. Our customs team does: a question about tariff classification, customs valuation or the declared position goes to them, not to the agent on the desk. What the platform shows is what a declaration needs and where it has got to, and it tells you when something is missing.';
 
 export const DECLARATION_NOTICE =
   'Illustrative — do not enter real commodity codes, EORI numbers or entry references in this proof of concept.';
