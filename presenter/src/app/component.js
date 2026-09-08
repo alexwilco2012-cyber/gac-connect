@@ -1271,7 +1271,7 @@ class Component extends DCLogic {
       svsRows: svsRows,
 
       /* suppliers page */
-      founderInterest: () => this.toastMsg('Interest registered. The founder programme covers the first 50 suppliers — first year free, with a 5-point commission-band reduction for 24 months.'),
+      founderInterest: () => this.toastMsg('Interest registered. The founder programme covers the first 50 suppliers — no subscription in the launch year, with a 5-point commission-band reduction for 24 months.'),
       planFree: () => this.toastMsg('Basic plan selected — free, 20% commission band on work won through the platform. Onboarding starts with the SVS verification checklist — certificates, insurance, references.'),
       planPro: () => this.toastMsg('Professional plan selected — £900/year, 15% commission band. Onboarding starts with the SVS verification checklist.'),
       planPremium: () => this.toastMsg('Premium plan selected — £1,800/year, 10% commission band, and eligibility for the GAC Gold Band audit. A GAC onboarding manager completes SVS verification with you.'),

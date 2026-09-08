@@ -14,7 +14,7 @@ export const COMMISSION_BANDS: Record<Plan, number> = {
   premium: 10,
 };
 
-/** Founder Programme: first 50 suppliers, first year free, and a 5-point
+/** Founder Programme: first 50 suppliers, no subscription in the launch year, and a 5-point
  *  commission-band reduction for the first 24 months. */
 export const FOUNDER_REDUCTION_POINTS = 5;
 export const FOUNDER_REDUCTION_MONTHS = 24;
