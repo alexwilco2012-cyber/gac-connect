@@ -167,7 +167,9 @@ test('customs: an entry is refused until the document set is confirmed', async (
 
   // The boundary is stated on the screen, not buried in a comment.
   await page.getByRole('button', { name: 'What GAC needs', exact: true }).click();
-  await expect(page.getByText('GAC informs, it does not advise.')).toBeVisible();
+  await expect(
+    page.getByText(/The platform does not give customs advice\. Our customs team does/),
+  ).toBeVisible();
 });
 
 test('a declaration can be raised against a movement, and picks its details up', async ({

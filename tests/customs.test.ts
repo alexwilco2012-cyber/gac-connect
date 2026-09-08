@@ -128,8 +128,9 @@ describe('Stored declarations are read defensively', () => {
 });
 
 describe('What the screen must say', () => {
-  it('states the boundary: GAC informs, it does not advise', () => {
-    expect(INFORMS_NOT_ADVISES).toMatch(/informs, it does not advise/i);
+  it('states the boundary: the platform does not advise on customs, the customs team does', () => {
+    expect(INFORMS_NOT_ADVISES).toMatch(/platform does not give customs advice/i);
+    expect(INFORMS_NOT_ADVISES).toMatch(/customs team does/i);
     expect(INFORMS_NOT_ADVISES).toMatch(/classification/i);
   });
 

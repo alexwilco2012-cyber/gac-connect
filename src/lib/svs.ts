@@ -30,12 +30,12 @@ export function isBookable(certs: readonly Cert[]): boolean {
 }
 
 /**
- * GAC Gold Band — the audit tier above standard verification, open to Premium
- * suppliers and earned through an enhanced annual audit (documentation,
- * insurance, performance history, site practice). 'held' means the audit is
- * current; 'scheduled' means the supplier is eligible and booked in but has
- * not yet earned the marque. Advertising cannot confer it, and lapsed
- * compliance removes it — the same rule as every other trust mark.
+ * GAC Gold Band — the paid annual audit above standard verification, open to
+ * Premium suppliers at £1,500 a year (documentation, insurance, performance
+ * history, site visit; proposal v18 §6). 'held' means the audit is current;
+ * 'scheduled' means the supplier is eligible and booked in but has not yet
+ * passed it. No supplier can advertise their way into it, and lapsed
+ * compliance removes it — the same rule as every other badge.
  */
 export type GoldBandState = 'held' | 'scheduled';
 

@@ -604,8 +604,8 @@ function SupplierView() {
             </div>
             {supplier.goldBand === 'scheduled' ? (
               <p className="mt-3 text-[12.5px] text-ink-soft">
-                {supplier.goldBandDate}. The Gold Band is earned at the audit and never bought — it
-                appears here the day it is passed, and goes the day compliance lapses.
+                {supplier.goldBandDate}. The Gold Band is held from the audit, not from advertising
+                — it appears here the day it is passed, and goes the day compliance lapses.
               </p>
             ) : null}
           </Card>

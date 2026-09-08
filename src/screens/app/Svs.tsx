@@ -144,12 +144,12 @@ export default function Svs() {
       <Card className="mt-5">
         <Eyebrow>What the proprietary SVS adds</Eyebrow>
         <p className="mt-2 text-[14px]">
-          Keyword taxonomy across 40+ service categories · supplier self-service portal · automated
+          Keyword search across 40+ service categories · supplier self-service portal · automated
           expiry alerts · live performance ratings fed from completed platform transactions, each
           shown with the number of ratings submitted · the GAC Verified badge as a visible mark of
-          quality · GAC Gold Band as the earned audit tier above it. Owned by GAC — built for us by
-          a third-party developer, now moving to full Group IT maintenance. The platform is what
-          turns it commercial.
+          quality · GAC Gold Band as the paid annual audit tier above it. Owned by GAC — built for
+          us by a third-party developer, now moving to full Group IT maintenance. The platform is
+          what turns it commercial.
         </p>
         <p className="mt-2 text-[13px] text-ink-soft">{ESG_PLANNED_NOTE}</p>
       </Card>

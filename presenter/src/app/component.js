@@ -707,7 +707,7 @@ class Component extends DCLogic {
         name: qc.name, price: qc.price, avail: qc.avail, capacity: qc.capacity, rating: qc.rating, esg: qc.esg, src: qc.src,
         dotColor: qc.outlook ? '#C9A227' : '#0E5E8A',
         best: !!qc.best && !st.accepted,
-        /* the Gold Band is earned at the audit and lost on lapse: read it off the supplier record, never hard-coded */
+        /* the Gold Band is held from the audit and lost on lapse: read it off the supplier record, never hard-coded */
         gold: !!(sup && sup.goldBand === 'held' && this.deriveStatus(sup) !== 'blocked'),
         parsed: !!qc.outlook,
         accepted: isAccepted,
@@ -1005,7 +1005,7 @@ class Component extends DCLogic {
           supRatingLine: sup ? sup.rating.toFixed(1) + ' \u2605 \u00b7 ' + sup.ratingCount + ' ratings' : '',
           supPromoted: !!(sup && sup.promoted),
           supGoldNote: sup && sup.goldBandDate
-            ? sup.goldBandDate + '. The Gold Band is earned at the audit and never bought \u2014 it appears here the day it is passed, and goes the day compliance lapses.'
+            ? sup.goldBandDate + '. The Gold Band is held from the audit, not from advertising \u2014 it appears here the day it is passed, and goes the day compliance lapses.'
             : '',
           supCerts: sup ? sup.certs.map(function (c) {
             const bg = c.state === 'lapsed' ? '#FBEAEA' : c.state === 'due' ? '#FBF0E1' : '#E7F4EF';
