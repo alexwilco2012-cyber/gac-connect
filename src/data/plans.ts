@@ -76,9 +76,9 @@ export function planById(id: Plan): PlanDef {
   return PLANS.find((p) => p.id === id) ?? PLANS[0]!;
 }
 
-/** Founder Programme (v12): first 50 suppliers, first year free, and a
+/** Founder Programme (v19): first 50 suppliers, no subscription in the launch year, and a
  *  5-point commission-band reduction for the first 24 months. */
-export const FOUNDER_LEAD = 'The first 50 suppliers join free for the first year';
+export const FOUNDER_LEAD = 'The first 50 suppliers pay no subscription in the launch year';
 export const FOUNDER_BODY =
   'full Professional features, no charge — and hold a 5-point commission-band reduction for 24 months. Founder suppliers shape the platform and carry the badge to prove it.';
 export const FOUNDER_PROGRAMME = `${FOUNDER_LEAD} — ${FOUNDER_BODY}`;

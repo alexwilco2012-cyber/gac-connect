@@ -333,7 +333,7 @@ test('9 · Gold Band shows only where earned; ratings carry counts; plans carry 
   await expect(page.getByText('15% commission').first()).toBeVisible();
   await expect(page.getByText('10% commission').first()).toBeVisible();
   await expect(page.getByTestId('keeps-premium')).toHaveText('£3,960');
-  await expect(page.getByText(/first year/).first()).toBeVisible();
+  await expect(page.getByText(/launch year/).first()).toBeVisible();
 });
 
 test('10 · hotels are a standalone category with the availability caveat and meal scale', async ({

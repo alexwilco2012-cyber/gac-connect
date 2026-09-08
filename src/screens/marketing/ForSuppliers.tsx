@@ -34,7 +34,7 @@ const JOB_DEFAULT = 4_400;
 const PLAN_TOAST: Record<Plan, string> = {
   free: 'Basic listing selected — free. Verification is the only gate; 20% commission applies only to work won through the platform.',
   professional:
-    'Professional plan selected — £900 per year, 15% commission band. Founder suppliers receive the first year free.',
+    'Professional plan selected — £900 per year, 15% commission band. Founder suppliers pay no subscription in the launch year.',
   premium:
     'Premium plan selected — £1,800 per year, 10% commission band, and eligibility for the GAC Gold Band audit. Promoted placements are always labelled and never override SVS compliance status.',
 };
@@ -70,7 +70,7 @@ export default function ForSuppliers() {
           variant="gold"
           onClick={() =>
             pushToast(
-              `Founder Programme interest registered — first year free, plus a ${FOUNDER_REDUCTION_POINTS}-point commission-band reduction for ${FOUNDER_REDUCTION_MONTHS} months. The onboarding team will be in touch with your verification checklist.`,
+              `Founder Programme interest registered — no subscription in the launch year, plus a ${FOUNDER_REDUCTION_POINTS}-point commission-band reduction for ${FOUNDER_REDUCTION_MONTHS} months. The onboarding team will be in touch with your verification checklist.`,
             )
           }
         >
