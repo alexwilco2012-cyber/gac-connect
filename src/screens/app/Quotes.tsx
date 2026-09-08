@@ -283,9 +283,9 @@ export default function Quotes() {
               <strong className="text-white">
                 Purchase order {PO_NUMBER} raised in GAC Agent.
               </strong>{' '}
-              Against MV Choice, with the 60/40 Browne Energy / Grizzell Marine billing split applied
-              from the vessel profile. The agreement went to the supplier with the booked window and
-              terms. Nothing re-keyed.
+              Against MV Choice, with the 60/40 Browne Energy / Grizzell Marine billing split
+              applied from the vessel profile. The agreement went to the supplier with the booked
+              window and terms. Nothing re-keyed.
             </>
           ) : (
             <>
