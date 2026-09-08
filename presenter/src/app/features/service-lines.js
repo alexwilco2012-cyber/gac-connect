@@ -121,11 +121,11 @@ const SL_PROJECT_CARGO = [
   { title: 'Customs planned, not discovered', body: 'A project moving from outside the UK has its entry prepared while the load is still on the road, so nothing waits at the gate for paperwork.' }
 ];
 const SL_SEED_CONSIGNMENTS = [
-  { id: 'CN-2041', stage: 'In transit', createdAt: 'Mon 18 Aug · 08:15', form: { description: 'Deck spares and hose reels, 4 pallets', origin: 'Grangemouth', deliveryPoint: 'Aberdeen — GAC warehouse', vesselId: 'elan', mode: 'Road', readyDate: '18 Aug 2026', pieces: '4', weightKg: '1250', fromOutsideUk: false } },
+  { id: 'CN-2041', stage: 'In transit', createdAt: 'Mon 18 Aug · 08:15', form: { description: 'Deck spares and hose reels, 4 pallets', origin: 'Grangemouth', deliveryPoint: 'Aberdeen — GAC warehouse', vesselId: 'choice', mode: 'Road', readyDate: '18 Aug 2026', pieces: '4', weightKg: '1250', fromOutsideUk: false } },
   { id: 'CN-2042', stage: 'Booked', createdAt: 'Tue 19 Aug · 14:40', form: { description: 'Replacement thruster seal kit, 1 crate', origin: 'Rotterdam', deliveryPoint: 'Aberdeen — Regent Quay', vesselId: 'granite-coast', mode: 'Sea', readyDate: '21 Aug 2026', pieces: '1', weightKg: '380', fromOutsideUk: true } }
 ];
-const SL_EMPTY_CONSIGNMENT = { description: '', origin: '', deliveryPoint: SL_DELIVERY_POINTS[0], vesselId: 'elan', mode: 'Road', readyDate: '', pieces: '', weightKg: '', fromOutsideUk: false };
-const SL_DEMO_CONSIGNMENT = { description: 'Valve skid and fittings, 2 crates', origin: 'Stavanger', deliveryPoint: 'Aberdeen — Regent Quay', vesselId: 'elan', mode: 'Sea', readyDate: '26 Aug 2026', pieces: '2', weightKg: '860', fromOutsideUk: true };
+const SL_EMPTY_CONSIGNMENT = { description: '', origin: '', deliveryPoint: SL_DELIVERY_POINTS[0], vesselId: 'choice', mode: 'Road', readyDate: '', pieces: '', weightKg: '', fromOutsideUk: false };
+const SL_DEMO_CONSIGNMENT = { description: 'Valve skid and fittings, 2 crates', origin: 'Stavanger', deliveryPoint: 'Aberdeen — Regent Quay', vesselId: 'choice', mode: 'Sea', readyDate: '26 Aug 2026', pieces: '2', weightKg: '860', fromOutsideUk: true };
 
 /* ── customs (lib/customs.ts) ── */
 const SL_DECLARATION_STAGES = ['Documents received', 'Declaration prepared', 'Submitted to HMRC', 'Cleared'];
@@ -157,7 +157,7 @@ const SL_DEMO_DECLARATION = { kind: 'T1 transit', consignmentRef: '', goods: 'Va
 /* The three demo vessels (data/vessels.ts). Procurement carries the same table;
    both are fictional and both must stay in step with the site. */
 const SL_VESSELS = [
-  { id: 'elan', name: 'MV Elan', port: 'Aberdeen' },
+  { id: 'choice', name: 'MV Choice', port: 'Aberdeen' },
   { id: 'boreal', name: 'MV Boreal', port: 'Peterhead' },
   { id: 'granite-coast', name: 'MV Granite Coast', port: 'Aberdeen' }
 ];

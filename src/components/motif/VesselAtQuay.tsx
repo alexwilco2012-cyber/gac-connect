@@ -210,7 +210,7 @@ export function VesselAtQuay({
             letterSpacing="2"
             fill="rgba(234,242,248,.6)"
           >
-            ELAN
+            CHOICE
           </text>
         </g>
       </svg>

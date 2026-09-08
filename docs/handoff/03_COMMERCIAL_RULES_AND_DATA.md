@@ -58,9 +58,9 @@ const annualSaving = (spendGBP: number, a) => Math.round(spendGBP * tierPct(a) /
 
 ## 3.4 Canonical mock data (fictional — do not substitute real companies)
 
-**Operators/clients** (memory-anchored fictional set): Northmoor Energy · Solway Marine · Brinmore Subsea · Fairhaven Drilling. Billing-split scenario: *MV Elan — Northmoor Energy / Solway Marine 60/40*.
+**Operators/clients** (memory-anchored fictional set): Northmoor Energy · Solway Marine · Brinmore Subsea · Fairhaven Drilling. Billing-split scenario: *MV Choice — Northmoor Energy / Solway Marine 60/40*.
 
-**Vessels**: MV Elan (Aberdeen, the predictive-procurement scenario: crane hire, medical cover, scaffolding) · MV Boreal (Peterhead) · MV Granite Coast (Aberdeen, T1 customs in progress).
+**Vessels**: MV Choice (Aberdeen, the predictive-procurement scenario: crane hire, medical cover, scaffolding) · MV Boreal (Peterhead) · MV Granite Coast (Aberdeen, T1 customs in progress).
 
 **Suppliers** (id, category, rating, ESG, flags):
 | Name | Category | Rating | ESG | Flags |
@@ -85,12 +85,12 @@ const annualSaving = (spendGBP: number, a) => Math.round(spendGBP * tierPct(a) /
 
 **GAC in-house lines** (always pinned above third-party where relevant): GAC Agency (2% tier) · GAC Logistics (4%) · GAC Customs (7%) · GAC Assets (any tier) · GAC Procurement (any tier). Descriptions: port from reference demo.
 
-**Quote scenario** (crane hire, MV Elan; request sent Thu 08:00, reply-by Thu 12:00 — a 4-hour window set by the client — needed Fri 06:00): North Sea Crane Co. £4,850 / Fri 06:00 / 120t / platform-reply 09:42 · **Caledonia Lifting £4,400 / Fri 06:00 / 130t / parsed-from-Outlook 10:15 / best match** · Granite Cranes £5,100 / Fri 09:00 / 110t / platform-reply 11:03. Acceptance toast: "PO 48211 generated in GAC Agent — billing split 60/40 Northmoor Energy / Solway Marine applied automatically."
+**Quote scenario** (crane hire, MV Choice; request sent Thu 08:00, reply-by Thu 12:00 — a 4-hour window set by the client — needed Fri 06:00): North Sea Crane Co. £4,850 / Fri 06:00 / 120t / platform-reply 09:42 · **Caledonia Lifting £4,400 / Fri 06:00 / 130t / parsed-from-Outlook 10:15 / best match** · Granite Cranes £5,100 / Fri 09:00 / 110t / platform-reply 11:03. Acceptance toast: "PO 48211 generated in GAC Agent — billing split 60/40 Northmoor Energy / Solway Marine applied automatically."
 
 **Analytics example** (supplier dashboard): 412 profile views (30d) · 38 quote requests · 34% win rate · 2.1h avg response.
 
 **Dashboard KPIs**: 14 active jobs · 6 open quote requests · 52 SVS-verified suppliers · 31 hrs admin saved/month.
 
-**Invoice review scenario** (`src/data/invoices.ts`): INV-4471 Caledonia Lifting £4,400 (crane hire, MV Elan, PO 48211, received 2 days ago → 5 days left) · INV-4468 Aberdeen Offshore Medical £1,850 (medical cover, MV Elan, PO 48196, 5 days ago → 2 days left) · INV-4452 Caledonia Scaffolding £2,900 (scaffolding, MV Boreal, PO 48140, 8 days ago → window closed, matched to GA as it stood). Allocation options come from the GA vessel profile (60/40 Browne Energy / Grizzell Marine on MV Elan; Stronach Subsea 100% on MV Boreal).
+**Invoice review scenario** (`src/data/invoices.ts`): INV-4471 Caledonia Lifting £4,400 (crane hire, MV Choice, PO 48211, received 2 days ago → 5 days left) · INV-4468 Aberdeen Offshore Medical £1,850 (medical cover, MV Choice, PO 48196, 5 days ago → 2 days left) · INV-4452 Caledonia Scaffolding £2,900 (scaffolding, MV Boreal, PO 48140, 8 days ago → window closed, matched to GA as it stood). Allocation options come from the GA vessel profile (60/40 Browne Energy / Grizzell Marine on MV Choice; Stronach Subsea 100% on MV Boreal).
 
 All mock data lives in `src/data/*.ts` behind typed interfaces (see 04). A single `src/config/brand.ts` exports `BRAND_NAME` (default "GAC Connect") consumed everywhere the brand renders.

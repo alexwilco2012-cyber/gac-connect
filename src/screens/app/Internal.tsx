@@ -35,7 +35,7 @@ import { useApp } from '../../store/app';
  * the foot of the sidebar, where the people it was actually written for work.
  *
  * What the agent sees at 08:00: what is arriving, what needs them, and the one
- * action the demo turns on — issuing MV Elan's predicted procurement list. The
+ * action the demo turns on — issuing MV Choice's predicted procurement list. The
  * vessel hero is the screen's centre of gravity, and the vessel in it is the
  * same lit drawing the deck follows in.
  *
@@ -145,7 +145,7 @@ export default function Internal() {
     const window_ = replyWindowById(replyWindowId);
     const short = deadlineAdvice(window_.hours).tone === 'warn';
     pushToast(
-      `9 quote requests issued for MV Elan · reply-by window ${window_.label}. Replies will populate the comparison view automatically.${
+      `9 quote requests issued for MV Choice · reply-by window ${window_.label}. Replies will populate the comparison view automatically.${
         short ? ' Short windows rarely draw a full set of replies.' : ''
       }`,
     );
@@ -227,7 +227,7 @@ export default function Internal() {
             </span>
           </div>
           <h2 className="mt-2 font-display text-[24px] font-bold tracking-[-0.015em]">
-            MV Elan — Aberdeen, ETA 08:00 tomorrow
+            MV Choice — Aberdeen, ETA 08:00 tomorrow
           </h2>
           <p className="mt-1 text-[13.5px] text-ink-soft">
             Regent Quay · Browne Energy / Grizzell Marine, 60/40 · what she typically needs on an
@@ -370,7 +370,7 @@ export default function Internal() {
         <div className="mb-2.5 rounded-lg border border-line p-3">
           <p className="text-[13px] font-bold">Caledonia Lifting Ltd</p>
           <p className="mt-0.5 text-[12.5px] text-ink-soft">
-            RE: Quote request — crane hire, MV Elan, Aberdeen
+            RE: Quote request — crane hire, MV Choice, Aberdeen
           </p>
           <p className="mt-1.5 text-[12px]">
             Morning, we can do Friday 06:00 with the 130t mobile. £4,400 all-in as discussed…
@@ -393,7 +393,7 @@ export default function Internal() {
         <div className="rounded-lg border border-line p-3">
           <p className="text-[13px] font-bold">Aberdeen Harbour VTS</p>
           <p className="mt-0.5 text-[12.5px] text-ink-soft">
-            MV Elan — berth confirmation Regent Quay
+            MV Choice — berth confirmation Regent Quay
           </p>
           <p className="mt-1.5 text-[12px]">
             Confirming berth allocation for Friday 08:00 arrival…

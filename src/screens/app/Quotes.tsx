@@ -203,7 +203,7 @@ export default function Quotes() {
     <div className="screen-enter">
       <Eyebrow>Quote comparison</Eyebrow>
       <h1 className="mt-0.5 font-display text-[28px] font-bold tracking-[-0.015em]">
-        Crane hire — MV Elan, Aberdeen
+        Crane hire — MV Choice, Aberdeen
       </h1>
       <p className="mt-1 text-[14.5px] text-ink-soft">
         3 of 3 suppliers replied inside the deadline. One reply was parsed automatically from
@@ -283,14 +283,14 @@ export default function Quotes() {
               <strong className="text-white">
                 Purchase order {PO_NUMBER} raised in GAC Agent.
               </strong>{' '}
-              Against MV Elan, with the 60/40 Browne Energy / Grizzell Marine billing split applied
+              Against MV Choice, with the 60/40 Browne Energy / Grizzell Marine billing split applied
               from the vessel profile. The agreement went to the supplier with the booked window and
               terms. Nothing re-keyed.
             </>
           ) : (
             <>
               <strong className="text-white">GAC Agent is ready.</strong> On acceptance, a purchase
-              order is generated automatically against MV Elan with the 60/40 Browne Energy /
+              order is generated automatically against MV Choice with the 60/40 Browne Energy /
               Grizzell Marine billing split applied from the vessel profile. No re-keying.
             </>
           )}
@@ -302,9 +302,9 @@ export default function Quotes() {
         ) : null}
       </div>
 
-      {/* Request queue for MV Elan — this job plus two other open requests */}
+      {/* Request queue for MV Choice — this job plus two other open requests */}
       <Card className="mt-[18px]" data-tour="queue">
-        <Eyebrow>Request queue · MV Elan</Eyebrow>
+        <Eyebrow>Request queue · MV Choice</Eyebrow>
         <ul className="mt-2.5 grid gap-3 md:grid-cols-3">
           {REQUEST_QUEUE.map((r) => {
             const booked = r.active && acceptedQuote !== null;

@@ -28,7 +28,7 @@ export interface ProcurementRequest {
 /** The draft the dashboard calls "1 procurement list ready to send". */
 export const DEFAULT_REQUEST: ProcurementRequest = {
   ref: 'PR-1042',
-  vesselId: 'elan',
+  vesselId: 'choice',
   deliveryPoint: 'Regent Quay, Aberdeen',
   neededBy: 'Fri 08:00',
   lines: [
