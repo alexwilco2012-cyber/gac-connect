@@ -37,8 +37,8 @@ export const BILLING_SPLIT = '60/40 Browne Energy / Grizzell Marine';
 
 export const VESSELS: Vessel[] = [
   {
-    id: 'elan',
-    name: 'MV Elan',
+    id: 'choice',
+    name: 'MV Choice',
     operatorLine: 'Browne Energy / Grizzell Marine (60/40)',
     port: 'Aberdeen',
     scheduleLine: 'Aberdeen · ETA Fri 08:00 · Berth: Regent Quay',
@@ -65,7 +65,7 @@ export const VESSELS: Vessel[] = [
   },
 ];
 
-/** The predictive-procurement scenario (MV Elan, Aberdeen). */
+/** The predictive-procurement scenario (MV Choice, Aberdeen). */
 export const PREDICTED_NEEDS = [
   { service: 'Crane hire', matched: 3 },
   { service: 'Medical cover', matched: 3 },

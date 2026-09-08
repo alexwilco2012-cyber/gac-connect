@@ -438,7 +438,7 @@ class Component extends DCLogic {
     const related = (this.RELATED[rq.cat] || []).filter((r) => rq.related[r.id]);
     const hotelChosen = related.some((r) => r.meals);
     const mealLine = 'meal allowance ' + this._gbp(this._mealPerDay(rq.nights)) + '/day, ' + rq.nights + (rq.nights === 1 ? ' night' : ' nights');
-    const parts = [(isHotel ? 'Booking request' : 'Quote request') + ' sent to ' + rq.name + ' — ' + service + ', MV Elan.', 'Reply-by window: ' + win.label + '.'];
+    const parts = [(isHotel ? 'Booking request' : 'Quote request') + ' sent to ' + rq.name + ' — ' + service + ', MV Choice.', 'Reply-by window: ' + win.label + '.'];
     if (isHotel) parts.push('Rate indicative and subject to availability — your agent confirms the booking on the platform' + (rq.meals ? ' (' + mealLine + ')' : '') + '.');
     if (this._isOverrunCat(rq.cat)) parts.push('Price covers the booked window ' + (rq.bookedWindow || '').trim() + '; overrun not included, subject to change, supplier T&Cs included.');
     if (related.length) parts.push(related.length + ' related ' + (related.length === 1 ? 'service' : 'services') + ' passed to your GAC agent' + (hotelChosen && rq.meals ? ' (' + mealLine + ')' : '') + '.');
@@ -971,7 +971,7 @@ class Component extends DCLogic {
           /* 22px beside the consolidation card's 44px: one number leads. */
           clientKpis: [
             { label: 'Port calls in the window', value: '3', delta: 'Aberdeen and Peterhead', chipStyle: kpiChip('info') },
-            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Elan', chipStyle: kpiChip('info') },
+            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Choice', chipStyle: kpiChip('info') },
             { label: 'Invoices in your window', value: '2', delta: 'Tightest closes in 2 days', chipStyle: kpiChip('warn') }
           ],
 
@@ -1093,7 +1093,7 @@ class Component extends DCLogic {
       ...(function (self) {
         const K = [
           { label: 'Active jobs', value: '14', delta: '+3 this week', tone: 'up', pts: [9, 10, 12, 11, 13, 11, 14] },
-          { label: 'Open quote requests', value: st.sent ? '9' : '6', delta: st.sent ? '9 just issued for MV Elan' : '2 replies awaiting review', tone: 'flat', pts: [2, 4, 3, 5, 4, 6, st.sent ? 9 : 6] },
+          { label: 'Open quote requests', value: st.sent ? '9' : '6', delta: st.sent ? '9 just issued for MV Choice' : '2 replies awaiting review', tone: 'flat', pts: [2, 4, 3, 5, 4, 6, st.sent ? 9 : 6] },
           { label: 'SVS-verified suppliers', value: '52', delta: '4 onboarding', tone: 'up', pts: [44, 46, 47, 48, 50, 51, 52] },
           { label: 'Admin time saved a month', value: '31 hrs', delta: 'vs the manual workflow', tone: 'flat', pts: [22, 24, 26, 27, 29, 30, 31] }
         ];
@@ -1124,7 +1124,7 @@ class Component extends DCLogic {
             + ';font-size:11px;font-weight:700;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
         };
         return [
-          { name: 'MV Elan', sched: 'Aberdeen \u00b7 ETA Fri 08:00 \u00b7 Regent Quay \u00b7 Browne Energy / Grizzell Marine', pill: self.state.sent ? '9 quote requests out' : 'Procurement list ready', pillStyle: chip('#E8F1F7', '#0E5E8A'), mark: 'Fri 08:00 \u2192', markStyle: mark(50, 48, '#0E5E8A', '#FFFFFF') },
+          { name: 'MV Choice', sched: 'Aberdeen \u00b7 ETA Fri 08:00 \u00b7 Regent Quay \u00b7 Browne Energy / Grizzell Marine', pill: self.state.sent ? '9 quote requests out' : 'Procurement list ready', pillStyle: chip('#E8F1F7', '#0E5E8A'), mark: 'Fri 08:00 \u2192', markStyle: mark(50, 48, '#0E5E8A', '#FFFFFF') },
           { name: 'MV Boreal', sched: 'Peterhead \u00b7 ETA Fri 14:30 \u00b7 Smith Quay \u00b7 Stronach Subsea', pill: '2 certs expiring on booked supplier', pillStyle: chip('#FBF0E1', '#B45309'), mark: 'Fri 14:30 \u2192', markStyle: mark(63.5, 34.5, '#FBF0E1', '#B45309') },
           { name: 'MV Granite Coast', sched: 'Aberdeen \u00b7 ETD Sat 06:00 \u00b7 Customs: T1 in progress \u00b7 Wilkinson Drilling', pill: 'All documents complete', pillStyle: chip('#E7F4EF', '#047857'), mark: 'Alongside \u00b7 sails Sat 06:00', markStyle: mark(0, 95.8, '#E7F4EF', '#047857') + 'padding-left:12px;' }
         ];
@@ -1139,7 +1139,7 @@ class Component extends DCLogic {
       sendQuoteRequests: () => {
         if (this.state.sent) return;   /* idempotent: a second click does nothing */
         this.setState({ sent: true }); this._set('sent', true);
-        this.toastMsg('9 quote requests issued for MV Elan \u00b7 reply-by Thu 12:00', 'SENT');
+        this.toastMsg('9 quote requests issued for MV Choice \u00b7 reply-by Thu 12:00', 'SENT');
         this._routeTimer = setTimeout(() => this.nav('quotes'), 1500);
       },
       /* offered on any platform screen, not the dashboard alone: the closing
@@ -1231,8 +1231,8 @@ class Component extends DCLogic {
       gaBandStyle: 'margin-top:18px;border-radius:12px;padding:14px 18px;display:flex;gap:14px;align-items:center;font-size:13.5px;flex-wrap:wrap;color:#D8E2EC;transition:background .3s;background:' + (st.accepted ? '#0B3B2E' : '#0A2540') + ';',
       gaHead: st.accepted ? 'Purchase order 48211 raised in GAC Agent.' : 'GAC Agent is ready.',
       gaBody: st.accepted
-        ? 'Against MV Elan, with the 60/40 Browne Energy / Grizzell Marine billing split applied from the vessel profile. The agreement went to the supplier with the booked window and terms. Nothing re-keyed.'
-        : 'On acceptance, a purchase order is generated automatically against MV Elan with the 60/40 Browne Energy / Grizzell Marine billing split applied from the vessel profile. No re-keying.',
+        ? 'Against MV Choice, with the 60/40 Browne Energy / Grizzell Marine billing split applied from the vessel profile. The agreement went to the supplier with the booked window and terms. Nothing re-keyed.'
+        : 'On acceptance, a purchase order is generated automatically against MV Choice with the 60/40 Browne Energy / Grizzell Marine billing split applied from the vessel profile. No re-keying.',
       queueCraneLine: st.accepted ? 'Booked \u00b7 ' + st.accepted + ' \u00b7 PO 48211' : '3 of 3 replies in \u00b7 reviewing now',
       queueCraneStyle: 'border-radius:10px;padding:12px 14px;' + (st.accepted ? 'border:1.5px solid #047857;background:#E7F4EF;' : 'border:1.5px solid #0E5E8A;background:#E8F1F7;'),
 

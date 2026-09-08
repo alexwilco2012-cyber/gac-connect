@@ -155,7 +155,7 @@ describe('Procurement via Compass — the email', () => {
   it('subject carries the PR reference, the vessel and the needed-by time', () => {
     const vessel = VESSELS.find((v) => v.id === DEFAULT_REQUEST.vesselId)!;
     const { subject } = composeEmail(DEFAULT_REQUEST);
-    expect(subject).toBe('Procurement request PR-1042 — MV Elan, Aberdeen — needed Fri 08:00');
+    expect(subject).toBe('Procurement request PR-1042 — MV Choice, Aberdeen — needed Fri 08:00');
     expect(subject).toContain(DEFAULT_REQUEST.ref);
     expect(subject).toContain(vessel.name);
     expect(subject).toContain(DEFAULT_REQUEST.neededBy);

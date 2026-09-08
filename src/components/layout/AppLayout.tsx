@@ -534,7 +534,7 @@ export default function AppLayout() {
                   className="h-2 w-2 rounded-full bg-gold-bright"
                   style={{ animation: 'lamp-flick 2.4s ease-in-out infinite' }}
                 />
-                MV Elan · Regent Quay · ETA 08:00
+                MV Choice · Regent Quay · ETA 08:00
               </span>
               <BellMenu />
               <span className="hidden text-[13px] text-ink-soft xl:inline">

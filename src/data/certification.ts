@@ -69,7 +69,7 @@ export const SEED_CREW: CrewMember[] = [
     id: 'crew-041',
     ref: 'Crew 041',
     rank: 'Master',
-    vesselId: 'elan',
+    vesselId: 'choice',
     certs: [
       { name: 'BOSIET with CA-EBS', daysToExpiry: 412 },
       { name: 'ENG1 medical', daysToExpiry: 96 },
@@ -80,7 +80,7 @@ export const SEED_CREW: CrewMember[] = [
     id: 'crew-052',
     ref: 'Crew 052',
     rank: 'Chief Engineer',
-    vesselId: 'elan',
+    vesselId: 'choice',
     certs: [
       { name: 'BOSIET with CA-EBS', daysToExpiry: 74 },
       { name: 'ENG1 medical', daysToExpiry: 188 },
@@ -91,7 +91,7 @@ export const SEED_CREW: CrewMember[] = [
     id: 'crew-063',
     ref: 'Crew 063',
     rank: 'Able Seafarer',
-    vesselId: 'elan',
+    vesselId: 'choice',
     certs: [
       { name: 'HUET', daysToExpiry: 5 },
       { name: 'MIST', daysToExpiry: 141 },
@@ -177,7 +177,7 @@ export const SEED_RENEWALS: Renewal[] = [
     crewId: 'crew-063',
     crewRef: 'Crew 063',
     rank: 'Able Seafarer',
-    vesselId: 'elan',
+    vesselId: 'choice',
     certName: 'HUET',
     daysToExpiry: 5,
     provider: 'Granite City Survival Training',

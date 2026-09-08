@@ -192,7 +192,7 @@ export default function Landing() {
               Nothing here is behind a login
             </h2>
             <p className="mt-3 text-[14.5px] text-ink-soft text-pretty">
-              Twelve stops walk a full port call: vessel arriving, services booked, certificates
+              Fourteen stops walk a full port call: vessel arriving, services booked, certificates
               checked, invoice matched. Or ignore the tour and click anything you like.
             </p>
           </div>

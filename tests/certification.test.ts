@@ -34,7 +34,7 @@ const member = (certs: CrewMember['certs']): CrewMember => ({
   id: 'crew-001',
   ref: 'Crew 001',
   rank: 'Master',
-  vesselId: 'elan',
+  vesselId: 'choice',
   certs,
 });
 

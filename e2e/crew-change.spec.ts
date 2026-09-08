@@ -99,7 +99,7 @@ test('crew change: sections, hotels, LOI and repat pipelines, persistence, reset
   await expect(loiCard).toHaveCount(1);
   await expect(loiCard.getByTestId('crew-name')).toHaveText('DEMO, Crew Member');
   await expect(loiCard.getByTestId('crew-stage')).toContainText('Submitted by client');
-  await expect(loiCard).toContainText('MV Elan');
+  await expect(loiCard).toContainText('MV Choice');
 
   // Simulate: GAC checks and endorses → endorsed as agents → returned → download.
   await loiCard.getByRole('button', { name: 'Simulate: GAC checks and endorses' }).click();

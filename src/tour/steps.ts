@@ -9,7 +9,9 @@
  * contains.
  *
  * Keep this in step with the presenter's own TOUR (presenter/src/app/data.js):
- * the two surfaces should tell the same story in the same order. The copy is
+ * the two surfaces should tell the same story in the same order. The stops are
+ * the presenter's own running order (Presentation Script, the platform half),
+ * so on the day the presenter clicks Next instead of hunting the sidebar. The copy is
  * what has to match; the addresses are the site's own, and the first two stops
  * moved to `/app/internal` when the agent desk did (26 Aug) without a word of
  * the narration changing.
@@ -95,6 +97,18 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/app/agency/certification',
     anchor: 'beta',
     title: 'What it could become',
-    body: 'Certification tracking and bunker coordination are previews, clearly outside this proposal’s scope. They show the platform is a chassis, not a single-purpose tool.',
+    body: 'Crew certification on the same 90, 30 and 7 day engine as the suppliers, by reference and rank, never a name. A preview, clearly outside this proposal’s scope.',
+  },
+  {
+    route: '/app/agency/bunkers',
+    anchor: 'beta',
+    title: 'Priced against the call',
+    body: 'A bunker enquiry priced in dollars a tonne, ranked all in with barging, each price showing how long it holds. A preview too, outside this proposal’s scope: the platform is a chassis, not a single-purpose tool.',
+  },
+  {
+    route: '/app/dashboard',
+    anchor: 'consolidation',
+    title: 'What the client sees',
+    body: 'One number that matters, the tier, and the three lines that earn it. Everything the desk just did arrives here as a price, a window and terms.',
   },
 ];

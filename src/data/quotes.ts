@@ -1,4 +1,4 @@
-/** Quote scenario — crane hire, MV Elan (03 §3.4). */
+/** Quote scenario — crane hire, MV Choice (03 §3.4). */
 
 export interface Quote {
   id: string;
@@ -94,7 +94,7 @@ export function bookedWindowFrom(neededBy: string): string {
 export const QUOTE_REQUEST = {
   service: 'Crane hire',
   category: 'Cranes',
-  vessel: 'MV Elan',
+  vessel: 'MV Choice',
   port: 'Aberdeen',
   neededBy: 'Fri 06:00',
   /** The window the quoted prices cover — overrun beyond it is charged on top. */
@@ -112,21 +112,21 @@ export const REQUEST_QUEUE = [
   {
     id: 'crane-hire',
     title: 'Crane hire',
-    vessel: 'MV Elan',
+    vessel: 'MV Choice',
     status: '3 of 3 replied',
     active: true,
   },
   {
     id: 'medical-cover',
     title: 'Medical cover',
-    vessel: 'MV Elan',
+    vessel: 'MV Choice',
     status: '2 of 3 replied',
     active: false,
   },
   {
     id: 'scaffolding',
     title: 'Scaffolding',
-    vessel: 'MV Elan',
+    vessel: 'MV Choice',
     status: 'Awaiting replies',
     active: false,
   },
