@@ -33,6 +33,8 @@ describe('the guided tour', () => {
       '/app/tiers',
       '/app/svs',
       '/app/agency/certification',
+      '/app/agency/bunkers',
+      '/app/dashboard',
     ]);
   });
 
@@ -62,9 +64,12 @@ describe('the guided tour', () => {
     }
   });
 
-  it('ends on the beta preview, framed as out of scope', () => {
-    const last = TOUR_STEPS.at(-1);
-    expect(last?.route).toBe('/app/agency/certification');
-    expect(last?.body).toMatch(/scope/i);
+  it('frames both previews as out of scope, then ends on the client’s dashboard', () => {
+    const [cert, bunkers, last] = TOUR_STEPS.slice(-3);
+    expect(cert?.route).toBe('/app/agency/certification');
+    expect(cert?.body).toMatch(/scope/i);
+    expect(bunkers?.route).toBe('/app/agency/bunkers');
+    expect(bunkers?.body).toMatch(/scope/i);
+    expect(last?.route).toBe('/app/dashboard');
   });
 });

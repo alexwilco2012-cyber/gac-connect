@@ -108,7 +108,8 @@ DC_DATA.QUOTES = [
    the panel the same story, and a panel member who scans the QR gets the same
    walkthrough the room just watched. The copy is what has to match; the first
    two stops follow the agent desk to 'internal' (26 Aug) without a word of the
-   narration changing. */
+   narration changing. The stops are the presenter's own running order (the
+   Presentation Script, platform half): on the day, Next replaces the sidebar. */
 DC_DATA.TOUR = [
   { route: 'internal', title: 'Where every call stands', body: 'Open jobs, quote requests out, suppliers vetted, and the admin hours this replaces. One glance, before anyone asks.' },
   { route: 'internal', title: 'The morning starts done', body: 'GAC Agent already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.' },
@@ -121,7 +122,9 @@ DC_DATA.TOUR = [
   { route: 'invoices', title: 'Seven days to check it', body: 'Allocate the billing party, split a disbursement line by line, match it to the call. A harbour bill at an off-hire splits down the middle here.' },
   { route: 'tiers', title: 'Consolidation pays', body: 'The highest single tier applies, never the sum. All three lines is Full Stack: 7%, and £35,000 a year on £500k of GAC spend.' },
   { route: 'svs', title: 'The gate and the early warning', body: 'Certification is mandatory, alerts fire at 90, 30 and 7 days, and a lapse blocks booking everywhere. No commercial arrangement overrides it.' },
-  { route: 'certification', title: 'What it could become', body: 'Certification tracking and bunker coordination are previews, clearly outside this proposal’s scope. They show the platform is a chassis, not a single-purpose tool.' }
+  { route: 'certification', title: 'What it could become', body: 'Crew certification on the same 90, 30 and 7 day engine as the suppliers, by reference and rank, never a name. A preview, clearly outside this proposal’s scope.' },
+  { route: 'bunkers', title: 'Priced against the call', body: 'A bunker enquiry priced in dollars a tonne, ranked all in with barging, each price showing how long it holds. A preview too, outside this proposal’s scope: the platform is a chassis, not a single-purpose tool.' },
+  { route: 'dashboard', title: 'What the client sees', body: 'One number that matters, the tier, and the three lines that earn it. Everything the desk just did arrives here as a price, a window and terms.' }
 ];
 
 /* Interactive harbour landing — copy verbatim from the "GAC Services Landing" handoff (matches the live site). */
