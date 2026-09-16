@@ -90,6 +90,15 @@ interface AppState {
   loaderSeen: boolean;
   markLoaderSeen(): void;
 
+  /**
+   * Everything above that is persisted goes back to its default: tier and
+   * spend, the accepted quote, invoice decisions and ratings, the dashboard
+   * audience and the tour dismissal. The loader flag is a session fact, not
+   * demo state, and stays. Called from lib/resetDemo, which resets the slice
+   * stores alongside.
+   */
+  resetDemo(): void;
+
   // Toasts — ephemeral
   toasts: Toast[];
   pushToast(message: string, tag?: string): void;
@@ -181,6 +190,30 @@ export const useApp = create<AppState>((set, get) => ({
   markLoaderSeen() {
     session.set('loaderSeen', true);
     set({ loaderSeen: true });
+  },
+
+  resetDemo() {
+    for (const key of [
+      'tier',
+      'spend',
+      'acceptedQuote',
+      'invoiceDecisions',
+      'jobRatings',
+      'dashboardView',
+      'tourDismissed',
+    ]) {
+      persistent.remove(key);
+    }
+    set({
+      tier: DEFAULT_TIER,
+      spend: DEFAULT_SPEND,
+      acceptedQuoteId: null,
+      invoiceDecisions: {},
+      jobRatings: {},
+      dashboardView: 'client',
+      tourDismissed: false,
+      tourStep: null,
+    });
   },
 
   toasts: [],

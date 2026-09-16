@@ -105,6 +105,27 @@
               <input type="search" value="{{ query }}" sc-camel-on-change="{{ onTopSearchType }}" placeholder="Search suppliers and services" aria-label="Search platform" style="min-height:44px;width:320px;max-width:30vw;border:1.5px solid #CBD6E2;border-radius:8px;padding:0 12px 0 34px;font-size:13px;background:#FAFBFD;font-family:inherit;color:#0A2540;">
             </form>
             <span style="flex:1;"></span>
+            <!-- Reset demo (16 Sep, mirrors the site's AppLayout ResetDemo): one
+                 control beside the vessel it resets. Two steps, because it undoes
+                 work on six screens at once: the first click opens a small
+                 confirmation, the second re-seeds every screen and says so in a
+                 toast. Escape (component.js _onKey) or Cancel backs out. -->
+            <span style="position:relative;display:inline-flex;">
+              <button class="gac-reset-demo" sc-camel-on-click="{{ resetDemoToggle }}" aria-expanded="{{ resetDemoExpanded }}" aria-controls="reset-demo-panel" aria-label="Reset demo" data-testid="reset-demo" style="display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 12px;border-radius:8px;border:none;background:none;color:#33475F;font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;" style-hover="background:#E8F1F7;color:#0A2540;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                <span class="gac-reset-demo-label">Reset demo</span>
+              </button>
+              <sc-if value="{{ resetDemoArmed }}" hint-placeholder-val="{{ false }}">
+                <div id="reset-demo-panel" role="dialog" aria-label="Reset demo" style="position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:300px;max-width:88vw;border-radius:12px;border:1px solid #E5EAF1;background:#FFFFFF;padding:14px;box-shadow:0 12px 40px rgba(10,37,64,.14);text-align:left;">
+                  <p style="margin:0;font-size:13.5px;font-weight:600;color:#0A2540;">Put every screen back to its starting state?</p>
+                  <p style="margin:6px 0 12px;font-size:12.5px;line-height:1.4;color:#33475F;">Quotes, invoices, procurement, crew change, logistics, customs, the beta previews, the tier selection and the tour offer all go back to how a first visitor finds them.</p>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <button sc-camel-on-click="{{ resetDemoConfirm }}" data-testid="reset-demo-confirm" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border-radius:8px;border:none;background:#0E5E8A;color:#FFFFFF;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;" style-hover="background:#0B4C70;">Reset demo</button>
+                    <button sc-camel-on-click="{{ resetDemoCancel }}" data-testid="reset-demo-cancel" style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border-radius:8px;border:1.5px solid #CBD6E2;background:#FFFFFF;color:#0E5E8A;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;" style-hover="border-color:#0E5E8A;">Cancel</button>
+                  </div>
+                </div>
+              </sc-if>
+            </span>
             <!-- The vessel pill (5 Sep): the one call the whole demo follows,
                  with the quay lamp's flicker. Hidden below 1180px. -->
             <span class="gac-vessel-pill" style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;background:#0A2540;color:#FFFFFF;font-size:12.5px;font-weight:600;white-space:nowrap;">

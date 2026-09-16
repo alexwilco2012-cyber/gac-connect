@@ -31,6 +31,7 @@ export type IconName =
   | 'menu'
   | 'message-square-quote'
   | 'receipt'
+  | 'rotate-ccw'
   | 'search'
   | 'send'
   | 'shield-check'
@@ -219,6 +220,12 @@ const PATHS: Record<IconName, ReactNode> = {
       <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
       <circle cx="17" cy="18" r="2" />
       <circle cx="7" cy="18" r="2" />
+    </>
+  ),
+  'rotate-ccw': (
+    <>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
     </>
   ),
   x: (

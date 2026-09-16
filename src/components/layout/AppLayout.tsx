@@ -5,6 +5,7 @@ import { INVOICES } from '../../data/invoices';
 import { QUOTES } from '../../data/quotes';
 import { invoiceState } from '../../lib/invoices';
 import { useNeedsYou } from '../../lib/needsYou';
+import { RESET_DEMO_TOAST, resetDemo } from '../../lib/resetDemo';
 import { persistent } from '../../lib/storage';
 import { useFocusTrap } from '../../lib/useFocusTrap';
 import { useApp } from '../../store/app';
@@ -316,6 +317,106 @@ function BellMenu() {
   );
 }
 
+/**
+ * Reset demo (16 Sep): one control beside the vessel pill that puts every
+ * screen back to its seeded state. Two steps, because it undoes work on six
+ * screens at once and sits next to the bell where a hand can drift: the first
+ * click opens a small confirmation with what will go; the second resets and
+ * says so in a toast. Escape or a click elsewhere backs out. Every screen
+ * keeps its own Reset demo button for the case where only that screen needs
+ * tidying.
+ */
+function ResetDemo() {
+  const pushToast = useApp((s) => s.pushToast);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    confirmRef.current?.focus();
+    function onDoc(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  function close() {
+    setOpen(false);
+    btnRef.current?.focus();
+  }
+
+  // Escape stops here, as in BellMenu: it must never reach the Tour's
+  // document-level handler and dismiss the walkthrough.
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Escape' && open) {
+      e.stopPropagation();
+      close();
+    }
+  }
+
+  function confirm() {
+    resetDemo();
+    pushToast(RESET_DEMO_TOAST);
+    close();
+  }
+
+  return (
+    <div ref={ref} className="relative" onKeyDown={onKeyDown}>
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-controls="reset-demo-panel"
+        aria-label="Reset demo"
+        data-testid="reset-demo"
+        className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-lg border-none bg-transparent px-2.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-sea-soft hover:text-ink sm:px-3"
+      >
+        <Icon name="rotate-ccw" size={17} />
+        <span className="hidden whitespace-nowrap md:inline">Reset demo</span>
+      </button>
+      {open ? (
+        <div
+          id="reset-demo-panel"
+          role="dialog"
+          aria-label="Reset demo"
+          className="absolute top-[calc(100%+8px)] right-0 z-[60] w-[300px] max-w-[88vw] rounded-brand border border-line bg-white p-3.5 shadow-[0_12px_40px_rgba(10,37,64,0.14)]"
+        >
+          <p className="m-0 text-[13.5px] font-semibold text-ink">
+            Put every screen back to its starting state?
+          </p>
+          <p className="mt-1.5 mb-3 text-[12.5px] leading-snug text-ink-soft">
+            Quotes, invoices, procurement, crew change, logistics, customs, the beta previews, the
+            tier selection and the tour offer all go back to how a first visitor finds them.
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              ref={confirmRef}
+              type="button"
+              onClick={confirm}
+              data-testid="reset-demo-confirm"
+              className="inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-lg border-none bg-sea px-3.5 text-[13px] font-bold text-white transition-colors hover:bg-[#0B4C70]"
+            >
+              Reset demo
+            </button>
+            <button
+              type="button"
+              onClick={close}
+              data-testid="reset-demo-cancel"
+              className="inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-lg border-[1.5px] border-line-strong bg-white px-3.5 text-[13px] font-bold text-sea transition-colors hover:border-sea"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 /** Avatar menu: the demo persona, the calculator, and the tour. */
 function AvatarMenu() {
   const startTour = useApp((s) => s.startTour);
@@ -526,6 +627,9 @@ export default function AppLayout() {
               >
                 <Icon name="search" size={19} />
               </button>
+              {/* Reset demo (16 Sep) sits by the vessel it resets: every screen
+                  back to the start of MV Choice's call. */}
+              <ResetDemo />
               {/* The vessel pill (5 Sep): the one call the whole demo follows,
                   with the quay lamp's flicker. The first thing the bar gives up. */}
               <span className="hidden items-center gap-2 rounded-full bg-ink py-1.5 pr-3 pl-2 text-[12.5px] font-semibold whitespace-nowrap text-white min-[1180px]:inline-flex">
@@ -537,7 +641,9 @@ export default function AppLayout() {
                 MV Choice · Regent Quay · ETA 08:00
               </span>
               <BellMenu />
-              <span className="hidden text-[13px] text-ink-soft xl:inline">
+              {/* The persona name yields below 1400px, as it does on the deck,
+                  so Reset demo keeps its word at a 1280 projector. */}
+              <span className="hidden text-[13px] whitespace-nowrap text-ink-soft min-[1400px]:inline">
                 A. Wilkinson · Aberdeen Agency
               </span>
               <AvatarMenu />

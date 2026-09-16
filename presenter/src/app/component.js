@@ -31,6 +31,9 @@ class Component extends DCLogic {
       drawerOpen: false,
       modal: null,
       rq: null,
+      /* Reset demo (16 Sep): the top-bar control is armed (its confirmation
+         showing) or not. Never persisted. */
+      resetArmed: false,
       toast: { msg: '', tag: '' }, toastOn: false,
       accepted: this._get('accepted', null),
       sent: this._get('sent', false),
@@ -211,6 +214,7 @@ class Component extends DCLogic {
     this._onKey = (e) => {
       if (e.key === 'Escape') {
         if (this._featureEscape()) { /* a feature module closed its own modal */ }
+        else if (this.state.resetArmed) this.setState({ resetArmed: false });
         else if (this.state.rq) this.setState({ rq: null });
         else if (this.state.modal) this.setState({ modal: null });
         else if (this.state.drawerOpen) this.setState({ drawerOpen: false });
@@ -401,6 +405,37 @@ class Component extends DCLogic {
     ];
     const pass = cases.every((c) => c[0] === c[1]) && this.isFullStack({ agency: true, logistics: true, customs: true }) === true;
     console.log('[GAC Connect] 03 §3.1 rule tests: ' + (pass ? 'PASS (10/10)' : 'FAIL') + ' · blocked-beats-promotion enforced in booking handler');
+  }
+
+  /* ---------- reset demo (16 Sep) ----------
+     Mirrors the site's lib/resetDemo: every persisted key the deck writes goes,
+     and every stateful screen is re-seeded from its module's own state() —
+     which is what a first visitor gets, because state() reads storage and the
+     storage is now empty. The deck's keys are the five core ones plus
+     everything under 'pres.'; the site's keys share the origin but not the
+     names, so a reset here never touches the running platform's demo. The
+     loader-seen session flag is a fact about this visit, not demo state. */
+  get RESET_CORE_KEYS() { return ['calc', 'accepted', 'sent', 'tour-dismissed', 'dash-view']; }
+  resetDemo() {
+    try {
+      const doomed = [];
+      for (let i = 0; i < localStorage.length; i += 1) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf('gac-connect:pres.') === 0) doomed.push(k);
+      }
+      this.RESET_CORE_KEYS.forEach((k) => doomed.push('gac-connect:' + k));
+      doomed.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {}
+    const fresh = Object.assign({
+      calc: { agency: true, logistics: false, customs: false, spend: 500000 },
+      accepted: null, sent: false,
+      tourDismissed: false, tourStep: null,
+      dashView: 'client',
+      modal: null, rq: null,
+      resetArmed: false
+    }, this._featureState());
+    this.setState(fresh);
+    this.toastMsg('Demo reset — every screen is back to its starting state.');
   }
 
   /* ---------- toast ---------- */
@@ -839,6 +874,13 @@ class Component extends DCLogic {
       goAgency: this._go('agency'), goLogistics: this._go('logistics'), goCustoms: this._go('customs'),
       /* dashboard crew-change card line — a default the crew-change module overrides with a live count */
       dashCrewLine: 'No letters in progress. Hotels, immigration, LOI and repatriation-letter templates live in one place.',
+
+      /* reset demo — the top-bar control beside the vessel pill (30-chrome.html) */
+      resetDemoArmed: st.resetArmed,
+      resetDemoExpanded: st.resetArmed ? 'true' : 'false',
+      resetDemoToggle: () => this.setState({ resetArmed: !this.state.resetArmed }),
+      resetDemoCancel: () => this.setState({ resetArmed: false }),
+      resetDemoConfirm: () => this.resetDemo(),
 
       /* feature modules (app/features/*.js) — their bindings ride alongside and win over the defaults above */
       ...this._featureVals(st),
