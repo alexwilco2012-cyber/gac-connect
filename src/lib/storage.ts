@@ -79,3 +79,52 @@ export const persistent: StorageAdapter = safeWebAdapter(() => window.localStora
 
 /** Session state: loader-seen-this-session. */
 export const session: StorageAdapter = safeWebAdapter(() => window.sessionStorage);
+
+/**
+ * A new visit starts clean (18 Sep). Demo work — the accepted quote, matched
+ * invoices, a procurement half way to Compass, the tier switches — used to
+ * outlive the tab, so whoever opened the site next found everything already
+ * chosen and had to reach for Reset demo before they could choose anything.
+ * Now it lasts as long as the tab does: a reload keeps it (the session flag
+ * survives a reload), a fresh tab or a fresh scan of the QR does not.
+ *
+ * Two keys are preferences rather than demo work and stay: the collapsed
+ * sidebar, and the tour dismissal — someone who said "No thanks" yesterday is
+ * not asked again today. The top bar's Reset demo is the deliberate way to
+ * bring the tour offer back.
+ *
+ * Runs here, at module load, because every store imports this file before it
+ * reads a key — so the sweep is always ahead of the first read.
+ */
+export const VISIT_KEPT_KEYS: readonly string[] = ['sidebarCollapsed', 'tourDismissed'];
+const VISIT_FLAG = 'demoSession';
+const DECK_CORE_KEYS: readonly string[] = [
+  'calc',
+  'accepted',
+  'sent',
+  'tour-dismissed',
+  'dash-view',
+];
+
+export function startFreshVisit(getLocal: () => Storage, sessionAdapter: StorageAdapter): void {
+  if (sessionAdapter.get<boolean>(VISIT_FLAG, false)) return;
+  try {
+    const store = getLocal();
+    const doomed: string[] = [];
+    for (let i = 0; i < store.length; i += 1) {
+      const key = store.key(i);
+      if (!key || !key.startsWith(PREFIX)) continue;
+      const name = key.slice(PREFIX.length);
+      // The deck shares this origin and sweeps its own keys ('pres.' and its
+      // five core names); the site leaves them alone.
+      if (name.startsWith('pres.') || DECK_CORE_KEYS.includes(name)) continue;
+      if (!VISIT_KEPT_KEYS.includes(name)) doomed.push(key);
+    }
+    for (const key of doomed) store.removeItem(key);
+  } catch {
+    // Storage unavailable — there is nothing to sweep.
+  }
+  sessionAdapter.set(VISIT_FLAG, true);
+}
+
+startFreshVisit(() => window.localStorage, session);
