@@ -167,7 +167,10 @@ test('procurement · a stage stored by an earlier visit falls back to the draft'
 }) => {
   // 'chandler-paid' belonged to the retired flow; a returning visitor gets a
   // usable screen, not a broken one.
+  // The visit flag marks this as the same visit: a new one sweeps demo state
+  // before any store reads it, and this test is about what a read survives.
   await page.addInitScript(() => {
+    window.sessionStorage.setItem('gac-connect:demoSession', 'true');
     window.localStorage.setItem('gac-connect:procurement.stage', '"chandler-paid"');
     window.localStorage.setItem(
       'gac-connect:procurement.stageTimes',

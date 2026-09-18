@@ -14,6 +14,17 @@ class Component extends DCLogic {
     const rawHash = (typeof window !== 'undefined' ? location.hash : '').replace(/^#\/?/, '');
     const presWanted = (this.props.presenter ?? true) && (rawHash === '' || rawHash === 'present');
     const loaderWanted = !presWanted && (this.props.loader ?? true) && !reduced && sessionStorage.getItem('gac-connect:loader-seen') !== '1';
+    /* A new visit starts clean (18 Sep, mirrors the site's startFreshVisit in
+       lib/storage.ts): demo work lasts as long as the tab, so nobody opens the
+       deck to find the quote already accepted. A reload keeps it — the session
+       flag survives a reload. The tour dismissal is a preference and stays.
+       Must run before any _get() below. */
+    try {
+      if (sessionStorage.getItem('gac-connect:pres.demo-session') !== '1') {
+        this._clearDemoKeys(['tour-dismissed']);
+        sessionStorage.setItem('gac-connect:pres.demo-session', '1');
+      }
+    } catch (e) {}
     const parsed = this._parseHash();
     this.ctaRef = React.createRef();   // "Enter the platform" button on the closer slide
 
@@ -416,16 +427,19 @@ class Component extends DCLogic {
      names, so a reset here never touches the running platform's demo. The
      loader-seen session flag is a fact about this visit, not demo state. */
   get RESET_CORE_KEYS() { return ['calc', 'accepted', 'sent', 'tour-dismissed', 'dash-view']; }
-  resetDemo() {
+  _clearDemoKeys(keep) {
     try {
       const doomed = [];
       for (let i = 0; i < localStorage.length; i += 1) {
         const k = localStorage.key(i);
         if (k && k.indexOf('gac-connect:pres.') === 0) doomed.push(k);
       }
-      this.RESET_CORE_KEYS.forEach((k) => doomed.push('gac-connect:' + k));
+      this.RESET_CORE_KEYS.forEach((k) => { if (!(keep || []).includes(k)) doomed.push('gac-connect:' + k); });
       doomed.forEach((k) => localStorage.removeItem(k));
     } catch (e) {}
+  }
+  resetDemo() {
+    this._clearDemoKeys();
     const fresh = Object.assign({
       calc: { agency: true, logistics: false, customs: false, spend: 500000 },
       accepted: null, sent: false,
