@@ -135,6 +135,54 @@
   /* ==== Live dashboards (23 Sep): responsive rules for the deck's dashboard.
      Client view classes gac-cd-*, supplier view classes gac-sd-*.
      Rules go between this line and the matching end marker. ==== */
+  /* Every client row splits 1.6 : 1 like the lead row, so card edges line up
+     down the page; below the site's lg (1024px) the columns stack. The
+     supplier view's working row does the same, the other way round (its
+     inline default is one column). */
+  @media (max-width: 1023px) { .gac-cd-cols { grid-template-columns: minmax(0, 1fr) !important; } }
+  @media (min-width: 1024px) { .gac-sd-cols { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) !important; } }
+  /* Supplier tiles: two across from sm, four from xl; the closing row two
+     from md (analytics under both), three from xl. */
+  @media (min-width: 640px) {
+    .gac-sd-kpis, .gac-sd-grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  }
+  @media (min-width: 768px) { .gac-sd-row3 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+  @media (min-width: 768px) and (max-width: 1279px) { .gac-sd-teaser { grid-column: span 2; } }
+  @media (min-width: 1280px) {
+    .gac-sd-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+    .gac-sd-row3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  }
+  /* Hover for controls whose border is set inline (style-hover cannot beat it). */
+  .gac-sd-ghost:hover, .gac-sd-inboxbtn:not([aria-disabled="true"]):hover { border-color: #0E5E8A !important; }
+  .gac-cd-chiplink[data-tone="info"]:hover { background: #D5E7F2 !important; }
+  .gac-cd-chiplink[data-tone="warn"]:hover { background: #F6E2C6 !important; }
+  .gac-cd-chiplink[data-tone="success"]:hover { background: #D3EBE1 !important; }
+  /* A phone: the page gutter narrows to 16px; the five quick actions fall
+     into two columns (the odd one spans both); the milestone rail folds to
+     "Step 3 of 5" over a bar and the ship tile gives way; chips keep a 44px
+     hit area; the spend legend holds its height while pillars change;
+     buttons at the foot of a card take the full width; the pipeline's
+     labels take their short form. */
+  @media (max-width: 639px) {
+    .gac-cd-main { padding: 20px 16px 64px !important; }
+    .gac-cd-qa { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gac-cd-qa-item:last-child { grid-column: span 2; }
+    .gac-cd-qa-btn { justify-content: flex-start !important; white-space: normal !important; min-height: 48px !important; padding: 8px 12px !important; }
+    .gac-cd-rail, .gac-cd-shiptile { display: none !important; }
+    .gac-cd-compact { display: block !important; }
+    .gac-cd-chips { row-gap: 12px !important; }
+    .gac-cd-chiplink::after { content: ''; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
+    .gac-cd-legend { min-height: 42px; }
+    .gac-sd-phonefull, .gac-sd-inboxbtn { width: 100% !important; }
+    .gac-sd-short { display: inline !important; }
+    .gac-sd-long { display: none !important; }
+    .gac-sd-counter { padding: 12px !important; }
+    .gac-sd-rowaction { min-height: 44px !important; margin-top: 0 !important; margin-bottom: 0 !important; }
+    .gac-sd-certend { width: 100%; margin-left: 0 !important; }
+    .gac-sd-grow { flex: 1 1 auto; }
+    .gac-sd-sendicon { display: none !important; }
+  }
+  @media (max-width: 400px) { .gac-sd-counter-icon { display: none !important; } }
   /* ==== end dashboard rules ==== */
 
   /* The three blocks below are kept apart on purpose, so the three deck
