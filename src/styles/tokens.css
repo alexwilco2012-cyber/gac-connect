@@ -23,7 +23,10 @@
   --gold-soft: #fbf6e3;
   --success: #047857;
   --success-soft: #e7f4ef;
-  --warn: #b45309;
+  /* Darkened from #b45309 (23 Sep): as small bold text on warn-soft it
+     measured 4.46:1. This shade gives 5.00:1 on warn-soft and 5.63:1 on
+     white (02: adjust shade, not palette). The deck mirrors it. */
+  --warn: #a84d08;
   --warn-soft: #fbf0e1;
   --danger: #b91c1c;
   --danger-soft: #fbeaea;

@@ -10,7 +10,7 @@ import { checklistProgress, slaState } from '../../../lib/svsDesk';
 import { useSvsDesk } from '../../../store/svsDesk';
 import { ApplicantPanel } from './ApplicantPanel';
 import { ChecksBar, Monogram } from './parts';
-import { RISK_TONE, SLA_TONE, midSentence, refNumber } from './ui';
+import { RISK_TONE, SLA_TONE, focusSoon, midSentence, refNumber } from './ui';
 
 /**
  * Onboarding (spec §4.5): new suppliers on a four-column board — Applied,
@@ -19,9 +19,11 @@ import { RISK_TONE, SLA_TONE, midSentence, refNumber } from './ui';
  * applicant owes a reply. The company name opens the applicant panel; the
  * whole card is its hit area.
  *
- * On a phone (and anywhere narrower than four comfortable columns) the board
- * scrolls sideways with snap, and never scrolls inside itself vertically.
- * Decided applicants leave the board for the list beneath it.
+ * On a phone the board scrolls sideways with snap, and never scrolls inside
+ * itself vertically. From 640px it never scrolls sideways: the columns sit two
+ * by two until all four fit across (1280px, with the sidebar out), so the
+ * Decision column is never the one off-screen. Decided applicants leave the
+ * board for the list beneath it.
  */
 
 const STAGE_NOTES: Record<OnboardingStage, string> = {
@@ -35,6 +37,9 @@ const STAGE_NOTES: Record<OnboardingStage, string> = {
 function byUrgency(a: Application, b: Application): number {
   return b.daysInReview - a.daysInReview || refNumber(b.id) - refNumber(a.id);
 }
+
+/** The id on an applicant's button — on the board or in Decided, never both. */
+const cardId = (id: string) => `applicant-${id}`;
 
 /** "Applied yesterday", "Applied Mon", "Invited today". */
 function arrivedLine(app: Application): string {
@@ -51,6 +56,7 @@ function ApplicantCard({ app, onOpen }: { app: Application; onOpen: (id: string)
         <Monogram name={app.company} />
         <div className="min-w-0 flex-1">
           <button
+            id={cardId(app.id)}
             type="button"
             onClick={() => onOpen(app.id)}
             className="block cursor-pointer border-none bg-transparent p-0 text-left text-[14px] leading-snug font-bold text-ink after:absolute after:inset-0 after:rounded-[10px] after:content-[''] hover:text-sea focus-visible:outline-none"
@@ -95,7 +101,7 @@ function Column({
     <section
       data-testid={`svs-column-${stage}`}
       aria-labelledby={`svs-stage-${stage}`}
-      className="flex w-[82%] max-w-[300px] shrink-0 snap-start flex-col rounded-[12px] border border-line bg-[#F4F7FA] p-2.5 sm:w-[272px] xl:w-auto xl:max-w-none xl:min-w-0 xl:flex-1"
+      className="flex w-[82%] max-w-[300px] shrink-0 snap-start flex-col rounded-[12px] border border-line bg-[#F4F7FA] p-2.5 sm:w-auto sm:max-w-none sm:min-w-0 xl:flex-1"
     >
       <div className="px-1 pt-0.5 pb-2.5">
         <h3
@@ -137,6 +143,7 @@ function DecidedRow({ app, onOpen }: { app: Application; onOpen: (id: string) =>
       <Monogram name={app.company} size={32} />
       <div className="min-w-0">
         <button
+          id={cardId(app.id)}
           type="button"
           onClick={() => onOpen(app.id)}
           className="cursor-pointer border-none bg-transparent p-0 text-left text-[14px] font-bold text-ink hover:text-sea hover:underline"
@@ -158,8 +165,10 @@ function DecidedRow({ app, onOpen }: { app: Application; onOpen: (id: string) =>
 export function Onboarding() {
   const applications = useSvsDesk((s) => s.applications);
   const [openId, setOpenId] = useState<string | null>(null);
+  const boardHeading = useRef<HTMLHeadingElement>(null);
   const decidedHeading = useRef<HTMLHeadingElement>(null);
   const focusDecided = useRef(false);
+  const lastOpen = useRef<string | null>(null);
 
   const open = applications.filter((a) => a.outcome === 'open');
   const decided = applications
@@ -167,6 +176,10 @@ export function Onboarding() {
     .sort((a, b) => refNumber(b.id) - refNumber(a.id));
   const current = openId ? (applications.find((a) => a.id === openId) ?? null) : null;
 
+  const openApplicant = useCallback((id: string) => {
+    lastOpen.current = id;
+    setOpenId(id);
+  }, []);
   const close = useCallback(() => setOpenId(null), []);
   const decidedAndClose = useCallback(() => {
     focusDecided.current = true;
@@ -175,10 +188,23 @@ export function Onboarding() {
 
   // After an approval or a decline the card has left the board, so focus
   // follows it to the Decided list rather than falling back to the page.
+  // After a stage move the card has re-mounted in another column, and the
+  // panel's focus trap hands focus back to a button that is no longer on the
+  // page — so, only when that left focus nowhere, it goes to the card where
+  // it sits now (the board's heading if the card has gone).
   useEffect(() => {
-    if (openId === null && focusDecided.current) {
+    if (openId !== null) return;
+    const id = lastOpen.current;
+    lastOpen.current = null;
+    if (focusDecided.current) {
       focusDecided.current = false;
       decidedHeading.current?.focus();
+    } else if (id) {
+      focusSoon(() => {
+        const at = document.activeElement;
+        if (at && at !== document.body) return null;
+        return document.getElementById(cardId(id)) ?? boardHeading.current;
+      });
     }
   }, [openId]);
 
@@ -186,7 +212,11 @@ export function Onboarding() {
     <>
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
         <div>
-          <h2 className="font-display text-[17px] font-bold tracking-[-0.01em]">
+          <h2
+            ref={boardHeading}
+            tabIndex={-1}
+            className="font-display text-[17px] font-bold tracking-[-0.01em]"
+          >
             Supplier onboarding
           </h2>
           <p className="mt-0.5 max-w-[760px] text-[13px] text-ink-soft">
@@ -194,14 +224,14 @@ export function Onboarding() {
             decision inside {SLA_DAYS} working days.
           </p>
         </div>
-        <p className="text-[12.5px] text-ink-soft xl:hidden" aria-hidden="true">
+        <p className="text-[12.5px] text-ink-soft sm:hidden" aria-hidden="true">
           Scroll the board sideways →
         </p>
       </div>
 
       <div
         data-testid="svs-board"
-        className="relative -mx-4 mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:-mx-6 sm:scroll-px-6 sm:px-6 xl:mx-0 xl:overflow-visible xl:px-0 xl:pb-1"
+        className="relative -mx-4 mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-1 xl:flex"
       >
         {ONBOARDING_STAGES.map((stage, i) => (
           <Column
@@ -209,10 +239,10 @@ export function Onboarding() {
             stage={stage}
             index={i}
             apps={open.filter((a) => a.stage === stage).sort(byUrgency)}
-            onOpen={setOpenId}
+            onOpen={openApplicant}
           />
         ))}
-        <span aria-hidden="true" className="w-px shrink-0 xl:hidden" />
+        <span aria-hidden="true" className="w-px shrink-0 sm:hidden" />
       </div>
 
       <section
@@ -238,7 +268,7 @@ export function Onboarding() {
         {decided.length ? (
           <ul className="mt-3.5">
             {decided.map((a) => (
-              <DecidedRow key={a.id} app={a} onOpen={setOpenId} />
+              <DecidedRow key={a.id} app={a} onOpen={openApplicant} />
             ))}
           </ul>
         ) : (

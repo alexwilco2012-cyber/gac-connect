@@ -4,6 +4,7 @@ import { DEMO_CLIENT, DEMO_SUPPLIER_ID } from '../../data/desk';
 import { supplierById } from '../../data/suppliers';
 import { useApp, type DashboardView } from '../../store/app';
 import { ClientView } from './dashboard/ClientView';
+import { StatusRow } from './dashboard/supplier/StatusRow';
 import { SupplierView } from './dashboard/SupplierView';
 
 /**
@@ -26,7 +27,8 @@ import { SupplierView } from './dashboard/SupplierView';
  * Logistics row moves while you watch.
  *
  * The two views live in `./dashboard/` (23 Sep); this file keeps the header
- * and the switch between them. The personas are in `data/desk`.
+ * (with the supplier's standing pills, in the supplier view) and the switch
+ * between them. The personas are in `data/desk`.
  */
 
 function ViewSwitch({
@@ -83,6 +85,9 @@ export default function Dashboard() {
               ? 'Everything GAC has running for you, and everything waiting on you. The platform itself costs you nothing.'
               : 'How you are being found, what is waiting for a quote, and whether your paperwork still holds.'}
           </p>
+          {/* The supplier's standing belongs with its name: under the lede,
+              above the switch when the header wraps on a phone. */}
+          {client ? null : <StatusRow />}
         </div>
         <ViewSwitch view={view} onChange={setView} />
       </div>

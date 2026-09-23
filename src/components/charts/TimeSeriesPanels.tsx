@@ -12,7 +12,7 @@ import {
 } from './scale';
 import { linearKeys, liveLine, useElementWidth, useEntrance, usePlotNav } from './useChart';
 import { Dot } from './Dot';
-import { HALO, NAV_HINT, px, textWidth } from './svg';
+import { HALO, NAV_HINT, TICK_GAP, px, textWidth, tickGutter } from './svg';
 
 export interface TimeSeriesPanel {
   id: string;
@@ -36,7 +36,9 @@ export interface TimeSeriesPanel {
 
 const MAIN_H = 170;
 const SUB_H = 88;
-const TITLE = 28; // panel title row + headroom for labels above peaks
+// Panel title row + headroom, so a value label above a peak at the top tick
+// clears the title's descenders.
+const TITLE = 36;
 const PANEL_GAP = 22;
 const AXIS = 26;
 
@@ -86,14 +88,25 @@ export function TimeSeriesPanels({
     const ticks = fitTicks(vmax, main ? { integer } : { integer, minTicks: 3, maxTicks: 3 });
     return { p, axis, ticks };
   });
-  const gutterLeft = Math.max(
+  const gutterLeft = tickGutter(
+    geo0.flatMap((g) => g.ticks.map(g.axis)),
     22,
-    ...geo0.flatMap((g) => g.ticks.map((t) => textWidth(g.axis(t)) + 9)),
   );
-  const endLabels = geo0
-    .filter((g) => g.p.kind === 'area' && g.p.values.length)
-    .map((g) => textWidth(g.axis(g.p.values.at(-1)!), 11, true));
-  const gutterRight = endLabels.length ? Math.max(...endLabels) + 14 : 6;
+  // The right gutter carries each area's last value and, when it fits, the
+  // benchmark's name ("Category" / "average") beside its own line end: out
+  // past both lines, where no point can cross it. It fits unless it would
+  // squeeze the plot below 55% of the chart — the legend names it anyway.
+  const areas = geo0.filter((g) => g.p.kind === 'area' && g.p.values.length);
+  const endW = Math.max(0, ...areas.map((g) => textWidth(g.axis(g.p.values.at(-1)!), 11, true)));
+  const benchW = Math.max(
+    0,
+    ...areas.flatMap((g) =>
+      g.p.benchmark ? twoLines(g.p.benchmark.label).map((l) => textWidth(l, 11, true)) : [],
+    ),
+  );
+  const withBench = Math.max(endW, benchW) + 14;
+  const showBench = benchW > 0 && width - gutterLeft - withBench >= Math.max(160, width * 0.55);
+  const gutterRight = showBench ? withBench : areas.length ? endW + 14 : 6;
   const plotLeft = gutterLeft;
   const plotRight = Math.max(plotLeft + 10, width - gutterRight);
   const plotW = plotRight - plotLeft;
@@ -210,6 +223,7 @@ export function TimeSeriesPanels({
                 plotRight={plotRight}
                 activeSlot={active !== null ? slotOf(g, active) : -1}
                 animating={animating}
+                showBench={showBench}
               />
             ))}
 
@@ -286,12 +300,15 @@ function Panel({
   plotRight,
   activeSlot,
   animating,
+  showBench,
 }: {
   g: PanelGeo;
   plotLeft: number;
   plotRight: number;
   activeSlot: number;
   animating: boolean;
+  /** Name the benchmark line in the right gutter (it fits). */
+  showBench: boolean;
 }) {
   const { panel, xs, y, bottom, top } = g;
   const values = panel.values;
@@ -318,7 +335,7 @@ function Panel({
               strokeWidth={1}
             />
             <text
-              x={plotLeft - 8}
+              x={plotLeft - TICK_GAP}
               y={ty}
               dy="0.32em"
               fontSize={11}
@@ -422,10 +439,12 @@ function Panel({
                 plotRight={plotRight}
                 avoidX={xs[last]}
               />
-              {panel.benchmark ? (
+              {panel.benchmark && showBench ? (
                 <BenchmarkLabel
-                  g={g}
-                  plotRight={plotRight}
+                  label={panel.benchmark.label}
+                  x={xs[last]! + 9}
+                  top={top}
+                  bottom={bottom}
                   mainY={y(lastV!)}
                   benchY={y(panel.benchmark.values.at(-1) ?? 0)}
                 />
@@ -494,32 +513,69 @@ function PointLabels({
   );
 }
 
-/** "Category average" at the end of its line, on the side away from the series. */
+/** "Category average" → ["Category", "average"]: the split nearest the middle. */
+function twoLines(label: string): string[] {
+  const words = label.split(' ');
+  let best = [label];
+  for (let k = 1; k < words.length; k++) {
+    const pair = [words.slice(0, k).join(' '), words.slice(k).join(' ')];
+    if (Math.max(...pair.map((l) => l.length)) < Math.max(...best.map((l) => l.length))) {
+      best = pair;
+    }
+  }
+  return best;
+}
+
+/**
+ * The benchmark's name beside the end of its line, in the right gutter with
+ * the series' last value — past the end of both lines, so neither can run
+ * through it (the halo only tidies a gridline's last few pixels on a wide
+ * band). Two short lines, centred on the line's end and nudged clear of the
+ * value label when the two ends meet; kept inside the panel.
+ */
 function BenchmarkLabel({
-  g,
-  plotRight,
+  label,
+  x,
+  top,
+  bottom,
   mainY,
   benchY,
 }: {
-  g: PanelGeo;
-  plotRight: number;
+  label: string;
+  x: number;
+  top: number;
+  bottom: number;
   mainY: number;
   benchY: number;
 }) {
-  let below = benchY >= mainY;
-  if (below && benchY + 16 > g.bottom - 2) below = false;
-  if (!below && benchY - 10 < g.top) below = true;
+  const lines = twoLines(label);
+  const LINE = 12;
+  const lift = ((lines.length - 1) * LINE) / 2;
+  // Centre to the block's ink (cap height up, descenders down) plus the
+  // value label's own half height and a 3px gap.
+  const clear = lift + 7 + 4 + 3;
+  const clamp = (c: number) => Math.max(top + lift + 5, Math.min(bottom - lift - 6, c));
+  const away = (dir: 1 | -1) =>
+    clamp(dir > 0 ? Math.max(benchY, mainY + clear) : Math.min(benchY, mainY - clear));
+  const dir = benchY >= mainY ? 1 : -1;
+  let c = away(dir);
+  if (Math.abs(c - mainY) < clear) c = away(dir > 0 ? -1 : 1);
   return (
-    <text
-      x={px(plotRight - 2)}
-      y={px(below ? benchY + 15 : benchY - 8)}
-      fontSize={11}
-      fontWeight={600}
-      fill={VIZ.inkSoft}
-      textAnchor="end"
-      {...HALO}
-    >
-      {g.panel.benchmark?.label}
-    </text>
+    <>
+      {lines.map((line, i) => (
+        <text
+          key={line}
+          x={px(x)}
+          y={px(c - lift + i * LINE)}
+          dy="0.32em"
+          fontSize={11}
+          fontWeight={600}
+          fill={VIZ.inkSoft}
+          {...HALO}
+        >
+          {line}
+        </text>
+      ))}
+    </>
   );
 }

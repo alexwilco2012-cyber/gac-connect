@@ -6,7 +6,7 @@ import { Pill } from '../../../../components/ui/Pill';
 import { LEAD_TIMES, VALIDITY, type InboxRequest } from '../../../../data/supplierDesk';
 import { useApp } from '../../../../store/app';
 import { useSupplierDesk } from '../../../../store/supplierDesk';
-import { InViewport, ModalHeading, StillNeeded } from './form';
+import { ModalHeading, StillNeeded } from './form';
 import { INPUT, LABEL } from './formStyles';
 
 /**
@@ -35,13 +35,10 @@ export function QuoteModal({
   onClose: () => void;
 }) {
   // The form mounts fresh for each request (Modal renders nothing while closed).
-  // Portalled to <body>: see `InViewport` in ./form.
   return (
-    <InViewport>
-      <Modal open={request !== null} onClose={onClose} labelledBy={TITLE_ID}>
-        {request ? <QuoteForm key={request.id} request={request} onClose={onClose} /> : null}
-      </Modal>
-    </InViewport>
+    <Modal open={request !== null} onClose={onClose} labelledBy={TITLE_ID}>
+      {request ? <QuoteForm key={request.id} request={request} onClose={onClose} /> : null}
+    </Modal>
   );
 }
 

@@ -10,6 +10,10 @@
 const DC_DATA = {};
 
 DC_DATA.TIERS = { agency: 2, logistics: 4, customs: 7 };
+/* SVS certificate alert tiers: 90 / 30 / 7 days (03 §3.3, src/lib/svs.ts
+   ALERT_TIERS). The desk's due rule (DK_alertTier) and the expiry bar's rules
+   (VZ.expiry) both read this one list, so they cannot drift apart. */
+DC_DATA.ALERT_TIERS = [90, 30, 7];
 DC_DATA.CATEGORIES = ['All', 'Cranes', 'FLT', 'Launches', 'Taxis', 'Haulage', 'Medical', 'Scaffolding', 'Diving', 'NDT', 'Welding', 'Catering', 'Hotels', 'Waste', 'Bunkers'];
 
 /* Hire terms (17 Aug review, mirrors src/data/serviceTerms.ts): FLT and crane

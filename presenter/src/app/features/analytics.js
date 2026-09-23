@@ -59,7 +59,7 @@ const AN_PILL = {
 };
 const AN_TONE = {
   success: ['#E7F4EF', '#047857'],
-  warn: ['#FBF0E1', '#B45309'],
+  warn: ['#FBF0E1', '#A84D08'],
 };
 
 /* Lower bound of each colour step (DemandFigure.tsx BINS). The 90-day grid
@@ -435,7 +435,17 @@ function AN_tile(k, period) {
     ),
     AN_h(
       'p',
-      { style: { margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '8px' } },
+      /* wraps rather than push the chip past the card's edge */
+      {
+        style: {
+          margin: '4px 0 0',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          columnGap: '8px',
+          rowGap: '4px',
+        },
+      },
       AN_h(
         'span',
         {
@@ -493,26 +503,6 @@ function AN_tile(k, period) {
           ? AN_compare(k.compare, period)
           : null,
     ),
-  );
-}
-
-/* Bar rows (funnel, sources, searches, ratings). The site's BarRows fits
-   its label column to the longest label, 40 to 168px, and keeps a column
-   of 64px or less beside the bars even on a phone; the deck kit's column is
-   a fixed 132px. The width is worked out here the site's way and applied by
-   the gac-an-bars rules in base.css, so the labels sit on one line as they
-   do on the site. */
-function AN_bars(labels, chart) {
-  const w = Math.round(
-    Math.min(168, Math.max(40, ...labels.map((l) => VZ_textWidth(l, 12.5, true) + 6))),
-  );
-  return AN_h(
-    'div',
-    {
-      className: 'gac-an-bars' + (w <= 64 ? ' gac-an-bars-short' : ''),
-      style: { '--an-label': w + 'px', minWidth: 0 },
-    },
-    chart,
   );
 }
 
@@ -628,15 +618,12 @@ function AN_funnel(period) {
         i === 0 ? '—' : (rates[i - 1] ?? ''),
       ]),
     },
-    children: AN_bars(
-      s.funnel.map((step) => step.label),
-      VZ.funnel({
-        steps: s.funnel,
-        format: AN_count,
-        rateLabels: rates,
-        ariaLabel: 'Funnel from search appearances to jobs won, last ' + period + ' days',
-      }),
-    ),
+    children: VZ.funnel({
+      steps: s.funnel,
+      format: AN_count,
+      rateLabels: rates,
+      ariaLabel: 'Funnel from search appearances to jobs won, last ' + period + ' days',
+    }),
   });
 }
 
@@ -783,27 +770,19 @@ function AN_sources(period) {
         AN_share(r.value, total) + '%',
       ]),
     },
-    children: AN_bars(
-      s.sources.map((r) => r.label),
-      VZ.hbars({
-        rows: s.sources.map((r) =>
-          Object.assign(
-            /* The trailing space is the site's: it lets "▲ Promoted" wrap
-               under the label as a whole rather than split the label. */
-            {
-              id: r.label,
-              label: r.promoted ? r.label + ' ' : r.label,
-              value: r.value,
-              valueLabel: tip(r.value),
-            },
-            r.promoted ? { tag: '▲ Promoted' } : {},
-            r.other ? { color: VZ.C.other } : {},
-          ),
+    /* The kit puts the space before "▲ Promoted" itself, so the tag wraps
+       under the label as a whole rather than splitting it. */
+    children: VZ.hbars({
+      rows: s.sources.map((r) =>
+        Object.assign(
+          { id: r.label, label: r.label, value: r.value, valueLabel: tip(r.value) },
+          r.promoted ? { tag: '▲ Promoted' } : {},
+          r.other ? { color: VZ.C.other } : {},
         ),
-        format: AN_count,
-        ariaLabel: 'Profile views by source, last ' + period + ' days',
-      }),
-    ),
+      ),
+      format: AN_count,
+      ariaLabel: 'Profile views by source, last ' + period + ' days',
+    }),
   });
 }
 
@@ -828,14 +807,11 @@ function AN_searches(period) {
       columns: ['Search term', 'Searches'],
       rows: s.searches.map((t) => [t.term, AN_count(t.count)]),
     },
-    children: AN_bars(
-      s.searches.map((t) => '“' + t.term + '”'),
-      VZ.hbars({
-        rows: s.searches.map((t) => ({ id: t.term, label: '“' + t.term + '”', value: t.count })),
-        format: AN_count,
-        ariaLabel: 'Search terms that showed your profile, last ' + period + ' days',
-      }),
-    ),
+    children: VZ.hbars({
+      rows: s.searches.map((t) => ({ id: t.term, label: '“' + t.term + '”', value: t.count })),
+      format: AN_count,
+      ariaLabel: 'Search terms that showed your profile, last ' + period + ' days',
+    }),
   });
 }
 
@@ -1039,18 +1015,15 @@ function AN_ratings(rating, ratingCount) {
       AN_h(
         'div',
         { key: 'bars', style: { minWidth: 0 } },
-        AN_bars(
-          dist.map((r) => r.stars + ' ★'),
-          VZ.hbars({
-            rows: dist.map((r) => ({
-              id: 'stars-' + r.stars,
-              label: r.stars + ' ★',
-              value: r.count,
-            })),
-            format: AN_count,
-            ariaLabel: 'Ratings by stars, ' + AN_count(total) + ' in all',
-          }),
-        ),
+        VZ.hbars({
+          rows: dist.map((r) => ({
+            id: 'stars-' + r.stars,
+            label: r.stars + ' ★',
+            value: r.count,
+          })),
+          format: AN_count,
+          ariaLabel: 'Ratings by stars, ' + AN_count(total) + ' in all',
+        }),
       ),
     ),
   });

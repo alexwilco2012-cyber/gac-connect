@@ -98,7 +98,7 @@ const LAUNCH_STYLE = {
   pill: 'display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;',
   tone: {
     verified: 'background:#E7F4EF;color:#047857;',
-    warn: 'background:#FBF0E1;color:#B45309;',
+    warn: 'background:#FBF0E1;color:#A84D08;',
     danger: 'background:#FBEAEA;color:#B91C1C;',
     neutral: 'background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;'
   },
@@ -111,7 +111,7 @@ const LAUNCH_STYLE = {
   knob(on) { return 'position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(10,37,64,.25);transition:left .2s;display:block;' + (on ? 'left:23px;' : 'left:3px;'); },
   advice(tone) {
     return 'border-left:4px solid;border-radius:8px;padding:8px 12px;font-size:12.5px;margin:8px 0 0;' +
-      (tone === 'warn' ? 'border-color:#B45309;background:#FBF0E1;color:#B45309;' : (tone === 'info' ? 'border-color:#0E5E8A;background:#E8F1F7;color:#0E5E8A;' : 'border-color:#047857;background:#E7F4EF;color:#047857;'));
+      (tone === 'warn' ? 'border-color:#A84D08;background:#FBF0E1;color:#A84D08;' : (tone === 'info' ? 'border-color:#0E5E8A;background:#E8F1F7;color:#0E5E8A;' : 'border-color:#047857;background:#E7F4EF;color:#047857;'));
   }
 };
 /* Fit → pill tone, same mapping as the site's FIT_TONE. */

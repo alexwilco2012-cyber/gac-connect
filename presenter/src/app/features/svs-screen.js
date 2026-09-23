@@ -38,7 +38,7 @@ const SV_SECTIONS = ['register', 'onboarding', 'evidence'];
 
 const SV_TONES = {
   verified: 'background:#E7F4EF;color:#047857;',
-  warn: 'background:#FBF0E1;color:#B45309;',
+  warn: 'background:#FBF0E1;color:#A84D08;',
   danger: 'background:#FBEAEA;color:#B91C1C;',
   info: 'background:#E8F1F7;color:#0E5E8A;',
   neutral: 'background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;',
@@ -136,6 +136,24 @@ function SV_focusSoon(selector, fallback) {
     let el = document.querySelector(selector);
     if ((!el || el.disabled) && fallback) el = document.querySelector(fallback);
     if (el && typeof el.focus === 'function') el.focus();
+  }, 20);
+}
+
+/* The id on an applicant's button: on the board or in Decided, never both. */
+function SV_cardId(id) {
+  return 'sv-applicant-' + id;
+}
+
+/* After the applicant panel closes, focus goes to the applicant's own card
+   where it sits now. The core hands focus back to the button that opened the
+   panel, but after a stage move that card has re-mounted in another column:
+   the old button is gone (focus would fall to the page) or, with the board's
+   index keys, now holds another applicant. The board's heading takes it if
+   the card has left the board. */
+function SV_focusApplicant(id) {
+  setTimeout(() => {
+    const el = document.getElementById(SV_cardId(id)) || document.getElementById('sv-board-title');
+    if (el && document.activeElement !== el) el.focus();
   }, 20);
 }
 
@@ -386,7 +404,7 @@ function SV_noteVals(note, spec) {
       icon: SV_icon(k.icon, 16),
       iconStyle:
         'width:32px;height:32px;margin-top:2px;flex-shrink:0;border-radius:8px;display:grid;place-items:center;' +
-        (k.warn ? 'background:#FBF0E1;color:#B45309;' : 'background:#E8F1F7;color:#0E5E8A;'),
+        (k.warn ? 'background:#FBF0E1;color:#A84D08;' : 'background:#E8F1F7;color:#0E5E8A;'),
     }));
 
     /* ---- the section switch (SectionTabs) ---- */
@@ -444,6 +462,7 @@ function SV_noteVals(note, spec) {
         riskStyle: SV_pill(SV_RISK_TONE[a.risk]),
         awaiting: !!a.infoRequest,
         awaitingStyle: SV_pill('info'),
+        cardId: SV_cardId(a.id),
         onOpen: () => openApp(a.id),
       };
     };
@@ -473,6 +492,7 @@ function SV_noteVals(note, spec) {
         note: a.decisionNote || '',
         pill: a.outcome === 'approved' ? '✓ Approved' : '✗ Declined',
         pillStyle: SV_pill(a.outcome === 'approved' ? 'verified' : 'danger'),
+        cardId: SV_cardId(a.id),
         onOpen: () => openApp(a.id),
       }));
 
@@ -590,7 +610,9 @@ function SV_noteVals(note, spec) {
       return true;
     }
     if (this.state.svAppId) {
+      const id = this.state.svAppId;
       this.setState({ svAppId: null, svAppNote: null });
+      SV_focusApplicant(id);
       return true;
     }
     return false;
@@ -611,7 +633,10 @@ Object.assign(Component.prototype, {
     const note = st.svAppNote;
     const at = DK.ONBOARDING_STAGES.indexOf(app.stage);
 
-    const close = () => this.setState({ svAppId: null, svAppNote: null });
+    const close = () => {
+      this.setState({ svAppId: null, svAppNote: null });
+      SV_focusApplicant(app.id);
+    };
     /* After an approval or a decline the card has left the board, so focus
        follows it to the Decided list rather than falling back to the page. */
     const decided = () => {
@@ -819,7 +844,7 @@ Object.assign(Component.prototype, {
         ? 'background:#E7F4EF;color:#047857;'
         : item.stage === 'rejected'
           ? 'background:#FBEAEA;color:#B91C1C;'
-          : 'background:#FBF0E1;color:#B45309;';
+          : 'background:#FBF0E1;color:#A84D08;';
     return {
       eyebrow: item.id + ' · ' + kind,
       title: item.certLabel,

@@ -20,8 +20,9 @@
    Every action below reads this.state at the moment it runs (the runtime's
    setState updates it synchronously, so two actions in one handler compose),
    writes through _set, then setState. Each appends to the item's audit trail
-   by role, never by person. Nothing here feeds the bell: the SVS team's queue
-   is not the client's "Waiting on you". */
+   by role, never by person, stamped "Today HH:MM" (DK_deskStamp) like the
+   seeded entries it sits beside. Nothing here feeds the bell: the SVS team's
+   queue is not the client's "Waiting on you". */
 
 const DK_KEY_EVIDENCE = 'pres.desk.evidence';
 const DK_KEY_APPLICATIONS = 'pres.desk.applications';
@@ -146,7 +147,7 @@ function DK_readQuotes(get) {
 }
 
 function DK_entry(by, text) {
-  return { at: DK_stampLabel(), by: by, text: text };
+  return { at: DK_deskStamp(), by: by, text: text };
 }
 
 /* ---------- actions (the stores' methods), on the Component ---------- */
@@ -186,7 +187,7 @@ Object.assign(Component.prototype, {
     const form = input.form;
     const existing = this.state.dkEvidence;
     const id = DK_nextEvidenceRef(existing);
-    const at = DK_stampLabel();
+    const at = DK_deskStamp();
     const submission = {
       id: id,
       supplierId: input.supplierId,
@@ -367,7 +368,7 @@ Object.assign(Component.prototype, {
     const quotes = Object.assign({}, this.state.dkQuotes, {
       [requestId]: Object.assign({}, q, {
         note: String(q.note || '').trim(),
-        sentAt: DK_stampLabel(),
+        sentAt: DK_deskStamp(),
       }),
     });
     this._set(DK_KEY_QUOTES, quotes);
@@ -376,10 +377,11 @@ Object.assign(Component.prototype, {
 
   /* A roster supplier's certificates for display (the SVS register, the
      profile, the supplier dashboard): its own certs, untouched, plus each new
-     certificate the SVS team has approved for it (DK_certsWithApproved). The
-     deck's roster names a cert `label` and carries a `detail`, so the added
-     ones do too. Never feed this to deriveStatus: the gate reads s.certs,
-     and an approval must not move it (spec §4.4). */
+     certificate on file for it (DK_certsWithApproved: the latest approval of
+     each name). The deck's roster names a cert `label` and carries a
+     `detail`, so the added ones do too, dated from that same approval. Never
+     feed this to deriveStatus: the gate reads s.certs, and an approval must
+     not move it (spec §4.4). */
   _dkCertsFor(s) {
     if (!s) return [];
     const own = s.certs || [];
@@ -392,12 +394,14 @@ Object.assign(Component.prototype, {
     if (merged.length === own.length) return own;
     return own.concat(
       merged.slice(own.length).map((c) => {
-        const from = evidence.find(
-          (e) =>
-            e.supplierId === s.id &&
-            e.kind === 'new' &&
-            e.stage === 'approved' &&
-            e.certLabel === c.name,
+        const from = DK_latest(
+          evidence.filter(
+            (e) =>
+              e.supplierId === s.id &&
+              e.kind === 'new' &&
+              e.stage === 'approved' &&
+              DK_certKey(e.certLabel) === DK_certKey(c.name),
+          ),
         );
         /* 'valid to Aug 2029', as the roster writes it; non-breaking, because an
            added certificate's name is long and the detail must not split */

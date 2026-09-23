@@ -324,9 +324,10 @@ export function ClientView() {
 
       {/* Left: the work itself — calls, spend, lines. Right: what needs the
           client, then what has moved. Same column split as the lead row, so
-          the edges line up all the way down. */}
+          the edges line up all the way down. Flex gap, not space-y: the
+          spend chart's figure carries m-0, which would cancel the margin. */}
       <div className={`mt-5 ${COLUMNS}`}>
-        <div className="min-w-0 space-y-5">
+        <div className="flex min-w-0 flex-col gap-5">
           <PortCalls />
           <SpendChart />
 
@@ -392,7 +393,7 @@ export function ClientView() {
           </Card>
         </div>
 
-        <div className="min-w-0 space-y-5">
+        <div className="flex min-w-0 flex-col gap-5">
           <Card>
             <CardHeader
               title="Waiting on you"

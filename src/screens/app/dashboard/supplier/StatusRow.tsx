@@ -7,7 +7,8 @@ import { deriveStatus, goldBandActive } from '../../../../lib/svs';
 /**
  * The supplier's standing at a glance (spec §3 header): SVS status, plan,
  * promotion and the Gold Band audit. The audit reads neutral until the band
- * is held — gold is the marque's, and only once it is earned.
+ * is held — gold is the marque's, and only once it is earned. Dashboard.tsx
+ * renders it in the screen header, under the lede, in the supplier view only.
  */
 export function StatusRow() {
   const supplier = supplierById(DEMO_SUPPLIER_ID)!;

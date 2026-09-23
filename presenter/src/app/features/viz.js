@@ -41,8 +41,8 @@
      VZ.legend(items)             items: [{ label, color, shape: 'rect' | 'line' }]
    and helpers: VZ.kpi (the site's StatCard), VZ.stat (a headline figure),
    VZ.segmented (the deck's pressed-button switch), VZ.chip, VZ.table,
-   VZ.niceTicks, VZ.num, VZ.gbp, VZ.compactGbp, VZ.C (the palette, the site's
-   VIZ) and VZ.LINE_COLOURS.
+   VZ.niceTicks, VZ.fitTicks, VZ.num, VZ.gbp, VZ.compactGbp, VZ.C (the
+   palette, the site's VIZ) and VZ.LINE_COLOURS.
 
    Rules kept here (spec section 6): colour follows the entity, never its
    rank; gold never appears; text never wears a series colour; every chart
@@ -82,7 +82,7 @@ const VZ_C = {
   inkSoft: '#33475F',
   seq: ['#E0EFFA', '#A8CFE9', '#6FABD2', '#3B83B1', '#0E5E8A'],
   ord: ['#73B0D7', '#4F94BF', '#2F79A5', '#0E5E8A', '#0A4A6E'],
-  status: { ok: '#047857', due: '#B45309', lapsed: '#B91C1C' },
+  status: { ok: '#047857', due: '#A84D08', lapsed: '#B91C1C' },
   promoted: '#5B3FA8',
   line: '#E5EAF1',
 };
@@ -118,7 +118,7 @@ const VZ_CARD = {
 const VZ_TONES = {
   success: ['#E7F4EF', '#047857'],
   info: ['#E8F1F7', '#0E5E8A'],
-  warn: ['#FBF0E1', '#B45309'],
+  warn: ['#FBF0E1', '#A84D08'],
   danger: ['#FBEAEA', '#B91C1C'],
   neutral: ['#EEF2F6', '#33475F'],
 };
@@ -167,6 +167,15 @@ function VZ_max(list) {
 function VZ_textWidth(s, size, bold) {
   return String(s).length * (size || 11) * (bold ? 0.62 : 0.58);
 }
+/* Space between a y-axis tick label's right edge and the plot. */
+const VZ_TICK_GAP = 8;
+/* Left gutter for right-anchored y-axis ticks drawn at plotLeft - TICK_GAP
+   (svg.ts tickGutter). Inter draws '£' and tabular figures nearer 0.64em
+   than textWidth's 0.58, so the widest tick gets 4px of slack; without it
+   '£500' starts 1.6px left of the chart and loses the stroke of its '£'. */
+function VZ_tickGutter(ticks, min) {
+  return Math.max.apply(null, [min].concat(ticks.map((t) => VZ_textWidth(t) + VZ_TICK_GAP + 4)));
+}
 function VZ_liveLine(header, rows) {
   return header + ': ' + rows.map((r) => (r.value + ' ' + r.label).trim()).join(', ');
 }
@@ -187,6 +196,23 @@ function VZ_niceTicks(max, count, opts) {
   const out = [];
   for (let k = 0; k * step <= top + step * 1e-9; k++) out.push(Number((k * step).toFixed(10)));
   return out;
+}
+/* The tightest clean axis for `max` whose tick count sits inside
+   [minTicks, maxTicks] (default 4 to 6), so £42k tops out at £50k rather
+   than £60k. Ties go to fewer ticks; falls back to niceTicks(max, 4). */
+function VZ_fitTicks(max, opts) {
+  const o = opts || {};
+  const minTicks = o.minTicks === undefined ? 4 : o.minTicks;
+  const maxTicks = o.maxTicks === undefined ? 6 : o.maxTicks;
+  let best = null;
+  [2, 3, 4, 5].forEach((count) => {
+    const t = VZ_niceTicks(max, count, { integer: o.integer });
+    if (t.length < minTicks || t.length > maxTicks) return;
+    const top = t[t.length - 1];
+    const bestTop = best ? best[best.length - 1] : Infinity;
+    if (top < bestTop || (top === bestTop && t.length < best.length)) best = t;
+  });
+  return best || VZ_niceTicks(max, 4, { integer: o.integer });
 }
 /* Band scale: bars at most 24px, 60% of the band, and at least a 2px gap. */
 function VZ_bandLayout(n, width, start) {
@@ -355,19 +381,26 @@ function VZ_edgeAnchor(pct) {
 }
 /* Tooltip position inside its chart box, 12px off the anchor: 'side' sits
    beside a crosshair or column (right, flipping left), vertically centred
-   and clamped; 'above' sits over a mark (flipping below), centred. */
+   and clamped; 'above' sits over a mark (flipping below it: `below` is the
+   mark's bottom edge), centred and clamped. It never covers the anchor
+   unless the box is too narrow to avoid it. */
 function VZ_placeTooltip(p) {
   const off = p.offset === undefined ? 12 : p.offset;
   if (p.placement === 'side') {
-    let left = p.x + off;
-    if (left + p.width > p.boxWidth) left = p.x - off - p.width;
-    if (left < 0) left = VZ_clamp(p.x - p.width / 2, 0, Math.max(0, p.boxWidth - p.width));
+    const right = p.x + off;
+    const leftSide = p.x - off - p.width;
+    let left;
+    if (right + p.width <= p.boxWidth) left = right;
+    else if (leftSide >= 0) left = leftSide;
+    /* neither side fits: take the roomier side and clamp inside the box */
+    else left = p.boxWidth - p.x > p.x ? right : leftSide;
+    left = VZ_clamp(left, 0, Math.max(0, p.boxWidth - p.width));
     const top = VZ_clamp(p.y - p.height / 2, 0, Math.max(0, p.boxHeight - p.height));
     return { left: Math.round(left), top: Math.round(top) };
   }
   const left = VZ_clamp(p.x - p.width / 2, 0, Math.max(0, p.boxWidth - p.width));
   let top = p.y - off - p.height;
-  if (top < 0) top = p.y + off;
+  if (top < 0) top = (p.below === undefined ? p.y : p.below) + off;
   return { left: Math.round(left), top: Math.round(top) };
 }
 
@@ -594,6 +627,7 @@ function VZ_Tooltip(p) {
     const pos = VZ_placeTooltip({
       x: a.x,
       y: a.y,
+      below: a.below,
       width: el.offsetWidth,
       height: el.offsetHeight,
       boxWidth: box.clientWidth,
@@ -1027,7 +1061,9 @@ function VZ_Figure(p) {
 
 const VZ_TS_MAIN = 170;
 const VZ_TS_SUB = 88;
-const VZ_TS_TITLE = 28; /* panel title row, and headroom for labels above peaks */
+/* Panel title row + headroom, so a value label above a peak at the top tick
+   clears the title's descenders. */
+const VZ_TS_TITLE = 36;
 const VZ_TS_GAP = 22;
 const VZ_TS_AXIS = 26;
 
@@ -1067,6 +1103,59 @@ function VZ_linePath(xs, values, y) {
   return values.map((v, k) => (k ? 'L' : 'M') + VZ_px(xs[k] || 0) + ' ' + VZ_px(y(v))).join('');
 }
 
+/* "Category average" to ["Category", "average"]: the split nearest the middle. */
+function VZ_twoLines(label) {
+  const words = String(label).split(' ');
+  const longest = (lines) =>
+    Math.max.apply(
+      null,
+      lines.map((l) => l.length),
+    );
+  let best = [String(label)];
+  for (let k = 1; k < words.length; k++) {
+    const pair = [words.slice(0, k).join(' '), words.slice(k).join(' ')];
+    if (longest(pair) < longest(best)) best = pair;
+  }
+  return best;
+}
+
+/* The benchmark's name beside the end of its line, in the right gutter with
+   the series' last value: past the end of both lines, so neither can run
+   through it. Two short lines, centred on the line's end and nudged clear
+   of the value label when the two ends meet; kept inside the panel. */
+function VZ_benchmarkLabel(key, label, x, top, bottom, mainY, benchY) {
+  const lines = VZ_twoLines(label);
+  const LINE = 12;
+  const lift = ((lines.length - 1) * LINE) / 2;
+  /* centre to the block's ink (cap height up, descenders down) plus the
+     value label's own half height and a 3px gap */
+  const clear = lift + 7 + 4 + 3;
+  const clamp = (c) => Math.max(top + lift + 5, Math.min(bottom - lift - 6, c));
+  const away = (dir) =>
+    clamp(dir > 0 ? Math.max(benchY, mainY + clear) : Math.min(benchY, mainY - clear));
+  const dir = benchY >= mainY ? 1 : -1;
+  let c = away(dir);
+  if (Math.abs(c - mainY) < clear) c = away(dir > 0 ? -1 : 1);
+  return lines.map((line, i) =>
+    VZ_h(
+      'text',
+      Object.assign(
+        {
+          key: key + i,
+          x: VZ_px(x),
+          y: VZ_px(c - lift + i * LINE),
+          dy: '0.32em',
+          fontSize: 11,
+          fontWeight: 600,
+          fill: VZ_C.inkSoft,
+        },
+        VZ_HALO,
+      ),
+      line,
+    ),
+  );
+}
+
 /* Small multiples on one shared time axis with one synced crosshair: never
    a dual axis. Areas are a 2px line over a flat 10% wash; columns are at
    most 24px with a rounded data end. The last value and a single peak are
@@ -1089,19 +1178,38 @@ function VZ_TimeSeries(p) {
     return {
       p: pn,
       axis: axis,
-      ticks: VZ_niceTicks(vmax, idx === 0 ? 4 : 2, { integer: integer }),
+      ticks: VZ_fitTicks(
+        vmax,
+        idx === 0 ? { integer: integer } : { integer: integer, minTicks: 3, maxTicks: 3 },
+      ),
     };
   });
-  let gutterLeft = 22;
-  geo0.forEach((g) =>
-    g.ticks.forEach((t) => {
-      gutterLeft = Math.max(gutterLeft, VZ_textWidth(g.axis(t)) + 9);
-    }),
+  const gutterLeft = VZ_tickGutter(
+    [].concat.apply(
+      [],
+      geo0.map((g) => g.ticks.map(g.axis)),
+    ),
+    22,
   );
-  const endLabels = geo0
-    .filter((g) => g.p.kind === 'area' && (g.p.values || []).length)
-    .map((g) => VZ_textWidth(g.axis(g.p.values[g.p.values.length - 1]), 11, true));
-  const gutterRight = endLabels.length ? Math.max.apply(null, endLabels) + 14 : 6;
+  /* The right gutter carries each area's last value and, when it fits, the
+     benchmark's name ("Category" / "average") beside its own line end: out
+     past both lines, where no point can cross it. It fits unless it would
+     squeeze the plot below 55% of the chart; the legend names it anyway. */
+  const areas = geo0.filter((g) => g.p.kind === 'area' && (g.p.values || []).length);
+  const endW = VZ_max(
+    areas.map((g) => VZ_textWidth(g.axis(g.p.values[g.p.values.length - 1]), 11, true)),
+  );
+  const benchW = VZ_max(
+    [].concat.apply(
+      [],
+      areas.map((g) =>
+        g.p.benchmark ? VZ_twoLines(g.p.benchmark.label).map((l) => VZ_textWidth(l, 11, true)) : [],
+      ),
+    ),
+  );
+  const withBench = Math.max(endW, benchW) + 14;
+  const showBench = benchW > 0 && width - gutterLeft - withBench >= Math.max(160, width * 0.55);
+  const gutterRight = showBench ? withBench : areas.length ? endW + 14 : 6;
   const plotLeft = gutterLeft;
   const plotRight = Math.max(plotLeft + 10, width - gutterRight);
   const plotW = plotRight - plotLeft;
@@ -1132,6 +1240,7 @@ function VZ_TimeSeries(p) {
     };
   });
   const lastBottom = geo.length ? geo[geo.length - 1].bottom : 0;
+  const xSpacing = VZ_max(labels.map((l) => VZ_textWidth(l))) + 44;
   const height = lastBottom + VZ_TS_AXIS;
   const ready = width > 0 && n > 0;
   VZ_useEntrance(plotRef, ready);
@@ -1224,7 +1333,7 @@ function VZ_TimeSeries(p) {
           'text',
           {
             key: k + 't' + t,
-            x: plotLeft - 8,
+            x: plotLeft - VZ_TICK_GAP,
             y: ty,
             dy: '0.32em',
             fontSize: 11,
@@ -1341,36 +1450,21 @@ function VZ_TimeSeries(p) {
         plotRight,
         g.xs[last],
       ).forEach((e) => els.push(e));
-      if (bench) {
-        /* "Category average" at the end of its line, on the side away from the series */
-        const mainY = g.y(values[last]);
-        const benchY = g.y(bench.length ? bench[bench.length - 1] : 0);
-        let below = benchY >= mainY;
-        if (below && benchY + 16 > g.bottom - 2) below = false;
-        if (!below && benchY - 10 < g.top) below = true;
-        els.push(
-          VZ_h(
-            'text',
-            Object.assign(
-              {
-                key: k + 'blab',
-                x: VZ_px(plotRight - 2),
-                y: VZ_px(below ? benchY + 15 : benchY - 8),
-                fontSize: 11,
-                fontWeight: 600,
-                fill: VZ_C.inkSoft,
-                textAnchor: 'end',
-              },
-              VZ_HALO,
-            ),
-            g.panel.benchmark.label,
-          ),
-        );
+      if (bench && showBench) {
+        VZ_benchmarkLabel(
+          k + 'blab',
+          g.panel.benchmark.label,
+          g.xs[last] + 9,
+          g.top,
+          g.bottom,
+          g.y(values[last]),
+          g.y(bench.length ? bench[bench.length - 1] : 0),
+        ).forEach((e) => els.push(e));
       }
     }
   });
   /* the shared x-axis: first and last pinned to the plot's ends */
-  VZ_xTickIndices(n, plotW, width < 480 ? 84 : 100).forEach((i, kk, arr) => {
+  VZ_xTickIndices(n, plotW, xSpacing).forEach((i, kk, arr) => {
     const pos = kk === 0 ? 'start' : kk === arr.length - 1 ? 'end' : 'middle';
     const x = pos === 'start' ? plotLeft : pos === 'end' ? plotRight : band.centre(i);
     els.push(
@@ -1465,9 +1559,10 @@ const VZ_SC_LOWER = 56;
 
 /* Series stack bottom to top in the order given, 2px geometric gaps, the
    rounded data end on the top segment only. `lower` adds an aligned panel
-   on the same x-axis and tooltip; `directLabelLast` labels the latest
-   column's segments (and its total) in a right-hand gutter. A series of
-   zeros draws nothing, and the survivors keep their colours. */
+   on the same x-axis and tooltip; `directLabelLast` names the latest
+   column's segments in a right-hand gutter and sets its total, named as one
+   ("Sep total £12,600"), above the column. A series of zeros draws
+   nothing, and the survivors keep their colours. */
 function VZ_Stacked(p) {
   const categories = p.categories || [];
   const series = p.series || [];
@@ -1483,22 +1578,24 @@ function VZ_Stacked(p) {
   const totals = categories.map((_, i) =>
     series.reduce((a, s) => a + ((s.values || [])[i] || 0), 0),
   );
-  const ticks = VZ_niceTicks(VZ_max(totals), 4);
-  const lowerTicks = lower ? VZ_niceTicks(VZ_max(lower.values), 2) : [];
-  let gutterLeft = 24;
-  ticks.concat(lowerTicks).forEach((t) => {
-    gutterLeft = Math.max(gutterLeft, VZ_textWidth(axis(t)) + 9);
-  });
+  const ticks = VZ_fitTicks(VZ_max(totals));
+  const lowerTicks = lower ? VZ_fitTicks(VZ_max(lower.values), { minTicks: 3, maxTicks: 3 }) : [];
+  const gutterLeft = VZ_tickGutter(ticks.concat(lowerTicks).map(axis), 24);
+  /* The gutter holds the series names (and the lower panel's figure); the
+     total sits above its column instead, so it never needs the room. */
   const labelled = series.filter((s) => ((s.values || [])[last] || 0) > 0);
   const labelW = p.directLabelLast
-    ? Math.max.apply(
-        null,
-        [VZ_textWidth(format(totals[last] || 0), 11, true)]
-          .concat(labelled.map((s) => VZ_textWidth(s.label)))
-          .concat([lower ? VZ_textWidth(lower.format(lower.values[last] || 0)) : 0]),
+    ? VZ_max(
+        labelled
+          .map((s) => VZ_textWidth(s.label))
+          .concat([lower ? VZ_textWidth(lower.format(lower.values[last] || 0), 11, true) : 0]),
       )
     : 0;
-  const gutterRight = p.directLabelLast ? labelW + 16 : 4;
+  /* Direct labels only if they fit: never at the cost of squeezing the plot
+     below 55% of the chart (the legend and the table still name every series). */
+  const labelsFit = width - gutterLeft - (labelW + 16) >= Math.max(160, width * 0.55);
+  const showDirect = !!p.directLabelLast && labelsFit;
+  const gutterRight = showDirect ? labelW + 16 : 4;
   const plotLeft = gutterLeft;
   const plotRight = Math.max(plotLeft + 10, width - gutterRight);
   const plotW = plotRight - plotLeft;
@@ -1599,7 +1696,7 @@ function VZ_Stacked(p) {
         'text',
         {
           key: 't' + t,
-          x: plotLeft - 8,
+          x: plotLeft - VZ_TICK_GAP,
           y: ty,
           dy: '0.32em',
           fontSize: 11,
@@ -1630,7 +1727,14 @@ function VZ_Stacked(p) {
       ),
     );
   });
-  VZ_xTickIndices(n, plotW, 44).forEach((i) => {
+  /* Every category label that fits its band; otherwise every k-th, counted
+     back from the latest so it always carries a label. */
+  const every = Math.max(
+    1,
+    Math.ceil((VZ_max(categories.map((c) => VZ_textWidth(c))) + 4) / Math.max(1, band.band)),
+  );
+  const xLabels = categories.map((_, i) => i).filter((i) => (last - i) % every === 0);
+  xLabels.forEach((i) => {
     els.push(
       VZ_h(
         'text',
@@ -1672,7 +1776,7 @@ function VZ_Stacked(p) {
           'text',
           {
             key: 'lt' + t,
-            x: plotLeft - 8,
+            x: plotLeft - VZ_TICK_GAP,
             y: ty,
             dy: '0.32em',
             fontSize: 11,
@@ -1697,54 +1801,80 @@ function VZ_Stacked(p) {
       );
     });
   }
-  /* direct labels on the latest column: the total, then each segment with a leader */
-  if (p.directLabelLast && ready && (columns[last] || []).length) {
+  /* Direct labels on the latest column. The total is its own label, named
+     ("Sep total £12,600") and set above the column; the series names sit
+     beside their segments a clear line below it. A bare figure stacked over
+     a name reads as that segment's value. */
+  if (showDirect && ready && (columns[last] || []).length) {
     const segs = columns[last];
-    const colTop = segs[segs.length - 1].y;
-    const items = [
-      { key: 'total', text: format(totals[last] || 0), at: colTop + 1, bold: true, lead: false },
-    ].concat(
-      segs.map((sg) => ({
-        key: series[sg.index].id,
-        text: series[sg.index].label,
-        at: sg.y + sg.height / 2,
-        bold: false,
-        lead: true,
-      })),
+    const totalLead = (categories[last] || '') + ' total ';
+    const totalFigure = format(totals[last] || 0);
+    const half = (VZ_textWidth(totalLead) + VZ_textWidth(totalFigure, 11, true)) / 2;
+    const tx = Math.min(band.centre(last), width - 2 - half);
+    /* Above every column the label spans, not just the latest one; and if a
+       gridline would run through the words, lifted just clear above it. */
+    const under = [];
+    columns.forEach((c, i) => {
+      if (band.left(i) < tx + half && band.left(i) + band.bar > tx - half && c.length) {
+        under.push(c[c.length - 1].y);
+      }
+    });
+    let ty = Math.min.apply(null, [baseline].concat(under)) - 7;
+    const grid = ticks.map((t) => Math.round(y(t)) + 0.5).find((g) => g > ty - 10 && g < ty + 4);
+    if (grid !== undefined) ty = grid - 4;
+    ty = Math.max(11, ty);
+    els.push(
+      VZ_h(
+        'text',
+        {
+          key: 'dltotal',
+          x: VZ_px(tx),
+          y: VZ_px(ty),
+          fontSize: 11,
+          fontWeight: 500,
+          fill: VZ_C.inkSoft,
+          textAnchor: 'middle',
+        },
+        totalLead,
+        VZ_h('tspan', { fontWeight: 700, fill: VZ_C.ink }, totalFigure),
+      ),
     );
+    const items = segs.map((sg) => ({
+      key: series[sg.index].id,
+      text: series[sg.index].label,
+      at: sg.y + sg.height / 2,
+    }));
     const ys = VZ_spreadLabels(
       items.map((it) => it.at),
       13,
-      VZ_SC_TOP - 4,
+      Math.max(VZ_SC_TOP - 4, ty + 13),
       baseline - 4,
     );
     const x0 = band.left(last) + band.bar;
     const lx = x0 + 12;
     items.forEach((it, kk) => {
       const yy = ys[kk];
-      if (it.lead) {
-        els.push(
-          VZ_h('path', {
-            key: 'dll' + it.key,
-            d:
-              'M' +
-              VZ_px(x0 + 2) +
-              ' ' +
-              VZ_px(it.at) +
-              'L' +
-              VZ_px(x0 + 5) +
-              ' ' +
-              VZ_px(it.at) +
-              'L' +
-              VZ_px(lx - 3) +
-              ' ' +
-              VZ_px(yy),
-            fill: 'none',
-            stroke: VZ_C.axis,
-            strokeWidth: 1,
-          }),
-        );
-      }
+      els.push(
+        VZ_h('path', {
+          key: 'dll' + it.key,
+          d:
+            'M' +
+            VZ_px(x0 + 2) +
+            ' ' +
+            VZ_px(it.at) +
+            'L' +
+            VZ_px(x0 + 5) +
+            ' ' +
+            VZ_px(it.at) +
+            'L' +
+            VZ_px(lx - 3) +
+            ' ' +
+            VZ_px(yy),
+          fill: 'none',
+          stroke: VZ_C.axis,
+          strokeWidth: 1,
+        }),
+      );
       els.push(
         VZ_h(
           'text',
@@ -1754,8 +1884,8 @@ function VZ_Stacked(p) {
             y: VZ_px(yy),
             dy: '0.32em',
             fontSize: 11,
-            fontWeight: it.bold ? 700 : 500,
-            fill: it.bold ? VZ_C.ink : VZ_C.inkSoft,
+            fontWeight: 500,
+            fill: VZ_C.inkSoft,
           },
           it.text,
         ),
@@ -1828,7 +1958,7 @@ function VZ_Stacked(p) {
 
 /* ---------- horizontal bar rows (BarRows.tsx, HBarList.tsx, FunnelBars.tsx) ---------- */
 
-/* HTML rows (crisp text that wraps like prose): labels in a 132px column
+/* HTML rows (crisp text that wraps like prose): labels in a left column
    when the chart has room and above the bar when it does not, 18px bars
    with a 4px rounded tip and 10px between rows, the value at every tip.
    One tab stop; up/down or left/right move row by row with a tooltip above
@@ -1839,7 +1969,18 @@ function VZ_BarRows(p) {
   const [boxRef, width] = VZ_useWidth();
   const plotRef = React.useRef(null);
   const hintId = React.useId();
+  /* The label column fits its longest label (a tag may wrap under it). */
+  const labelW = Math.round(
+    Math.min(
+      168,
+      Math.max.apply(null, [40].concat(rows.map((r) => VZ_textWidth(r.label, 12.5, true) + 6))),
+    ),
+  );
+  /* 24rem, the site's @sm container step: the step rates indent from here. */
   const wide = width >= 384;
+  /* Short labels ("5 ★") stay beside their bars even on a phone; longer
+     ones move above the bar when the chart is narrower than 24rem. */
+  const besideBars = labelW <= 64 || wide;
   VZ_useEntrance(plotRef, width > 0);
   const nav = VZ_usePlotNav(plotRef, {
     initial: () => (n ? 0 : null),
@@ -1871,7 +2012,7 @@ function VZ_BarRows(p) {
     const b = box.getBoundingClientRect();
     const rr = row.getBoundingClientRect();
     const br = bar.getBoundingClientRect();
-    return { x: br.right - b.left, y: rr.top - b.top + 4 };
+    return { x: br.right - b.left, y: rr.top - b.top + 4, below: rr.bottom - b.top };
   };
   const kids = [];
   rows.forEach((r, i) => {
@@ -1884,7 +2025,7 @@ function VZ_BarRows(p) {
           'data-row': i,
           style: {
             display: 'grid',
-            gridTemplateColumns: wide ? '132px minmax(0,1fr)' : 'minmax(0,1fr)',
+            gridTemplateColumns: besideBars ? labelW + 'px minmax(0,1fr)' : 'minmax(0,1fr)',
             alignItems: 'center',
             columnGap: '16px',
             rowGap: '4px',
@@ -1906,12 +2047,13 @@ function VZ_BarRows(p) {
             },
           },
           r.label,
+          /* after a space, so a tag that wraps lines up under the label */
+          r.tag ? ' ' : null,
           r.tag
             ? VZ_h(
                 'span',
                 {
                   style: {
-                    marginLeft: '6px',
                     fontSize: '11px',
                     fontWeight: 700,
                     whiteSpace: 'nowrap',
@@ -1957,7 +2099,7 @@ function VZ_BarRows(p) {
       ),
     );
     if (p.between && i < n - 1) {
-      const b = p.between(i, wide);
+      const b = p.between(i, wide, labelW);
       if (b) kids.push(VZ_h(React.Fragment, { key: r.id + '-between' }, b));
     }
   });
@@ -2015,15 +2157,14 @@ function VZ_HBars(p) {
     })),
     tooltip: (i) => {
       const r = rows[i];
-      const value = format(r.value);
       return {
         header: r.tag ? r.label + ' · ' + r.tag : r.label,
         rows: [
           {
             key: r.id,
             color: r.color || VZ_C.sea,
-            value: value,
-            label: r.valueLabel && r.valueLabel !== value ? r.valueLabel : '',
+            value: r.valueLabel !== undefined ? r.valueLabel : format(r.value),
+            label: '',
           },
         ],
       };
@@ -2056,7 +2197,9 @@ function VZ_Funnel(p) {
       valueText: format(s.value),
       color: VZ_funnelColour(i, n),
     })),
-    between: (i, wide) =>
+    /* the step rate lines up under the bars: the label column plus the
+       row's 8px padding and 16px gap */
+    between: (i, wide, labelW) =>
       rates[i]
         ? VZ_h(
             'p',
@@ -2066,7 +2209,7 @@ function VZ_Funnel(p) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: wide ? '2px 8px 2px 156px' : '2px 8px',
+                padding: wide ? '2px 8px 2px calc(' + labelW + 'px + 24px)' : '2px 8px',
                 fontSize: '12px',
                 lineHeight: 1.25,
                 color: VZ_C.inkSoft,
@@ -2323,7 +2466,13 @@ function VZ_Heatmap(p) {
       ? cellLabel(rows[active.r], cols[active.c], v(active.r, active.c))
       : '';
   const anchor = () =>
-    active ? { x: VZ_HM_ROW + active.c * step + cell / 2, y: active.r * step } : null;
+    active
+      ? {
+          x: VZ_HM_ROW + active.c * step + cell / 2,
+          y: active.r * step,
+          below: active.r * step + cell,
+        }
+      : null;
 
   const els = [];
   rows.forEach((row, r) => {
@@ -2504,7 +2653,7 @@ function VZ_Heatmap(p) {
 
 const VZ_EXPIRY_COLOUR = {
   ok: '#047857',
-  due: '#B45309',
+  due: '#A84D08',
   lapsed: '#B91C1C',
   pending: '#8595A8',
   info: '#8595A8',
@@ -2512,14 +2661,16 @@ const VZ_EXPIRY_COLOUR = {
 };
 /* Status never rides on colour alone: each settled state has a glyph. */
 const VZ_EXPIRY_GLYPH = { ok: '✓', due: '⚠', lapsed: '✗', pending: '', info: '', rejected: '' };
-const VZ_EXPIRY_RULES = [7, 30, 90];
+/* The alert tiers (90 / 30 / 7), nearest first: the supplier rule's own list. */
+const VZ_EXPIRY_RULES = DC_DATA.ALERT_TIERS.slice().sort((a, b) => a - b);
 
 /* Days left on a certificate: a 0-180 day bar whose colour comes from the
-   certificate's state (never from the days, so it cannot drift from the
-   SVS rule), with 1px rules at 90, 30 and 7 days. Longer terms clamp with a
-   pointed end and keep their real number; a submission awaiting the SVS
-   team is neutral grey. Static: role img, `label` is what a screen reader
-   hears ("Expires in 171 days, 13 Mar 2027"). */
+   certificate's state (DK_vaultRows, which reads DK_alertTier), with 1px
+   rules at each of DC_DATA.ALERT_TIERS, so neither the colour nor the rules
+   can drift from the supplier rule. Longer terms clamp with a pointed end
+   and keep their real number; a submission awaiting the SVS team is neutral
+   grey. Static: role img, `label` is what a screen reader hears ("Expires
+   in 171 days, 13 Mar 2027"). */
 function VZ_Expiry(p) {
   const max = p.max || 180;
   const state = VZ_EXPIRY_COLOUR[p.state] ? p.state : 'pending';
@@ -2643,7 +2794,7 @@ function VZ_Expiry(p) {
               color: VZ_C.inkSoft,
             },
           },
-          VZ_EXPIRY_RULES.map((d) =>
+          VZ_EXPIRY_RULES.map((d, i) =>
             VZ_h(
               'span',
               {
@@ -2657,7 +2808,7 @@ function VZ_Expiry(p) {
                   fontVariantNumeric: 'tabular-nums',
                 },
               },
-              d === 90 ? '90 days' : String(d),
+              i === VZ_EXPIRY_RULES.length - 1 ? d + ' days' : String(d),
             ),
           ),
         )
@@ -2902,6 +3053,7 @@ const VZ = {
   gbp: VZ_gbp,
   compactGbp: VZ_compactGbp,
   niceTicks: VZ_niceTicks,
+  fitTicks: VZ_fitTicks,
   figure: (p) => VZ_h(VZ_Figure, p),
   timeSeries: (p) => VZ_h(VZ_TimeSeries, p),
   stacked: (p) => VZ_h(VZ_Stacked, p),

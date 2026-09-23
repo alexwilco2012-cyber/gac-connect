@@ -2,6 +2,7 @@ import { ChartFigure, FunnelBars } from '../../../../components/charts';
 import { ButtonLink } from '../../../../components/ui/Button';
 import { Icon } from '../../../../components/ui/Icon';
 import { PERIOD_SUMMARY } from '../../../../data/analytics';
+import { count } from '../../analytics/model';
 
 /**
  * Where the work comes from (spec §3): a three-step funnel from the last 30
@@ -9,8 +10,12 @@ import { PERIOD_SUMMARY } from '../../../../data/analytics';
  * analytics screen. Benchmarking is Premium only; the copy says so.
  */
 
-const count = (n: number) => n.toLocaleString('en-GB');
-
+/**
+ * A step as a share of the one before, rounded as `funnelRateLabels` in
+ * data/analytics rounds it ("9.2%", "32%"). That helper is tied to the full
+ * funnel's five steps and verbs, so the rule is repeated here for this
+ * three-step one; keep the two in step.
+ */
 function rate(from: number, to: number): string {
   const pct = from ? (to / from) * 100 : 0;
   return pct >= 20 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;

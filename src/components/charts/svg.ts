@@ -11,6 +11,19 @@ export function textWidth(s: string, size = 11, bold = false): number {
   return s.length * size * (bold ? 0.62 : 0.58);
 }
 
+/** Space between a y-axis tick label's right edge and the plot. */
+export const TICK_GAP = 8;
+
+/**
+ * Left gutter for right-anchored y-axis ticks drawn at `plotLeft - TICK_GAP`.
+ * Inter draws '£' and tabular figures nearer 0.64em than `textWidth`'s 0.58,
+ * so the widest tick gets 4px of slack — without it '£500' starts 1.6px left
+ * of the SVG and loses the stroke of its '£'.
+ */
+export function tickGutter(ticks: readonly string[], min: number): number {
+  return Math.max(min, ...ticks.map((t) => textWidth(t) + TICK_GAP + 4));
+}
+
 /** A 3px surface-coloured halo so a direct label reads over lines and grid. */
 export const HALO = {
   stroke: '#FFFFFF',

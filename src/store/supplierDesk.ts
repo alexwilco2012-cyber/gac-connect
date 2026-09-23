@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { stampLabel } from '../lib/crewChange';
 import { persistent } from '../lib/storage';
+import { deskStamp } from '../lib/svsDesk';
 
 /**
  * Quotes the demo supplier sends from its dashboard inbox (live dashboards,
@@ -59,7 +59,7 @@ export const useSupplierDesk = create<SupplierDeskState>((set, get) => ({
   sendQuote(requestId, q) {
     const quotes = {
       ...get().quotes,
-      [requestId]: { ...q, note: q.note.trim(), sentAt: stampLabel() },
+      [requestId]: { ...q, note: q.note.trim(), sentAt: deskStamp() },
     };
     persistent.set(KEY_QUOTES, quotes);
     set({ quotes });

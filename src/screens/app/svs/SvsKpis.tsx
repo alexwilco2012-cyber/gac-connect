@@ -38,7 +38,10 @@ export function SvsKpis({ kpis }: { kpis: readonly SvsKpi[] }) {
           </span>
           <div className="min-w-0">
             <dt className="text-[12px] leading-snug text-ink-soft">{k.label}</dt>
-            <dd className="mt-0.5 font-display text-[22px] leading-tight font-bold tabular-nums">
+            <dd
+              data-kpi-value=""
+              className="mt-0.5 font-display text-[22px] leading-tight font-bold tabular-nums"
+            >
               {k.value}
             </dd>
             <dd className="mt-0.5 text-[11.5px] leading-snug text-ink-soft">{k.note}</dd>

@@ -73,7 +73,10 @@
      lectern does not need. */
   @media (max-width: 1023px) {
     .gac-side { width: 64px !important; }
-    .gac-side .gac-side-label,
+    /* The labels leave the rail but stay the buttons' names; each button is
+       its label's box, so a hidden label cannot stretch the page. */
+    .gac-side nav button { position: relative; }
+    .gac-side .gac-side-label { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     .gac-side .gac-side-heading,
     .gac-side .gac-wordmark-sub { display: none !important; }
     .gac-side nav button { justify-content: center; padding-left: 0 !important; padding-right: 0 !important; }
@@ -95,25 +98,41 @@
     .gac-hero-art { min-height: 180px !important; }
   }
 
-  /* Below 640 the sidebar stops being a column and becomes a horizontal icon
-     bar above the content. A 64px rail leaves 311px for screens whose grids
-     declare minmax(340px, 1fr), which cannot shrink that far and overflow;
-     stacking gives the content the full width back and keeps every nav item
-     one tap away, which a hidden drawer would not. */
+  /* ==== Deck shell (phone): the platform shell below 640px (23 Sep).
+     Rules go between this line and its end marker. ==== */
+  /* The sidebar stops being a column and becomes a compact bar above the
+     content: one scrollable row of 44px icon buttons (their names stay for
+     screen readers), Internal after its rule at the end of the row, and the
+     PoC ribbon on a line of its own under it, so the guardrail is on screen
+     in every state, as on the rail. A 64px rail would leave 311px for
+     screens whose grids declare minmax(340px, 1fr). The bar sits outside
+     #gac-scroll, so it never scrolls away. Every property the partial sets
+     inline needs !important here. */
   @media (max-width: 639px) {
     .gac-shell-row { flex-direction: column !important; }
-    .gac-side {
-      width: 100% !important; height: auto !important;
-      flex-direction: row !important; align-items: center; flex-shrink: 0 !important;
-    }
+    .gac-side { width: 100% !important; height: auto !important; flex-shrink: 0 !important; }
     .gac-side .gac-side-brand { display: none !important; }
     .gac-side nav {
-      flex: 1; display: flex; flex-direction: row; gap: 2px;
-      padding: 6px 8px !important; overflow-x: auto; overflow-y: hidden;
+      flex: none !important; flex-direction: row !important; align-items: center; gap: 2px;
+      padding: 6px 8px !important; overflow-x: auto !important; overflow-y: hidden !important;
+      scrollbar-width: none;
     }
-    .gac-side nav button { width: auto !important; flex: 0 0 auto; }
-    .gac-side .gac-side-ribbon { display: none !important; }
+    .gac-side nav::-webkit-scrollbar { display: none; }
+    .gac-side nav button { flex: 0 0 auto; width: 44px !important; height: 44px; padding: 0 !important; gap: 0 !important; }
+    /* the gold marker moves from the button's left edge to its foot */
+    .gac-side nav button[aria-pressed="true"] { box-shadow: inset 0 -3px 0 #C9A227 !important; }
+    .gac-side .gac-side-foot { display: flex; flex: 0 0 auto; align-items: center; margin: 0 !important; padding: 0 !important; }
+    .gac-side .gac-side-rule { width: 1px; height: 24px !important; margin: 0 6px 0 4px !important; }
+    .gac-side .gac-side-ribbon { padding: 4px 16px !important; font-size: 10.5px !important; line-height: 1.35; text-align: center; }
+    /* The top bar takes the site's 16px phone gutter, and the Reset demo
+       confirmation spans the bar inside it rather than hanging off its
+       button, whose right edge sent the panel past the left of the screen.
+       The header is sticky, so it is the panel's box. */
+    .gac-topbar { padding: 0 16px !important; }
+    .gac-reset-wrap { position: static !important; }
+    .gac-reset-panel { left: 16px !important; right: 16px !important; width: auto !important; max-width: none !important; }
   }
+  /* ==== end deck shell rules ==== */
 
   /* The dashboard's lead row is a 1.6fr/1fr grid; below 900 the two halves
      have nowhere to go but on top of each other. */
@@ -155,19 +174,40 @@
   /* Hover for controls whose border is set inline (style-hover cannot beat it). */
   .gac-sd-ghost:hover, .gac-sd-inboxbtn:not([aria-disabled="true"]):hover { border-color: #0E5E8A !important; }
   .gac-cd-chiplink[data-tone="info"]:hover { background: #D5E7F2 !important; }
-  .gac-cd-chiplink[data-tone="warn"]:hover { background: #F6E2C6 !important; }
+  .gac-cd-chiplink[data-tone="warn"]:hover { background: #F8E8D2 !important; } /* light enough for 4.5:1 warn text */
   .gac-cd-chiplink[data-tone="success"]:hover { background: #D3EBE1 !important; }
-  /* A phone: the page gutter narrows to 16px; the five quick actions fall
-     into two columns (the odd one spans both); the milestone rail folds to
+  /* "Latest from GAC": each row's words are its link, and the ::after covers
+     the whole row (the li is relative), tile and timestamp included. */
+  .gac-cd-rowlink::after { content: ''; position: absolute; inset: 0; }
+  /* "Start something" follows the card's own width, as the site's container
+     query does: two columns on a phone (the fifth spans both, labels may
+     wrap); from 540px three over two on a six-column grid, so no button is
+     left alone across the card; from 930px (the five labels unbroken, with a
+     margin) one row of five, each at least as wide as its label. */
+  .gac-cd-qa-card { container-type: inline-size; }
+  .gac-cd-qa { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gac-cd-qa-item:last-child { grid-column: span 2; }
+  .gac-cd-qa-btn { justify-content: flex-start; min-height: 48px; padding: 8px 12px; white-space: normal; }
+  @container (min-width: 540px) {
+    .gac-cd-qa { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .gac-cd-qa .gac-cd-qa-item { grid-column: span 2; }
+    .gac-cd-qa .gac-cd-qa-item:nth-child(n+4) { grid-column: span 3; }
+    .gac-cd-qa-btn { justify-content: center; min-height: 44px; padding: 8px 14px; }
+  }
+  @container (min-width: 930px) {
+    .gac-cd-qa { grid-template-columns: repeat(5, minmax(max-content, 1fr)); }
+    .gac-cd-qa .gac-cd-qa-item, .gac-cd-qa .gac-cd-qa-item:nth-child(n+4) { grid-column: span 1; }
+    .gac-cd-qa-btn { white-space: nowrap; }
+  }
+  /* A phone: the page gutter narrows to 16px; the milestone rail folds to
      "Step 3 of 5" over a bar and the ship tile gives way; chips keep a 44px
      hit area; the spend legend holds its height while pillars change;
      buttons at the foot of a card take the full width; the pipeline's
-     labels take their short form. */
+     labels take their short form; in the certificate modal the chosen
+     file's size drops under its name, and Remove and the true-copy label
+     are 44px targets. */
   @media (max-width: 639px) {
     .gac-cd-main { padding: 20px 16px 64px !important; }
-    .gac-cd-qa { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .gac-cd-qa-item:last-child { grid-column: span 2; }
-    .gac-cd-qa-btn { justify-content: flex-start !important; white-space: normal !important; min-height: 48px !important; padding: 8px 12px !important; }
     .gac-cd-rail, .gac-cd-shiptile { display: none !important; }
     .gac-cd-compact { display: block !important; }
     .gac-cd-chips { row-gap: 12px !important; }
@@ -181,6 +221,11 @@
     .gac-sd-certend { width: 100%; margin-left: 0 !important; }
     .gac-sd-grow { flex: 1 1 auto; }
     .gac-sd-sendicon { display: none !important; }
+    .gac-sd-fileline { display: block !important; }
+    .gac-sd-filesize { font-size: 12px !important; font-weight: 400 !important; color: #33475F !important; }
+    .gac-sd-filesep { position: absolute !important; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+    .gac-sd-remove { margin-top: -6px !important; margin-bottom: -6px !important; min-height: 44px !important; }
+    .gac-sd-declare { min-height: 44px; }
   }
   @media (max-width: 400px) { .gac-sd-counter-icon { display: none !important; } }
   /* ==== end dashboard rules ==== */
@@ -213,9 +258,9 @@
   .gac-sv-label { display: block; font-size: 12.5px; font-weight: 600; color: #33475F; }
   .gac-sv-input { display: block; width: 100%; box-sizing: border-box; margin-top: 4px; min-height: 40px; border: 1.5px solid #CBD6E2; border-radius: 8px; background: #FFFFFF; padding: 8px 10px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #0A2540; }
   .gac-sv-input:focus { border-color: #0E5E8A; }
-  .gac-sv-input[aria-invalid="true"] { border-color: #B45309; }
+  .gac-sv-input[aria-invalid="true"] { border-color: #A84D08; }
   .gac-sv-textarea { resize: vertical; font-weight: 400; line-height: 1.4; }
-  .gac-sv-alert { margin: 8px 0 0; border-left: 4px solid #B45309; border-radius: 8px; background: #FBF0E1; padding: 8px 12px; font-size: 13px; font-weight: 600; color: #B45309; }
+  .gac-sv-alert { margin: 8px 0 0; border-left: 4px solid #A84D08; border-radius: 8px; background: #FBF0E1; padding: 8px 12px; font-size: 13px; font-weight: 600; color: #A84D08; }
   .gac-sv-tab[aria-pressed="false"]:hover { color: #0A2540 !important; border-bottom-color: #CBD6E2 !important; }
   /* Onboarding cards: the company name is the button, and its ::after makes
      the whole card the hit area, so the focus ring goes on the card. */
@@ -246,24 +291,27 @@
     .gac-sv-evgrid { grid-template-columns: minmax(0, 1fr) !important; }
     .gac-sv-evlist { position: static !important; }
   }
-  /* The board keeps four columns where they fit (the site's xl); narrower,
-     it scrolls sideways with snap and never scrolls inside itself. */
+  /* The board keeps four columns where they fit (the site's xl); from 640px
+     to there the columns sit two by two, so it never scrolls sideways and
+     the Decision column is never the one off-screen. On a phone it scrolls
+     sideways with snap and never scrolls inside itself. */
   @media (max-width: 1279px) {
-    .gac-sv-board { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; margin-left: -24px; margin-right: -24px; padding: 4px 24px 12px !important; scroll-padding: 0 24px; }
-    .gac-sv-board::after { content: ''; flex: 0 0 12px; }
-    .gac-sv-col { flex: 0 0 272px; scroll-snap-align: start; }
-    .gac-sv-board-hint { display: block !important; }
+    .gac-sv-board { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   }
   @media (max-width: 639px) {
     .gac-sv-main { padding: 20px 16px 64px !important; }
+    .gac-sv-board { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; margin-left: -16px; margin-right: -16px; padding: 4px 16px 12px !important; }
+    .gac-sv-board::after { content: ''; flex: 0 0 12px; }
+    .gac-sv-col { flex: 0 0 82%; max-width: 300px; scroll-snap-align: start; }
+    .gac-sv-board-hint { display: block !important; }
     .gac-sv-invite { width: 100%; }
     .gac-sv-kpi { padding: 14px 16px !important; }
     .gac-sv-kpi-icon { display: none !important; }
     .gac-sv-tabs { margin-left: -16px; margin-right: -16px; padding: 0 16px; gap: 2px !important; }
     .gac-sv-tab { padding-left: 10px !important; padding-right: 10px !important; }
-    .gac-sv-tab-icon, .gac-sv-tab-tail { display: none !important; }
-    .gac-sv-board { margin-left: -16px; margin-right: -16px; padding: 4px 16px 12px !important; scroll-padding: 0 16px; }
-    .gac-sv-col { flex-basis: 82%; max-width: 300px; }
+    .gac-sv-tab-icon { display: none !important; }
+    /* hidden on a phone to keep the strip on one line; still read out */
+    .gac-sv-tab-tail { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
     .gac-sv-docgrid { padding: 12px !important; }
     .gac-sv-docinner { padding: 16px !important; }
     .gac-sv-watermark { font-size: 16px !important; }
@@ -289,21 +337,19 @@
 
   /* ==== Live dashboards (23 Sep): responsive rules for the deck's supplier
      analytics, classes gac-an-*. Rules go between this line and its end marker. ==== */
-  /* The site's two steps, sm (640) and lg (1024): the grids start as one
-     column and open out; inline styles carry the one-column state. */
+  /* The site's steps, sm (640), lg (1024) and xl (1280): the grids start as
+     one column and open out; inline styles carry the one-column state. */
   @media (max-width: 639px) {
     .gac-an-main { padding: 20px 16px 64px !important; }
     .gac-an-seg button { min-height: 44px !important; }
   }
   @media (min-width: 640px) {
-    .gac-an-period { align-items: flex-end !important; }
     .gac-an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     .gac-an-bench { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     .gac-an-facts { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
     .gac-an-ratings { grid-template-columns: 200px minmax(0, 1fr) !important; }
   }
   @media (min-width: 1024px) {
-    .gac-an-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
     .gac-an-pair { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     .gac-an-demand { grid-template-columns: 468px minmax(0, 1fr) !important; }
     /* Beside the heatmap the readings stack behind a rule on their left. */
@@ -313,20 +359,18 @@
       border-left: 1px solid #E5EAF1 !important; padding-left: 32px !important;
     }
   }
-  /* Bar rows: the label column fits the longest label (--an-label, worked
-     out in analytics.js the site's way) wherever the chart is 384px or wider,
-     as the site's BarRows does, and the funnel's step rates line up under
-     the bars; a column of 64px or less ("5 ★") stays beside its bars at any
-     width. Without these the kit's fixed 132px column wraps the labels. */
-  .gac-an-bars { container-type: inline-size; }
-  @container (min-width: 384px) {
-    .gac-an-bars [data-row] { grid-template-columns: var(--an-label) minmax(0, 1fr) !important; }
-    .gac-an-bars [role="group"] > p { padding-left: calc(var(--an-label) + 24px) !important; }
+  /* KPI tiles four across only from 1180px (the site's 73.75rem): below
+     that, beside the sidebar, a quarter of the row is too narrow for a
+     caption or the response time's chip, so they sit two by two. */
+  @media (min-width: 1180px) {
+    .gac-an-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   }
-  .gac-an-bars-short [data-row] { grid-template-columns: var(--an-label) minmax(0, 1fr) !important; }
-  /* A tag ("▲ Promoted") follows its label after a space, so when it wraps
-     it lines up under the label rather than 6px in. */
-  .gac-an-bars [data-row] > p > span { margin-left: 0 !important; }
+  /* The period switch: under the lede, flush left, until the header has
+     room for both on one line (xl); then top-right. */
+  @media (min-width: 1280px) {
+    .gac-an-head { flex-direction: row !important; align-items: flex-end; justify-content: space-between; }
+    .gac-an-period { align-items: flex-end !important; }
+  }
   /* Hover colours inline styles cannot carry: the unpressed period, the
      "Show the numbers" toggles and "See plans". */
   .gac-an-seg button[aria-pressed="false"]:hover { color: #0A2540 !important; }

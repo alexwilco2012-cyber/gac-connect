@@ -89,6 +89,13 @@ function SD_vault(id) {
   return DK.SILVER_CITY_VAULT.find((v) => v.id === id) || null;
 }
 
+/* A renewal is made out against the certificate in force: an approved
+   renewal, if any (the site's Certificates renewFor, via certInForce). */
+function SD_inForce(id, evidence) {
+  const v = SD_vault(id);
+  return v ? DK_certInForce(v, evidence, DK.DEMO_SUPPLIER_ID) : null;
+}
+
 /* The form each way in starts from (the site's initialForm). */
 function SD_initialForm(mode, evidence) {
   const empty = Object.assign({}, DK.EMPTY_CERT_FORM);
@@ -111,21 +118,24 @@ function SD_initialForm(mode, evidence) {
   return Object.assign(empty, { certType: mode.presetType || '' });
 }
 
-/* "Fill with an example": the ISO 9001 the listing is missing; for a
-   renewal, the same issuer and the next reference, issued this week for the
-   certificate's usual term; for a re-upload, a clear scan of the same one. */
-function SD_exampleFor(mode, current, evidence) {
+/* "Fill with an example", dated from `today` (read in the button's
+   handler), so the form never refuses its own example as expired: the
+   ISO 9001 the listing is missing; for a renewal, the same issuer and the
+   next reference, issued two days before today for the certificate's usual
+   term; for a re-upload, a clear scan of the same one. */
+function SD_exampleFor(mode, current, evidence, today) {
   if (mode.kind === 'renewal') {
-    const v = SD_vault(mode.vaultId);
-    if (!v) return Object.assign({}, DK.EXAMPLE_CERT_FORM);
+    const v = SD_inForce(mode.vaultId, evidence);
+    if (!v) return DK_exampleCertForm(today);
     const years = Math.max(1, Number(v.expiresOn.slice(0, 4)) - Number(v.issuedOn.slice(0, 4)));
     const reference = SD_nextReference(v.reference);
+    const issuedOn = DK_shiftISO(today, { days: -2 });
     return Object.assign({}, DK.EMPTY_CERT_FORM, {
       certType: v.name,
       issuer: v.issuer,
       reference: reference,
-      issuedOn: '2026-09-21',
-      expiresOn: 2026 + years + '-09-20',
+      issuedOn: issuedOn,
+      expiresOn: DK_shiftISO(issuedOn, { years: years, days: -1 }),
       fileName: reference + '.pdf',
       fileSize: 312 * 1024,
       declared: true,
@@ -142,7 +152,7 @@ function SD_exampleFor(mode, current, evidence) {
       reference: current.reference || base.reference,
     });
   }
-  return Object.assign({}, DK.EXAMPLE_CERT_FORM);
+  return DK_exampleCertForm(today);
 }
 
 /* Told the moment a file is chosen; the send would refuse it anyway. */
@@ -547,7 +557,9 @@ function SD_refocus() {
         pillLabel: sent ? 'Quoted ' + VZ.gbp(sent.amountGbp) + ' · awaiting client' : r.replyBy,
         pillStyle: CD_pill(sent ? 'info' : r.tone),
         pillIcon: !sent && r.tone === 'warn' ? CD_icon('clock', 12) : null,
-        ref: r.id.toUpperCase() + (sent ? ' · ' + sent.leadTime + ' · valid ' + sent.validity : ''),
+        /* the ID in its own nowrap span, so it never breaks at its hyphen */
+        refId: r.id.toUpperCase(),
+        refTail: sent ? ' · ' + sent.leadTime + ' · valid ' + sent.validity : '',
         btnLabel: sent ? 'Quote sent' : 'Send a quote',
         btnIcon: CD_icon(sent ? 'check' : 'send', 16),
         btnSr: ' for ' + r.service,
@@ -561,7 +573,8 @@ function SD_refocus() {
     });
     const awaiting = DK.AWAITING_QUOTES.map((q, i) => ({
       service: q.service,
-      sub: q.vessel + ' · ' + q.id.toUpperCase(),
+      vessel: q.vessel,
+      id: q.id.toUpperCase(),
       amount: VZ.gbp(q.amountGbp),
       sentLabel: q.sentLabel,
       rowStyle:
@@ -632,7 +645,7 @@ function SD_refocus() {
           'margin:8px 0 0;border-radius:8px;border-left:4px solid;padding:8px 12px;font-size:12.5px;color:#0A2540;' +
           (row.statusTone === 'danger'
             ? 'border-color:#B91C1C;background:#FBEAEA;'
-            : 'border-color:#B45309;background:#FBF0E1;'),
+            : 'border-color:#A84D08;background:#FBF0E1;'),
         rowStyle:
           'padding:' +
           (i === 0 ? '12px' : '16px') +
@@ -663,7 +676,8 @@ function SD_refocus() {
     const cOpen = !!c && onScreen;
     const mode = c ? c.mode : { kind: 'new' };
     const form = c ? c.form : DK.EMPTY_CERT_FORM;
-    const cVault = mode.kind === 'renewal' ? SD_vault(mode.vaultId) : null;
+    /* "In force now" names the approved renewal, once there is one */
+    const cVault = mode.kind === 'renewal' ? SD_inForce(mode.vaultId, evidence) : null;
     const cSub =
       mode.kind === 'reupload' ? evidence.find((e) => e.id === mode.submissionId) || null : null;
     const locked = mode.kind !== 'new';
@@ -826,7 +840,7 @@ function SD_refocus() {
       sdQuotePillStyle: CD_pill(qReq ? qReq.tone : 'info'),
       sdQuotePrice: q ? q.price : '',
       sdQuotePriceInvalid: qProblem ? 'true' : null,
-      sdQuotePriceBorder: qProblem ? '#B45309' : '#CBD6E2',
+      sdQuotePriceBorder: qProblem ? '#A84D08' : '#CBD6E2',
       sdOnPrice: (e) => patchQuote({ price: e.target.value }),
       sdQuoteLead: q ? q.leadTime : '',
       sdOnLead: (e) => patchQuote({ leadTime: e.target.value }),
@@ -957,7 +971,18 @@ function SD_refocus() {
         });
       },
       sdHasFile: !!form.fileName,
-      sdFileLine: form.fileName ? form.fileName + ' · ' + DK_fileSizeLabel(form.fileSize) : '',
+      /* "{name} · {size}": the name may be shortened, the size never is */
+      sdFileName: form.fileName,
+      sdFileSize: form.fileName ? DK_fileSizeLabel(form.fileSize) : '',
+      /* the always-mounted polite line: the file going on, and any refusal */
+      sdFileLive: form.fileName
+        ? 'Attached ' +
+          form.fileName +
+          ', ' +
+          DK_fileSizeLabel(form.fileSize) +
+          '.' +
+          (fileProblem ? ' ' + fileProblem : '')
+        : '',
       sdFileBoxStyle:
         'display:flex;align-items:center;gap:10px;border-radius:8px;background:#FFFFFF;padding:8px 12px;border:1px solid ' +
         (fileProblem ? '#B91C1C' : '#E5EAF1') +
@@ -982,7 +1007,11 @@ function SD_refocus() {
       sdCertSendIcon: CD_icon('send', 16),
       sdCertExample: () => {
         const cur = self.state.sdCert;
-        if (cur) replaceForm(SD_exampleFor(cur.mode, cur.form, self.state.dkEvidence || []));
+        if (cur) {
+          replaceForm(
+            SD_exampleFor(cur.mode, cur.form, self.state.dkEvidence || [], DK_todayISO()),
+          );
+        }
       },
       sdCertCancel: closeCert,
       sdCertOverlay: (e) => {

@@ -16,13 +16,18 @@ const TONE: Record<Kpi['tone'], string> = {
  * its change chip, one line of context, and a 36px visual — the sparkline
  * where there is a series (daily at 30 days, weekly sums at 90), and this
  * period against the one before for the two rates, which have none.
+ *
+ * Four across only from 1180px: below that, with the sidebar out, a quarter
+ * of the row is too narrow for a caption or the response time's chip, so the
+ * tiles sit two by two rather than cut their context short. The breakpoint is
+ * in rem (73.75rem) because a px one sorts before `sm:` and never applies.
  */
 export function KpiTiles({ period }: { period: Period }) {
   return (
     <section
       aria-label={`Key figures, last ${period} days`}
       data-testid="analytics-kpis"
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      className="grid gap-4 sm:grid-cols-2 min-[73.75rem]:grid-cols-4"
     >
       {kpisFor(period).map((k) => (
         <Tile key={k.id} kpi={k} period={period} />
@@ -43,7 +48,7 @@ function Tile({ kpi, period }: { kpi: Kpi; period: Period }) {
           <Icon name={kpi.icon} size={15} />
         </span>
       </div>
-      <p className="mt-1 flex items-center gap-2">
+      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
         <span
           data-kpi-value=""
           className="font-display text-[26px] leading-tight font-bold whitespace-nowrap text-ink"

@@ -12,7 +12,7 @@
    consolidation card's pillars write), the invoice decisions, the crew-change
    letters and the logistics and customs records, so every count moves with
    the screens that own them. The consolidation card and the header keep the
-   core's bindings.
+   core's bindings, bar the roof's wordmark (cdRoofLabel).
 
    Commission is a supplier mechanism: no binding here may carry the word, a
    band or a percentage of a supplier's work, including table captions and
@@ -231,7 +231,7 @@ function CD_icon(name, size, opts) {
 /* [background, text, border]: the site's Pill tones. */
 const CD_TONES = {
   info: ['#E8F1F7', '#0E5E8A', ''],
-  warn: ['#FBF0E1', '#B45309', ''],
+  warn: ['#FBF0E1', '#A84D08', ''],
   success: ['#E7F4EF', '#047857', ''],
   verified: ['#E7F4EF', '#047857', ''],
   danger: ['#FBEAEA', '#B91C1C', ''],
@@ -291,8 +291,6 @@ const CD_SOURCE_LABELS = {
   svs: 'SVS',
 };
 
-const CD_CHIP_HOVER = { info: '#D5E7F2', warn: '#F6E2C6', success: '#D3EBE1' };
-
 function CD_sum(xs) {
   return xs.reduce((a, b) => a + b, 0);
 }
@@ -301,6 +299,28 @@ function CD_sum(xs) {
 function CD_listOf(names) {
   if (names.length <= 1) return names.join('');
   return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+}
+
+/* The consolidation card's roof wordmark ("GAC CONNECT"). The card is the
+   core's, but a {{ }} binding inside an SVG text element renders nothing,
+   so this one text element is built here with the partial's own attributes;
+   the rest of the card is untouched. Cached per brand string. */
+const CD_ROOF_CACHE = {};
+function CD_roofLabel(label) {
+  if (!CD_ROOF_CACHE[label]) {
+    CD_ROOF_CACHE[label] = React.createElement(
+      'text',
+      {
+        x: 119,
+        y: 42,
+        textAnchor: 'middle',
+        fill: '#0A2540',
+        style: { fontSize: '10px', fontWeight: 800, letterSpacing: '.08em' },
+      },
+      label,
+    );
+  }
+  return CD_ROOF_CACHE[label];
 }
 
 /* ---------- the spend chart ---------- */
@@ -444,12 +464,15 @@ function CD_spendChart(calc) {
           format: VZ.gbp,
           axisFormat: VZ.compactGbp,
           directLabelLast: true,
-          lower: {
-            label: 'Saved by your tier discount',
-            color: VZ.C.derived,
-            values: saved,
-            format: VZ.gbp,
-          },
+          lower:
+            pct > 0
+              ? {
+                  label: 'Saved by your tier discount',
+                  color: VZ.C.derived,
+                  values: saved,
+                  format: VZ.gbp,
+                }
+              : undefined,
           ariaLabel:
             'GAC spend by service line per month, April to September, with the tier saving below',
         }),
@@ -776,6 +799,9 @@ function CD_spendChart(calc) {
       }),
 
       cdActivity: activityRows,
+      cdRoofLabel: CD_roofLabel(
+        ((this.props.brandName ?? 'GAC Connect').trim() || 'GAC Connect').toUpperCase(),
+      ),
       cdShieldIcon: CD_icon('shield-check', 16, { style: { marginTop: '2px', color: '#0E5E8A' } }),
       cdClientIcon: CD_icon('ship', 15, { style: { marginRight: '8px' } }),
       cdSupplierIcon: CD_icon('store', 15, { style: { marginRight: '8px' } }),

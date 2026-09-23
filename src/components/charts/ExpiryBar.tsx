@@ -1,3 +1,4 @@
+import { ALERT_TIERS } from '../../lib/svs';
 import { VIZ } from './palette';
 
 export type ExpiryState = 'ok' | 'due' | 'lapsed' | 'pending' | 'info' | 'rejected';
@@ -21,14 +22,16 @@ const GLYPH: Record<ExpiryState, string> = {
   rejected: '',
 };
 
-const RULES = [7, 30, 90] as const;
+/** The alert tiers (90 / 30 / 7), nearest first — the supplier rule's own list. */
+const RULES = [...ALERT_TIERS].sort((a, b) => a - b);
 
 /**
  * Days left on a certificate (spec §3 Certificates): a 0–180 day bar whose
- * colour comes from the certificate's state — never from the days in the
- * chart, so it cannot drift from `lib/svs` — with 1px rules at 90, 30 and 7
- * days. Longer terms clamp with a pointed end and keep their real number;
- * a submission awaiting the SVS team is neutral grey. Static: `role="img"`.
+ * colour comes from the certificate's state (`lib/svsDesk`, which reads
+ * `alertTier`), with 1px rules at each of `lib/svs`'s `ALERT_TIERS` — so
+ * neither the colour nor the rules can drift from the supplier rule. Longer
+ * terms clamp with a pointed end and keep their real number; a submission
+ * awaiting the SVS team is neutral grey. Static: `role="img"`.
  */
 export function ExpiryBar({
   daysLeft,
@@ -42,7 +45,7 @@ export function ExpiryBar({
   max?: number;
   /** What a screen reader hears: "Expires in 171 days, 13 Mar 2027". */
   label: string;
-  /** Show "7 · 30 · 90 days" under the rules (once, on the first row). */
+  /** Show the rules' day counts ("7 · 30 · 90 days") under them, once, on the first row. */
   scale?: boolean;
 }) {
   const lapsed = state === 'lapsed' || (daysLeft !== null && daysLeft <= 0);
@@ -106,13 +109,13 @@ export function ExpiryBar({
       </div>
       {scale ? (
         <div className="relative mt-0.5 mr-[82px] h-3.5 text-[10.5px] leading-none text-ink-soft">
-          {RULES.map((d) => (
+          {RULES.map((d, i) => (
             <span
               key={d}
               className="absolute top-0.5 -translate-x-1/2 whitespace-nowrap tabular-nums"
               style={{ left: `${(d / max) * 100}%` }}
             >
-              {d === 90 ? '90 days' : d}
+              {i === RULES.length - 1 ? `${d} days` : d}
             </span>
           ))}
         </div>

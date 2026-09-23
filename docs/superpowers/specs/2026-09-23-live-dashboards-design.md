@@ -119,8 +119,10 @@ Footer line kept: "Crew joining or leaving on any of these? Open crew change —
 off the flight, launches, and the letters." (+ " N in progress." from the crew store).
 
 *GAC spend* — title "GAC spend, last six months", subtitle "By service line, with what your tier
-discount saved underneath". Stacked columns Apr–Sep 2026 of the **lines currently held** (Agency
-and Procurement always; Logistics/Customs only when their pillar is on), ladder order bottom→top
+discount saved underneath". Stacked columns Apr–Sep 2026 of the **lines currently held** (Procurement
+always; Agency, Logistics and Customs only when their pillar is on — revised 23 Sep: Agency is a
+switch in the tier card, and a chart that kept it would contradict the "Not consolidated" Agency
+row on the same screen), ladder order bottom→top
 Agency, Logistics, Customs, Procurement; below it an aligned lower panel "Saved by your tier
 discount" (ink-soft columns) = month total × current tier % (rounded to £). Header figures (≤22px):
 "£{6-month total}" and "£{6-month saving} saved at {pct}%". Toggling a pillar updates the chart,
@@ -213,7 +215,7 @@ certificate"** (opens the certificate modal, mode `new`). Then one row per vault
 "Expires 13 Mar 2027"; a days-left bar (0–180 days scale, clamps with a chevron beyond 180, tick
 rules at 90/30/7, colour from state: ok success ✓ · due warn ⚠ · lapsed danger ✗ · awaiting review
 neutral `#8595A8`); a status pill; and a text button "Upload renewal" (opens the modal, mode
-`renewal`, type locked to that certificate). Submissions of new documents appear as extra rows with
+`renewal`, type locked to that certificate). A certificate sent again after one was approved keeps the approved row and shows the newer submission as its own "Update awaiting SVS review" / "Update rejected" row; an approved renewal keeps its new dates while a later renewal is pending (added 23 Sep). Submissions of new documents appear as extra rows with
 "Awaiting SVS review" (info) / "Verified by the SVS team" (verified) / "More information needed"
 (warn, with the team's note and a "Re-upload" button) / "Rejected" (danger, with reason).
 Below the rows: "Recommended for Welding: 3 of 4 on file — add ISO 9001 quality management to
@@ -236,7 +238,7 @@ the gate — the rule is set out in the Supplier Vetting System."
   1 Sep 2029, file "ISO9001-certificate.pdf" 248 KB, ticked), "Cancel".
 • Validation (lib `validateCertForm`), shown as one `role="alert"` line "Still needed: …":
   type; description (if Other); issuing body; reference; issue date; expiry date; "expiry after
-  issue"; "expiry in the future — this certificate has already expired"; file; "file must be a PDF,
+  issue"; "the issue date cannot be in the future" (added 23 Sep); "expiry in the future — this certificate has already expired"; file; "file must be a PDF,
   JPG or PNG"; "file must be under 10 MB"; the confirmation tick.
 • On send: `submitEvidence(…)` → toast "Sent to the SVS team: {cert}. It shows as awaiting review
   until they decide." (tag `SVS` on the deck).
@@ -327,7 +329,10 @@ Site `src/store/svsDesk.ts` → `useSvsDesk` with `evidence`, `applications` (ke
 `setCheck(appId, checkId, state)`, `advanceApplication(appId)`, `requestInfo(appId, note)`,
 `clearInfoRequest(appId)` (simulates the applicant replying), `approveApplication(appId)`,
 `declineApplication(appId, reason)`, `inviteSupplier({ company, category, port })`, `reset()`.
-Every action appends an audit-trail entry (role labels; time via `stampLabel()`).
+Every action appends an audit-trail entry (role labels). Revised 23 Sep: desk stamps (trail
+entries, `submittedAt`, `sentAt`) read **"Today HH:MM"** from the device's time of day, not a
+calendar date — the seeds are written from the demo's Thursday morning, so an absolute date beside
+"Today 08:05" reads as a different day and breaks "newest first".
 Site `src/store/supplierDesk.ts` → `useSupplierDesk` with `quotes` (key `supplierDesk.quotes`),
 `sendQuote(requestId, { amountGbp, leadTime, validity, note })`, `reset()`.
 Deck: one feature module owns the same state under `pres.desk.evidence`, `pres.desk.applications`,
@@ -443,7 +448,7 @@ into both surfaces, with these hard totals:
 | profile views | **412** | 349 | 318 | 1,079 | 951 |
 | quote requests | **38** | 34 | 29 | 101 | 88 |
 Category-average views per day (benchmark line): a smoother series averaging 9.1/day.
-`SPARKLINE_30D` in `src/data/plans.ts` becomes the last-30 requests series (sum 38, single peak).
+`SPARKLINE_30D` (it summed to 52) is retired; the supplier view's requests sparkline is `SUPPLIER_KPIS` requests, the last-30 requests series (sum 38, single peak).
 `PERIOD_SUMMARY[30]`: win 34% (prev 30%), won 12 of 35 quoted, response 2.1 hrs (prev 2.6),
 category win 27%, category response 5.4 hrs; funnel appearances 2,960 → views 412 → requests 38
 → quotes sent 35 → won 12; sources Marketplace search 168 · Welding category page 104 · Promoted

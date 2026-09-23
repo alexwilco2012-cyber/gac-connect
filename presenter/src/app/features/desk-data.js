@@ -4,9 +4,8 @@
    dashboard, the supplier dashboard, the SVS desk and supplier analytics:
 
      src/data/desk.ts, clientDesk.ts, supplierDesk.ts, svsDesk.ts, analytics.ts
-     src/lib/clientDesk.ts, src/lib/svsDesk.ts (and tierPct from lib/tier.ts)
-     src/lib/crewChange.ts stampLabel, src/store/svsDesk.ts APPROVED_NOTE,
-     src/data/plans.ts SPARKLINE_30D
+     src/lib/clientDesk.ts, src/lib/svsDesk.ts (and tierPct from lib/tier.ts,
+     alertTier from lib/svs.ts), src/store/svsDesk.ts APPROVED_NOTE
 
    The same figures, labels and rules as the site, value for value: every
    constant sits on DK under the site's export name (DK.PORT_CALLS,
@@ -844,27 +843,16 @@ const DK = DK_deepFreeze(
       fileSize: 0,
       declared: false,
     };
-    /* "Fill with an example": the ISO 9001 the Welding listing is missing. */
-    const EXAMPLE_CERT_FORM = {
-      certType: 'ISO 9001 quality management',
-      otherLabel: '',
-      issuer: 'Northgate Quality Assurance',
-      reference: 'QA-9001-2618',
-      issuedOn: '2026-09-02',
-      expiresOn: '2029-09-01',
-      fileName: 'ISO9001-certificate.pdf',
-      fileSize: 248 * 1024,
-      declared: true,
-    };
+    /* The "Fill with an example" form as it reads on the demo date (2 Sep 2026
+       to 1 Sep 2029): a fixed form for checks. The modal fills
+       DK_exampleCertForm(DK_todayISO()), which passes on any date. */
+    const EXAMPLE_CERT_FORM = DK_exampleCertForm(VAULT_AS_OF_ISO);
     const MAX_FILE_BYTES = 10 * 1024 * 1024;
     const ACCEPTED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
 
     /* ---- src/store/svsDesk.ts ---- */
     const APPROVED_NOTE =
       'Approved — listing goes live at the next marketplace publish (simulated)';
-
-    /* ---- src/data/plans.ts: the last 30 days of quote requests ---- */
-    const SPARKLINE_30D = REQUESTS_90.slice(60);
 
     return {
       DEMO_CLIENT,
@@ -916,7 +904,6 @@ const DK = DK_deepFreeze(
       MAX_FILE_BYTES,
       ACCEPTED_EXTENSIONS,
       APPROVED_NOTE,
-      SPARKLINE_30D,
     };
   })(),
 );
@@ -1048,6 +1035,9 @@ function DK_validateCertForm(form, todayISO) {
   if (!(form.issuer || '').trim()) problems.push('issuing body');
   if (!(form.reference || '').trim()) problems.push('reference or certificate number');
   if (!form.issuedOn) problems.push('issue date');
+  else if (form.issuedOn > todayISO) {
+    problems.push('issue date today or earlier — the issue date cannot be in the future');
+  }
   if (!form.expiresOn) problems.push('expiry date');
   if (form.issuedOn && form.expiresOn && form.expiresOn <= form.issuedOn) {
     problems.push('expiry after issue');
@@ -1065,12 +1055,18 @@ function DK_validateCertForm(form, todayISO) {
   return problems;
 }
 
-/* "248 KB", "1.2 MB", "512 bytes", as a file browser puts it. */
+/* "248 KB", "1.2 MB", "10.3 MB", "512 bytes", as a file browser puts it.
+   Megabytes keep one decimal below 100, and a file over the limit never
+   rounds down onto it: a refused file must not read "10 MB" beside "the
+   limit is 10 MB". */
 function DK_fileSizeLabel(bytes) {
   if (bytes < 1024) return bytes + ' bytes';
   if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
   const mb = bytes / (1024 * 1024);
-  return (mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10) + ' MB';
+  if (mb >= 100) return Math.round(mb) + ' MB';
+  const tenths = Math.round(mb * 10);
+  const limitTenths = (DK.MAX_FILE_BYTES / (1024 * 1024)) * 10;
+  return (bytes > DK.MAX_FILE_BYTES ? Math.max(tenths, limitTenths + 1) : tenths) / 10 + ' MB';
 }
 
 const DK_MONTHS = [
@@ -1109,6 +1105,36 @@ function DK_daysBetween(fromISO, toISO) {
   return Math.round((Date.UTC(b.y, b.m - 1, b.d) - Date.UTC(a.y, a.m - 1, a.d)) / 86400000);
 }
 
+/* An ISO date moved by whole years and days: '2026-09-02' + 3 years − 1 day
+   gives '2029-09-01'. An unreadable date comes back as it went in. */
+function DK_shiftISO(iso, by) {
+  const p = DK_parseISO(iso);
+  if (!p) return iso;
+  const d = new Date(
+    Date.UTC(p.y + ((by && by.years) || 0), p.m - 1, p.d + ((by && by.days) || 0)),
+  );
+  return d.toISOString().slice(0, 10);
+}
+
+/* "Fill with an example": the ISO 9001 the Welding listing is missing,
+   issued three weeks before todayISO for three years less a day. Dated from
+   the day it is filled in, so it passes validation whenever the demo runs;
+   on the demo date that is the spec's 2 Sep 2026 to 1 Sep 2029. */
+function DK_exampleCertForm(todayISO) {
+  const issuedOn = DK_shiftISO(todayISO, { days: -21 });
+  return {
+    certType: 'ISO 9001 quality management',
+    otherLabel: '',
+    issuer: 'Northgate Quality Assurance',
+    reference: 'QA-9001-2618',
+    issuedOn: issuedOn,
+    expiresOn: DK_shiftISO(issuedOn, { years: 3, days: -1 }),
+    fileName: 'ISO9001-certificate.pdf',
+    fileSize: 248 * 1024,
+    declared: true,
+  };
+}
+
 /* Today on this device, 'YYYY-MM-DD'. Impure: handlers and state methods only. */
 function DK_todayISO() {
   const d = new Date();
@@ -1117,16 +1143,16 @@ function DK_todayISO() {
   return d.getFullYear() + '-' + mm + '-' + dd;
 }
 
-/* 'Thu 24 Sep · 09:12', the site's stampLabel (lib/crewChange.ts). Impure. */
-function DK_stampLabel(d) {
+/* "Today 09:12": how the desks stamp a trail entry, a submission or a sent
+   quote (the site's deskStamp): this device's time of day, worded like the
+   seeded "Today 08:05". The seeds are written from the demo's Thursday
+   morning, so a calendar date beside them would read as another day and
+   break "newest first" (spec §4.3, revised 23 Sep). Impure: actions only. */
+function DK_deskStamp(d) {
   const dt = d || new Date();
-  const day = dt.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  const time = dt.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-  return day + ' · ' + time;
+  const hh = String(dt.getHours()).padStart(2, '0');
+  const mm = String(dt.getMinutes()).padStart(2, '0');
+  return 'Today ' + hh + ':' + mm;
 }
 
 function DK_evidenceStatus(stage) {
@@ -1241,17 +1267,32 @@ function DK_approvedCount(apps) {
 
 /* ---------- the overlay rule (spec §4.4) ---------- */
 
-/* The SVS alert tiers applied to a certificate's own dates: due inside 90 days. */
+/* lib/svs.ts alertTier: the nearest tier a certificate is inside (7, 30 or
+   90 days), or null when it is further out than the widest. */
+function DK_alertTier(daysToExpiry) {
+  const ascending = DC_DATA.ALERT_TIERS.slice().sort((a, b) => a - b);
+  const tier = ascending.find((t) => daysToExpiry <= t);
+  return tier === undefined ? null : tier;
+}
+
+/* The SVS alert tiers applied to a certificate's own dates: due inside the
+   widest tier, so the rows cannot drift from the supplier rule. */
 function DK_stateFromDays(daysLeft) {
   if (daysLeft <= 0) return 'lapsed';
-  if (daysLeft <= 90) return 'due';
-  return 'ok';
+  return DK_alertTier(daysLeft) !== null ? 'due' : 'ok';
 }
 
 function DK_inForceStatus(state) {
   if (state === 'lapsed') return { statusLabel: 'Lapsed', statusTone: 'danger' };
   if (state === 'due') return { statusLabel: 'Renewal due', statusTone: 'warn' };
   return { statusLabel: 'In date', statusTone: 'verified' };
+}
+
+/* An approved certificate's status: verified while in date, the alert tier once due. */
+function DK_approvedStatus(state) {
+  return state === 'ok'
+    ? { statusLabel: 'Verified by the SVS team', statusTone: 'verified' }
+    : DK_inForceStatus(state);
 }
 
 function DK_refNumber(id) {
@@ -1267,47 +1308,138 @@ function DK_latest(subs) {
   );
 }
 
-/* The supplier's certificate rows: each vault certificate carrying its latest
-   renewal (pending: shown beside the current dates; approved: the new dates
-   take over), then one row per new certificate sent in, latest first. A
-   re-upload supersedes an earlier submission of the same certificate. */
+/* Certificate names match whatever their case or spacing. */
+function DK_certKey(name) {
+  return name.trim().toLowerCase();
+}
+
+/* A vault certificate as it stands: the latest approved renewal's issuer,
+   reference and dates, or the vault's own when none is approved. A renewal
+   still with the SVS team, sent back or rejected changes nothing here. The
+   renewal modal's "In force now" line reads this too. */
+function DK_certInForce(cert, evidence, supplierId) {
+  const renewed = DK_latest(
+    evidence.filter(
+      (e) =>
+        e.supplierId === supplierId &&
+        e.kind === 'renewal' &&
+        e.vaultId === cert.id &&
+        e.stage === 'approved',
+    ),
+  );
+  if (!renewed) return cert;
+  return Object.assign({}, cert, {
+    issuer: renewed.issuer,
+    reference: renewed.reference,
+    issuedOn: renewed.issuedOn,
+    expiresOn: renewed.expiresOn,
+    daysLeft: renewed.daysLeft,
+  });
+}
+
+/* A supplier's new certificates, one entry per name: the latest approved
+   submission (onFile, the certificate on file, if any) and the latest
+   submission of any stage (newest). DK_vaultRows and DK_certsWithApproved
+   both read this, so the dashboard and the register or profile agree. */
+function DK_newCertificates(evidence, supplierId) {
+  const byName = new Map();
+  evidence.forEach((e) => {
+    if (e.supplierId !== supplierId || e.kind !== 'new') return;
+    const key = DK_certKey(e.certLabel);
+    byName.set(key, (byName.get(key) || []).concat([e]));
+  });
+  return Array.from(byName.values()).map((subs) => {
+    const onFile = DK_latest(subs.filter((s) => s.stage === 'approved'));
+    return Object.assign(onFile ? { onFile: onFile } : {}, { newest: DK_latest(subs) });
+  });
+}
+
+/* One new certificate's row. `update` marks a later submission of a
+   certificate already on file, which shows as its own row beside it. */
+function DK_newCertRow(e, update) {
+  const base = {
+    id: e.id,
+    name: e.certLabel,
+    issuer: e.issuer,
+    reference: e.reference,
+    expiresOn: e.expiresOn,
+    submissionId: e.id,
+  };
+  const status = DK_evidenceStatus(e.stage);
+  switch (e.stage) {
+    case 'approved': {
+      const state = DK_stateFromDays(e.daysLeft);
+      return Object.assign(
+        {},
+        base,
+        { daysLeft: e.daysLeft, state: state },
+        DK_approvedStatus(state),
+      );
+    }
+    case 'info-requested':
+      return Object.assign({}, base, {
+        daysLeft: null,
+        state: 'info',
+        statusLabel: status.label,
+        statusTone: 'warn',
+        note: e.note,
+      });
+    case 'rejected':
+      return Object.assign({}, base, {
+        daysLeft: null,
+        state: 'rejected',
+        statusLabel: update ? 'Update rejected' : status.label,
+        statusTone: 'danger',
+        note: e.note,
+      });
+    default:
+      return Object.assign({}, base, {
+        daysLeft: e.daysLeft,
+        state: 'pending',
+        statusLabel: update ? 'Update awaiting SVS review' : status.label,
+        statusTone: 'info',
+      });
+  }
+}
+
+/* The supplier's certificate rows.
+
+   Vault certificates: the dates are the certificate in force
+   (DK_certInForce: the latest approved renewal, else the vault's own), and
+   the latest renewal sets the status on top of them: awaiting review, more
+   information needed or rejected beside the dates in force, or verified once
+   approved. A later renewal never takes an approved one's dates away.
+
+   New certificates, one group per name, latest first. The latest approval
+   is the certificate on file; a later submission of the same name shows as
+   its own row under it ("Update awaiting SVS review", "More information
+   needed", "Update rejected"), so sending one again never hides what is
+   held. With nothing approved, the latest submission stands alone: a
+   re-upload replaces the one the SVS team sent back. */
 function DK_vaultRows(vault, evidence, supplierId) {
   const mine = evidence.filter((e) => e.supplierId === supplierId);
 
   const held = vault.map((cert) => {
-    const renewal = DK_latest(mine.filter((e) => e.kind === 'renewal' && e.vaultId === cert.id));
+    const renewals = mine.filter((e) => e.kind === 'renewal' && e.vaultId === cert.id);
+    const inForce = DK_certInForce(cert, renewals, supplierId);
     const base = {
       id: cert.id,
       name: cert.name,
       vaultId: cert.id,
-      issuer: cert.issuer,
-      reference: cert.reference,
-      expiresOn: cert.expiresOn,
-      daysLeft: cert.daysLeft,
+      issuer: inForce.issuer,
+      reference: inForce.reference,
+      expiresOn: inForce.expiresOn,
+      daysLeft: inForce.daysLeft,
     };
-    const state = DK_stateFromDays(cert.daysLeft);
+    const state = DK_stateFromDays(inForce.daysLeft);
+    const renewal = DK_latest(renewals);
     if (!renewal) return Object.assign({}, base, { state: state }, DK_inForceStatus(state));
 
     const tracked = { submissionId: renewal.id };
     switch (renewal.stage) {
-      case 'approved': {
-        const renewed = DK_stateFromDays(renewal.daysLeft);
-        return Object.assign(
-          {},
-          base,
-          tracked,
-          {
-            issuer: renewal.issuer,
-            reference: renewal.reference,
-            expiresOn: renewal.expiresOn,
-            daysLeft: renewal.daysLeft,
-            state: renewed,
-          },
-          renewed === 'ok'
-            ? { statusLabel: 'Verified by the SVS team', statusTone: 'verified' }
-            : DK_inForceStatus(renewed),
-        );
-      }
+      case 'approved':
+        /* The latest renewal is approved, so it is the certificate in force. */
+        return Object.assign({}, base, tracked, { state: state }, DK_approvedStatus(state));
       case 'info-requested':
         return Object.assign({}, base, tracked, {
           state: state,
@@ -1332,81 +1464,39 @@ function DK_vaultRows(vault, evidence, supplierId) {
     }
   });
 
-  /* One row per new certificate, the latest submission of each winning. */
-  const byName = new Map();
-  mine
-    .filter((x) => x.kind === 'new')
-    .forEach((e) => {
-      const key = e.certLabel.trim().toLowerCase();
-      const current = byName.get(key);
-      if (!current || DK_refNumber(e.id) > DK_refNumber(current.id)) byName.set(key, e);
-    });
-  const added = Array.from(byName.values())
-    .sort((a, b) => DK_refNumber(b.id) - DK_refNumber(a.id))
-    .map((e) => {
-      const base = {
-        id: e.id,
-        name: e.certLabel,
-        issuer: e.issuer,
-        reference: e.reference,
-        expiresOn: e.expiresOn,
-        submissionId: e.id,
-      };
-      const status = DK_evidenceStatus(e.stage);
-      switch (e.stage) {
-        case 'approved':
-          return Object.assign({}, base, {
-            daysLeft: e.daysLeft,
-            state: DK_stateFromDays(e.daysLeft),
-            statusLabel: status.label,
-            statusTone: 'verified',
-          });
-        case 'info-requested':
-          return Object.assign({}, base, {
-            daysLeft: null,
-            state: 'info',
-            statusLabel: status.label,
-            statusTone: 'warn',
-            note: e.note,
-          });
-        case 'rejected':
-          return Object.assign({}, base, {
-            daysLeft: null,
-            state: 'rejected',
-            statusLabel: status.label,
-            statusTone: 'danger',
-            note: e.note,
-          });
-        default:
-          return Object.assign({}, base, {
-            daysLeft: e.daysLeft,
-            state: 'pending',
-            statusLabel: status.label,
-            statusTone: 'info',
-          });
-      }
+  const added = [];
+  DK_newCertificates(mine, supplierId)
+    .sort((a, b) => DK_refNumber(b.newest.id) - DK_refNumber(a.newest.id))
+    .forEach((g) => {
+      if (!g.onFile) added.push(DK_newCertRow(g.newest, false));
+      else if (g.newest === g.onFile) added.push(DK_newCertRow(g.onFile, false));
+      else added.push(DK_newCertRow(g.onFile, false), DK_newCertRow(g.newest, true));
     });
 
   return held.concat(added);
 }
 
 /* A supplier's certificates as the gate reads them ({ name, state }), plus
-   each approved new certificate as { name, state: 'ok' }. Existing entries
-   pass through untouched, so no status, bell, alert or marketplace row ever
-   moves on an approval. The deck's roster names its certificates `label`:
-   Component#_dkCertsFor (desk-state.js) adapts it. */
+   each new certificate on file (its latest approval, as DK_vaultRows shows
+   it) as { name, state: 'ok' }. Existing entries pass through untouched, so
+   no status, bell, alert or marketplace row ever moves on an approval. The
+   deck's roster names its certificates `label`: Component#_dkCertsFor
+   (desk-state.js) adapts it. */
 function DK_certsWithApproved(supplierId, certs, evidence) {
   const out = certs.slice();
-  const names = new Set(certs.map((c) => c.name.toLowerCase()));
-  const approved = evidence
-    .filter((e) => e.supplierId === supplierId && e.kind === 'new' && e.stage === 'approved')
-    .sort((a, b) => DK_refNumber(a.id) - DK_refNumber(b.id));
-  approved.forEach((e) => {
-    const key = e.certLabel.toLowerCase();
-    if (names.has(key)) return;
-    names.add(key);
-    out.push({ name: e.certLabel, state: 'ok' });
+  const names = new Set(certs.map((c) => DK_certKey(c.name)));
+  const onFile = [];
+  DK_newCertificates(evidence, supplierId).forEach((g) => {
+    if (g.onFile) onFile.push(g.onFile);
   });
+  onFile
+    .sort((a, b) => DK_refNumber(a.id) - DK_refNumber(b.id))
+    .forEach((e) => {
+      const key = DK_certKey(e.certLabel);
+      if (names.has(key)) return;
+      names.add(key);
+      out.push({ name: e.certLabel, state: 'ok' });
+    });
   return out;
 }
 
@@ -1417,7 +1507,7 @@ function DK_recommendedStatus(rows) {
   const pending = [];
   let onFile = 0;
   DK.RECOMMENDED_FOR_WELDING.forEach((name) => {
-    const matches = rows.filter((r) => r.name.trim().toLowerCase() === name.toLowerCase());
+    const matches = rows.filter((r) => DK_certKey(r.name) === DK_certKey(name));
     if (matches.some((r) => r.state === 'ok' || r.state === 'due')) onFile += 1;
     else if (matches.some((r) => r.state === 'pending')) pending.push(name);
     else missing.push(name);

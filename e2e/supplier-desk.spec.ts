@@ -31,6 +31,29 @@ const pdf = (name: string, bytes = 2048) => ({
   buffer: Buffer.alloc(bytes, 37),
 });
 
+/** An ISO date moved by whole years and days, as `shiftISO` in lib/svsDesk does it. */
+function shiftISO(iso: string, by: { years?: number; days?: number }): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const moved = new Date(Date.UTC(y! + (by.years ?? 0), m! - 1, d! + (by.days ?? 0)));
+  return moved.toISOString().slice(0, 10);
+}
+
+/**
+ * Today on this machine — the form checks dates against the device clock, so
+ * the examples are dated from it too. On the demo date (23 Sep 2026) the ISO
+ * 9001 example reads as the spec has it: issued 2 Sep 2026, expires 1 Sep 2029.
+ */
+const TODAY = (() => {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+    .toISOString()
+    .slice(0, 10);
+})();
+
+/** The ISO 9001 example: issued three weeks ago for three years less a day. */
+const EXAMPLE_ISSUED = shiftISO(TODAY, { days: -21 });
+const EXAMPLE_EXPIRES = shiftISO(EXAMPLE_ISSUED, { years: 3, days: -1 });
+
 test('a quote is validated, sent, and moves the pipeline counters', async ({ page }) => {
   await openSupplierView(page);
 
@@ -127,8 +150,8 @@ test('a certificate goes to the SVS team, survives a reload and goes with Reset 
   await expect(dialog.getByLabel('Describe the certificate')).toHaveCount(0);
   await dialog.getByLabel('Issuing body').fill('Northgate Quality Assurance');
   await dialog.getByLabel('Reference or certificate number').fill('QA-9001-2618');
-  await dialog.getByLabel('Issue date').fill('2026-09-02');
-  await dialog.getByLabel('Expiry date').fill('2029-09-01');
+  await dialog.getByLabel('Issue date').fill(EXAMPLE_ISSUED);
+  await dialog.getByLabel('Expiry date').fill(EXAMPLE_EXPIRES);
 
   // A real file input sits behind the Browse files button; only name and size are kept.
   await expect(dialog.getByRole('button', { name: 'Browse files' })).toBeVisible();
@@ -136,6 +159,10 @@ test('a certificate goes to the SVS team, survives a reload and goes with Reset 
     .getByLabel('Certificate file')
     .setInputFiles(pdf('ISO9001-certificate.pdf', 253_952));
   await expect(dialog.getByTestId('chosen-file')).toContainText('ISO9001-certificate.pdf · 248 KB');
+  // Attaching is announced, not only drawn.
+  await expect(dialog.locator('[aria-live="polite"]')).toHaveText(
+    'Attached ISO9001-certificate.pdf, 248 KB.',
+  );
   await dialog.getByLabel('I confirm this is a true copy of the current certificate.').check();
   await dialog.getByRole('button', { name: 'Send to the SVS team' }).click();
 
@@ -180,7 +207,13 @@ test('the wrong kind of file, or one over 10 MB, is refused', async ({ page }) =
   });
   await expect(dialog.getByTestId('chosen-file')).toContainText('setup.exe');
   await expect(dialog.getByTestId('file-problem')).toContainText('PDF, JPG or PNG');
+  // The refusal is announced the moment the file is chosen, before any send.
+  await expect(dialog.locator('[aria-live="polite"]')).toContainText(
+    'This file is not a PDF, JPG or PNG.',
+  );
+  await expect(dialog.getByRole('alert')).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Send to the SVS team' }).click();
+  // Still one alert: the "Still needed" line.
   await expect(dialog.getByRole('alert')).toContainText('file must be a PDF, JPG or PNG');
   await expect(dialog).toBeVisible();
 
@@ -209,8 +242,8 @@ test('Fill with an example sends the ISO 9001 the listing is missing', async ({ 
   await expect(dialog.getByLabel('Certificate type')).toHaveValue('ISO 9001 quality management');
   await expect(dialog.getByLabel('Issuing body')).toHaveValue('Northgate Quality Assurance');
   await expect(dialog.getByLabel('Reference or certificate number')).toHaveValue('QA-9001-2618');
-  await expect(dialog.getByLabel('Issue date')).toHaveValue('2026-09-02');
-  await expect(dialog.getByLabel('Expiry date')).toHaveValue('2029-09-01');
+  await expect(dialog.getByLabel('Issue date')).toHaveValue(EXAMPLE_ISSUED);
+  await expect(dialog.getByLabel('Expiry date')).toHaveValue(EXAMPLE_EXPIRES);
   await expect(dialog.getByTestId('chosen-file')).toContainText('ISO9001-certificate.pdf · 248 KB');
   await expect(
     dialog.getByLabel('I confirm this is a true copy of the current certificate.'),
@@ -251,6 +284,12 @@ test('Upload renewal locks the type to the certificate being renewed', async ({ 
   await trigger.click();
   await dialog.getByRole('button', { name: 'Fill with an example' }).click();
   await expect(type).toHaveValue('Coded welder qualifications (BS EN ISO 9606-1)');
+  // The example is dated from today, so it is never refused as expired.
+  const issued = shiftISO(TODAY, { days: -2 });
+  await expect(dialog.getByLabel('Issue date')).toHaveValue(issued);
+  await expect(dialog.getByLabel('Expiry date')).toHaveValue(
+    shiftISO(issued, { years: 1, days: -1 }),
+  );
   await dialog.getByRole('button', { name: 'Send to the SVS team' }).click();
   await expect(dialog).toHaveCount(0);
   const row = page
@@ -261,17 +300,134 @@ test('Upload renewal locks the type to the certificate being renewed', async ({ 
   await expect(row).toContainText('Expires 13 Mar 2027');
 });
 
+test('a renewal is made out against the certificate in force, approved renewal included', async ({
+  page,
+}) => {
+  // GWO renewed once and approved by the SVS team; the vault still holds 2291.
+  await page.addInitScript(() => {
+    window.sessionStorage.setItem('gac-connect:demoSession', 'true');
+    window.localStorage.setItem(
+      'gac-connect:svsDesk.evidence',
+      JSON.stringify([
+        {
+          id: 'EVD-2039',
+          supplierId: 'silver-city-welding',
+          supplierName: 'Silver City Welding',
+          kind: 'renewal',
+          vaultId: 'vc-gwo',
+          certType: 'GWO Basic Safety Training',
+          certLabel: 'GWO Basic Safety Training',
+          issuer: 'Quayside Safety Training',
+          reference: 'GWO-BST-2292',
+          issuedOn: '2026-09-21',
+          expiresOn: '2028-09-20',
+          daysLeft: 728,
+          fileName: 'GWO-BST-2292.pdf',
+          fileSize: 319488,
+          submittedAt: 'Today 08:05',
+          stage: 'approved',
+          trail: [
+            { at: 'Today 08:05', by: 'Supplier', text: 'Certificate uploaded' },
+            { at: 'Today 09:10', by: 'SVS team', text: 'Verified by the SVS team' },
+          ],
+        },
+      ]),
+    );
+  });
+  await openSupplierView(page);
+  await page.getByRole('button', { name: 'Upload renewal for GWO Basic Safety Training' }).click();
+  const dialog = page.getByRole('dialog', {
+    name: 'Upload a renewal: GWO Basic Safety Training',
+  });
+  await expect(dialog).toContainText(
+    'In force now: Quayside Safety Training · GWO-BST-2292, expires 20 Sep 2028.',
+  );
+  await dialog.getByRole('button', { name: 'Fill with an example' }).click();
+  await expect(dialog.getByLabel('Reference or certificate number')).toHaveValue('GWO-BST-2293');
+});
+
+test('on a phone the certificate modal keeps its targets and the file size in reach', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openSupplierView(page);
+  await page.getByRole('button', { name: 'Add a certificate' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Add a certificate' });
+  await dialog.getByRole('button', { name: 'Fill with an example' }).click();
+
+  // The size stays on screen however long the name.
+  const size = dialog.getByTestId('chosen-file').getByText('248 KB');
+  await expect(size).toBeVisible();
+  expect(await size.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+
+  // 44px targets: Remove, and the confirmation row.
+  const remove = dialog.getByRole('button', { name: /^Remove/ });
+  expect((await remove.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  const confirm = dialog.locator('label', { hasText: 'I confirm this is a true copy' });
+  expect((await confirm.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+});
+
+test('the supplier modals cover the whole screen in the app face', async ({ page }) => {
+  await openSupplierView(page);
+  await page
+    .getByTestId('inbox-req-4471')
+    .getByRole('button', { name: /Send a quote/ })
+    .click();
+  const dialog = page.getByRole('dialog', { name: 'Quote: Onboard pipework repair' });
+  await expect(dialog).toBeVisible();
+  const cover = await dialog.evaluate((d) => {
+    const scrim = d.parentElement!;
+    return {
+      font: getComputedStyle(d).fontFamily.split(',')[0]!.trim(),
+      sidebar: document.elementFromPoint(100, 300) === scrim,
+      topBar: document.elementFromPoint(700, 28) === scrim,
+    };
+  });
+  expect(cover).toEqual({ font: 'Inter', sidebar: true, topBar: true });
+});
+
+test('references never break at their hyphens', async ({ page }) => {
+  for (const width of [1024, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await openSupplierView(page);
+    for (const ref of ['CW-26-0418', 'NSM-EL-7731', 'GWO-BST-2291', 'REQ-4449', 'REQ-4471']) {
+      const lines = await page
+        .locator('main')
+        .getByText(ref, { exact: true })
+        .first()
+        .evaluate((el) => new Set([...el.getClientRects()].map((r) => Math.round(r.top))).size);
+      expect(lines, `${ref} at ${width}px`).toBe(1);
+    }
+  }
+});
+
 test('the supplier view keeps its plan card and never grows a second h1', async ({ page }) => {
   await openSupplierView(page);
   await expect(page.getByTestId('supplier-plan')).toContainText('10% commission');
   await expect(page.getByTestId('supplier-keeps')).toHaveText('£3,960');
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   await expect(page.getByRole('button', { name: /supplier view/i })).toHaveCount(1);
+  // The standing sits with the name in the header, and only in the supplier view.
+  const standing = page.getByRole('list', { name: 'Listing standing' });
+  await expect(standing).toContainText('Premium plan');
+  await expect(standing).toContainText('Gold Band audit booked');
+  const order = await page.evaluate(() => {
+    const h1 = document.querySelector('h1')!;
+    const list = document.querySelector('[aria-label="Listing standing"]')!;
+    const toggle = document.querySelector('[data-testid="dashboard-view-switch"]')!;
+    const follows = (a: Element, b: Element) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    return { afterName: follows(h1, list), beforeSwitch: follows(list, toggle) };
+  });
+  expect(order).toEqual({ afterName: true, beforeSwitch: true });
   // Earnings, and the numbers behind the chart.
   const earnings = page.getByRole('figure', { name: 'Earnings through the platform' });
   await expect(earnings).toContainText('£50,490 kept');
   await earnings.getByText('Show the numbers').click();
   await expect(earnings.getByRole('table')).toContainText('£12,600');
+
+  await page.getByRole('button', { name: 'Client view' }).click();
+  await expect(page.getByRole('list', { name: 'Listing standing' })).toHaveCount(0);
 });
 
 test('the SVS team’s decisions come back: verified on the profile, sent back with a note', async ({

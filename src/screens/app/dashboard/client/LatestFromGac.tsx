@@ -52,9 +52,12 @@ export function LatestFromGac() {
               <Icon name={item.icon} size={16} />
             </span>
             <div className="min-w-0 flex-1 pt-[3px]">
+              {/* The link's ::after covers the whole row (the <li> is relative), so
+                  the tile and the timestamp are part of one 44px+ target; the
+                  accessible name stays the item's own words. */}
               <Link
                 to={item.to}
-                className="text-[13.5px] leading-snug font-medium text-ink no-underline transition-colors hover:text-sea hover:underline"
+                className="text-[13.5px] leading-snug font-medium text-ink no-underline transition-colors after:absolute after:inset-0 hover:text-sea hover:underline"
               >
                 {item.text}
               </Link>

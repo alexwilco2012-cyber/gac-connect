@@ -5,7 +5,6 @@ import { ListingPreview } from './supplier/ListingPreview';
 import { PlanCard } from './supplier/PlanCard';
 import { QuoteRequests } from './supplier/QuoteRequests';
 import { RecentRatings } from './supplier/RecentRatings';
-import { StatusRow } from './supplier/StatusRow';
 import { SupplierKpis } from './supplier/SupplierKpis';
 
 /**
@@ -30,7 +29,7 @@ import { SupplierKpis } from './supplier/SupplierKpis';
 export function SupplierView() {
   return (
     <>
-      <StatusRow />
+      {/* The standing pills (`./supplier/StatusRow`) sit in the screen header, with the name. */}
       <SupplierKpis />
 
       {/* The work: requests and earnings beside the paperwork and the plan. */}

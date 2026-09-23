@@ -7,7 +7,10 @@
        facing only, and gold-free: the plan pills are neutral and info. -->
   <sc-if value="{{ isAnalytics }}" hint-placeholder-val="{{ false }}">
     <main class="gac-an-main" data-screen-label="Supplier analytics" data-testid="analytics-screen" style="width:100%;max-width:1180px;box-sizing:border-box;margin:0 auto;padding:28px 24px 80px;line-height:1.5;animation:fadeUp .25s ease;">
-      <header style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;column-gap:32px;row-gap:20px;">
+      <!-- The switch sits top-right beside the lede from 1280px, where both fit
+           on one line; below that it sits under the lede, flush left, rather
+           than wrapping to wherever the line breaks (gac-an-head). -->
+      <header class="gac-an-head" style="display:flex;flex-direction:column;column-gap:32px;row-gap:20px;">
         <div style="max-width:600px;min-width:0;">
           <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Supplier analytics · example</p>
           <h1 style="font-family:'Space Grotesk','Segoe UI','Avenir Next',Arial,sans-serif;font-size:24px;line-height:32px;font-weight:700;color:#0A2540;margin:4px 0 0;">{{ anTitle }}</h1>

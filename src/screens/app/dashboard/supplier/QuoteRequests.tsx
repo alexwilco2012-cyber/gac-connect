@@ -136,7 +136,8 @@ export function QuoteRequests({ className = '' }: { className?: string }) {
                       </Pill>
                     )}
                     <span className="text-[11.5px] font-semibold tracking-[0.03em] text-ink-soft tabular-nums">
-                      {r.id.toUpperCase()}
+                      {/* The ID never breaks at its hyphen; what follows it may wrap. */}
+                      <span className="whitespace-nowrap">{r.id.toUpperCase()}</span>
                       {sent ? ` · ${sent.leadTime} · valid ${sent.validity}` : null}
                     </span>
                   </p>
@@ -173,7 +174,8 @@ export function QuoteRequests({ className = '' }: { className?: string }) {
                   {q.service}
                 </span>
                 <span className="block text-[12px] leading-snug text-ink-soft">
-                  {q.vessel} · <span className="tabular-nums">{q.id.toUpperCase()}</span>
+                  {q.vessel} ·{' '}
+                  <span className="whitespace-nowrap tabular-nums">{q.id.toUpperCase()}</span>
                 </span>
               </span>
               <span className="shrink-0 text-right">

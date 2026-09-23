@@ -116,12 +116,16 @@ export function SpendChart() {
           format={gbp}
           axisFormat={compactGbp}
           directLabelLast
-          lower={{
-            label: 'Saved by your tier discount',
-            color: VIZ.derived,
-            values: saved,
-            format: gbp,
-          }}
+          lower={
+            pct > 0
+              ? {
+                  label: 'Saved by your tier discount',
+                  color: VIZ.derived,
+                  values: saved,
+                  format: gbp,
+                }
+              : undefined
+          }
           ariaLabel="GAC spend by service line per month, April to September, with the tier saving below"
         />
       </div>

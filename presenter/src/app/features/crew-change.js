@@ -338,7 +338,7 @@ function ccStampLabel(d) {
   const dt = d || new Date();
   const day = dt.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   const time = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return day + ' · ' + time;
+  return day.replace('Sept', 'Sep') + ' · ' + time;
 }
 
 /* ---------- storage (store/crewChange.ts) — 'pres.' prefix keeps clear of the site's own keys ---------- */
@@ -351,7 +351,7 @@ const CC_PILL = 'display:inline-flex;align-items:center;gap:5px;border-radius:99
 const CC_PILL_TONE = {
   verified: 'background:#E7F4EF;color:#047857;',
   info: 'background:#E8F1F7;color:#0E5E8A;',
-  warn: 'background:#FBF0E1;color:#B45309;',
+  warn: 'background:#FBF0E1;color:#A84D08;',
   danger: 'background:#FBEAEA;color:#B91C1C;',
   neutral: 'background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;'
 };

@@ -11,6 +11,7 @@ import { SILVER_CITY_VAULT } from '../../../../data/supplierDesk';
 import { supplierById } from '../../../../data/suppliers';
 import { CERT_TYPES } from '../../../../data/svsDesk';
 import {
+  certInForce,
   certsWithApproved,
   formatDateGB,
   recommendedStatus,
@@ -83,7 +84,8 @@ function CertRow({
     <li className="py-4 first:pt-3 last:pb-1">
       <p className="text-[13.5px] leading-snug font-semibold text-ink">{row.name}</p>
       <p className="mt-0.5 text-[12px] leading-snug text-ink-soft">
-        {row.issuer} · <span className="tabular-nums">{row.reference}</span>
+        {/* A reference wraps whole, never at its hyphens ('CW-26-' / '0418'). */}
+        {row.issuer} · <span className="whitespace-nowrap tabular-nums">{row.reference}</span>
       </p>
       {showExpiry ? (
         <p className="text-[12px] leading-snug text-ink-soft tabular-nums">
@@ -175,9 +177,12 @@ export function Certificates({ className = '' }: { className?: string }) {
   const rec = recommendedStatus(rows);
   const complete = rec.onFile === rec.total;
 
+  /** A renewal is made out against the certificate in force — an approved renewal, if any. */
   function renewFor(row: VaultRow) {
     const vault = row.vaultId ? SILVER_CITY_VAULT.find((v) => v.id === row.vaultId) : undefined;
-    return vault ? () => setMode({ kind: 'renewal', vault }) : null;
+    return vault
+      ? () => setMode({ kind: 'renewal', vault: certInForce(vault, evidence, DEMO_SUPPLIER_ID) })
+      : null;
   }
 
   function reuploadFor(row: VaultRow) {

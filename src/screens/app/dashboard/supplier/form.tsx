@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 
 /**
  * Parts shared by the supplier's two modals (quote, certificate); the field
@@ -40,16 +39,4 @@ export function ModalHeading({
       {children ? <div className="mt-1.5 text-[13px] text-ink-soft">{children}</div> : null}
     </div>
   );
-}
-
-/**
- * Renders its children (a modal) into <body>. The screen wrapper's entrance animation
- * (`.screen-enter`, fill-mode both) leaves an identity transform on it, which
- * makes it the containing block for anything `position: fixed` inside — so a
- * modal rendered in place is centred on the whole screen's height rather than
- * the viewport, and its scrim stops short of the sidebar and top bar. Out in
- * <body> it sits over everything, as a modal should.
- */
-export function InViewport({ children }: { children: ReactNode }) {
-  return typeof document === 'undefined' ? children : createPortal(children, document.body);
 }

@@ -102,7 +102,7 @@
               </div>
 
               <sc-if value="{{ trNotFound }}" hint-placeholder-val="{{ false }}">
-                <p role="alert" data-testid="flight-not-found" style="border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ trNotFoundText }}</p>
+                <p role="alert" data-testid="flight-not-found" style="border-left:4px solid #A84D08;border-radius:8px;background:#FBF0E1;color:#A84D08;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ trNotFoundText }}</p>
               </sc-if>
 
               <sc-if value="{{ trHasStatus }}" hint-placeholder-val="{{ false }}">
@@ -121,7 +121,7 @@
                         </sc-raw-tr>
                         <sc-raw-tr>
                           <sc-raw-td style="padding:4px 0;color:#33475F;">Live estimate</sc-raw-td>
-                          <sc-raw-td style="padding:4px 0;text-align:right;font-weight:600;" data-testid="flight-estimate">{{ trEstimated }}<sc-if value="{{ trHasDelay }}" hint-placeholder-val="{{ false }}"><span style="margin-left:6px;font-size:12px;font-weight:600;color:#B45309;">{{ trDelayText }}</span></sc-if></sc-raw-td>
+                          <sc-raw-td style="padding:4px 0;text-align:right;font-weight:600;" data-testid="flight-estimate">{{ trEstimated }}<sc-if value="{{ trHasDelay }}" hint-placeholder-val="{{ false }}"><span style="margin-left:6px;font-size:12px;font-weight:600;color:#A84D08;">{{ trDelayText }}</span></sc-if></sc-raw-td>
                         </sc-raw-tr>
                       </sc-raw-tbody>
                     </sc-raw-table>
@@ -297,7 +297,7 @@
                   <button role="switch" aria-checked="{{ ccLoiVisaAria }}" aria-label="Visa national" style="{{ ccLoiVisaTrack }}" sc-camel-on-click="{{ ccLoiToggleVisa }}"><span style="{{ ccLoiVisaKnob }}"></span></button>
                 </div>
               </div>
-              <p id="loi-illustrative" data-testid="loi-illustrative" style="border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
+              <p id="loi-illustrative" data-testid="loi-illustrative" style="border-left:4px solid #A84D08;border-radius:8px;background:#FBF0E1;color:#A84D08;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
               <sc-if value="{{ ccLoiNotRequired }}" hint-placeholder-val="{{ false }}">
                 <p data-testid="loi-not-required" style="border-left:4px solid #0E5E8A;border-radius:8px;background:#E8F1F7;color:#0E5E8A;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ ccLoiNotRequiredNote }}</p>
               </sc-if>
@@ -361,7 +361,7 @@
             <div style="flex:1.5 1 420px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;">
               <p style="font-size:13.5px;font-weight:700;margin:0;">Disembarkation / repatriation letter — template</p>
               <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">One crew member per letter. Details as printed in the passport.</p>
-              <p id="repat-illustrative" data-testid="repat-illustrative" style="border-left:4px solid #B45309;border-radius:8px;background:#FBF0E1;color:#B45309;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
+              <p id="repat-illustrative" data-testid="repat-illustrative" style="border-left:4px solid #A84D08;border-radius:8px;background:#FBF0E1;color:#A84D08;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
               <form style="margin-top:16px;" sc-camel-on-submit="{{ ccRepatSubmit }}" aria-describedby="repat-illustrative">
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
                   <sc-for list="{{ ccRepatFieldsA }}" as="f" hint-placeholder-count="5">

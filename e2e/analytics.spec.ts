@@ -193,6 +193,54 @@ test.describe('supplier analytics', () => {
     }
   });
 
+  test('laptop widths: whole captions, chips inside their tiles, the switch anchored', async ({
+    page,
+  }) => {
+    await open(page, '/app/analytics');
+    for (const width of [1024, 1100, 1180, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const p of ['30', '90']) {
+        await page.getByRole('button', { name: `${p} days` }).click();
+        const layout = await page.evaluate(() => {
+          const tiles = Array.from(document.querySelectorAll('[data-testid^="kpi-"]'));
+          const cut = tiles.flatMap((tile) => {
+            const edge =
+              tile.getBoundingClientRect().right - parseFloat(getComputedStyle(tile).paddingRight);
+            const chip = tile.querySelector('[data-kpi-value] + span');
+            return [
+              ...Array.from(tile.querySelectorAll('p')).filter(
+                (el) => el.scrollWidth > el.clientWidth + 1,
+              ),
+              ...(chip && chip.getBoundingClientRect().right > edge + 0.5 ? [chip] : []),
+            ].map((el) => `${tile.getAttribute('data-testid')}: ${el.textContent}`);
+          });
+          const box = (el: Element | null | undefined) => el!.getBoundingClientRect();
+          const h1 = document.querySelector('[data-testid="analytics-screen"] h1');
+          const header = box(h1?.closest('header'));
+          const lede = box(h1?.parentElement);
+          const period = box(document.querySelector('[role="group"][aria-label="Period"]'));
+          return {
+            rows: new Set(tiles.map((t) => Math.round(t.getBoundingClientRect().top))).size,
+            cut,
+            // Top-right beside the lede, or under it flush left: never in between.
+            anchored:
+              Math.abs(period.right - header.right) < 1
+                ? 'right'
+                : Math.abs(period.left - header.left) < 1 && period.top > lede.bottom
+                  ? 'left, under the lede'
+                  : `floating at ${Math.round(period.left)}`,
+          };
+        });
+        // Two by two until a quarter of the row holds a whole tile (1180px).
+        expect(layout).toEqual({
+          rows: width >= 1180 ? 1 : 2,
+          cut: [],
+          anchored: width >= 1280 ? 'right' : 'left, under the lede',
+        });
+      }
+    }
+  });
+
   test('the entry points still lead here', async ({ page }) => {
     const h1 = page.getByRole('heading', { level: 1, name: 'Silver City Welding — performance' });
 

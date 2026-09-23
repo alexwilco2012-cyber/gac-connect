@@ -17,7 +17,9 @@
             <div style="margin-top:6px;font-size:13px;color:#33475F;"><p style="margin:0;">{{ sdCertLede }}</p></div>
           </div>
 
-          <div style="margin-top:20px;display:grid;gap:16px;">
+          <!-- minmax(0,1fr): a long file name is shortened in its row rather
+               than widen the column past the dialog -->
+          <div style="margin-top:20px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;">
             <div>
               <label for="sd-cert-type" style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Certificate type</label>
               <sc-if value="{{ sdCertLocked }}" hint-placeholder-val="{{ false }}">
@@ -59,7 +61,7 @@
             </div>
 
             <div>
-              <label for="sd-cert-file" style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Certificate file</label>
+              <label id="sd-cert-filelabel" for="sd-cert-file" style="display:block;font-size:12.5px;font-weight:600;color:#33475F;">Certificate file</label>
               <!-- uncontrolled: no value attribute, read in sdOnFile, name and size only -->
               <input id="sd-cert-file" type="file" accept=".pdf,.jpg,.jpeg,.png" sc-camel-tab-index="-1" ref="{{ sdFileRef }}" sc-camel-on-change="{{ sdOnFile }}" style="display:none;">
               <div data-testid="cert-drop-zone" style="{{ sdDropStyle }}" sc-camel-on-drag-enter="{{ sdDragEnter }}" sc-camel-on-drag-over="{{ sdDragOver }}" sc-camel-on-drag-leave="{{ sdDragLeave }}" sc-camel-on-drop="{{ sdDrop }}">
@@ -69,14 +71,19 @@
                     <p id="sd-cert-drop" style="margin:0;font-size:13px;line-height:1.375;font-weight:600;color:#0A2540;">{{ sdDropText }}</p>
                     <p style="margin:2px 0 0;font-size:12px;color:#33475F;">Up to 10 MB · one file</p>
                   </div>
-                  <button id="sd-cert-browse" type="button" class="gac-sd-phonefull" aria-describedby="sd-cert-drop" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;box-sizing:border-box;flex-shrink:0;background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A !important;" sc-camel-on-click="{{ sdBrowse }}">{{ sdBrowseIcon }}Browse files</button>
+                  <button id="sd-cert-browse" type="button" class="gac-sd-phonefull" aria-describedby="sd-cert-filelabel sd-cert-drop" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;box-sizing:border-box;flex-shrink:0;background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A !important;" sc-camel-on-click="{{ sdBrowse }}">{{ sdBrowseIcon }}Browse files</button>
                 </div>
                 <sc-if value="{{ sdHasFile }}" hint-placeholder-val="{{ false }}">
                   <div style="margin-top:12px;border-top:1px solid #E5EAF1;padding-top:12px;">
                     <div data-testid="chosen-file" style="{{ sdFileBoxStyle }}">
                       {{ sdFileIcon }}
-                      <span style="min-width:0;flex:1 1 0%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600;color:#0A2540;">{{ sdFileLine }}</span>
-                      <button type="button" style="margin:-4px 0;min-height:36px;flex-shrink:0;border:none;border-radius:6px;background:transparent;padding:0 8px;font-size:12.5px;font-weight:700;color:#0E5E8A;cursor:pointer;font-family:inherit;" style-hover="background:#E8F1F7 !important;" sc-camel-on-click="{{ sdRemoveFile }}">Remove<span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ sdRemoveSr }}</span></button>
+                      <!-- "{name} · {size}" on one line; on a phone the size drops
+                           under the name (gac-sd-fileline), so a long name is
+                           shortened and the size never is -->
+                      <div class="gac-sd-fileline" style="min-width:0;flex:1 1 0%;display:flex;align-items:baseline;">
+                        <p title="{{ sdFileName }}" style="margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600;color:#0A2540;">{{ sdFileName }}</p><p class="gac-sd-filesize" style="margin:0;flex-shrink:0;white-space:nowrap;font-size:13px;font-weight:600;color:#0A2540;"><span class="gac-sd-filesep">&nbsp;·&nbsp;</span>{{ sdFileSize }}</p>
+                      </div>
+                      <button type="button" class="gac-sd-remove" style="margin:-4px 0;min-height:36px;flex-shrink:0;border:none;border-radius:6px;background:transparent;padding:0 8px;font-size:12.5px;font-weight:700;color:#0E5E8A;cursor:pointer;font-family:inherit;" style-hover="background:#E8F1F7 !important;" sc-camel-on-click="{{ sdRemoveFile }}">Remove<span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ sdRemoveSr }}</span></button>
                     </div>
                     <sc-if value="{{ sdFileProblem }}" hint-placeholder-val="{{ false }}">
                       <p data-testid="file-problem" style="margin:6px 0 0;font-size:12px;font-weight:600;color:#B91C1C;">{{ sdFileProblemText }}</p>
@@ -84,9 +91,14 @@
                   </div>
                 </sc-if>
               </div>
+              <!-- Always mounted, so a screen reader hears the file go on and any
+                   refusal at once. Not an alert: the dialog's one alert is the
+                   "Still needed" line. -->
+              <p aria-live="polite" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">{{ sdFileLive }}</p>
             </div>
 
-            <label style="display:flex;cursor:pointer;align-items:flex-start;gap:10px;font-size:13px;color:#0A2540;">
+            <!-- 44px tall on a phone, where the label is the tap target (gac-sd-declare) -->
+            <label class="gac-sd-declare" style="display:flex;cursor:pointer;align-items:flex-start;gap:10px;font-size:13px;color:#0A2540;">
               <input type="checkbox" checked="{{ sdCertDeclared }}" sc-camel-on-change="{{ sdOnDeclared }}" style="margin:2px 0 0;width:18px;height:18px;flex-shrink:0;accent-color:#0E5E8A;">
               <span>I confirm this is a true copy of the current certificate.</span>
             </label>
@@ -95,7 +107,7 @@
           </div>
 
           <sc-if value="{{ sdCertProblems }}" hint-placeholder-val="{{ false }}">
-            <p role="alert" style="margin:16px 0 0;border-radius:8px;border-left:4px solid #B45309;background:#FBF0E1;padding:8px 12px;font-size:12.5px;font-weight:600;color:#B45309;">{{ sdCertProblemsText }}</p>
+            <p role="alert" style="margin:16px 0 0;border-radius:8px;border-left:4px solid #A84D08;background:#FBF0E1;padding:8px 12px;font-size:12.5px;font-weight:600;color:#A84D08;">{{ sdCertProblemsText }}</p>
           </sc-if>
 
           <div style="margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;">

@@ -1,20 +1,7 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '../../../components/ui/Button';
 import type { TrailEntry } from '../../../data/svsDesk';
-import { INPUT, LABEL, initials } from './ui';
-
-/**
- * Renders a dialog into the shell's main column rather than inside the screen.
- * `.screen-enter` keeps an identity transform after its entrance (fill mode
- * `both`), and a transformed ancestor becomes the containing block for
- * `position: fixed` — so a Modal left inside it gets a scrim that covers the
- * content column only. `#app-main` sits inside the shell's font, outside the
- * animated screen.
- */
-export function InShell({ children }: { children: ReactNode }) {
-  return createPortal(children, document.getElementById('app-main') ?? document.body);
-}
+import { INPUT, LABEL, focusSoon, initials } from './ui';
 
 /** An applicant's or supplier's two-letter tile. Decorative: the name is always beside it. */
 export function Monogram({ name, size = 36 }: { name: string; size?: 32 | 36 | 44 }) {
@@ -113,8 +100,12 @@ export function NoteForm({
   const [tried, setTried] = useState(false);
   const empty = text.trim() === '';
 
+  // A frame late on purpose. Where the form opens with its Modal (the evidence
+  // queue's note dialog), this effect runs before the Modal's focus trap has
+  // recorded the button that opened it; focusing now would have the trap hand
+  // focus back to this box on close — gone by then, so focus fell to <body>.
   useEffect(() => {
-    ref.current?.focus();
+    focusSoon(() => ref.current);
   }, []);
 
   return (

@@ -175,7 +175,7 @@ const SL_PILL_TONES = {
   info: 'background:#E8F1F7;color:#0E5E8A;',
   neutral: 'background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;',
   verified: 'background:#E7F4EF;color:#047857;',
-  warn: 'background:#FDF3E3;color:#B45309;'
+  warn: 'background:#FDF3E3;color:#A84D08;'
 };
 const SL_BTN_PRIMARY = 'display:inline-flex;align-items:center;justify-content:center;min-height:44px;background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;white-space:nowrap;';
 const SL_BTN_GHOST = 'display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;white-space:nowrap;';
@@ -285,7 +285,7 @@ function slNeedingCustoms(list) {
 /* 'Mon 18 Aug · 09:41' */
 function slStamp() {
   const d = new Date();
-  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' +
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).replace('Sept', 'Sep') + ' · ' +
     d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 /* The hash is where the section lives, as ?section= is on the site: replace,

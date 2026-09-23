@@ -9,17 +9,18 @@ import { CERT_TYPES, type EvidenceSubmission } from '../../../../data/svsDesk';
 import {
   ACCEPTED_EXTENSIONS,
   EMPTY_CERT_FORM,
-  EXAMPLE_CERT_FORM,
   MAX_FILE_BYTES,
+  exampleCertForm,
   fileSizeLabel,
   formatDateGB,
+  shiftISO,
   todayISO,
   validateCertForm,
   type CertForm,
 } from '../../../../lib/svsDesk';
 import { useApp } from '../../../../store/app';
 import { useSvsDesk } from '../../../../store/svsDesk';
-import { InViewport, ModalHeading, StillNeeded } from './form';
+import { ModalHeading, StillNeeded } from './form';
 import { INPUT, LABEL, READONLY_INPUT } from './formStyles';
 
 /**
@@ -70,25 +71,31 @@ function nextReference(ref: string): string {
   return `${m[1]}${String(Number(digits) + 1).padStart(digits.length, '0')}`;
 }
 
-/** Same issuer, the next reference, issued this week for the certificate's usual term. */
-function renewalExample(v: VaultCert): CertForm {
+/**
+ * Same issuer, the next reference, issued two days before `today` for the
+ * certificate's usual term — dated from the day it is filled in, so the form
+ * never refuses its own example as expired.
+ */
+function renewalExample(v: VaultCert, today: string): CertForm {
   const years = Math.max(1, Number(v.expiresOn.slice(0, 4)) - Number(v.issuedOn.slice(0, 4)));
   const reference = nextReference(v.reference);
+  const issuedOn = shiftISO(today, { days: -2 });
   return {
     ...EMPTY_CERT_FORM,
     certType: v.name,
     issuer: v.issuer,
     reference,
-    issuedOn: '2026-09-21',
-    expiresOn: `${2026 + years}-09-20`,
+    issuedOn,
+    expiresOn: shiftISO(issuedOn, { years, days: -1 }),
     fileName: `${reference}.pdf`,
     fileSize: 312 * 1024,
     declared: true,
   };
 }
 
+/** "Fill with an example". Called from the button's handler, so `todayISO()` is read there. */
 function exampleFor(mode: CertModalMode, current: CertForm): CertForm {
-  if (mode.kind === 'renewal') return renewalExample(mode.vault);
+  if (mode.kind === 'renewal') return renewalExample(mode.vault, todayISO());
   if (mode.kind === 'reupload') {
     const base = initialForm(mode);
     return {
@@ -100,7 +107,7 @@ function exampleFor(mode: CertModalMode, current: CertForm): CertForm {
       reference: current.reference || base.reference,
     };
   }
-  return EXAMPLE_CERT_FORM;
+  return exampleCertForm(todayISO());
 }
 
 /** Told the moment a file is chosen — the send button would refuse it anyway. */
@@ -129,13 +136,10 @@ export function CertificateModal({
         : mode.kind === 'reupload'
           ? `reupload-${mode.submission.id}`
           : `new-${mode.presetType ?? ''}`;
-  // Portalled to <body>: see `InViewport` in ./form.
   return (
-    <InViewport>
-      <Modal open={mode !== null} onClose={onClose} labelledBy={TITLE_ID} size="lg">
-        {mode ? <CertificateForm key={key} mode={mode} onClose={onClose} /> : null}
-      </Modal>
-    </InViewport>
+    <Modal open={mode !== null} onClose={onClose} labelledBy={TITLE_ID} size="lg">
+      {mode ? <CertificateForm key={key} mode={mode} onClose={onClose} /> : null}
+    </Modal>
   );
 }
 
@@ -343,7 +347,7 @@ function CertificateForm({ mode, onClose }: { mode: CertModalMode; onClose: () =
         </div>
 
         <div>
-          <label htmlFor={`${ids}-file`} className={LABEL}>
+          <label id={`${ids}-filelabel`} htmlFor={`${ids}-file`} className={LABEL}>
             Certificate file
           </label>
           <input
@@ -396,7 +400,7 @@ function CertificateForm({ mode, onClose }: { mode: CertModalMode; onClose: () =
                 id={`${ids}-browse`}
                 type="button"
                 variant="ghost"
-                aria-describedby={`${ids}-drop`}
+                aria-describedby={`${ids}-filelabel ${ids}-drop`}
                 onClick={() => fileInput.current?.click()}
                 className="shrink-0 max-sm:w-full"
               >
@@ -418,13 +422,24 @@ function CertificateForm({ mode, onClose }: { mode: CertModalMode; onClose: () =
                     size={17}
                     className={`shrink-0 ${chosenProblem ? 'text-danger' : 'text-sea'}`}
                   />
-                  <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-ink">
-                    {form.fileName} · {fileSizeLabel(form.fileSize)}
-                  </span>
+                  {/* "{name} · {size}" on one line; on a phone the size drops under
+                      the name, so a long name is shortened and the size never is. */}
+                  <div className="min-w-0 flex-1 sm:flex sm:items-baseline">
+                    <p
+                      title={form.fileName}
+                      className="min-w-0 truncate text-[13px] font-semibold text-ink"
+                    >
+                      {form.fileName}
+                    </p>
+                    <p className="text-[12px] whitespace-nowrap text-ink-soft sm:shrink-0 sm:text-[13px] sm:font-semibold sm:text-ink">
+                      <span className="max-sm:sr-only">&nbsp;·&nbsp;</span>
+                      {fileSizeLabel(form.fileSize)}
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={removeFile}
-                    className="-my-1 min-h-[36px] shrink-0 cursor-pointer rounded-md px-2 text-[12.5px] font-bold text-sea hover:bg-sea-soft"
+                    className="-my-1.5 min-h-[44px] shrink-0 cursor-pointer rounded-md px-2 text-[12.5px] font-bold text-sea hover:bg-sea-soft sm:-my-1 sm:min-h-[36px]"
                   >
                     Remove<span className="sr-only"> {form.fileName}</span>
                   </button>
@@ -440,9 +455,20 @@ function CertificateForm({ mode, onClose }: { mode: CertModalMode; onClose: () =
               </div>
             ) : null}
           </div>
+          {/* Always mounted, so a screen reader hears the file go on and any
+              refusal at once. Not an alert: the dialog's one alert is the
+              "Still needed" line. */}
+          <p className="sr-only" aria-live="polite">
+            {form.fileName
+              ? `Attached ${form.fileName}, ${fileSizeLabel(form.fileSize)}.${
+                  chosenProblem ? ` ${chosenProblem}` : ''
+                }`
+              : ''}
+          </p>
         </div>
 
-        <label className="flex cursor-pointer items-start gap-2.5 text-[13px] text-ink">
+        {/* 44px tall on a phone, where the label is the tap target. */}
+        <label className="flex cursor-pointer items-start gap-2.5 text-[13px] text-ink max-sm:min-h-[44px]">
           <input
             type="checkbox"
             checked={form.declared}

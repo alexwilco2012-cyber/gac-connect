@@ -264,9 +264,25 @@ class Component extends DCLogic {
     if (this.state.presOn) document.body.style.overflow = 'hidden';
     if (this.state.loader === 'visible') this._loaderTimer = setTimeout(() => this._hideLoader(), 4800);
     this._watchConsolidation();
+    this._revealNav();
     this._selfTest();
   }
+  /* On a phone the sidebar is one scrolling row of icons (base.css, deck
+     shell block), so the current screen's item can sit past the end of it:
+     scroll it into the row once per route. Wider, the row does not scroll
+     and this does nothing. */
+  _revealNav() {
+    if (this._navShown === this.state.route) return;
+    this._navShown = this.state.route;
+    const nav = document.querySelector('.gac-side nav');
+    const btn = nav && nav.querySelector('button[aria-pressed="true"]');
+    if (!btn || nav.scrollWidth <= nav.clientWidth) return;
+    const n = nav.getBoundingClientRect();
+    const b = btn.getBoundingClientRect();
+    if (b.left < n.left || b.right > n.right) nav.scrollLeft += b.left - n.left - (n.width - b.width) / 2;
+  }
   componentDidUpdate() {
+    this._revealNav();
     /* The landing screen may have just been rendered (or re-rendered after a
        hotspot swap), so the observer has a fresh element to watch. */
     this._watchConsolidation();
@@ -584,7 +600,7 @@ class Component extends DCLogic {
     }).join(' ');
   }
   _esgStyle(e) {
-    const c = e === 'A' ? '#047857' : e === 'B' ? '#3E7C2F' : '#B45309';
+    const c = e === 'A' ? '#047857' : e === 'B' ? '#3E7C2F' : '#A84D08';
     return 'font-weight:700;color:' + c + ';';
   }
 
@@ -785,39 +801,47 @@ class Component extends DCLogic {
       label: c.label, detail: c.detail,
       stateLabel: c.state === 'ok' ? 'Valid' : (c.state === 'due' ? 'Due' : 'Lapsed'),
       chipStyle: 'display:inline-block;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;white-space:nowrap;flex-shrink:0;' +
-        (c.state === 'ok' ? 'background:#E7F4EF;color:#047857;' : (c.state === 'due' ? 'background:#FBF0E1;color:#B45309;' : 'background:#FBEAEA;color:#B91C1C;'))
+        (c.state === 'ok' ? 'background:#E7F4EF;color:#047857;' : (c.state === 'due' ? 'background:#FBF0E1;color:#A84D08;' : 'background:#FBEAEA;color:#B91C1C;'))
     });
     const prof = route === 'supplier' ? this.SUPPLIERS.find((s) => s.id === st.profileId) : null;
     const profStatus = prof ? this.deriveStatus(prof) : '';
 
-    /* svs */
+    /* svs — the register's filters and wording mirror the site's
+       svs/Register.tsx: status, plus the Gold Band audit tier (held, and
+       lost on a lapse, so a blocked supplier never shows under it) */
     const svsChips = [
-      { key: 'all', label: 'All suppliers' }, { key: 'verified', label: 'Verified' },
-      { key: 'due', label: 'Renewal due' }, { key: 'blocked', label: 'Blocked' }
+      { key: 'all', label: 'All statuses' }, { key: 'verified', label: 'Verified' },
+      { key: 'due', label: 'Renewal due' }, { key: 'blocked', label: 'Blocked' },
+      { key: 'gold-band', label: 'Gold Band' }
     ].map((f) => ({
       label: f.label, pressed: st.svsFilter === f.key ? 'true' : 'false',
       style: 'border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;' +
         (st.svsFilter === f.key ? 'background:#0A2540;border:1.5px solid #0A2540;color:#FFFFFF;' : 'background:#FFFFFF;border:1.5px solid #CBD6E2;color:#33475F;'),
       on: () => this.setState({ svsFilter: f.key })
     }));
+    const svsGold = (s) => s.goldBand === 'held' && this.deriveStatus(s) !== 'blocked';
     const svsRows = this.SUPPLIERS
-      .filter((s) => st.svsFilter === 'all' || this.deriveStatus(s) === st.svsFilter)
+      .filter((s) => st.svsFilter === 'all'
+        || (st.svsFilter === 'gold-band' ? svsGold(s) : this.deriveStatus(s) === st.svsFilter))
       .map((s) => {
         const status = this.deriveStatus(s);
         return {
           name: s.name, cat: s.cat, esg: s.esg, esgStyle: this._esgStyle(s.esg),
           rating: s.rating.toFixed(1) + ' ★ · ' + s.ratingCount + ' ratings',
-          gold: s.goldBand === 'held' && status !== 'blocked',
+          gold: svsGold(s),
           /* plus any new certificate the SVS team has approved (desk-state.js);
-             the status above still reads s.certs alone, so it cannot move */
+             the status above still reads s.certs alone, so it cannot move.
+             A due chip counts its days, as the site's CertChip does. */
           certs: this._dkCertsFor(s).map((c) => ({
-            text: c.label + (c.state === 'ok' ? '' : (c.state === 'due' ? ' · due' : ' · lapsed')),
+            text: c.label + (c.state === 'ok' ? ''
+              : c.state === 'due' ? (typeof c.days === 'number' ? ' · ' + c.days + ' days' : '')
+                : ' · lapsed'),
             style: 'display:inline-block;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;margin:1px 2px;white-space:nowrap;' +
-              (c.state === 'ok' ? 'background:#E7F4EF;color:#047857;' : (c.state === 'due' ? 'background:#FBF0E1;color:#B45309;' : 'background:#FBEAEA;color:#B91C1C;'))
+              (c.state === 'ok' ? 'background:#E7F4EF;color:#047857;' : (c.state === 'due' ? 'background:#FBF0E1;color:#A84D08;' : 'background:#FBEAEA;color:#B91C1C;'))
           })),
-          statusLabel: status === 'blocked' ? '✗ Blocked' : (status === 'due' ? '⚠ Renewal due' : '✓ Verified'),
+          statusLabel: status === 'blocked' ? '✗ Booking blocked' : (status === 'due' ? '⚠ Renewal due' : '✓ GAC Verified'),
           statusStyle: 'display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;white-space:nowrap;' +
-            (status === 'blocked' ? 'background:#FBEAEA;color:#B91C1C;' : (status === 'due' ? 'background:#FBF0E1;color:#B45309;' : 'background:#E7F4EF;color:#047857;')),
+            (status === 'blocked' ? 'background:#FBEAEA;color:#B91C1C;' : (status === 'due' ? 'background:#FBF0E1;color:#A84D08;' : 'background:#E7F4EF;color:#047857;')),
           onOpen: () => this.nav('supplier/' + s.id)
         };
       });
@@ -958,55 +982,24 @@ class Component extends DCLogic {
       hbFact: this._hbF('fact'),
       hbGo: () => { const id = this.state.hbSel; if (!id) return; const r = this.HARBOUR[id].route; this.setState({ hbSel: null }); this.nav(r); },
 
-      /* dashboard */
       /* ---- Dashboard: the client's and the supplier's view (26 Aug) ----
          The platform opens on the marketplace now, so this screen answers what
          the two paying sides actually arrive with: a client asks where its work
          is and what is waiting on it, a supplier asks whether it is being found
          and whether its paperwork still holds. One screen, two views, mirroring
-         the site's src/screens/app/Dashboard.tsx.
+         the site's src/screens/app/Dashboard.tsx. The core keeps the header and
+         the switch; each view's cards are built by its own module
+         (client-desk.js, supplier-desk.js).
 
          The commercial guardrail rides along with the split: commission is a
-         supplier mechanism, so the plan card exists only on the supplier side
-         and the client side never mentions it. */
+         supplier mechanism, so it appears only on the supplier side and the
+         client side never mentions it. */
       ...(function (self) {
         const client = st.dashView !== 'supplier';
-        const sup = self.SUPPLIERS.find(function (x) { return x.id === 'silver-city-welding'; });
-        const band = sup && sup.premium ? 10 : 20;
-        const job = 4400;
         const seg = function (on) {
           return 'display:inline-flex;align-items:center;border:none;border-radius:6px;'
             + 'padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;'
             + (on ? 'background:#0A2540;color:#FFFFFF;' : 'background:transparent;color:#33475F;');
-        };
-        const pill = function (bg, fg) {
-          return 'display:inline-flex;align-items:center;border-radius:999px;padding:3px 10px;'
-            + 'font-size:11.5px;font-weight:700;background:' + bg + ';color:' + fg + ';';
-        };
-        const tierOn = self.state.calc;
-        const kpiChip = function (tone) {
-          const bg = tone === 'warn' ? '#FBF0E1' : '#E8F1F7';
-          const fg = tone === 'warn' ? '#B45309' : '#0E5E8A';
-          return 'display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;'
-            + 'font-weight:700;white-space:nowrap;background:' + bg + ';color:' + fg + ';';
-        };
-        const line = function (name, route, on, count, detail, nudge) {
-          return {
-            name: name,
-            detail: on ? detail : nudge,
-            count: on ? count : '0',
-            nameColor: on ? '#0A2540' : '#8FA3B8',
-            countStyle: 'display:inline-grid;place-items:center;min-width:28px;height:28px;'
-              + 'border-radius:999px;padding:0 8px;font-size:12.5px;font-weight:700;'
-              + (on ? 'background:#0A2540;color:#FFFFFF;' : 'background:#FAFBFD;color:#33475F;'),
-            go: self._go(route)
-          };
-        };
-        const quoteSent = function (what, who) {
-          return function () {
-            self.toastMsg('Quote sent for ' + what + ' \u2014 ' + who
-              + '. It lands in the client\u2019s comparison view beside every other reply.', 'SENT');
-          };
         };
         return {
           dashIsClient: client,
@@ -1021,75 +1014,7 @@ class Component extends DCLogic {
           dashClientPressed: client ? 'true' : 'false',
           dashSupplierPressed: !client ? 'true' : 'false',
           setDashClient: function () { self.setState({ dashView: 'client' }); self._set('dash-view', 'client'); },
-          setDashSupplier: function () { self.setState({ dashView: 'supplier' }); self._set('dash-view', 'supplier'); },
-
-          /* client - what GAC has running, line by line. A line the client
-             has not consolidated goes grey with a count of 0 and a nudge
-             naming the tier it would reach: the point of the row is that the
-             line exists and is empty, so hiding it would make the dashboard
-             smaller as the client buys less, which is backwards. */
-          dashLines: [
-            line('Agency', 'agency', tierOn.agency, '3', 'Port calls, berths and crew change', 'Not consolidated. Add Agency to reach the 2% tier'),
-            line('Logistics', 'logistics', tierOn.logistics, '2', 'Consignments on their way to the quay', 'Not consolidated. Add Logistics to reach the 4% tier'),
-            line('Customs', 'customs', tierOn.customs, '1', 'Declarations working through to clearance', 'Not consolidated. Customs is the 7% pillar'),
-            line('Procurement', 'procurement', true, '1', 'One list ready to send to Compass', '')
-          ],
-          /* 22px beside the consolidation card's 44px: one number leads. */
-          clientKpis: [
-            { label: 'Port calls in the window', value: '3', delta: 'Aberdeen and Peterhead', chipStyle: kpiChip('info') },
-            { label: 'Quotes to compare', value: '3', delta: 'Crane hire \u2014 MV Choice', chipStyle: kpiChip('info') },
-            { label: 'Invoices in your window', value: '2', delta: 'Tightest closes in 2 days', chipStyle: kpiChip('warn') }
-          ],
-
-          /* supplier - reach, the inbox, the listing, the vault, the plan */
-          supReach: [
-            { label: 'Profile views (30 days)', value: '412', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:72%;' },
-            { label: 'Quote requests received', value: '38', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:58%;' },
-            { label: 'Win rate', value: '34%', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:34%;' },
-            { label: 'Avg. response time', value: '2.1 hrs', barStyle: 'display:block;height:100%;border-radius:3px;background:#0E5E8A;width:86%;' }
-          ],
-          supInbox: [
-            {
-              service: 'Onboard pipework repair',
-              detail: 'MV Granite Coast \u00b7 coded welder, two days alongside Regent Quay',
-              replyBy: 'Reply by 16:00 today',
-              pillStyle: pill('#FBF0E1', '#B45309'),
-              onQuote: quoteSent('onboard pipework repair', 'MV Granite Coast')
-            },
-            {
-              service: 'Fabrication \u2014 skid frames',
-              detail: 'Wilkinson Drilling mobilisation \u00b7 three frames to drawing, delivered to the GAC warehouse',
-              replyBy: 'Reply by Friday 12:00',
-              pillStyle: pill('#E8F1F7', '#0E5E8A'),
-              onQuote: quoteSent('fabrication', 'Wilkinson Drilling mobilisation')
-            }
-          ],
-          supInboxCount: '2 open',
-          supName: sup ? sup.name : '',
-          supDesc: sup ? sup.desc : '',
-          supCat: sup ? sup.cat : '',
-          supRatingLine: sup ? sup.rating.toFixed(1) + ' \u2605 \u00b7 ' + sup.ratingCount + ' ratings' : '',
-          supPromoted: !!(sup && sup.promoted),
-          supGoldNote: sup && sup.goldBandDate
-            ? sup.goldBandDate + '. The Gold Band is held from the audit, not from advertising \u2014 it appears here the day it is passed, and goes the day compliance lapses.'
-            : '',
-          supCerts: sup ? self._dkCertsFor(sup).map(function (c) {
-            const bg = c.state === 'lapsed' ? '#FBEAEA' : c.state === 'due' ? '#FBF0E1' : '#E7F4EF';
-            const fg = c.state === 'lapsed' ? '#B91C1C' : c.state === 'due' ? '#B45309' : '#047857';
-            const tail = c.state === 'due' ? ' \u00b7 ' + c.days + ' days' : c.state === 'lapsed' ? ' \u00b7 lapsed' : '';
-            return {
-              label: c.label + tail,
-              style: 'display:inline-block;margin:2px;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;background:' + bg + ';color:' + fg + ';'
-            };
-          }) : [],
-          supPlanLine: 'Premium \u00b7 \u00a31,800 per year',
-          supBandLabel: band + '% commission',
-          supKeeps: self._gbp(job - Math.round(job * band / 100)),
-          supKeepsLine: 'yours, after the ' + band + '% Premium band',
-          supJobLine: 'A ' + self._gbp(job) + ' job won through the platform',
-          /* '#/supplier' alone is not a route (it fell through to the landing
-             page); the profile address carries the supplier's id */
-          goSupProfile: function () { self.nav('supplier/' + DK.DEMO_SUPPLIER_ID); }
+          setDashSupplier: function () { self.setState({ dashView: 'supplier' }); self._set('dash-view', 'supplier'); }
         };
       })(this),
 
@@ -1197,7 +1122,7 @@ class Component extends DCLogic {
         };
         return [
           { name: 'MV Choice', sched: 'Aberdeen \u00b7 ETA Fri 08:00 \u00b7 Regent Quay \u00b7 Browne Energy / Grizzell Marine', pill: self.state.sent ? '9 quote requests out' : 'Procurement list ready', pillStyle: chip('#E8F1F7', '#0E5E8A'), mark: 'Fri 08:00 \u2192', markStyle: mark(50, 48, '#0E5E8A', '#FFFFFF') },
-          { name: 'MV Boreal', sched: 'Peterhead \u00b7 ETA Fri 14:30 \u00b7 Smith Quay \u00b7 Stronach Subsea', pill: '2 certs expiring on booked supplier', pillStyle: chip('#FBF0E1', '#B45309'), mark: 'Fri 14:30 \u2192', markStyle: mark(63.5, 34.5, '#FBF0E1', '#B45309') },
+          { name: 'MV Boreal', sched: 'Peterhead \u00b7 ETA Fri 14:30 \u00b7 Smith Quay \u00b7 Stronach Subsea', pill: '2 certs expiring on booked supplier', pillStyle: chip('#FBF0E1', '#A84D08'), mark: 'Fri 14:30 \u2192', markStyle: mark(63.5, 34.5, '#FBF0E1', '#A84D08') },
           { name: 'MV Granite Coast', sched: 'Aberdeen \u00b7 ETD Sat 06:00 \u00b7 Customs: T1 in progress \u00b7 Wilkinson Drilling', pill: 'All documents complete', pillStyle: chip('#E7F4EF', '#047857'), mark: 'Alongside \u00b7 sails Sat 06:00', markStyle: mark(0, 95.8, '#E7F4EF', '#047857') + 'padding-left:12px;' }
         ];
       })(this),
@@ -1372,7 +1297,7 @@ class Component extends DCLogic {
       rqWindows: rqWindows,
       rqAdvice: rqAdvice.text,
       rqAdviceStyle: 'border-left:4px solid;border-radius:8px;padding:8px 12px;font-size:12.5px;margin:8px 0 0;' +
-        (rqAdvice.tone === 'warn' ? 'border-color:#B45309;background:#FBF0E1;color:#B45309;' : (rqAdvice.tone === 'info' ? 'border-color:#0E5E8A;background:#E8F1F7;color:#0E5E8A;' : 'border-color:#047857;background:#E7F4EF;color:#047857;')),
+        (rqAdvice.tone === 'warn' ? 'border-color:#A84D08;background:#FBF0E1;color:#A84D08;' : (rqAdvice.tone === 'info' ? 'border-color:#0E5E8A;background:#E8F1F7;color:#0E5E8A;' : 'border-color:#047857;background:#E7F4EF;color:#047857;')),
       rqHasRelated: rqRelated.length > 0,
       rqRelated: rqRelated,
       rqRelatedIntro: rq ? (this.RELATED_INTRO[rq.cat] || '') : '',

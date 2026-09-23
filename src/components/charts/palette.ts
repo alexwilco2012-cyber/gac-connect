@@ -64,7 +64,7 @@ export const VIZ: VizPalette = {
   inkSoft: '#33475F',
   seq: ['#E0EFFA', '#A8CFE9', '#6FABD2', '#3B83B1', '#0E5E8A'],
   ord: ['#73B0D7', '#4F94BF', '#2F79A5', '#0E5E8A', '#0A4A6E'],
-  status: { ok: '#047857', due: '#B45309', lapsed: '#B91C1C' },
+  status: { ok: '#047857', due: '#A84D08', lapsed: '#B91C1C' },
 };
 
 export type ServiceLineId = 'agency' | 'logistics' | 'customs' | 'procurement';

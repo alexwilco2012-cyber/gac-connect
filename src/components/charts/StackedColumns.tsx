@@ -9,7 +9,7 @@ import {
   spreadLabels,
   stackSegments,
 } from './scale';
-import { NAV_HINT, px, textWidth } from './svg';
+import { NAV_HINT, TICK_GAP, px, textWidth, tickGutter } from './svg';
 import { linearKeys, liveLine, useElementWidth, useEntrance, usePlotNav } from './useChart';
 
 export interface StackSeries {
@@ -35,8 +35,9 @@ const LOWER_H = 56;
  * Stacked columns (spec §2 GAC spend, §3 earnings): series stack bottom →
  * top in the order given, 2px geometric gaps, the rounded data end on the
  * top segment only. `lower` adds an aligned panel on the same x-axis and
- * tooltip ("Saved by your tier discount"); `directLabelLast` labels the
- * latest column's segments (and its total) in a right-hand gutter.
+ * tooltip ("Saved by your tier discount"); `directLabelLast` names the
+ * latest column's segments in a right-hand gutter and sets its total, named
+ * as one ("Sep total £12,600"), above the column.
  * A series whose values are all zero simply draws nothing — the survivors
  * keep their colours.
  */
@@ -71,14 +72,16 @@ export function StackedColumns({
   const lowerTicks = lower
     ? fitTicks(Math.max(0, ...lower.values), { minTicks: 3, maxTicks: 3 })
     : [];
-  const gutterLeft = Math.max(24, ...[...ticks, ...lowerTicks].map((t) => textWidth(axis(t)) + 9));
+  const gutterLeft = tickGutter([...ticks, ...lowerTicks].map(axis), 24);
 
+  // The gutter holds the series names (and the lower panel's figure); the
+  // total sits above its column instead, so it never needs the room.
   const labelled = series.filter((s) => (s.values[last] ?? 0) > 0);
   const labelW = directLabelLast
     ? Math.max(
-        textWidth(format(totals[last] ?? 0), 11, true),
+        0,
         ...labelled.map((s) => textWidth(s.label)),
-        lower ? textWidth(lower.format(lower.values[last] ?? 0)) : 0,
+        lower ? textWidth(lower.format(lower.values[last] ?? 0), 11, true) : 0,
       )
     : 0;
   // Direct labels only if they fit: never at the cost of squeezing the plot
@@ -163,50 +166,73 @@ export function StackedColumns({
   };
 
   // ——— direct labels on the latest column ———
+  // The total is its own label, named ("Sep total £12,600") and set above the
+  // column; the series names sit beside their segments a clear line below it.
+  // A bare figure stacked over a name reads as that segment's value.
   const direct = (() => {
     if (!showDirect || !ready) return null;
     const segs = columns[last] ?? [];
     if (!segs.length) return null;
-    const colTop = segs.at(-1)!.y;
-    const items = [
-      { key: 'total', text: format(totals[last] ?? 0), at: colTop + 1, bold: true, lead: false },
-      ...segs.map((sg) => ({
-        key: series[sg.index]!.id,
-        text: series[sg.index]!.label,
-        at: sg.y + sg.height / 2,
-        bold: false,
-        lead: true,
-      })),
-    ];
+    const totalLead = `${categories[last] ?? ''} total `;
+    const totalFigure = format(totals[last] ?? 0);
+    const half = (textWidth(totalLead) + textWidth(totalFigure, 11, true)) / 2;
+    const tx = Math.min(band.centre(last), width - 2 - half);
+    // Above every column the label spans, not just the latest one; and if a
+    // gridline would run through the words, lifted just clear above it.
+    const under = columns.flatMap((c, i) =>
+      band.left(i) < tx + half && band.left(i) + band.bar > tx - half && c.length
+        ? [c.at(-1)!.y]
+        : [],
+    );
+    let ty = Math.min(baseline, ...under) - 7;
+    const grid = ticks.map((t) => Math.round(y(t)) + 0.5).find((g) => g > ty - 10 && g < ty + 4);
+    if (grid !== undefined) ty = grid - 4;
+    ty = Math.max(11, ty);
+    const items = segs.map((sg) => ({
+      key: series[sg.index]!.id,
+      text: series[sg.index]!.label,
+      at: sg.y + sg.height / 2,
+    }));
     const ys = spreadLabels(
       items.map((it) => it.at),
       13,
-      TOP - 4,
+      Math.max(TOP - 4, ty + 13),
       baseline - 4,
     );
     const x0 = band.left(last) + band.bar;
     const lx = x0 + 12;
     return (
       <g>
+        <text
+          x={px(tx)}
+          y={px(ty)}
+          fontSize={11}
+          fontWeight={500}
+          fill={VIZ.inkSoft}
+          textAnchor="middle"
+        >
+          {totalLead}
+          <tspan fontWeight={700} fill={VIZ.ink}>
+            {totalFigure}
+          </tspan>
+        </text>
         {items.map((it, k) => {
           const yy = ys[k]!;
           return (
             <g key={it.key}>
-              {it.lead ? (
-                <path
-                  d={`M${px(x0 + 2)} ${px(it.at)}L${px(x0 + 5)} ${px(it.at)}L${px(lx - 3)} ${px(yy)}`}
-                  fill="none"
-                  stroke={VIZ.axis}
-                  strokeWidth={1}
-                />
-              ) : null}
+              <path
+                d={`M${px(x0 + 2)} ${px(it.at)}L${px(x0 + 5)} ${px(it.at)}L${px(lx - 3)} ${px(yy)}`}
+                fill="none"
+                stroke={VIZ.axis}
+                strokeWidth={1}
+              />
               <text
                 x={px(lx)}
                 y={px(yy)}
                 dy="0.32em"
                 fontSize={11}
-                fontWeight={it.bold ? 700 : 500}
-                fill={it.bold ? VIZ.ink : VIZ.inkSoft}
+                fontWeight={500}
+                fill={VIZ.inkSoft}
               >
                 {it.text}
               </text>
@@ -277,7 +303,7 @@ export function StackedColumns({
                     stroke={t === 0 ? VIZ.axis : VIZ.grid}
                   />
                   <text
-                    x={plotLeft - 8}
+                    x={plotLeft - TICK_GAP}
                     y={ty}
                     dy="0.32em"
                     fontSize={11}
@@ -333,7 +359,7 @@ export function StackedColumns({
                         stroke={t === 0 ? VIZ.axis : VIZ.grid}
                       />
                       <text
-                        x={plotLeft - 8}
+                        x={plotLeft - TICK_GAP}
                         y={ty}
                         dy="0.32em"
                         fontSize={11}

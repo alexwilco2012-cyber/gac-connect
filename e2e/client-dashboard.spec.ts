@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * The client view of the dashboard (live dashboards, 23 Sep; spec §2): what
@@ -23,6 +23,23 @@ async function openClientView(page: Page) {
   await expect(page.getByRole('heading', { name: 'Browne Energy' })).toBeVisible();
 }
 
+/** WCAG contrast of an element's text on its own background, as rendered. */
+async function textContrast(locator: Locator): Promise<number> {
+  return locator.evaluate((el) => {
+    const rgb = (s: string) => (s.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number);
+    const lum = (c: number[]) => {
+      const [r, g, b] = c.map((v) => {
+        const s = v / 255;
+        return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    };
+    const style = getComputedStyle(el);
+    const [hi, lo] = [lum(rgb(style.color)), lum(rgb(style.backgroundColor))].sort((a, b) => b - a);
+    return (hi! + 0.05) / (lo! + 0.05);
+  });
+}
+
 test('quick actions start the five jobs a client starts most', async ({ page }) => {
   await openClientView(page);
   const actions = page.getByTestId('client-quick-actions');
@@ -41,6 +58,33 @@ test('quick actions start the five jobs a client starts most', async ({ page }) 
     await expect(page).toHaveURL(url);
     await page.goBack();
     await expect(page.getByTestId('client-quick-actions')).toBeVisible();
+  }
+});
+
+test('quick actions share the card evenly at every desktop width', async ({ page }) => {
+  await openClientView(page);
+  const actions = page.getByTestId('client-quick-actions');
+  const layout = () =>
+    actions.locator('ul').evaluate((ul) => {
+      const items = [...ul.children].map((li) => li.getBoundingClientRect());
+      return {
+        list: ul.getBoundingClientRect().width,
+        rows: new Set(items.map((r) => Math.round(r.top))).size,
+        widest: Math.max(...items.map((r) => r.width)),
+      };
+    });
+
+  // Where five fit, they are one row.
+  for (const width of [1440, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect((await layout()).rows, `at ${width}px`).toBe(1);
+  }
+
+  // Where they do not, no button is left stretched across the card on its own.
+  for (const width of [1240, 1150, 1024, 900]) {
+    await page.setViewportSize({ width, height: 900 });
+    const { list, widest } = await layout();
+    expect(widest, `at ${width}px`).toBeLessThanOrEqual(list / 2);
   }
 });
 
@@ -73,8 +117,61 @@ test('every port call shows where it stands, milestone by milestone', async ({ p
     .getByTestId('port-call-boreal')
     .getByRole('link', { name: /2 certs expiring on booked supplier/ });
   await expect(certs).toHaveAttribute('data-tone', 'warn');
+  // Small bold warn text holds 4.5:1 at rest and under the pointer.
+  expect(await textContrast(certs)).toBeGreaterThanOrEqual(4.5);
+  await certs.hover();
+  await expect
+    .poll(() => certs.evaluate((el) => getComputedStyle(el).backgroundColor))
+    .not.toBe('rgb(251, 240, 225)');
+  expect(await textContrast(certs)).toBeGreaterThanOrEqual(4.5);
   await certs.click();
   await expect(page).toHaveURL(/\/app\/svs$/);
+});
+
+test('each "Latest from GAC" row is one tap target, timestamp and tile included', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openClientView(page);
+  const row = page.getByTestId('client-activity').getByRole('listitem').first();
+  const link = row.getByRole('link');
+  const to = await link.getAttribute('href');
+  expect(to).toBeTruthy();
+  expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+
+  // The timestamp line and the icon tile, well away from the link's own text,
+  // both land on the link (polled: the loader may still be fading out).
+  await row.scrollIntoViewIfNeeded();
+  const stamp = (await row.locator('p').last().boundingBox())!;
+  const tile = (await row.locator('span[aria-hidden="true"]').last().boundingBox())!;
+  const points: [number, number][] = [
+    [stamp.x + stamp.width - 4, stamp.y + stamp.height / 2],
+    [tile.x + tile.width / 2, tile.y + tile.height / 2],
+  ];
+  for (const [x, y] of points) {
+    await expect
+      .poll(() =>
+        page.evaluate(
+          ([px, py]) => document.elementFromPoint(px!, py!)?.closest('a')?.getAttribute('href'),
+          [x, y],
+        ),
+      )
+      .toBe(to);
+  }
+  await page.mouse.click(points[0]![0], points[0]![1]);
+  await expect(page).toHaveURL(new RegExp(`${to!.replace(/[?]/g, '\\?')}$`));
+});
+
+test('the spend chart keeps the same gap as every other card', async ({ page }) => {
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await openClientView(page);
+    const gap = await page.getByTestId('client-spend').evaluate((fig) => {
+      const next = fig.nextElementSibling!;
+      return next.getBoundingClientRect().top - fig.getBoundingClientRect().bottom;
+    });
+    expect(gap, `at ${width}px`).toBe(20);
+  }
 });
 
 test('on a phone a port call reads as a step count with a thin progress bar', async ({ page }) => {

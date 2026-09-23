@@ -14,7 +14,7 @@ import type { ReactNode, SVGProps } from 'react';
  *
  * Paths are copied verbatim from lucide-static (the 23 Sep additions — upload,
  * file-plus, user-plus, eye, trending-up, bar-chart-3, calendar, clock, star,
- * inbox, list-checks, zap, external-link — from v1.47.0).
+ * inbox, list-checks — from v1.47.0).
  */
 
 export type IconName =
@@ -31,7 +31,6 @@ export type IconName =
   | 'circle-check'
   | 'clipboard-list'
   | 'clock'
-  | 'external-link'
   | 'eye'
   | 'file-check'
   | 'file-plus'
@@ -57,8 +56,7 @@ export type IconName =
   | 'truck'
   | 'upload'
   | 'user-plus'
-  | 'x'
-  | 'zap';
+  | 'x';
 
 const PATHS: Record<IconName, ReactNode> = {
   anchor: (
@@ -273,13 +271,6 @@ const PATHS: Record<IconName, ReactNode> = {
       <path d="M12 6v6l4 2" />
     </>
   ),
-  'external-link': (
-    <>
-      <path d="M15 3h6v6" />
-      <path d="M10 14 21 3" />
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    </>
-  ),
   eye: (
     <>
       <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
@@ -333,11 +324,6 @@ const PATHS: Record<IconName, ReactNode> = {
       <circle cx="9" cy="7" r="4" />
       <line x1="19" x2="19" y1="8" y2="14" />
       <line x1="22" x2="16" y1="11" y2="11" />
-    </>
-  ),
-  zap: (
-    <>
-      <path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z" />
     </>
   ),
 };

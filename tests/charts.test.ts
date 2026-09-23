@@ -1,5 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { LINE_COLOURS, VIZ } from '../src/components/charts/palette';
+import { StackedColumns } from '../src/components/charts/StackedColumns';
+import { TimeSeriesPanels } from '../src/components/charts/TimeSeriesPanels';
+import { seriesFor } from '../src/data/analytics';
+import { SPEND_MONTHS } from '../src/data/clientDesk';
+import { EARNINGS_MONTHS, EARNINGS_WON } from '../src/data/supplierDesk';
+import { monthlySaving, spendSeries } from '../src/lib/clientDesk';
+import { supplierKeeps } from '../src/lib/commission';
+import { compactGbp, gbp } from '../src/lib/format';
 import {
   bandLayout,
   binLabels,
@@ -364,5 +374,218 @@ describe('palette — colour follows the entity, gold never appears', () => {
       ...VIZ.ord.map((hex, i): [string, string] => [`ord-${i + 1}`, hex]),
     ];
     for (const [name, hex] of pairs) expect(token(name), `--viz-${name}`).toBe(hex.toUpperCase());
+  });
+});
+
+/*
+ * Rendered layout. jsdom has no ResizeObserver, so every chart draws at a
+ * fixed 600px and the positions below are the chart's own arithmetic.
+ */
+
+interface SvgText {
+  text: string;
+  x: number;
+  y: number;
+  anchor: string;
+  weight: string | null;
+}
+
+function svgTexts(root: HTMLElement): SvgText[] {
+  return [...root.querySelectorAll('svg text')].map((t) => ({
+    text: t.textContent ?? '',
+    x: Number(t.getAttribute('x')),
+    y: Number(t.getAttribute('y')),
+    anchor: t.getAttribute('text-anchor') ?? 'start',
+    weight: t.getAttribute('font-weight'),
+  }));
+}
+
+/** Inter draws '£' and tabular figures about 0.64em wide — wider than `textWidth` guesses. */
+const inkWidth = (s: string, size = 11) => s.length * size * 0.64;
+
+function spendChart() {
+  const tier = { agency: true, logistics: false, customs: false };
+  return render(
+    createElement(StackedColumns, {
+      categories: [...SPEND_MONTHS],
+      series: spendSeries(tier).map((s) => ({ ...s, color: LINE_COLOURS[s.id] })),
+      format: gbp,
+      axisFormat: compactGbp,
+      directLabelLast: true,
+      lower: {
+        label: 'Saved by your tier discount',
+        color: VIZ.derived,
+        values: monthlySaving(tier),
+        format: gbp,
+      },
+      ariaLabel: 'GAC spend',
+    }),
+  );
+}
+
+function earningsChart() {
+  const kept = EARNINGS_WON.map((w) => supplierKeeps(w, 'premium'));
+  return render(
+    createElement(StackedColumns, {
+      categories: [...EARNINGS_MONTHS],
+      series: [
+        { id: 'keep', label: 'You keep', color: VIZ.sea, values: kept },
+        {
+          id: 'band',
+          label: '10% Premium band',
+          color: VIZ.deduction,
+          values: EARNINGS_WON.map((w, i) => w - kept[i]!),
+        },
+      ],
+      format: gbp,
+      axisFormat: compactGbp,
+      directLabelLast: true,
+      ariaLabel: 'Earnings',
+    }),
+  );
+}
+
+function trendChart() {
+  const s = seriesFor(30);
+  const count = (n: number) => n.toLocaleString('en-GB');
+  return render(
+    createElement(TimeSeriesPanels, {
+      labels: s.labels,
+      ariaLabel: 'Views and requests',
+      panels: [
+        {
+          id: 'views',
+          label: 'Profile views per day',
+          kind: 'area',
+          values: s.views,
+          format: count,
+          benchmark: { label: 'Category average', values: s.category },
+        },
+        {
+          id: 'requests',
+          label: 'Quote requests per day',
+          kind: 'columns',
+          values: s.requests,
+          format: count,
+        },
+      ],
+    }),
+  );
+}
+
+describe('StackedColumns — labels', () => {
+  it('every y-axis tick clears the left edge as Inter draws it (£500 was shaved)', () => {
+    const ticks = svgTexts(spendChart().container).filter((t) => t.anchor === 'end');
+    expect(ticks.map((t) => t.text)).toContain('£500');
+    for (const t of ticks) expect(t.x - inkWidth(t.text), t.text).toBeGreaterThanOrEqual(0);
+  });
+
+  it('the latest total names itself and sits above the name stack, never a bare figure over a series', () => {
+    const texts = svgTexts(earningsChart().container);
+    expect(texts.map((t) => t.text)).toContain('Sep total £12,600');
+    expect(texts.map((t) => t.text)).not.toContain('£12,600');
+    const total = texts.find((t) => t.text === 'Sep total £12,600')!;
+    for (const name of ['You keep', '10% Premium band']) {
+      const label = texts.find((t) => t.text === name)!;
+      // The names sit beside their segments, a clear line below the total.
+      expect(label.y - total.y, name).toBeGreaterThanOrEqual(12);
+    }
+  });
+
+  it('the spend chart labels its total the same way', () => {
+    const texts = svgTexts(spendChart().container).map((t) => t.text);
+    expect(texts).toContain('Sep total £31,000');
+    expect(texts).not.toContain('£31,000');
+    expect(texts).toContain('Procurement');
+  });
+});
+
+describe('TimeSeriesPanels — labels', () => {
+  it('a peak label at the top tick clears its panel title', () => {
+    const texts = svgTexts(trendChart().container);
+    const pairs: [string, string][] = [
+      ['Profile views per day', '20'],
+      ['Quote requests per day', '4'],
+    ];
+    for (const [title, peak] of pairs) {
+      const t = texts.find((x) => x.text === title)!;
+      const p = texts.find((x) => x.text === peak && x.anchor === 'middle')!;
+      expect(p, peak).toBeDefined();
+      // Cap height 8px + a 1.5px halo above the label's baseline; the title's
+      // descenders reach about 3px below its own.
+      expect(p.y - 9.5, `${title} / ${peak}`).toBeGreaterThanOrEqual(t.y + 3);
+    }
+  });
+
+  it('"Category average" sits past the end of both lines, where no point can cross it', () => {
+    const { container } = trendChart();
+    const lines = [...container.querySelectorAll('path[fill="none"]')];
+    const lastX = Math.max(
+      ...lines.flatMap((p) =>
+        [...(p.getAttribute('d') ?? '').matchAll(/[ML]([\d.]+) /g)].map((m) => Number(m[1])),
+      ),
+    );
+    const label = svgTexts(container).filter((t) => /Category|average/.test(t.text));
+    expect(label.length).toBeGreaterThan(0);
+    for (const t of label) {
+      expect(t.anchor, t.text).toBe('start');
+      expect(t.x, t.text).toBeGreaterThan(lastX + 4);
+    }
+  });
+
+  it('when both lines end together, the benchmark name steps clear of the last value', () => {
+    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const { container } = render(
+      createElement(TimeSeriesPanels, {
+        labels,
+        ariaLabel: 'Views',
+        panels: [
+          {
+            id: 'views',
+            label: 'Profile views per day',
+            kind: 'area',
+            values: [6, 14, 9, 12, 10],
+            format: String,
+            benchmark: { label: 'Category average', values: [8, 9, 9, 10, 10] },
+          },
+        ],
+      }),
+    );
+    const texts = svgTexts(container);
+    const end = texts.find((t) => t.text === '10' && t.weight === '700' && t.anchor === 'start')!;
+    const bench = texts.filter((t) => t.text === 'Category' || t.text === 'average');
+    expect(end).toBeDefined();
+    expect(bench).toHaveLength(2);
+    // Ink: a line's cap height reaches 4.5px above its centre, descenders 6px below.
+    const blockTop = Math.min(...bench.map((t) => t.y)) - 4.5;
+    const blockBottom = Math.max(...bench.map((t) => t.y)) + 6;
+    const clear = blockTop >= end.y + 3.5 + 2 || blockBottom <= end.y - 4.5 - 2;
+    expect(clear, `value at ${end.y}, name ${blockTop}–${blockBottom}`).toBe(true);
+  });
+});
+
+describe('ExpiryBar — rules come from lib/svs', () => {
+  it('draws its rules and scale from ALERT_TIERS, so the two cannot drift', async () => {
+    vi.resetModules();
+    vi.doMock('../src/lib/svs', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../src/lib/svs')>()),
+      ALERT_TIERS: [60, 14] as const,
+    }));
+    try {
+      const { ExpiryBar } = await import('../src/components/charts/ExpiryBar');
+      const { container } = render(
+        createElement(ExpiryBar, { daysLeft: 100, state: 'ok', label: 'Expires', scale: true }),
+      );
+      const scale = [...container.querySelectorAll('[role="img"] > div:nth-child(2) span')];
+      expect(scale.map((s) => s.textContent)).toEqual(['14', '60 days']);
+      const rules = [...container.querySelectorAll('span.w-px')] as HTMLElement[];
+      expect(rules.map((r) => r.style.left)).toEqual([
+        `${(14 / 180) * 100}%`,
+        `${(60 / 180) * 100}%`,
+      ]);
+    } finally {
+      vi.doUnmock('../src/lib/svs');
+      vi.resetModules();
+    }
   });
 });

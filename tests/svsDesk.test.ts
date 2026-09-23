@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SUPPLIERS, supplierById } from '../src/data/suppliers';
 import {
   RECOMMENDED_FOR_WELDING,
@@ -15,7 +15,7 @@ import {
   type Application,
   type EvidenceSubmission,
 } from '../src/data/svsDesk';
-import { complianceWatch, deriveStatus } from '../src/lib/svs';
+import { ALERT_TIERS, complianceWatch, deriveStatus } from '../src/lib/svs';
 import { readQuotes, useSupplierDesk } from '../src/store/supplierDesk';
 import { APPROVED_NOTE, readApplications, readEvidence, useSvsDesk } from '../src/store/svsDesk';
 import {
@@ -26,11 +26,14 @@ import {
   approveBlocker,
   approvedCount,
   canApprove,
+  certInForce,
   certsWithApproved,
   checklistProgress,
   daysBetween,
+  deskStamp,
   evidenceOpenCount,
   evidenceStatus,
+  exampleCertForm,
   fileSizeLabel,
   formatDateGB,
   nextApplicationRef,
@@ -38,6 +41,7 @@ import {
   nextOnboardingStage,
   onboardingOpenCount,
   recommendedStatus,
+  shiftISO,
   slaState,
   validateCertForm,
   vaultRows,
@@ -52,6 +56,7 @@ import {
  */
 
 const TODAY = '2026-09-24';
+const ISSUED_IN_FUTURE = 'issue date today or earlier — the issue date cannot be in the future';
 const app = (id: string): Application => {
   const found = SEED_APPLICATIONS.find((a) => a.id === id);
   if (!found) throw new Error(id);
@@ -73,9 +78,9 @@ function submission(over: Partial<EvidenceSubmission>): EvidenceSubmission {
     daysLeft: 1073,
     fileName: 'ISO9001-certificate.pdf',
     fileSize: 253_952,
-    submittedAt: 'Thu 24 Sep · 09:12',
+    submittedAt: 'Today 09:12',
     stage: 'submitted',
-    trail: [{ at: 'Thu 24 Sep · 09:12', by: 'Supplier', text: 'Certificate uploaded' }],
+    trail: [{ at: 'Today 09:12', by: 'Supplier', text: 'Certificate uploaded' }],
     ...over,
   };
 }
@@ -110,9 +115,23 @@ describe('validateCertForm', () => {
   });
 
   it('needs the expiry after the issue date', () => {
+    const problems = validateCertForm(
+      { ...valid, issuedOn: '2026-09-20', expiresOn: '2026-09-19' },
+      TODAY,
+    );
+    expect(problems).toContain('expiry after issue');
+    expect(problems).not.toContain(ISSUED_IN_FUTURE);
+  });
+
+  it('refuses an issue date after today', () => {
+    expect(validateCertForm({ ...valid, issuedOn: '2026-09-25' }, TODAY)).toEqual([
+      ISSUED_IN_FUTURE,
+    ]);
     expect(
-      validateCertForm({ ...valid, issuedOn: '2029-09-02', expiresOn: '2029-09-01' }, TODAY),
-    ).toContain('expiry after issue');
+      validateCertForm({ ...valid, issuedOn: '2028-01-01', expiresOn: '2031-01-01' }, TODAY),
+    ).toEqual([ISSUED_IN_FUTURE]);
+    // Issued today is fine.
+    expect(validateCertForm({ ...valid, issuedOn: TODAY }, TODAY)).toEqual([]);
   });
 
   it('refuses a certificate that has already expired', () => {
@@ -146,6 +165,52 @@ describe('validateCertForm', () => {
   });
 });
 
+describe('the worked example — dated from today, so it never goes stale', () => {
+  it('is the spec’s ISO 9001 on the demo date', () => {
+    expect(exampleCertForm(VAULT_AS_OF_ISO)).toEqual(EXAMPLE_CERT_FORM);
+    expect(EXAMPLE_CERT_FORM).toMatchObject({
+      certType: 'ISO 9001 quality management',
+      issuer: 'Northgate Quality Assurance',
+      reference: 'QA-9001-2618',
+      issuedOn: '2026-09-02',
+      expiresOn: '2029-09-01',
+      fileName: 'ISO9001-certificate.pdf',
+      fileSize: 248 * 1024,
+      declared: true,
+    });
+  });
+
+  it('was issued three weeks ago and runs three years less a day', () => {
+    expect(exampleCertForm('2027-09-21')).toMatchObject({
+      issuedOn: '2027-08-31',
+      expiresOn: '2030-08-30',
+    });
+    // Across a year end and a leap day.
+    expect(exampleCertForm('2027-01-10')).toMatchObject({
+      issuedOn: '2026-12-20',
+      expiresOn: '2029-12-19',
+    });
+    expect(exampleCertForm('2028-03-21')).toMatchObject({
+      issuedOn: '2028-02-29',
+      expiresOn: '2031-02-28',
+    });
+  });
+
+  it('passes validation on any day it is filled in', () => {
+    for (const day of ['2026-09-23', '2027-09-21', '2029-09-02', '2031-02-28', '2040-01-01']) {
+      expect(validateCertForm(exampleCertForm(day), day)).toEqual([]);
+    }
+  });
+
+  it('shiftISO moves a date by years and days, in calendar terms', () => {
+    expect(shiftISO('2026-09-23', { days: -21 })).toBe('2026-09-02');
+    expect(shiftISO('2026-09-02', { years: 3, days: -1 })).toBe('2029-09-01');
+    expect(shiftISO('2026-03-28', { days: 2 })).toBe('2026-03-30');
+    expect(shiftISO('2024-02-29', { years: 1 })).toBe('2025-03-01');
+    expect(shiftISO('not a date', { days: 1 })).toBe('not a date');
+  });
+});
+
 describe('formatting helpers', () => {
   it('fileSizeLabel reads like a file browser', () => {
     expect(fileSizeLabel(253_952)).toBe('248 KB');
@@ -153,6 +218,30 @@ describe('formatting helpers', () => {
     expect(fileSizeLabel(319_488)).toBe('312 KB');
     expect(fileSizeLabel(512)).toBe('512 bytes');
     expect(fileSizeLabel(MAX_FILE_BYTES)).toBe('10 MB');
+    expect(fileSizeLabel(11 * 1024 * 1024)).toBe('11 MB');
+    expect(fileSizeLabel(150 * 1024 * 1024)).toBe('150 MB');
+  });
+
+  it('fileSizeLabel keeps one decimal near the limit, so a refused file never reads “10 MB”', () => {
+    // "This file is 10.3 MB; the limit is 10 MB." — not "10 MB; the limit is 10 MB".
+    expect(fileSizeLabel(Math.round(10.3 * 1024 * 1024))).toBe('10.3 MB');
+    expect(fileSizeLabel(Math.round(10.49 * 1024 * 1024))).toBe('10.5 MB');
+    // A byte over the limit is over it, and says so.
+    expect(fileSizeLabel(MAX_FILE_BYTES + 1)).toBe('10.1 MB');
+    expect(validateCertForm({ ...EXAMPLE_CERT_FORM, fileSize: MAX_FILE_BYTES + 1 }, TODAY)).toEqual(
+      ['file must be under 10 MB'],
+    );
+    // Just under the limit is accepted, and reads as the limit at most.
+    const justUnder = Math.round(9.96 * 1024 * 1024);
+    expect(fileSizeLabel(justUnder)).toBe('10 MB');
+    expect(validateCertForm({ ...EXAMPLE_CERT_FORM, fileSize: justUnder }, TODAY)).toEqual([]);
+  });
+
+  it('deskStamp reads “Today HH:MM”, like the seeded desk entries', () => {
+    expect(deskStamp(new Date(2026, 8, 24, 9, 5))).toBe('Today 09:05');
+    expect(deskStamp(new Date(2026, 8, 23, 21, 1))).toBe('Today 21:01');
+    expect(deskStamp(new Date(2026, 8, 24, 0, 0))).toBe('Today 00:00');
+    expect(SEED_EVIDENCE[0]!.submittedAt).toMatch(/^Today \d{2}:\d{2}$/);
   });
 
   it('formatDateGB writes British dates without a leading zero', () => {
@@ -361,6 +450,106 @@ describe('vaultRows — how a submission shows on the supplier’s certificate l
     expect(rows).toHaveLength(3);
   });
 
+  describe('a later renewal never undoes an approved one', () => {
+    const approvedRenewal = submission({
+      id: 'EVD-2039',
+      kind: 'renewal',
+      vaultId: 'vc-gwo',
+      certType: 'GWO Basic Safety Training',
+      certLabel: 'GWO Basic Safety Training',
+      stage: 'approved',
+      issuer: 'Quayside Safety Training',
+      reference: 'GWO-BST-2292',
+      issuedOn: '2026-09-21',
+      expiresOn: '2028-09-20',
+      daysLeft: 728,
+    });
+    const again = (over: Partial<EvidenceSubmission>) =>
+      submission({
+        ...approvedRenewal,
+        id: 'EVD-2040',
+        reference: 'GWO-BST-2293',
+        expiresOn: '2029-09-20',
+        daysLeft: 1093,
+        ...over,
+      });
+    const gwoOf = (evidence: EvidenceSubmission[]) =>
+      vaultRows(SILVER_CITY_VAULT, evidence, SUP).find((r) => r.id === 'vc-gwo')!;
+    const inForce = { reference: 'GWO-BST-2292', expiresOn: '2028-09-20', daysLeft: 728 };
+
+    it('approved, then another renewal pending: awaiting review beside the approved dates', () => {
+      const gwo = gwoOf([approvedRenewal, again({ stage: 'submitted' })]);
+      expect(gwo).toMatchObject({
+        ...inForce,
+        state: 'ok',
+        statusLabel: 'Renewal awaiting SVS review',
+        statusTone: 'info',
+        pendingRenewal: true,
+        submissionId: 'EVD-2040',
+      });
+    });
+
+    it('approved, then another renewal rejected: rejected, and the approved dates stand', () => {
+      const gwo = gwoOf([again({ stage: 'rejected', note: 'Wrong course.' }), approvedRenewal]);
+      expect(gwo).toMatchObject({
+        ...inForce,
+        state: 'ok',
+        statusLabel: 'Renewal rejected',
+        statusTone: 'danger',
+        note: 'Wrong course.',
+        submissionId: 'EVD-2040',
+      });
+      expect(gwo.pendingRenewal).toBeFalsy();
+    });
+
+    it('approved, then another renewal sent back: more information, the approved dates stand', () => {
+      const gwo = gwoOf([approvedRenewal, again({ stage: 'info-requested', note: 'Cut off.' })]);
+      expect(gwo).toMatchObject({
+        ...inForce,
+        state: 'ok',
+        statusLabel: 'More information needed',
+        note: 'Cut off.',
+      });
+    });
+
+    it('approved twice: the latest approval is in force', () => {
+      const gwo = gwoOf([approvedRenewal, again({ stage: 'approved' })]);
+      expect(gwo).toMatchObject({
+        reference: 'GWO-BST-2293',
+        expiresOn: '2029-09-20',
+        daysLeft: 1093,
+        statusLabel: 'Verified by the SVS team',
+        submissionId: 'EVD-2040',
+      });
+    });
+
+    it('certInForce hands the renewal form the certificate the row shows', () => {
+      const vault = SILVER_CITY_VAULT.find((v) => v.id === 'vc-gwo')!;
+      expect(certInForce(vault, [], SUP)).toEqual(vault);
+      const evidence = [approvedRenewal, again({ stage: 'rejected', note: 'x' })];
+      expect(certInForce(vault, evidence, SUP)).toEqual({
+        ...vault,
+        issuer: 'Quayside Safety Training',
+        reference: 'GWO-BST-2292',
+        issuedOn: '2026-09-21',
+        expiresOn: '2028-09-20',
+        daysLeft: 728,
+      });
+      // Someone else's approval is not this supplier's certificate.
+      expect(certInForce(vault, evidence, 'granite-ndt')).toEqual(vault);
+    });
+  });
+
+  it('marks a certificate due at the widest SVS alert tier, not before', () => {
+    const widest = Math.max(...ALERT_TIERS);
+    const at = (daysLeft: number) =>
+      vaultRows([{ ...SILVER_CITY_VAULT[0]!, daysLeft }], [], SUP)[0]!;
+    expect(at(widest)).toMatchObject({ state: 'due', statusLabel: 'Renewal due' });
+    expect(at(widest + 1)).toMatchObject({ state: 'ok', statusLabel: 'In date' });
+    expect(at(1).state).toBe('due');
+    expect(at(0)).toMatchObject({ state: 'lapsed', statusLabel: 'Lapsed' });
+  });
+
   it('a new certificate is an extra row, and shows each outcome', () => {
     const pending = vaultRows(SILVER_CITY_VAULT, [submission({})], SUP);
     expect(pending).toHaveLength(4);
@@ -406,6 +595,106 @@ describe('vaultRows — how a submission shows on the supplier’s certificate l
     );
     expect(rows).toHaveLength(4);
     expect(rows[3]!.submissionId).toBe('EVD-2040');
+  });
+
+  describe('an approved new certificate stays on file when the same type is sent again', () => {
+    const approvedIso = submission({ id: 'EVD-2039', stage: 'approved' });
+    const resent = (over: Partial<EvidenceSubmission>) =>
+      submission({ id: 'EVD-2040', reference: 'QA-9001-2619', ...over });
+    const isoRows = (evidence: EvidenceSubmission[]) =>
+      vaultRows(SILVER_CITY_VAULT, evidence, SUP).filter(
+        (r) => r.name === 'ISO 9001 quality management',
+      );
+    /** What the dashboard counts as held must be what the register and profile list. */
+    const agrees = (evidence: EvidenceSubmission[]) => {
+      const silver = supplierById(SUP)!;
+      const held = certsWithApproved(SUP, silver.certs, evidence).map((c) => c.name);
+      const rec = recommendedStatus(vaultRows(SILVER_CITY_VAULT, evidence, SUP));
+      expect(held.includes('ISO 9001 quality management')).toBe(
+        !rec.missing.includes('ISO 9001 quality management') &&
+          !rec.pending.includes('ISO 9001 quality management'),
+      );
+    };
+
+    it('approved, then sent again: the verified row stays, the new one waits beside it', () => {
+      const evidence = [resent({ stage: 'submitted' }), approvedIso];
+      const rows = isoRows(evidence);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toMatchObject({
+        submissionId: 'EVD-2039',
+        state: 'ok',
+        statusLabel: 'Verified by the SVS team',
+        statusTone: 'verified',
+        reference: 'QA-9001-2618',
+      });
+      expect(rows[1]).toMatchObject({
+        submissionId: 'EVD-2040',
+        state: 'pending',
+        statusLabel: 'Update awaiting SVS review',
+        statusTone: 'info',
+        reference: 'QA-9001-2619',
+      });
+      expect(recommendedStatus(vaultRows(SILVER_CITY_VAULT, evidence, SUP))).toEqual({
+        onFile: 4,
+        total: 4,
+        missing: [],
+        pending: [],
+      });
+      agrees(evidence);
+    });
+
+    it('approved, then sent again and rejected: still on file, the refusal shown on its own row', () => {
+      const evidence = [approvedIso, resent({ stage: 'rejected', note: 'Not legible.' })];
+      const rows = isoRows(evidence);
+      expect(rows.map((r) => [r.submissionId, r.state])).toEqual([
+        ['EVD-2039', 'ok'],
+        ['EVD-2040', 'rejected'],
+      ]);
+      expect(rows[1]).toMatchObject({ statusLabel: 'Update rejected', note: 'Not legible.' });
+      expect(recommendedStatus(vaultRows(SILVER_CITY_VAULT, evidence, SUP)).missing).toEqual([]);
+      agrees(evidence);
+    });
+
+    it('approved, then sent again and sent back: more information on the new row only', () => {
+      const evidence = [approvedIso, resent({ stage: 'info-requested', note: 'Cut off.' })];
+      const rows = isoRows(evidence);
+      expect(rows.map((r) => [r.submissionId, r.state])).toEqual([
+        ['EVD-2039', 'ok'],
+        ['EVD-2040', 'info'],
+      ]);
+      expect(rows[1]).toMatchObject({ statusLabel: 'More information needed', note: 'Cut off.' });
+      agrees(evidence);
+    });
+
+    it('only the newest update shows; anything older than the approval is superseded', () => {
+      const evidence = [
+        submission({ id: 'EVD-2037', stage: 'rejected', note: 'Old.' }),
+        approvedIso,
+        resent({ stage: 'info-requested', note: 'Cut off.' }),
+        resent({ id: 'EVD-2041', stage: 'submitted' }),
+      ];
+      expect(isoRows(evidence).map((r) => r.submissionId)).toEqual(['EVD-2039', 'EVD-2041']);
+      agrees(evidence);
+    });
+
+    it('approved again: the latest approval is the one on file, with no update row', () => {
+      const evidence = [approvedIso, resent({ stage: 'approved' })];
+      expect(isoRows(evidence).map((r) => [r.submissionId, r.state])).toEqual([['EVD-2040', 'ok']]);
+      const silver = supplierById(SUP)!;
+      expect(
+        certsWithApproved(SUP, silver.certs, evidence).filter(
+          (c) => c.name === 'ISO 9001 quality management',
+        ),
+      ).toHaveLength(1);
+      agrees(evidence);
+    });
+
+    it('with nothing approved, the dashboard and the register agree it is not held', () => {
+      agrees([]);
+      agrees([submission({})]);
+      agrees([submission({ stage: 'rejected', note: 'x' })]);
+      agrees([submission({ stage: 'approved' })]);
+    });
   });
 
   it('ignores other suppliers’ evidence', () => {
@@ -625,6 +914,53 @@ describe('the SVS desk store', () => {
       '',
     );
     expect(onboardingOpenCount(useSvsDesk.getState().applications)).toBe(5);
+  });
+
+  describe('stamps what it does “Today HH:MM”, like the seeded entries beside it', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 8, 24, 9, 12));
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('evidence: the submission, its trail and the decision', () => {
+      const id = useSvsDesk.getState().submitEvidence({
+        supplierId: 'silver-city-welding',
+        supplierName: 'Silver City Welding',
+        kind: 'new',
+        form: EXAMPLE_CERT_FORM,
+      });
+      expect(evidence(id).submittedAt).toBe('Today 09:12');
+      expect(evidence(id).trail.map((t) => t.at)).toEqual(['Today 09:12']);
+      vi.setSystemTime(new Date(2026, 8, 24, 14, 3));
+      useSvsDesk.getState().decideEvidence(id, 'approved');
+      expect(evidence(id).trail.map((t) => t.at)).toEqual(['Today 09:12', 'Today 14:03']);
+    });
+
+    it('onboarding: every trail entry, invitations included', () => {
+      const svs = useSvsDesk.getState();
+      svs.setCheck('APP-3107', 'insurance', 'passed');
+      svs.advanceApplication('APP-3107');
+      const id = svs.inviteSupplier({ company: 'Nigg Bay Coatings', category: 'x', port: 'y' });
+      expect(
+        byId('APP-3107')
+          .trail.slice(-2)
+          .map((t) => t.at),
+      ).toEqual(['Today 09:12', 'Today 09:12']);
+      expect(byId(id).trail.map((t) => t.at)).toEqual(['Today 09:12']);
+    });
+
+    it('a sent quote', () => {
+      useSupplierDesk.getState().sendQuote('req-4471', {
+        amountGbp: 2450,
+        leadTime: 'Next day',
+        validity: '14 days',
+        note: '',
+      });
+      expect(useSupplierDesk.getState().quotes['req-4471']?.sentAt).toBe('Today 09:12');
+    });
   });
 
   it('reads storage defensively: bad entries are dropped, bad shapes reseed', () => {

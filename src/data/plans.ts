@@ -112,9 +112,3 @@ export const ANALYTICS_EXAMPLE = [
   { label: 'Win rate', value: '34%', barPct: 34 },
   { label: 'Avg. response time', value: '2.1 hrs', barPct: 86 },
 ] as const;
-
-/** The last 30 days of quote requests (38, one peak) — the same series the analytics
- *  screen draws, from REQUESTS_90 in data/analytics.ts. Illustrative. */
-export const SPARKLINE_30D = [
-  1, 1, 3, 0, 0, 0, 1, 4, 1, 1, 1, 0, 0, 2, 3, 2, 1, 1, 0, 0, 3, 2, 1, 1, 1, 0, 0, 3, 2, 3,
-] as const;

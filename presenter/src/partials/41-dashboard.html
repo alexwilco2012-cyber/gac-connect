@@ -11,12 +11,23 @@
        (features/supplier-desk.js). Responsive rules: gac-cd-* / gac-sd-* in
        the dashboard block of styles/base.css. -->
   <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
-    <main data-screen-label="Dashboard" class="gac-cd-main" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+    <!-- border-box, as the SVS and analytics screens: 1180px includes the
+         24px gutters, so at 1440 the cards are the site's width, not 28px wider -->
+    <main data-screen-label="Dashboard" class="gac-cd-main" style="max-width:1180px;width:100%;box-sizing:border-box;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
         <div>
           <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ dashEyebrow }}</p>
           <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">{{ dashTitle }}</h1>
           <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:620px;">{{ dashLede }}</p>
+          <!-- The supplier's standing belongs with its name: under the lede,
+               above the switch when the header wraps on a phone. SVS status,
+               plan, promotion, the Gold Band audit (neutral until the band is
+               held — gold is the marque's alone). -->
+          <sc-if value="{{ dashIsSupplier }}" hint-placeholder-val="{{ false }}">
+            <ul role="list" aria-label="Listing standing" style="list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px;">
+              <sc-for list="{{ sdStanding }}" as="p" hint-placeholder-count="4"><li><span style="{{ p.style }}">{{ p.label }}</span></li></sc-for>
+            </ul>
+          </sc-if>
         </div>
         <div role="group" aria-label="Dashboard view" data-testid="dashboard-view-switch" style="display:inline-flex;border:1.5px solid #CBD6E2;border-radius:8px;background:#FFFFFF;padding:4px;">
           <button style="{{ dashClientStyle }}" aria-pressed="{{ dashClientPressed }}" sc-camel-on-click="{{ setDashClient }}">{{ cdClientIcon }}Client view</button>
@@ -50,7 +61,9 @@
                      Procurement is included at any tier, so never a switch. -->
                 <svg sc-camel-view-box="0 0 238 146" role="group" aria-label="{{ dashConsolLabel }}" style="display:block;width:100%;height:auto;overflow:visible;">
                   <polygon points="119,8 12,52 226,52" fill="{{ roofFill }}" stroke="{{ roofStroke }}" stroke-width="1" style="transition:fill .4s,stroke .4s;"></polygon>
-                  <text x="119" y="42" text-anchor="middle" fill="#0A2540" style="font-size:10px;font-weight:800;letter-spacing:.08em;">{{ brandUpper }}</text>
+                  <!-- the roof's wordmark, built in JS (client-desk.js): a
+                       binding inside an SVG text element renders nothing -->
+                  {{ cdRoofLabel }}
                   <g class="svg-anim" style="opacity:0;animation:{{ dashGlint }};"><path d="M119 -6 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2 Z" fill="#FFF3C9"></path></g>
                   <g role="switch" aria-checked="{{ swAgency }}" aria-label="Agency" tabindex="0" sc-camel-on-click="{{ toggleAgency }}" sc-camel-on-key-down="{{ keyAgency }}" cursor="pointer">
                     <rect x="22" y="62" width="38" height="62" rx="3" fill="{{ p1Fill }}" style="transition:fill .35s;"></rect>
@@ -91,13 +104,16 @@
         </div>
 
         <!-- Start something: the five jobs a client starts most often. Ghost
-             buttons, because the consolidation card above leads. -->
-        <div data-testid="client-quick-actions" style="margin-top:20px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:18px 22px;">
+             buttons, because the consolidation card above leads. The layout
+             follows the card's own width (gac-cd-qa-card, a container query):
+             one row of five where they fit unbroken, three over two below
+             that, two columns on a phone. -->
+        <div data-testid="client-quick-actions" class="gac-cd-qa-card" style="margin-top:20px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:18px 22px;">
           <h2 style="font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0;font-family:'Space Grotesk',sans-serif;">Start something</h2>
-          <ul role="list" class="gac-cd-qa" style="list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px;">
+          <ul role="list" class="gac-cd-qa" style="list-style:none;margin:12px 0 0;padding:0;gap:8px;">
             <sc-for list="{{ cdQuickActions }}" as="a" hint-placeholder-count="5">
-              <li class="gac-cd-qa-item" style="min-width:0;flex:1 1 auto;">
-                <button type="button" class="gac-cd-qa-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:100%;min-height:44px;box-sizing:border-box;border-radius:8px;border:1.5px solid #CBD6E2;background:#FFFFFF;padding:8px 14px;font-size:13px;line-height:1.25;font-weight:700;color:#0E5E8A;cursor:pointer;font-family:inherit;white-space:nowrap;text-align:left;transition:border-color .15s,background-color .15s;" style-hover="border-color:#0E5E8A !important;background:#F3F8FB !important;" sc-camel-on-click="{{ a.go }}">{{ a.icon }}<span style="min-width:0;">{{ a.label }}</span></button>
+              <li class="gac-cd-qa-item" style="min-width:0;">
+                <button type="button" class="gac-cd-qa-btn" style="display:flex;align-items:center;gap:8px;width:100%;height:100%;box-sizing:border-box;border-radius:8px;border:1.5px solid #CBD6E2;background:#FFFFFF;font-size:13px;line-height:1.25;font-weight:700;color:#0E5E8A;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s,background-color .15s;" style-hover="border-color:#0E5E8A !important;background:#F3F8FB !important;" sc-camel-on-click="{{ a.go }}">{{ a.icon }}<span style="min-width:0;">{{ a.label }}</span></button>
               </li>
             </sc-for>
           </ul>
@@ -120,7 +136,7 @@
                     <div style="min-width:0;flex:1 1 0%;">
                       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;column-gap:12px;row-gap:6px;">
                         <h3 style="margin:0;font-size:14.5px;line-height:1.375;font-weight:700;color:#0A2540;">{{ v.name }}</h3>
-                        <span style="display:inline-flex;flex-shrink:0;align-items:center;gap:6px;border-radius:999px;border:1px solid #CBD6E2;background:#FAFBFD;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap;color:#0A2540;font-variant-numeric:tabular-nums;">{{ v.clockIcon }}<span>{{ v.when }} <span style="font-weight:400;color:#33475F;">{{ v.countdown }}</span></span></span>
+                        <span style="display:inline-flex;flex-shrink:0;align-items:center;gap:6px;border-radius:999px;border:1px solid #CBD6E2;background:#FAFBFD;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap;color:#0A2540;font-variant-numeric:tabular-nums;">{{ v.clockIcon }}{{ v.when }} <span style="font-weight:400;color:#33475F;">{{ v.countdown }}</span></span>
                       </div>
                       <p style="margin:2px 0 0;font-size:12.5px;color:#33475F;">{{ v.berthLine }}</p>
                       <!-- the full rail from 640px; the fold below it on a phone -->
@@ -239,7 +255,10 @@
                     <sc-if value="{{ a.thread }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="position:absolute;top:36px;bottom:4px;left:16px;width:1px;transform:translateX(-50%);background:#E5EAF1;"></span></sc-if>
                     <span aria-hidden="true" style="position:relative;display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;border-radius:8px;background:#E8F1F7;color:#0E5E8A;">{{ a.icon }}</span>
                     <div style="min-width:0;flex:1 1 0%;padding-top:3px;">
-                      <button type="button" style="display:inline;background:none;border:none;padding:0;margin:0;font-family:inherit;font-size:13.5px;line-height:1.375;font-weight:500;color:#0A2540;text-align:left;cursor:pointer;" style-hover="color:#0E5E8A !important;text-decoration:underline;" sc-camel-on-click="{{ a.go }}">{{ a.text }}</button>
+                      <!-- gac-cd-rowlink: the button's ::after covers the whole row
+                           (the li is relative), so the tile and the timestamp are
+                           one 44px+ target; its name stays the item's own words -->
+                      <button type="button" class="gac-cd-rowlink" style="display:inline;background:none;border:none;padding:0;margin:0;font-family:inherit;font-size:13.5px;line-height:1.375;font-weight:500;color:#0A2540;text-align:left;cursor:pointer;" style-hover="color:#0E5E8A !important;text-decoration:underline;" sc-camel-on-click="{{ a.go }}">{{ a.text }}</button>
                       <p style="margin:2px 0 0;font-size:12px;color:#33475F;font-variant-numeric:tabular-nums;">{{ a.meta }}</p>
                     </div>
                   </li>
@@ -258,11 +277,7 @@
            band appear: it comes off third-party work won through the
            platform at invoice matching, never from the client. -->
       <sc-if value="{{ dashIsSupplier }}" hint-placeholder-val="{{ false }}">
-        <!-- Standing at a glance: SVS status, plan, promotion, the Gold Band audit
-             (neutral until the band is held — gold is the marque's alone). -->
-        <ul role="list" aria-label="Listing standing" style="list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px;">
-          <sc-for list="{{ sdStanding }}" as="p" hint-placeholder-count="4"><li><span style="{{ p.style }}">{{ p.label }}</span></li></sc-for>
-        </ul>
+        <!-- The standing pills sit in the screen header above, with the name. -->
 
         <!-- Four numbers answer "am I being found": the analytics screen's 30 days -->
         <div class="gac-sd-kpis" style="display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:20px;">
@@ -312,7 +327,8 @@
                         <p style="margin:2px 0 0;font-size:12.5px;line-height:1.375;color:#33475F;">{{ r.sub }}</p>
                         <p style="margin:8px 0 0;display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;row-gap:6px;">
                           <span style="{{ r.pillStyle }}">{{ r.pillIcon }}{{ r.pillLabel }}</span>
-                          <span style="font-size:11.5px;font-weight:600;letter-spacing:.03em;color:#33475F;font-variant-numeric:tabular-nums;">{{ r.ref }}</span>
+                          <!-- the ID never breaks at its hyphen; what follows it may wrap -->
+                          <span style="font-size:11.5px;font-weight:600;letter-spacing:.03em;color:#33475F;font-variant-numeric:tabular-nums;"><span style="white-space:nowrap;">{{ r.refId }}</span>{{ r.refTail }}</span>
                         </p>
                       </div>
                     </div>
@@ -330,7 +346,7 @@
                     <li style="{{ a.rowStyle }}">
                       <span style="min-width:0;">
                         <span style="display:block;font-size:13px;line-height:1.375;font-weight:600;color:#0A2540;">{{ a.service }}</span>
-                        <span style="display:block;font-size:12px;line-height:1.375;color:#33475F;font-variant-numeric:tabular-nums;">{{ a.sub }}</span>
+                        <span style="display:block;font-size:12px;line-height:1.375;color:#33475F;font-variant-numeric:tabular-nums;">{{ a.vessel }} · <span style="white-space:nowrap;">{{ a.id }}</span></span>
                       </span>
                       <span style="flex-shrink:0;text-align:right;">
                         <span style="display:block;font-size:13px;font-weight:700;color:#0A2540;font-variant-numeric:tabular-nums;">{{ a.amount }}</span>
@@ -366,7 +382,8 @@
                 <sc-for list="{{ sdCertRows }}" as="c" hint-placeholder-count="3">
                   <li style="{{ c.rowStyle }}">
                     <p style="margin:0;font-size:13.5px;line-height:1.375;font-weight:600;color:#0A2540;">{{ c.name }}</p>
-                    <p style="margin:2px 0 0;font-size:12px;line-height:1.375;color:#33475F;">{{ c.issuer }}<span style="font-variant-numeric:tabular-nums;">{{ c.reference }}</span></p>
+                    <!-- a reference wraps whole, never at its hyphens ('CW-26-' / '0418') -->
+                    <p style="margin:2px 0 0;font-size:12px;line-height:1.375;color:#33475F;">{{ c.issuer }}<span style="white-space:nowrap;font-variant-numeric:tabular-nums;">{{ c.reference }}</span></p>
                     <sc-if value="{{ c.showExpiry }}" hint-placeholder-val="{{ true }}">
                       <p style="margin:0;font-size:12px;line-height:1.375;color:#33475F;font-variant-numeric:tabular-nums;">{{ c.expires }}</p>
                       <div style="margin-top:10px;">{{ c.bar }}</div>

@@ -13,7 +13,6 @@ import { Sparkline } from './Sparkline';
 const DELTA_TONE = {
   success: 'bg-success-soft text-success',
   info: 'bg-sea-soft text-sea',
-  warn: 'bg-warn-soft text-warn',
 } as const;
 
 export function StatCard({
@@ -28,7 +27,7 @@ export function StatCard({
   label: string;
   value: string;
   delta?: string;
-  /** Growth reads success (default); a plain annotation info; a slip warn. */
+  /** Growth reads success (default); a plain annotation reads info. */
   deltaTone?: keyof typeof DELTA_TONE;
   barPct?: number;
   icon?: IconName;

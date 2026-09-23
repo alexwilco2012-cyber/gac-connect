@@ -25,7 +25,9 @@ async function open(page: Page, path: string) {
 
 const sections = (page: Page) => page.getByRole('group', { name: 'SVS sections' });
 const tab = (page: Page, name: RegExp) => sections(page).getByRole('button', { name });
-const kpi = (page: Page, id: string) => page.getByTestId(`svs-kpi-${id}`);
+/** A tile's figure alone: its note has digits of its own ("the 5-day target", "15:40"). */
+const kpi = (page: Page, id: string) =>
+  page.getByTestId(`svs-kpi-${id}`).locator('[data-kpi-value]');
 const bellLabel = (page: Page) =>
   page.getByRole('button', { name: /^Notifications/ }).getAttribute('aria-label');
 
@@ -39,10 +41,10 @@ test('the register is the default, and the tabs switch and survive a reload', as
   await expect(page.getByRole('button', { name: 'Peterhead Diving Services' })).toBeVisible();
 
   // Four small tiles, live from the store and the watch list.
-  await expect(kpi(page, 'onboarding')).toContainText('4');
-  await expect(kpi(page, 'evidence')).toContainText('2');
-  await expect(kpi(page, 'alerts')).toContainText('3');
-  await expect(kpi(page, 'verify')).toContainText('3.5 days');
+  await expect(kpi(page, 'onboarding')).toHaveText('4');
+  await expect(kpi(page, 'evidence')).toHaveText('2');
+  await expect(kpi(page, 'alerts')).toHaveText('3');
+  await expect(kpi(page, 'verify')).toHaveText('3.5 days');
   await expect(tab(page, /^Onboarding 4$/)).toBeVisible();
   await expect(tab(page, /^Evidence queue 2$/)).toBeVisible();
 
@@ -118,7 +120,7 @@ test('approving Cove Bay Scaffolding moves it to Decided and Internal follows', 
     'Approved — listing goes live at the next marketplace publish (simulated)',
   );
   await expect(page.getByTestId('svs-column-Decision')).not.toContainText('Cove Bay Scaffolding');
-  await expect(kpi(page, 'onboarding')).toContainText('3');
+  await expect(kpi(page, 'onboarding')).toHaveText('3');
   await expect(tab(page, /^Onboarding 3$/)).toBeVisible();
 
   // The agent desk's KPI reads the same store: one more verified, one fewer onboarding.
@@ -183,10 +185,47 @@ test('approval waits on the checks, and asking for more needs a note', async ({ 
     'Moved to Decision',
   );
 
-  // Escape closes the panel; the card has moved column.
+  // Escape closes the panel; the card has moved column, and focus found it there.
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
   await expect(page.getByTestId('svs-column-Decision')).toContainText('Balnagask Hydraulics');
+  await expect(
+    page.getByTestId('svs-column-Decision').getByRole('button', { name: 'Balnagask Hydraulics' }),
+  ).toBeFocused();
+});
+
+test('closing the panel after a move returns focus to the card in its new column', async ({
+  page,
+}) => {
+  await open(page, '/app/svs?section=onboarding');
+  const card = (column: string) =>
+    page
+      .getByTestId(`svs-column-${column}`)
+      .getByRole('button', { name: 'Torry Point Rope Access' });
+  const panel = page.getByRole('dialog', { name: 'Torry Point Rope Access' });
+
+  // Keyboard only: open, move a stage, then Escape.
+  await card('Applied').focus();
+  await page.keyboard.press('Enter');
+  await panel.getByRole('button', { name: 'Move to Documents' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.getByRole('button', { name: 'Move to Checks' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+  await expect(card('Documents')).toBeFocused();
+
+  // The close button does the same.
+  await page.keyboard.press('Enter');
+  await panel.getByRole('button', { name: 'Move to Checks' }).click();
+  await panel.getByRole('button', { name: 'Close applicant panel' }).click();
+  await expect(card('Checks')).toBeFocused();
+
+  // Without a move, the panel hands focus straight back.
+  await page.keyboard.press('Enter');
+  await expect(panel).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+  await expect(card('Checks')).toBeFocused();
 });
 
 test('declining needs a reason and lands in Decided', async ({ page }) => {
@@ -206,7 +245,7 @@ test('declining needs a reason and lands in Decided', async ({ page }) => {
   const decided = page.getByTestId('svs-decided');
   await expect(decided).toContainText('Torry Point Rope Access');
   await expect(decided).toContainText('Rope access certificates could not be verified.');
-  await expect(kpi(page, 'onboarding')).toContainText('3');
+  await expect(kpi(page, 'onboarding')).toHaveText('3');
 });
 
 test('inviting a supplier adds it under Applied', async ({ page }) => {
@@ -233,7 +272,8 @@ test('inviting a supplier adds it under Applied', async ({ page }) => {
   const applied = page.getByTestId('svs-column-Applied');
   await expect(applied).toContainText('Example Test Coatings');
   await expect(applied).toContainText('Scaffolding · Peterhead');
-  await expect(kpi(page, 'onboarding')).toContainText('5');
+  await expect(kpi(page, 'onboarding')).toHaveText('5');
+  await expect(tab(page, /^Onboarding 5$/)).toBeVisible();
   await expect(page.getByText('3 alerts:')).toBeVisible();
 });
 
@@ -259,7 +299,8 @@ test('the evidence queue approves, sends back with a note, and rejects with a re
   await expect(page.getByText('Sent back to Caledonia Lifting Ltd with your note.')).toBeVisible();
   await expect(detail).toContainText('More information needed');
   await expect(detail).toContainText('The report does not show the safe working load.');
-  await expect(kpi(page, 'evidence')).toContainText('1');
+  await expect(kpi(page, 'evidence')).toHaveText('1');
+  await expect(tab(page, /^Evidence queue 1$/)).toBeVisible();
 
   // Rejecting needs a reason.
   await page
@@ -285,12 +326,38 @@ test('the evidence queue approves, sends back with a note, and rejects with a re
       'Rejected: ISO 45001 occupational health and safety for Aberdeen Offshore Medical.',
     ),
   ).toBeVisible();
-  await expect(kpi(page, 'evidence')).toContainText('0');
+  await expect(kpi(page, 'evidence')).toHaveText('0');
   await expect(tab(page, /^Evidence queue 0$/)).toBeVisible();
 
   // Nothing moved the compliance watch or the bell.
   await expect(page.getByText('3 alerts:')).toBeVisible();
   expect(await bellLabel(page)).toBe(bell);
+});
+
+test('the note dialogs hand focus back to the button that opened them', async ({ page }) => {
+  await open(page, '/app/svs?section=evidence');
+  const detail = page.getByTestId('evidence-detail');
+
+  for (const [button, dialog] of [
+    ['Request information', 'Request information'],
+    ['Reject', 'Reject certificate'],
+  ] as const) {
+    const opener = detail.getByRole('button', { name: button, exact: true });
+    const note = page.getByRole('dialog', { name: dialog });
+
+    await opener.focus();
+    await page.keyboard.press('Enter');
+    await expect(note.getByRole('textbox')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(note).toHaveCount(0);
+    await expect(opener).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await note.getByRole('button', { name: 'Cancel' }).click();
+    await expect(note).toHaveCount(0);
+    await expect(opener).toBeFocused();
+  }
+  await expect(detail).toContainText('Awaiting SVS review');
 });
 
 // Depends on T6's certificate modal on the supplier dashboard (built in
@@ -317,7 +384,7 @@ test('a certificate sent from the supplier dashboard is verified in the evidence
 
   // The SVS team sees it at the top of the queue, and verifies it.
   await open(page, '/app/svs?section=evidence');
-  await expect(kpi(page, 'evidence')).toContainText('3');
+  await expect(kpi(page, 'evidence')).toHaveText('3');
   const first = page.getByTestId('evidence-list').getByRole('button').first();
   await expect(first).toContainText('Silver City Welding');
   await expect(first).toContainText('Awaiting SVS review');
@@ -357,5 +424,35 @@ test('every tab holds at 375px without page overflow', async ({ page }) => {
       return scroller.scrollWidth - scroller.clientWidth;
     });
     expect(overflow).toBeLessThanOrEqual(0);
+  }
+
+  // Pass, Fail and N/A are 44px touch targets on a phone.
+  await open(page, '/app/svs?section=onboarding');
+  await page.getByRole('button', { name: 'Girdle Ness Marine Electrical' }).click();
+  const checks = page.getByRole('dialog').getByRole('group').getByRole('button');
+  await expect(checks).toHaveCount(24);
+  const heights = await checks.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().height),
+  );
+  expect(Math.min(...heights)).toBeGreaterThanOrEqual(44);
+});
+
+test('the board shows all four columns without scrolling sideways from 640px', async ({ page }) => {
+  const board = page.getByTestId('svs-board');
+  for (const width of [640, 1024, 1180, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await open(page, '/app/svs?section=onboarding');
+    await expect(page.getByTestId('svs-column-Decision')).toContainText('Cove Bay Scaffolding');
+    const fit = await board.evaluate((el) => {
+      const right = el.getBoundingClientRect().right;
+      const columns = Array.from(el.querySelectorAll('[data-testid^="svs-column-"]'));
+      return {
+        sideways: el.scrollWidth - el.clientWidth,
+        outside: columns.filter((c) => c.getBoundingClientRect().right > right + 0.5).length,
+        rows: new Set(columns.map((c) => Math.round(c.getBoundingClientRect().top))).size,
+      };
+    });
+    // Two by two until all four fit across (1280px with the sidebar out).
+    expect(fit).toEqual({ sideways: 0, outside: 0, rows: width >= 1280 ? 1 : 2 });
   }
 });

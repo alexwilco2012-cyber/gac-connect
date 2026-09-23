@@ -5,7 +5,6 @@ import { Modal } from '../../../components/ui/Modal';
 import { BASE_PORTS, INVITE_CATEGORIES } from '../../../data/svsDesk';
 import { useApp } from '../../../store/app';
 import { useSvsDesk } from '../../../store/svsDesk';
-import { InShell } from './parts';
 import { INPUT, LABEL } from './ui';
 
 /**
@@ -25,11 +24,9 @@ export function InviteModal({
   onInvited: () => void;
 }) {
   return (
-    <InShell>
-      <Modal open={open} onClose={onClose} labelledBy="invite-title">
-        {open ? <InviteForm onClose={onClose} onInvited={onInvited} /> : null}
-      </Modal>
-    </InShell>
+    <Modal open={open} onClose={onClose} labelledBy="invite-title">
+      {open ? <InviteForm onClose={onClose} onInvited={onInvited} /> : null}
+    </Modal>
   );
 }
 

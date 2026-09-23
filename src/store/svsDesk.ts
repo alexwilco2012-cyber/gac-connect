@@ -12,13 +12,13 @@ import {
   type EvidenceSubmission,
   type TrailEntry,
 } from '../data/svsDesk';
-import { stampLabel } from '../lib/crewChange';
 import { isStageOf } from '../lib/pipeline';
 import { persistent } from '../lib/storage';
 import {
   canApprove,
   checkLabel,
   daysBetween,
+  deskStamp,
   nextApplicationRef,
   nextEvidenceRef,
   nextOnboardingStage,
@@ -33,8 +33,9 @@ import {
  * seeded on first open like the other pipelines, and cleared by Reset demo —
  * `reset()` removes the keys rather than writing the seed back.
  *
- * Every action appends to the item's audit trail, by role. Nothing here feeds
- * `useNeedsYou`: the SVS team's queue is not the client's "Waiting on you".
+ * Every action appends to the item's audit trail, by role, stamped "Today
+ * HH:MM" (`deskStamp`) like the seeded entries it sits beside. Nothing here
+ * feeds `useNeedsYou`: the SVS team's queue is not the client's "Waiting on you".
  */
 
 const KEY_EVIDENCE = 'svsDesk.evidence';
@@ -140,7 +141,7 @@ export function readApplications(): Application[] {
 }
 
 function entry(by: Actor, text: string): TrailEntry {
-  return { at: stampLabel(), by, text };
+  return { at: deskStamp(), by, text };
 }
 
 const CHECK_WORDS: Record<CheckState, string> = {
@@ -214,7 +215,7 @@ export const useSvsDesk = create<SvsDeskState>((set, get) => {
     submitEvidence({ supplierId, supplierName, kind, vaultId, form }) {
       const existing = get().evidence;
       const id = nextEvidenceRef(existing);
-      const at = stampLabel();
+      const at = deskStamp();
       const certLabel = form.certType === 'Other' ? form.otherLabel.trim() : form.certType;
       const submission: EvidenceSubmission = {
         id,

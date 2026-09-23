@@ -32,7 +32,10 @@ export default function Analytics() {
 
   return (
     <div className="screen-enter" data-testid="analytics-screen">
-      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
+      {/* The switch sits top-right beside the lede from 1280px, where both fit
+          on one line; below that it sits under the lede, flush left, rather
+          than wrapping to wherever the line breaks. */}
+      <header className="flex flex-col gap-x-8 gap-y-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="max-w-[600px] min-w-0">
           <Eyebrow>Supplier analytics · example</Eyebrow>
           <h1 className="mt-1 font-display text-2xl font-bold">{supplier.name} — performance</h1>
@@ -45,7 +48,7 @@ export default function Analytics() {
             and response time are fed from platform activity — illustrative here.
           </p>
         </div>
-        <div className="flex flex-col items-start gap-1.5 sm:items-end">
+        <div className="flex flex-col items-start gap-1.5 xl:items-end">
           <PeriodSwitch period={period} onChange={setPeriod} />
           <p className="inline-flex items-center gap-1.5 text-[12px] text-ink-soft tabular-nums">
             <Icon name="calendar" size={14} />

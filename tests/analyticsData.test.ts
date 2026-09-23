@@ -13,7 +13,7 @@ import {
   weeklySums,
   type Period,
 } from '../src/data/analytics';
-import { ANALYTICS_EXAMPLE, SPARKLINE_30D } from '../src/data/plans';
+import { ANALYTICS_EXAMPLE } from '../src/data/plans';
 import { supplierById } from '../src/data/suppliers';
 import { EARNINGS_MONTHS, EARNINGS_WON, SUPPLIER_KPIS } from '../src/data/supplierDesk';
 import { supplierKeeps } from '../src/lib/commission';
@@ -205,11 +205,6 @@ describe('ratings distribution', () => {
 });
 
 describe('one series behind every surface', () => {
-  it('the dashboard sparkline is the last 30 days of quote requests', () => {
-    expect([...SPARKLINE_30D]).toEqual(REQUESTS_90.slice(60));
-    expect(sum(SPARKLINE_30D)).toBe(38);
-  });
-
   it('the headline example keeps its values', () => {
     expect(ANALYTICS_EXAMPLE.map((a) => a.value)).toEqual(['412', '38', '34%', '2.1 hrs']);
   });

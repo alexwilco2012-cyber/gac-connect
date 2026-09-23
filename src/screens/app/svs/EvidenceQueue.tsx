@@ -9,7 +9,7 @@ import { evidenceOpenCount, evidenceStatus, formatDateGB } from '../../../lib/sv
 import { useApp } from '../../../store/app';
 import { useSvsDesk } from '../../../store/svsDesk';
 import { DocumentPreview } from './DocumentPreview';
-import { AuditTrail, InShell, NoteForm } from './parts';
+import { AuditTrail, NoteForm } from './parts';
 import { focusSoon, midSentence, refNumber } from './ui';
 
 /**
@@ -89,39 +89,37 @@ function NoteDialog({
   onDone: (kind: NoteKind, note: string) => void;
 }) {
   return (
-    <InShell>
-      <Modal open={kind !== null} onClose={onClose} labelledBy="evidence-note-title">
-        {kind ? (
-          <>
-            <Eyebrow>
-              {item.id} · {item.supplierName}
-            </Eyebrow>
-            <h2 id="evidence-note-title" className="mt-1 font-display text-[19px] font-bold">
-              {kind === 'info' ? 'Request information' : 'Reject certificate'}
-            </h2>
-            <p className="mt-1 mb-4 text-[13px] text-ink-soft">
-              {kind === 'info'
-                ? `${item.certLabel} goes back to ${item.supplierName} with your note, and leaves the queue until they send it again.`
-                : `${item.certLabel} is rejected. ${item.supplierName} sees your reason, and anything already on their record stands.`}
-            </p>
-            <NoteForm
-              key={kind}
-              label={kind === 'info' ? 'Note to the supplier' : 'Reason for rejecting'}
-              placeholder={
-                kind === 'info'
-                  ? 'What is missing or unclear, and what to send'
-                  : 'The reason the supplier will see'
-              }
-              submitLabel={kind === 'info' ? 'Send back' : 'Reject certificate'}
-              missing={kind === 'info' ? 'a note for the supplier' : 'a reason'}
-              destructive={kind === 'reject'}
-              onSubmit={(note) => onDone(kind, note)}
-              onCancel={onClose}
-            />
-          </>
-        ) : null}
-      </Modal>
-    </InShell>
+    <Modal open={kind !== null} onClose={onClose} labelledBy="evidence-note-title">
+      {kind ? (
+        <>
+          <Eyebrow>
+            {item.id} · {item.supplierName}
+          </Eyebrow>
+          <h2 id="evidence-note-title" className="mt-1 font-display text-[19px] font-bold">
+            {kind === 'info' ? 'Request information' : 'Reject certificate'}
+          </h2>
+          <p className="mt-1 mb-4 text-[13px] text-ink-soft">
+            {kind === 'info'
+              ? `${item.certLabel} goes back to ${item.supplierName} with your note, and leaves the queue until they send it again.`
+              : `${item.certLabel} is rejected. ${item.supplierName} sees your reason, and anything already on their record stands.`}
+          </p>
+          <NoteForm
+            key={kind}
+            label={kind === 'info' ? 'Note to the supplier' : 'Reason for rejecting'}
+            placeholder={
+              kind === 'info'
+                ? 'What is missing or unclear, and what to send'
+                : 'The reason the supplier will see'
+            }
+            submitLabel={kind === 'info' ? 'Send back' : 'Reject certificate'}
+            missing={kind === 'info' ? 'a note for the supplier' : 'a reason'}
+            destructive={kind === 'reject'}
+            onSubmit={(note) => onDone(kind, note)}
+            onCancel={onClose}
+          />
+        </>
+      ) : null}
+    </Modal>
   );
 }
 

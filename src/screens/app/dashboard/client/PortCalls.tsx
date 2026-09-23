@@ -117,9 +117,10 @@ const CHIP_TONES: Record<PortCallChip['tone'], string> = {
   success: 'bg-success-soft text-success',
 };
 
+/** A shade under the resting tone; the warn one is kept light enough for 4.5:1 text. */
 const CHIP_LINK_HOVER: Record<PortCallChip['tone'], string> = {
   info: 'hover:bg-[#D5E7F2]',
-  warn: 'hover:bg-[#F6E2C6]',
+  warn: 'hover:bg-[#F8E8D2]',
   success: 'hover:bg-[#D3EBE1]',
 };
 

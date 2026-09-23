@@ -12,9 +12,7 @@ import {
   VIZ,
   type ExpiryState,
   type LegendItem,
-  type ServiceLineId,
 } from '../components/charts';
-import { binRanges } from '../components/charts/scale';
 import { Button, ButtonLink } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { CertChip } from '../components/ui/CertChip';
@@ -28,132 +26,34 @@ import { StatCard } from '../components/ui/StatCard';
 import { Toggle } from '../components/ui/Toggle';
 import { Loader } from '../components/motif/Loader';
 import { PillarsRoof } from '../components/motif/PillarsRoof';
+import {
+  HOUR_BLOCK_NAMES,
+  HOUR_BLOCKS,
+  PERIOD_SUMMARY,
+  RATINGS_DISTRIBUTION,
+  WEEKDAY_NAMES,
+  WEEKDAYS,
+  funnelRateLabels,
+  seriesFor,
+  weeklySums,
+  type Period,
+} from '../data/analytics';
+import { LINE_LABELS, SPEND_MONTHS } from '../data/clientDesk';
+import { ANALYTICS_EXAMPLE } from '../data/plans';
+import { EARNINGS_MONTHS, EARNINGS_WON, SUPPLIER_KPIS } from '../data/supplierDesk';
+import { monthlySaving, spendSeries } from '../lib/clientDesk';
 import { supplierKeeps } from '../lib/commission';
 import { compactGbp, gbp } from '../lib/format';
 import { session } from '../lib/storage';
 import { tierPct } from '../lib/tier';
 import { useApp } from '../store/app';
 
-/* ——— Chart gallery sample data (illustrative; the screens read src/data) ——— */
-
-const KS_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const KS_MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-/** 90 days ending Wed 23 Sep 2026 — "Fri 26 Jun" … "Wed 23 Sep". */
-const KS_DAYS = Array.from({ length: 90 }, (_, i) => {
-  const d = new Date(Date.UTC(2026, 5, 26 + i));
-  return `${KS_WEEKDAYS[d.getUTCDay()]} ${d.getUTCDate()} ${KS_MONTH_NAMES[d.getUTCMonth()]}`;
-});
-
-/** Seeded PRNG so the gallery draws the same curve every time. */
-function seeded(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-const KS_SERIES = (() => {
-  const rand = seeded(23092026);
-  const views: number[] = [];
-  const requests: number[] = [];
-  const category: number[] = [];
-  for (let i = 0; i < 90; i++) {
-    const weekday = (5 + i) % 7;
-    const weekend = weekday === 0 || weekday === 6;
-    const base = 9 + i * 0.07;
-    views.push(Math.max(1, Math.round((weekend ? base * 0.45 : base) + (rand() - 0.5) * 6)));
-    requests.push(weekend ? (rand() < 0.2 ? 1 : 0) : Math.floor(rand() * 3.2));
-    category.push(Number((9.1 + Math.sin(i / 6) * 0.9).toFixed(1)));
-  }
-  views[80] = Math.max(...views) + 5; // one clear peak
-  requests[74] = 4; // and one peak in the last 30 days of requests
-  return { views, requests, category };
-})();
-
-const KS_MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-const KS_SPEND: Record<ServiceLineId, number[]> = {
-  agency: [23000, 24000, 21000, 26000, 25000, 27000],
-  logistics: [8000, 9000, 7000, 10000, 9000, 11000],
-  customs: [4000, 4000, 3000, 5000, 4000, 5000],
-  procurement: [4000, 4000, 5000, 4000, 4000, 4000],
-};
-const KS_LINE_LABELS: Record<ServiceLineId, string> = {
-  agency: 'Agency',
-  logistics: 'Logistics',
-  customs: 'Customs',
-  procurement: 'Procurement',
-};
-const KS_WON = [7200, 9850, 6400, 11300, 8750, 12600];
-
-const KS_FUNNEL = [
-  { label: 'Search appearances', value: 2960 },
-  { label: 'Profile views', value: 412 },
-  { label: 'Quote requests', value: 38 },
-  { label: 'Quotes sent', value: 35 },
-  { label: 'Jobs won', value: 12 },
-];
-const KS_FUNNEL_RATES = [
-  '13.9% opened your profile',
-  '9.2% asked for a quote',
-  '92% quoted',
-  '34% won',
-];
-
-const KS_SOURCES = [
-  { id: 'search', label: 'Marketplace search', value: 168 },
-  { id: 'category', label: 'Welding category page', value: 104 },
-  { id: 'promoted', label: 'Promoted placement', value: 71, tag: '▲ Promoted' },
-  { id: 'hub', label: 'Service-line hub', value: 38 },
-  { id: 'other', label: 'Direct link and other', value: 31, color: VIZ.other },
-];
-const KS_RATINGS = [42, 21, 6, 2, 1];
-const KS_SEARCHES = [
-  { term: 'coded welder aberdeen', count: 64 },
-  { term: 'onboard welding repair', count: 41 },
-  { term: 'pipework repair', count: 33 },
-  { term: 'skid frame fabrication', count: 18 },
-  { term: '24/7 welding call-out', count: 15 },
-];
-
-const KS_WEEKDAY_ROWS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const KS_DAY_NAMES: Record<string, string> = {
-  Mon: 'Monday',
-  Tue: 'Tuesday',
-  Wed: 'Wednesday',
-  Thu: 'Thursday',
-  Fri: 'Friday',
-  Sat: 'Saturday',
-  Sun: 'Sunday',
-};
-const KS_HOURS = Array.from({ length: 12 }, (_, i) => {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${pad(i * 2)}–${pad(i * 2 + 2)}`;
-});
-const KS_HEAT = [
-  [0, 0, 0, 0, 1, 2, 1, 1, 1, 0, 0, 0],
-  [0, 0, 0, 1, 5, 2, 1, 1, 0, 0, 0, 0],
-  [0, 0, 0, 1, 2, 1, 1, 1, 1, 0, 0, 0],
-  [0, 0, 0, 0, 2, 2, 1, 1, 0, 0, 0, 0],
-  [0, 0, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-];
+/*
+ * The chart gallery draws the seeded data the product screens draw
+ * (src/data), through the same rules (lib/clientDesk, lib/commission), so a
+ * figure here always matches its screen. Only the certificate rows below are
+ * the gallery's own: one row per bar state, which no single supplier has.
+ */
 
 const KS_CERTS: {
   name: string;
@@ -168,10 +68,17 @@ const KS_CERTS: {
   { name: 'Offshore medical', daysLeft: null, state: 'info', expires: 'Dates to follow' },
 ];
 
+/** The lines the gallery's chips switch; Procurement is held at any tier. */
+const LINE_SWITCHES = ['agency', 'logistics', 'customs'] as const;
+
 const plural = (n: number, one: string, many: string) =>
   `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
-/** Hidden component gallery for design review (05 §E2). Not linked from nav. */
+/**
+ * Hidden component gallery for design review (05 §E2). Not linked from nav.
+ * It sits outside both layouts, so it sets the app face (`font-app`) itself:
+ * the charts size their gutters for Inter and should be reviewed in it.
+ */
 export default function KitchenSink() {
   const pushToast = useApp((s) => s.pushToast);
   const [toggleOn, setToggleOn] = useState(true);
@@ -197,7 +104,7 @@ export default function KitchenSink() {
   const fullStack = pillars.every(Boolean);
 
   return (
-    <main className="screen-enter mx-auto max-w-[1180px] px-6 py-10">
+    <main className="screen-enter mx-auto max-w-[1180px] px-6 py-10 font-app">
       <Eyebrow>Kitchen sink · design review only</Eyebrow>
       <h1 className="mt-1 font-display text-2xl font-bold">Every component, one screen</h1>
 
@@ -347,10 +254,9 @@ export default function KitchenSink() {
       <section className="mt-8">
         <h2 className="mb-3 font-display text-lg font-bold">Stat cards</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Profile views (30 days)" value="412" barPct={72} />
-          <StatCard label="Quote requests" value="38" barPct={58} />
-          <StatCard label="Win rate" value="34%" barPct={34} />
-          <StatCard label="Avg. response time" value="2.1 hrs" barPct={86} />
+          {ANALYTICS_EXAMPLE.map((a) => (
+            <StatCard key={a.label} label={a.label} value={a.value} barPct={a.barPct} />
+          ))}
         </div>
       </section>
 
@@ -471,58 +377,51 @@ function Segmented<T extends string | number>({
 }
 
 /**
- * Charts (live dashboards spec §6): every component in the kit with sample
- * figures. Hover, tab to a plot and use the arrow keys, or tap and drag on a
- * phone. The period switch and the pillar chips show the frame holding still
- * and colours following the line, never its rank.
+ * Charts (live dashboards spec §6): every component in the kit, drawing the
+ * product's seeded figures. Hover, tab to a plot and use the arrow keys, or
+ * tap and drag on a phone. The period switch and the line chips show the
+ * frame holding still and colours following the line, never its rank.
  */
 function ChartsGallery() {
-  const [period, setPeriod] = useState<30 | 90>(30);
-  const [held, setHeld] = useState({ logistics: true, customs: false });
-
-  // Views and quote requests
-  const from = period === 30 ? 60 : 0;
-  const labels = KS_DAYS.slice(from);
-  const views = KS_SERIES.views.slice(from);
-  const category = KS_SERIES.category.slice(from);
-  const daily = KS_SERIES.requests.slice(from);
-  const weeks = binRanges(90, 13);
-  const sum = (xs: number[], s: number, e: number) => xs.slice(s, e + 1).reduce((a, b) => a + b, 0);
-  const requests = period === 30 ? daily : weeks.map(([s, e]) => sum(daily, s, e));
+  const [period, setPeriod] = useState<Period>(30);
+  const [held, setHeld] = useState({ agency: true, logistics: true, customs: false });
   const count = (n: number) => n.toLocaleString('en-GB');
-  const viewsTotal = views.reduce((a, b) => a + b, 0);
-  const requestsTotal = daily.reduce((a, b) => a + b, 0);
 
-  // GAC spend by line, colour fixed to the line
-  const on: Record<ServiceLineId, boolean> = {
-    agency: true,
-    logistics: held.logistics,
-    customs: held.customs,
-    procurement: true,
-  };
-  const lines = (['agency', 'logistics', 'customs', 'procurement'] as const).filter((id) => on[id]);
-  const pct = tierPct({ agency: true, logistics: held.logistics, customs: held.customs });
-  const spend = lines.map((id) => ({
-    id,
-    label: KS_LINE_LABELS[id],
-    color: LINE_COLOURS[id],
-    values: KS_SPEND[id],
-  }));
-  const monthTotals = KS_MONTHS.map((_, i) => spend.reduce((a, s) => a + s.values[i]!, 0));
-  const saved = monthTotals.map((t) => Math.round((t * pct) / 100));
+  // Views and quote requests: the analytics screen's series for the period.
+  const trend = seriesFor(period);
+  const weekly = period === 90;
+  const totals = PERIOD_SUMMARY[period];
+  const weeklyViews = weeklySums(trend.views);
+
+  // Everything else is the 30-day summary, as its subtitles say.
+  const month = PERIOD_SUMMARY[30];
+  const funnelRates = funnelRateLabels(month.funnel);
+  const sourcesTotal = month.sources.reduce((a, r) => a + r.value, 0);
+  const share = (v: number) => `${Math.round((v / sourcesTotal) * 100)}%`;
+  const topSource = month.sources[0]!;
+  const promoted = month.sources.find((r) => r.promoted);
+  const ratingsTotal = RATINGS_DISTRIBUTION.reduce((a, r) => a + r.count, 0);
+  const ratingsMean =
+    Math.round(
+      (RATINGS_DISTRIBUTION.reduce((a, r) => a + r.stars * r.count, 0) / ratingsTotal) * 10,
+    ) / 10;
+  const winLead = month.winRate - month.categoryWinRate;
+  const faster = (month.categoryResponseHrs - month.responseHrs).toFixed(1);
+
+  // GAC spend by line, colour fixed to the line (the client view's own rules).
+  const pct = tierPct(held);
+  const spend = spendSeries(held).map((s) => ({ ...s, color: LINE_COLOURS[s.id] }));
+  const saved = monthlySaving(held);
+  const monthTotals = SPEND_MONTHS.map((_, i) => spend.reduce((a, s) => a + (s.values[i] ?? 0), 0));
   const spendTotal = monthTotals.reduce((a, b) => a + b, 0);
   const savedTotal = saved.reduce((a, b) => a + b, 0);
   const spendLegend: LegendItem[] = spend.map((s) => ({ label: s.label, color: s.color }));
 
   // Earnings (supplier view only)
-  const kept = KS_WON.map((w) => supplierKeeps(w, 'premium'));
-  const band = KS_WON.map((w, i) => w - kept[i]!);
-  const wonTotal = KS_WON.reduce((a, b) => a + b, 0);
+  const kept = EARNINGS_WON.map((w) => supplierKeeps(w, 'premium'));
+  const band = EARNINGS_WON.map((w, i) => w - kept[i]!);
+  const wonTotal = EARNINGS_WON.reduce((a, b) => a + b, 0);
   const keptTotal = kept.reduce((a, b) => a + b, 0);
-
-  const ratingsTotal = KS_RATINGS.reduce((a, b) => a + b, 0);
-  const sourcesTotal = KS_SOURCES.reduce((a, s) => a + s.value, 0);
-  const share = (v: number) => `${Math.round((v / sourcesTotal) * 100)}%`;
 
   return (
     <section className="mt-8">
@@ -533,33 +432,24 @@ function ChartsGallery() {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Profile views (30 days)"
-          value="412"
-          delta="+18% on the previous 30 days"
-          series={KS_SERIES.views.slice(60)}
-        />
-        <StatCard
-          label="Quote requests (30 days)"
-          value="38"
-          delta="+12% on the previous 30 days"
-          series={KS_SERIES.requests.slice(60)}
-        />
-        <StatCard
-          label="Win rate"
-          value="34%"
-          delta="+4 pts · 12 won of 35 quoted"
-          deltaTone="info"
-        />
-        <StatCard label="Avg. response time" value="2.1 hrs" delta="0.5 hrs faster" />
+        {SUPPLIER_KPIS.map((k) => (
+          <StatCard
+            key={k.id}
+            label={k.label}
+            value={k.value}
+            delta={k.delta}
+            deltaTone={k.id === 'win' ? 'info' : 'success'}
+            series={k.series}
+          />
+        ))}
       </div>
 
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
         <ChartFigure
           className="lg:col-span-2"
           title="Views and quote requests"
-          subtitle={`Per day, last ${period} days${period === 90 ? ' · requests summed by week' : ''}`}
-          takeaway={`${count(viewsTotal)} profile views and ${count(requestsTotal)} quote requests in the last ${period} days, with views running above the category average on most weekdays.`}
+          subtitle={`Last ${period} days · ${weekly ? 'views per day, requests per week' : 'views and requests per day'}`}
+          takeaway={`${count(totals.views)} profile views and ${count(totals.requests)} quote requests in the last ${period} days, with views running above the category average on most weekdays.`}
           legend={[
             { label: 'Profile views', color: VIZ.sea, shape: 'line' },
             { label: 'Category average', color: VIZ.context, shape: 'line' },
@@ -576,46 +466,47 @@ function ChartsGallery() {
             />
           }
           table={
-            period === 30
+            weekly
               ? {
-                  caption: 'Profile views, category average and quote requests per day',
-                  columns: ['Day', 'Profile views', 'Category average', 'Quote requests'],
-                  rows: labels.map((l, i) => [
-                    l,
-                    count(views[i]!),
-                    category[i]!.toFixed(1),
-                    count(daily[i]!),
+                  caption: 'Profile views and quote requests per week',
+                  columns: ['Week', 'Profile views', 'Quote requests'],
+                  rows: trend.requestLabels.map((week, k) => [
+                    week,
+                    count(weeklyViews[k] ?? 0),
+                    count(trend.requests[k] ?? 0),
                   ]),
                 }
               : {
-                  caption: 'Profile views and quote requests per week',
-                  columns: ['Week', 'Profile views', 'Quote requests'],
-                  rows: weeks.map(([s, e], k) => [
-                    `${labels[s]} to ${labels[e]}`,
-                    count(sum(views, s, e)),
-                    count(requests[k]!),
+                  caption: 'Profile views, category average and quote requests per day',
+                  columns: ['Day', 'Profile views', 'Category average', 'Quote requests'],
+                  rows: trend.labels.map((day, i) => [
+                    day,
+                    count(trend.views[i] ?? 0),
+                    (trend.category[i] ?? 0).toFixed(1),
+                    count(trend.requests[i] ?? 0),
                   ]),
                 }
           }
         >
           <TimeSeriesPanels
-            labels={labels}
+            labels={trend.labels}
             ariaLabel={`Profile views and quote requests, last ${period} days`}
             panels={[
               {
                 id: 'views',
                 label: 'Profile views per day',
                 kind: 'area',
-                values: views,
+                values: trend.views,
                 format: count,
-                benchmark: { label: 'Category average', values: category },
+                benchmark: { label: 'Category average', values: trend.category },
               },
               {
                 id: 'requests',
-                label: period === 30 ? 'Quote requests per day' : 'Quote requests per week',
+                label: weekly ? 'Quote requests per week' : 'Quote requests per day',
                 kind: 'columns',
-                values: requests,
+                values: trend.requests,
                 format: count,
+                ...(weekly ? { binLabels: trend.requestLabels } : {}),
               },
             ]}
           />
@@ -624,48 +515,47 @@ function ChartsGallery() {
         <ChartFigure
           title="GAC spend, last six months"
           subtitle="By service line, with what your tier discount saved underneath"
-          takeaway={`${gbp(spendTotal)} across ${lines.length} service lines since April; the ${pct}% tier discount saved ${gbp(savedTotal)}.`}
+          takeaway={`${gbp(spendTotal)} across ${spend.length} service lines since April; ${
+            pct > 0 ? `the ${pct}% tier discount saved ${gbp(savedTotal)}` : 'no tier discount held'
+          }.`}
           headline={
             <p className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <span className="font-display text-[22px] leading-none font-bold">
                 {gbp(spendTotal)}
               </span>
               <span className="text-[13px] text-ink-soft">
-                {gbp(savedTotal)} saved at {pct}%
+                {pct > 0 ? `${gbp(savedTotal)} saved at ${pct}%` : 'No tier discount held yet'}
               </span>
             </p>
           }
           legend={spendLegend}
           action={
-            <div role="group" aria-label="Lines held" className="flex gap-1.5">
-              <Chip
-                pressed={held.logistics}
-                onClick={() => setHeld((h) => ({ ...h, logistics: !h.logistics }))}
-              >
-                Logistics
-              </Chip>
-              <Chip
-                pressed={held.customs}
-                onClick={() => setHeld((h) => ({ ...h, customs: !h.customs }))}
-              >
-                Customs
-              </Chip>
+            <div role="group" aria-label="Lines held" className="flex flex-wrap gap-1.5">
+              {LINE_SWITCHES.map((id) => (
+                <Chip
+                  key={id}
+                  pressed={held[id]}
+                  onClick={() => setHeld((h) => ({ ...h, [id]: !h[id] }))}
+                >
+                  {LINE_LABELS[id]}
+                </Chip>
+              ))}
             </div>
           }
           footnote="Illustrative figures. The chart follows the lines held in the tier card above."
           table={{
             caption: 'GAC spend by service line and tier saving per month',
             columns: ['Month', ...spend.map((s) => s.label), 'Total', 'Saved'],
-            rows: KS_MONTHS.map((m, i) => [
+            rows: SPEND_MONTHS.map((m, i) => [
               m,
-              ...spend.map((s) => gbp(s.values[i]!)),
-              gbp(monthTotals[i]!),
-              gbp(saved[i]!),
+              ...spend.map((s) => gbp(s.values[i] ?? 0)),
+              gbp(monthTotals[i] ?? 0),
+              gbp(saved[i] ?? 0),
             ]),
           }}
         >
           <StackedColumns
-            categories={KS_MONTHS}
+            categories={[...SPEND_MONTHS]}
             series={spend}
             format={gbp}
             axisFormat={compactGbp}
@@ -699,11 +589,16 @@ function ChartsGallery() {
           table={{
             caption: 'Work won, band and amount kept per month',
             columns: ['Month', 'Won', 'Band', 'You keep'],
-            rows: KS_MONTHS.map((m, i) => [m, gbp(KS_WON[i]!), gbp(band[i]!), gbp(kept[i]!)]),
+            rows: EARNINGS_MONTHS.map((m, i) => [
+              m,
+              gbp(EARNINGS_WON[i] ?? 0),
+              gbp(band[i] ?? 0),
+              gbp(kept[i] ?? 0),
+            ]),
           }}
         >
           <StackedColumns
-            categories={KS_MONTHS}
+            categories={[...EARNINGS_MONTHS]}
             series={[
               { id: 'keep', label: 'You keep', color: VIZ.sea, values: kept },
               { id: 'band', label: '10% Premium band', color: VIZ.deduction, values: band },
@@ -718,21 +613,21 @@ function ChartsGallery() {
         <ChartFigure
           title="From search to signed job"
           subtitle="Last 30 days, each step as a share of the one before"
-          takeaway="12 jobs won from 2,960 search appearances; nearly every request received a quote."
+          takeaway={`${count(month.won)} jobs won from ${count(month.funnel[0]?.value ?? 0)} search appearances; ${Math.round((month.quoted / month.requests) * 100)}% of requests received a quote.`}
           table={{
             caption: 'Funnel from search appearance to job won',
             columns: ['Step', 'Count', 'Rate from previous step'],
-            rows: KS_FUNNEL.map((s, i) => [
+            rows: month.funnel.map((s, i) => [
               s.label,
               count(s.value),
-              i ? KS_FUNNEL_RATES[i - 1]! : '—',
+              i ? (funnelRates[i - 1] ?? '') : '—',
             ]),
           }}
         >
           <FunnelBars
-            steps={KS_FUNNEL}
+            steps={month.funnel}
             format={count}
-            rateLabels={KS_FUNNEL_RATES}
+            rateLabels={funnelRates}
             ariaLabel="Funnel from search appearances to jobs won"
           />
         </ChartFigure>
@@ -740,14 +635,14 @@ function ChartsGallery() {
         <ChartFigure
           title="Against your category"
           subtitle="Premium · market benchmarking"
-          takeaway="Win rate 7 points above the category average; responses 3.3 hours faster."
+          takeaway={`Win rate ${winLead} points above the category average; responses ${faster} hours faster.`}
           footnote="Category average across verified Welding suppliers on the platform, anonymised."
           table={{
             caption: 'Your figures against the category average',
             columns: ['Measure', 'You', 'Category average'],
             rows: [
-              ['Win rate', '34%', '27%'],
-              ['Average response', '2.1 hrs', '5.4 hrs'],
+              ['Win rate', `${month.winRate}%`, `${month.categoryWinRate}%`],
+              ['Average response', `${month.responseHrs} hrs`, `${month.categoryResponseHrs} hrs`],
             ],
           }}
         >
@@ -755,28 +650,28 @@ function ChartsGallery() {
             <div>
               <p className="mb-2 text-[12.5px] font-semibold text-ink">Win rate</p>
               <BenchmarkBar
-                value={34}
-                benchmark={27}
+                value={month.winRate}
+                benchmark={month.categoryWinRate}
                 max={50}
                 format={(n) => `${n}%`}
-                ariaLabel="Win rate 34%, category average 27%"
+                ariaLabel={`Win rate ${month.winRate}%, category average ${month.categoryWinRate}%`}
               />
               <p className="mt-2 text-[12.5px] text-ink-soft">
-                7 points above the category average
+                {winLead} points above the category average
               </p>
             </div>
             <div>
               <p className="mb-2 text-[12.5px] font-semibold text-ink">Average response</p>
               <BenchmarkBar
-                value={2.1}
-                benchmark={5.4}
+                value={month.responseHrs}
+                benchmark={month.categoryResponseHrs}
                 max={8}
                 lowerIsBetter
                 format={(n) => `${n} hrs`}
-                ariaLabel="Average response 2.1 hours, category average 5.4 hours"
+                ariaLabel={`Average response ${month.responseHrs} hours, category average ${month.categoryResponseHrs} hours`}
               />
               <p className="mt-2 text-[12.5px] text-ink-soft">
-                3.3 hrs faster than the category average
+                {faster} hrs faster than the category average
               </p>
             </div>
           </div>
@@ -785,15 +680,24 @@ function ChartsGallery() {
         <ChartFigure
           title="Where clients found you"
           subtitle="Profile views by source, last 30 days"
-          takeaway="Marketplace search brought 41% of profile views; the promoted placement 17%."
+          takeaway={`${topSource.label} brought ${share(topSource.value)} of profile views${
+            promoted ? `; the promoted placement ${share(promoted.value)}` : ''
+          }.`}
           table={{
             caption: 'Profile views by source',
             columns: ['Source', 'Views', 'Share'],
-            rows: KS_SOURCES.map((s) => [s.label, count(s.value), share(s.value)]),
+            rows: month.sources.map((s) => [s.label, count(s.value), share(s.value)]),
           }}
         >
           <HBarList
-            rows={KS_SOURCES.map((s) => ({ ...s, valueLabel: `${s.value} · ${share(s.value)}` }))}
+            rows={month.sources.map((s) => ({
+              id: s.label,
+              label: s.label,
+              value: s.value,
+              valueLabel: `${count(s.value)} · ${share(s.value)}`,
+              ...(s.promoted ? { tag: '▲ Promoted' } : {}),
+              ...(s.other ? { color: VIZ.other } : {}),
+            }))}
             format={count}
             ariaLabel="Profile views by source"
           />
@@ -802,19 +706,19 @@ function ChartsGallery() {
         <ChartFigure
           title="Ratings"
           subtitle="All time"
-          takeaway="4.4 stars from 72 ratings; 42 of them five stars."
-          headline={<Rating rating={4.4} count={72} />}
+          takeaway={`${ratingsMean} stars from ${ratingsTotal} ratings; ${RATINGS_DISTRIBUTION.find((r) => r.stars === 5)?.count ?? 0} of them five stars.`}
+          headline={<Rating rating={ratingsMean} count={ratingsTotal} />}
           table={{
             caption: 'Ratings by stars',
             columns: ['Stars', 'Ratings'],
-            rows: KS_RATINGS.map((c, i) => [`${5 - i} ★`, count(c)]),
+            rows: RATINGS_DISTRIBUTION.map((r) => [`${r.stars} ★`, count(r.count)]),
           }}
         >
           <HBarList
-            rows={KS_RATINGS.map((c, i) => ({
-              id: `r${5 - i}`,
-              label: `${5 - i} ★`,
-              value: c,
+            rows={RATINGS_DISTRIBUTION.map((r) => ({
+              id: `r${r.stars}`,
+              label: `${r.stars} ★`,
+              value: r.count,
             }))}
             format={(n) => plural(n, 'rating', 'ratings')}
             ariaLabel={`Ratings by stars, ${ratingsTotal} in all`}
@@ -827,17 +731,17 @@ function ChartsGallery() {
           takeaway="Requests cluster on weekday mornings, peaking on Tuesday between 08:00 and 10:00."
           table={{
             caption: 'Quote requests by weekday and two-hour block',
-            columns: ['Day', ...KS_HOURS],
-            rows: KS_WEEKDAY_ROWS.map((d, r) => [d, ...KS_HEAT[r]!.map(String)]),
+            columns: ['Day', ...HOUR_BLOCKS],
+            rows: month.heatmap.map((row, r) => [WEEKDAYS[r] ?? '', ...row.map(String)]),
           }}
         >
           <Heatmap
-            rows={KS_WEEKDAY_ROWS}
-            cols={KS_HOURS}
-            values={KS_HEAT}
+            rows={[...WEEKDAYS]}
+            cols={[...HOUR_BLOCKS]}
+            values={month.heatmap}
             bins={[0, 1, 2, 3, 5]}
             cellLabel={(row, col, v) =>
-              `${KS_DAY_NAMES[row] ?? row} ${col.replace('–', ':00–')}:00 · ${plural(v, 'request', 'requests')}`
+              `${WEEKDAY_NAMES[WEEKDAYS.indexOf(row)] ?? row} ${HOUR_BLOCK_NAMES[HOUR_BLOCKS.indexOf(col)] ?? col} · ${plural(v, 'request', 'requests')}`
             }
             ariaLabel="Quote requests by weekday and two-hour block"
           />
@@ -846,15 +750,15 @@ function ChartsGallery() {
         <ChartFigure
           title="Searches that found you"
           subtitle="Top five search terms, last 30 days"
-          takeaway="“coded welder aberdeen” surfaced the profile most often, 64 times."
+          takeaway={`“${month.searches[0]?.term ?? ''}” surfaced the profile most often, ${count(month.searches[0]?.count ?? 0)} times.`}
           table={{
             caption: 'Search terms that surfaced the profile',
             columns: ['Search term', 'Searches'],
-            rows: KS_SEARCHES.map((s) => [s.term, count(s.count)]),
+            rows: month.searches.map((s) => [s.term, count(s.count)]),
           }}
         >
           <HBarList
-            rows={KS_SEARCHES.map((s) => ({ id: s.term, label: s.term, value: s.count }))}
+            rows={month.searches.map((s) => ({ id: s.term, label: s.term, value: s.count }))}
             format={count}
             ariaLabel="Search terms that surfaced the profile"
           />

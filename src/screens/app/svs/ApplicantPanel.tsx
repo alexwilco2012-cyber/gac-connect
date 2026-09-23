@@ -20,7 +20,7 @@ import {
 } from '../../../lib/svsDesk';
 import { APPROVED_NOTE, useSvsDesk } from '../../../store/svsDesk';
 import { useApp } from '../../../store/app';
-import { AuditTrail, ChecksBar, InShell, Monogram, NoteForm } from './parts';
+import { AuditTrail, ChecksBar, Monogram, NoteForm } from './parts';
 import { CHECK_STATUS, RISK_TONE, SLA_TONE, focusSoon } from './ui';
 
 /**
@@ -43,11 +43,9 @@ export function ApplicantPanel({
   onDecided: () => void;
 }) {
   return (
-    <InShell>
-      <Modal open={app !== null} onClose={onClose} labelledBy="applicant-title" size="lg">
-        {app ? <PanelBody key={app.id} app={app} onClose={onClose} onDecided={onDecided} /> : null}
-      </Modal>
-    </InShell>
+    <Modal open={app !== null} onClose={onClose} labelledBy="applicant-title" size="lg">
+      {app ? <PanelBody key={app.id} app={app} onClose={onClose} onDecided={onDecided} /> : null}
+    </Modal>
   );
 }
 
@@ -84,7 +82,7 @@ function CheckControl({
             aria-pressed={pressed}
             title={pressed ? 'Press again to reopen this check' : undefined}
             onClick={() => onSet(pressed ? 'pending' : o.value)}
-            className={`min-h-[40px] min-w-[52px] cursor-pointer rounded-md px-2.5 text-[12.5px] font-semibold transition-colors sm:min-h-[32px] ${
+            className={`min-h-[44px] min-w-[52px] cursor-pointer rounded-md px-2.5 text-[12.5px] font-semibold transition-colors sm:min-h-[32px] ${
               pressed
                 ? 'bg-ink text-white'
                 : 'bg-transparent text-ink-soft hover:bg-sea-soft hover:text-ink'

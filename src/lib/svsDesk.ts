@@ -1,4 +1,4 @@
-import { RECOMMENDED_FOR_WELDING, type VaultCert } from '../data/supplierDesk';
+import { RECOMMENDED_FOR_WELDING, VAULT_AS_OF_ISO, type VaultCert } from '../data/supplierDesk';
 import {
   CHECKS,
   ONBOARDING_STAGES,
@@ -9,7 +9,7 @@ import {
   type EvidenceSubmission,
   type OnboardingStage,
 } from '../data/svsDesk';
-import type { Cert } from './svs';
+import { alertTier, type Cert } from './svs';
 
 /**
  * SVS desk rules (live dashboards, 23 Sep; spec §4.2) — pure, unit-tested, and
@@ -55,18 +55,29 @@ export const EMPTY_CERT_FORM: CertForm = {
   declared: false,
 };
 
-/** "Fill with an example" — the ISO 9001 the Welding listing is missing. */
-export const EXAMPLE_CERT_FORM: CertForm = {
-  certType: 'ISO 9001 quality management',
-  otherLabel: '',
-  issuer: 'Northgate Quality Assurance',
-  reference: 'QA-9001-2618',
-  issuedOn: '2026-09-02',
-  expiresOn: '2029-09-01',
-  fileName: 'ISO9001-certificate.pdf',
-  fileSize: 248 * 1024,
-  declared: true,
-};
+/**
+ * "Fill with an example" — the ISO 9001 the Welding listing is missing, issued
+ * three weeks before `todayISO` for three years less a day. Dated from the day
+ * it is filled in, so it passes validation whenever the demo runs; on the demo
+ * date that is the spec's 2 Sep 2026 to 1 Sep 2029.
+ */
+export function exampleCertForm(todayISO: string): CertForm {
+  const issuedOn = shiftISO(todayISO, { days: -21 });
+  return {
+    certType: 'ISO 9001 quality management',
+    otherLabel: '',
+    issuer: 'Northgate Quality Assurance',
+    reference: 'QA-9001-2618',
+    issuedOn,
+    expiresOn: shiftISO(issuedOn, { years: 3, days: -1 }),
+    fileName: 'ISO9001-certificate.pdf',
+    fileSize: 248 * 1024,
+    declared: true,
+  };
+}
+
+/** The example as it reads on the demo date (`VAULT_AS_OF_ISO`) — a fixed form for tests. */
+export const EXAMPLE_CERT_FORM: CertForm = exampleCertForm(VAULT_AS_OF_ISO);
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const ACCEPTED_EXTENSIONS: readonly string[] = ['.pdf', '.jpg', '.jpeg', '.png'];
@@ -90,6 +101,9 @@ export function validateCertForm(form: CertForm, todayISO: string): string[] {
   if (!form.issuer.trim()) problems.push('issuing body');
   if (!form.reference.trim()) problems.push('reference or certificate number');
   if (!form.issuedOn) problems.push('issue date');
+  else if (form.issuedOn > todayISO) {
+    problems.push('issue date today or earlier — the issue date cannot be in the future');
+  }
   if (!form.expiresOn) problems.push('expiry date');
   if (form.issuedOn && form.expiresOn && form.expiresOn <= form.issuedOn) {
     problems.push('expiry after issue');
@@ -111,12 +125,19 @@ export function validateCertForm(form: CertForm, todayISO: string): string[] {
 // Formatting
 // ---------------------------------------------------------------------------
 
-/** "248 KB", "1.2 MB", "512 bytes" — as a file browser would put it. */
+/**
+ * "248 KB", "1.2 MB", "10.3 MB", "512 bytes" — as a file browser would put it.
+ * Megabytes keep one decimal below 100, and a file over the limit never rounds
+ * down onto it: a refused file must not read "10 MB" beside "the limit is 10 MB".
+ */
 export function fileSizeLabel(bytes: number): string {
   if (bytes < 1024) return `${bytes} bytes`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   const mb = bytes / (1024 * 1024);
-  return `${mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10} MB`;
+  if (mb >= 100) return `${Math.round(mb)} MB`;
+  const tenths = Math.round(mb * 10);
+  const limitTenths = (MAX_FILE_BYTES / (1024 * 1024)) * 10;
+  return `${(bytes > MAX_FILE_BYTES ? Math.max(tenths, limitTenths + 1) : tenths) / 10} MB`;
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -142,12 +163,33 @@ export function daysBetween(fromISO: string, toISO: string): number {
   return Math.round((Date.UTC(b.y, b.m - 1, b.d) - Date.UTC(a.y, a.m - 1, a.d)) / 86_400_000);
 }
 
+/** An ISO date moved by whole years and days: '2026-09-02' + 3 years − 1 day → '2029-09-01'. */
+export function shiftISO(iso: string, by: { years?: number; days?: number }): string {
+  const p = parseISO(iso);
+  if (!p) return iso;
+  const d = new Date(Date.UTC(p.y + (by.years ?? 0), p.m - 1, p.d + (by.days ?? 0)));
+  return d.toISOString().slice(0, 10);
+}
+
 /** Today's date on this device, 'YYYY-MM-DD'. Impure: handlers and store actions only. */
 export function todayISO(): string {
   const d = new Date();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+/**
+ * "Today 09:12" — how the desks stamp a trail entry, a submission or a sent
+ * quote: this device's time of day, worded like the seeded "Today 08:05". The
+ * seeds are written from the demo's Thursday morning, so a calendar date beside
+ * them would read as another day and break "newest first" (spec §4.3, revised
+ * 23 Sep). Impure: store actions only.
+ */
+export function deskStamp(d: Date = new Date()): string {
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `Today ${hh}:${mm}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -292,11 +334,13 @@ export interface VaultRow {
   pendingRenewal?: boolean;
 }
 
-/** The SVS alert tiers applied to a certificate's own dates: due inside 90 days. */
+/**
+ * The SVS alert tiers (`lib/svs`) applied to a certificate's own dates: due
+ * inside the widest tier, so the rows cannot drift from the supplier rule.
+ */
 function stateFromDays(daysLeft: number): 'ok' | 'due' | 'lapsed' {
   if (daysLeft <= 0) return 'lapsed';
-  if (daysLeft <= 90) return 'due';
-  return 'ok';
+  return alertTier(daysLeft) !== null ? 'due' : 'ok';
 }
 
 function inForceStatus(state: 'ok' | 'due' | 'lapsed'): {
@@ -306,6 +350,16 @@ function inForceStatus(state: 'ok' | 'due' | 'lapsed'): {
   if (state === 'lapsed') return { statusLabel: 'Lapsed', statusTone: 'danger' };
   if (state === 'due') return { statusLabel: 'Renewal due', statusTone: 'warn' };
   return { statusLabel: 'In date', statusTone: 'verified' };
+}
+
+/** An approved certificate's status: verified while in date, the alert tier once due. */
+function approvedStatus(state: 'ok' | 'due' | 'lapsed'): {
+  statusLabel: string;
+  statusTone: VaultRow['statusTone'];
+} {
+  return state === 'ok'
+    ? { statusLabel: 'Verified by the SVS team', statusTone: 'verified' }
+    : inForceStatus(state);
 }
 
 function refNumber(id: string): number {
@@ -320,11 +374,126 @@ function latest(subs: readonly EvidenceSubmission[]): EvidenceSubmission | undef
   );
 }
 
+/** Certificate names match whatever their case or spacing. */
+function certKey(name: string): string {
+  return name.trim().toLowerCase();
+}
+
 /**
- * The supplier's certificate rows: each vault certificate carrying its latest
- * renewal (pending → shown beside the current dates; approved → the new dates
- * take over), then one row per new certificate sent in, latest first. A
- * re-upload supersedes an earlier submission of the same certificate.
+ * A vault certificate as it stands: the latest approved renewal's issuer,
+ * reference and dates, or the vault's own when none is approved. A renewal
+ * still with the SVS team, sent back or rejected changes nothing here.
+ */
+export function certInForce(
+  cert: VaultCert,
+  evidence: readonly EvidenceSubmission[],
+  supplierId: string,
+): VaultCert {
+  const renewed = latest(
+    evidence.filter(
+      (e) =>
+        e.supplierId === supplierId &&
+        e.kind === 'renewal' &&
+        e.vaultId === cert.id &&
+        e.stage === 'approved',
+    ),
+  );
+  if (!renewed) return cert;
+  return {
+    ...cert,
+    issuer: renewed.issuer,
+    reference: renewed.reference,
+    issuedOn: renewed.issuedOn,
+    expiresOn: renewed.expiresOn,
+    daysLeft: renewed.daysLeft,
+  };
+}
+
+/**
+ * A supplier's new certificates, one entry per name: the latest approved
+ * submission (the certificate on file, if any) and the latest submission of
+ * any stage. `vaultRows` and `certsWithApproved` both read this, so the
+ * dashboard and the register or profile always agree on what is held.
+ */
+function newCertificates(
+  evidence: readonly EvidenceSubmission[],
+  supplierId: string,
+): { onFile?: EvidenceSubmission; newest: EvidenceSubmission }[] {
+  const byName = new Map<string, EvidenceSubmission[]>();
+  for (const e of evidence) {
+    if (e.supplierId !== supplierId || e.kind !== 'new') continue;
+    const key = certKey(e.certLabel);
+    byName.set(key, [...(byName.get(key) ?? []), e]);
+  }
+  return [...byName.values()].map((subs) => {
+    const onFile = latest(subs.filter((s) => s.stage === 'approved'));
+    return { ...(onFile ? { onFile } : {}), newest: latest(subs)! };
+  });
+}
+
+/**
+ * One new certificate's row. `update` marks a later submission of a
+ * certificate already on file, which shows as its own row beside it.
+ */
+function newCertRow(e: EvidenceSubmission, update: boolean): VaultRow {
+  const base = {
+    id: e.id,
+    name: e.certLabel,
+    issuer: e.issuer,
+    reference: e.reference,
+    expiresOn: e.expiresOn,
+    submissionId: e.id,
+  };
+  const status = evidenceStatus(e.stage);
+  switch (e.stage) {
+    case 'approved': {
+      const state = stateFromDays(e.daysLeft);
+      return { ...base, daysLeft: e.daysLeft, state, ...approvedStatus(state) };
+    }
+    case 'info-requested':
+      return {
+        ...base,
+        daysLeft: null,
+        state: 'info',
+        statusLabel: status.label,
+        statusTone: 'warn',
+        note: e.note,
+      };
+    case 'rejected':
+      return {
+        ...base,
+        daysLeft: null,
+        state: 'rejected',
+        statusLabel: update ? 'Update rejected' : status.label,
+        statusTone: 'danger',
+        note: e.note,
+      };
+    default:
+      return {
+        ...base,
+        daysLeft: e.daysLeft,
+        state: 'pending',
+        statusLabel: update ? 'Update awaiting SVS review' : status.label,
+        statusTone: 'info',
+      };
+  }
+}
+
+/**
+ * The supplier's certificate rows.
+ *
+ * Vault certificates: the dates are the certificate in force (`certInForce` —
+ * the latest approved renewal, else the vault's own), and the latest renewal
+ * sets the status on top of them: awaiting review, more information needed or
+ * rejected beside the dates in force, or verified once approved. A later
+ * renewal never takes an approved one's dates away.
+ *
+ * New certificates, one group per name, latest first. The latest approval is
+ * the certificate on file; a later submission of the same name shows as its
+ * own row under it ("Update awaiting SVS review", "More information needed",
+ * "Update rejected"), so sending one again never hides what is held. With
+ * nothing approved, the latest submission stands alone — a re-upload replaces
+ * the one the SVS team sent back.
  */
 export function vaultRows(
   vault: readonly VaultCert[],
@@ -334,36 +503,26 @@ export function vaultRows(
   const mine = evidence.filter((e) => e.supplierId === supplierId);
 
   const held = vault.map((cert): VaultRow => {
-    const renewal = latest(mine.filter((e) => e.kind === 'renewal' && e.vaultId === cert.id));
+    const renewals = mine.filter((e) => e.kind === 'renewal' && e.vaultId === cert.id);
+    const inForce = certInForce(cert, renewals, supplierId);
     const base = {
       id: cert.id,
       name: cert.name,
       vaultId: cert.id,
-      issuer: cert.issuer,
-      reference: cert.reference,
-      expiresOn: cert.expiresOn,
-      daysLeft: cert.daysLeft,
+      issuer: inForce.issuer,
+      reference: inForce.reference,
+      expiresOn: inForce.expiresOn,
+      daysLeft: inForce.daysLeft,
     };
-    const state = stateFromDays(cert.daysLeft);
+    const state = stateFromDays(inForce.daysLeft);
+    const renewal = latest(renewals);
     if (!renewal) return { ...base, state, ...inForceStatus(state) };
 
     const tracked = { submissionId: renewal.id };
     switch (renewal.stage) {
-      case 'approved': {
-        const renewed = stateFromDays(renewal.daysLeft);
-        return {
-          ...base,
-          ...tracked,
-          issuer: renewal.issuer,
-          reference: renewal.reference,
-          expiresOn: renewal.expiresOn,
-          daysLeft: renewal.daysLeft,
-          state: renewed,
-          ...(renewed === 'ok'
-            ? { statusLabel: 'Verified by the SVS team', statusTone: 'verified' as const }
-            : inForceStatus(renewed)),
-        };
-      }
+      case 'approved':
+        // The latest renewal is approved, so it is the certificate in force.
+        return { ...base, ...tracked, state, ...approvedStatus(state) };
       case 'info-requested':
         return {
           ...base,
@@ -394,72 +553,23 @@ export function vaultRows(
     }
   });
 
-  // One row per new certificate, the latest submission of each winning.
-  const byName = new Map<string, EvidenceSubmission>();
-  for (const e of mine.filter((x) => x.kind === 'new')) {
-    const key = e.certLabel.trim().toLowerCase();
-    const current = byName.get(key);
-    if (!current || refNumber(e.id) > refNumber(current.id)) byName.set(key, e);
-  }
-  const added = [...byName.values()]
-    .sort((a, b) => refNumber(b.id) - refNumber(a.id))
-    .map((e): VaultRow => {
-      const base = {
-        id: e.id,
-        name: e.certLabel,
-        issuer: e.issuer,
-        reference: e.reference,
-        expiresOn: e.expiresOn,
-        submissionId: e.id,
-      };
-      const status = evidenceStatus(e.stage);
-      switch (e.stage) {
-        case 'approved':
-          return {
-            ...base,
-            daysLeft: e.daysLeft,
-            state: stateFromDays(e.daysLeft),
-            statusLabel: status.label,
-            statusTone: 'verified',
-          };
-        case 'info-requested':
-          return {
-            ...base,
-            daysLeft: null,
-            state: 'info',
-            statusLabel: status.label,
-            statusTone: 'warn',
-            note: e.note,
-          };
-        case 'rejected':
-          return {
-            ...base,
-            daysLeft: null,
-            state: 'rejected',
-            statusLabel: status.label,
-            statusTone: 'danger',
-            note: e.note,
-          };
-        default:
-          return {
-            ...base,
-            daysLeft: e.daysLeft,
-            state: 'pending',
-            statusLabel: status.label,
-            statusTone: 'info',
-          };
-      }
+  const added = newCertificates(mine, supplierId)
+    .sort((a, b) => refNumber(b.newest.id) - refNumber(a.newest.id))
+    .flatMap(({ onFile, newest }): VaultRow[] => {
+      if (!onFile) return [newCertRow(newest, false)];
+      if (newest === onFile) return [newCertRow(onFile, false)];
+      return [newCertRow(onFile, false), newCertRow(newest, true)];
     });
 
   return [...held, ...added];
 }
 
 /**
- * A supplier's certificates as the gate reads them, plus each approved new
- * certificate as `{ name, state: 'ok' }`. Existing entries pass through
- * untouched, so `deriveStatus`, the bell, the marketplace and "3 alerts" never
- * move on an approval — the rule the SVS register, the profile and the
- * supplier dashboard all share.
+ * A supplier's certificates as the gate reads them, plus each new certificate
+ * on file (its latest approval, as `vaultRows` shows it) as `{ name, state:
+ * 'ok' }`. Existing entries pass through untouched, so `deriveStatus`, the
+ * bell, the marketplace and "3 alerts" never move on an approval — the rule
+ * the SVS register, the profile and the supplier dashboard all share.
  */
 export function certsWithApproved(
   supplierId: string,
@@ -467,12 +577,12 @@ export function certsWithApproved(
   evidence: readonly EvidenceSubmission[],
 ): Cert[] {
   const out: Cert[] = [...certs];
-  const names = new Set(certs.map((c) => c.name.toLowerCase()));
-  const approved = evidence
-    .filter((e) => e.supplierId === supplierId && e.kind === 'new' && e.stage === 'approved')
+  const names = new Set(certs.map((c) => certKey(c.name)));
+  const onFile = newCertificates(evidence, supplierId)
+    .flatMap(({ onFile: e }) => (e ? [e] : []))
     .sort((a, b) => refNumber(a.id) - refNumber(b.id));
-  for (const e of approved) {
-    const key = e.certLabel.toLowerCase();
+  for (const e of onFile) {
+    const key = certKey(e.certLabel);
     if (names.has(key)) continue;
     names.add(key);
     out.push({ name: e.certLabel, state: 'ok' });
@@ -494,7 +604,7 @@ export function recommendedStatus(rows: readonly VaultRow[]): {
   const pending: string[] = [];
   let onFile = 0;
   for (const name of RECOMMENDED_FOR_WELDING) {
-    const matches = rows.filter((r) => r.name.trim().toLowerCase() === name.toLowerCase());
+    const matches = rows.filter((r) => certKey(r.name) === certKey(name));
     if (matches.some((r) => r.state === 'ok' || r.state === 'due')) onFile += 1;
     else if (matches.some((r) => r.state === 'pending')) pending.push(name);
     else missing.push(name);
