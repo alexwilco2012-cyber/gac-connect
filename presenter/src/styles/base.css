@@ -289,6 +289,48 @@
 
   /* ==== Live dashboards (23 Sep): responsive rules for the deck's supplier
      analytics, classes gac-an-*. Rules go between this line and its end marker. ==== */
+  /* The site's two steps, sm (640) and lg (1024): the grids start as one
+     column and open out; inline styles carry the one-column state. */
+  @media (max-width: 639px) {
+    .gac-an-main { padding: 20px 16px 64px !important; }
+    .gac-an-seg button { min-height: 44px !important; }
+  }
+  @media (min-width: 640px) {
+    .gac-an-period { align-items: flex-end !important; }
+    .gac-an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .gac-an-bench { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .gac-an-facts { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+    .gac-an-ratings { grid-template-columns: 200px minmax(0, 1fr) !important; }
+  }
+  @media (min-width: 1024px) {
+    .gac-an-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+    .gac-an-pair { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .gac-an-demand { grid-template-columns: 468px minmax(0, 1fr) !important; }
+    /* Beside the heatmap the readings stack behind a rule on their left. */
+    .gac-an-facts {
+      grid-template-columns: minmax(0, 1fr) !important;
+      border-top: 0 !important; padding-top: 0 !important;
+      border-left: 1px solid #E5EAF1 !important; padding-left: 32px !important;
+    }
+  }
+  /* Bar rows: the label column fits the longest label (--an-label, worked
+     out in analytics.js the site's way) wherever the chart is 384px or wider,
+     as the site's BarRows does, and the funnel's step rates line up under
+     the bars; a column of 64px or less ("5 ★") stays beside its bars at any
+     width. Without these the kit's fixed 132px column wraps the labels. */
+  .gac-an-bars { container-type: inline-size; }
+  @container (min-width: 384px) {
+    .gac-an-bars [data-row] { grid-template-columns: var(--an-label) minmax(0, 1fr) !important; }
+    .gac-an-bars [role="group"] > p { padding-left: calc(var(--an-label) + 24px) !important; }
+  }
+  .gac-an-bars-short [data-row] { grid-template-columns: var(--an-label) minmax(0, 1fr) !important; }
+  /* A tag ("▲ Promoted") follows its label after a space, so when it wraps
+     it lines up under the label rather than 6px in. */
+  .gac-an-bars [data-row] > p > span { margin-left: 0 !important; }
+  /* Hover colours inline styles cannot carry: the unpressed period, the
+     "Show the numbers" toggles and "See plans". */
+  .gac-an-seg button[aria-pressed="false"]:hover { color: #0A2540 !important; }
+  .gac-an-main summary:hover, .gac-an-plans:hover { color: #0B4C70 !important; }
   /* ==== end analytics rules ==== */
 
   /* `animation:none` drops the fill state with the animation, so anything
