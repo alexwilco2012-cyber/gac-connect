@@ -30,6 +30,41 @@
   --promoted: #5b3fa8;
   --promoted-soft: #efe9fb;
   --promoted-line: #d9ccf5;
+  /* Chart palette (live dashboards, 23 Sep; spec §6). Validated with the
+     dataviz palette checker on #ffffff and #fafbfd. Categorical colour is
+     fixed to the entity — Agency sea, Logistics sky, Customs rose,
+     Procurement seafoam — and never repaints when a line is switched off.
+     Seafoam sits below 3:1, so it is always direct-labelled or tabled.
+     Cornflower (slot 5) only ever sits between rose and seafoam; otherwise a
+     fifth category folds into "other". Never gold, never a status colour. */
+  --viz-sea: #0e5e8a;
+  --viz-sky: #3f95c6;
+  --viz-rose: #c86892;
+  --viz-seafoam: #5dcab7;
+  --viz-cornflower: #5c77df;
+  --viz-other: #8595a8;
+  /* Sequential (heatmap), light to dark: ink text on 1–3, none on 4, white on 5. */
+  --viz-seq-1: #e0effa;
+  --viz-seq-2: #a8cfe9;
+  --viz-seq-3: #6fabd2;
+  --viz-seq-4: #3b83b1;
+  --viz-seq-5: #0e5e8a;
+  /* Ordinal (funnel steps), light to dark. */
+  --viz-ord-1: #73b0d7;
+  --viz-ord-2: #4f94bf;
+  --viz-ord-3: #2f79a5;
+  --viz-ord-4: #0e5e8a;
+  --viz-ord-5: #0a4a6e;
+  /* Context and furniture. */
+  --viz-context: #8595a8; /* benchmark line, "other", awaiting review */
+  --viz-deduction: #9aa9ba; /* the commission slice — supplier views only */
+  --viz-derived: #33475f; /* a derived total, e.g. the tier saving */
+  --viz-grid: #e5eaf1;
+  --viz-axis: #cbd6e2; /* baseline */
+  --viz-tick: #5b6b7f; /* tick text, 5.45:1 on white */
+  --viz-ref: #0a2540; /* benchmark tick, over a white ring */
+  --viz-track: #e8f1f7;
+  --viz-hover: #f1f4f8;
   --radius: 14px;
   --shadow: 0 1px 3px rgba(10, 37, 64, 0.07);
   --font-body: 'Segoe UI', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
@@ -61,6 +96,31 @@
   --color-promoted: var(--promoted);
   --color-promoted-soft: var(--promoted-soft);
   --color-promoted-line: var(--promoted-line);
+  --color-viz-sea: var(--viz-sea);
+  --color-viz-sky: var(--viz-sky);
+  --color-viz-rose: var(--viz-rose);
+  --color-viz-seafoam: var(--viz-seafoam);
+  --color-viz-cornflower: var(--viz-cornflower);
+  --color-viz-other: var(--viz-other);
+  --color-viz-seq-1: var(--viz-seq-1);
+  --color-viz-seq-2: var(--viz-seq-2);
+  --color-viz-seq-3: var(--viz-seq-3);
+  --color-viz-seq-4: var(--viz-seq-4);
+  --color-viz-seq-5: var(--viz-seq-5);
+  --color-viz-ord-1: var(--viz-ord-1);
+  --color-viz-ord-2: var(--viz-ord-2);
+  --color-viz-ord-3: var(--viz-ord-3);
+  --color-viz-ord-4: var(--viz-ord-4);
+  --color-viz-ord-5: var(--viz-ord-5);
+  --color-viz-context: var(--viz-context);
+  --color-viz-deduction: var(--viz-deduction);
+  --color-viz-derived: var(--viz-derived);
+  --color-viz-grid: var(--viz-grid);
+  --color-viz-axis: var(--viz-axis);
+  --color-viz-tick: var(--viz-tick);
+  --color-viz-ref: var(--viz-ref);
+  --color-viz-track: var(--viz-track);
+  --color-viz-hover: var(--viz-hover);
   --radius-brand: var(--radius);
   --shadow-card: var(--shadow);
   --font-display: 'Space Grotesk', 'Segoe UI', 'Avenir Next', Arial, sans-serif;
@@ -501,9 +561,12 @@ body {
   }
 }
 
-/* Route-enter fade (02 §motion): 250ms fade-up, once per mount */
+/* Route-enter fade (02 §motion): 250ms fade-up, once per mount.
+   Fill backwards, never both: a forwards fill leaves transform:none computed
+   as a matrix, which makes every screen the containing block for
+   position:fixed — modals and drawers then dim only the content column. */
 .screen-enter {
-  animation: screen-fade-up 0.25s ease both;
+  animation: screen-fade-up 0.25s ease backwards;
 }
 @keyframes screen-fade-up {
   from {
@@ -514,4 +577,45 @@ body {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ============================================================
+   Chart entrances (live dashboards, 23 Sep; spec §6). At most one per
+   chart, on mount. Each keyframe animates FROM the hidden state only, so
+   the element's own style is the final state: the reduced-motion block
+   above (duration and delay both zeroed) shows the finished chart at once.
+   - .viz-grow: a column or bar rises from its baseline (350ms). Stagger
+     with an inline animation-delay, 240ms across the whole set at most.
+   - .viz-grow-x: the same for a horizontal bar, from its left edge.
+   - .viz-draw: a line draws itself (500ms). Give the path pathLength="1",
+     or the 1-unit dash turns it into a dotted line.
+   ============================================================ */
+@keyframes viz-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes viz-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes viz-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+.viz-grow {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: viz-grow 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.viz-grow-x {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: viz-grow-x 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.viz-draw {
+  stroke-dasharray: 1;
+  animation: viz-draw 0.5s ease-out both;
 }

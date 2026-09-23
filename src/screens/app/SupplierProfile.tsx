@@ -10,14 +10,17 @@ import { GoldBandPill, Pill, StatusPill } from '../../components/ui/Pill';
 import { Rating } from '../../components/ui/Rating';
 import { listingFacts } from '../../lib/marketplace';
 import { deriveStatus, goldBandActive, isBookable } from '../../lib/svs';
+import { certsWithApproved } from '../../lib/svsDesk';
 import { GOLD_BAND } from '../../data/goldBand';
 import { ESG_PLANNED_NOTE } from '../../data/related';
 import { serviceTermsFor } from '../../data/serviceTerms';
 import { supplierById } from '../../data/suppliers';
+import { useSvsDesk } from '../../store/svsDesk';
 
 export default function SupplierProfile() {
   const { supplierId } = useParams();
   const [target, setTarget] = useState<RequestTarget | null>(null);
+  const evidence = useSvsDesk((s) => s.evidence);
   const supplier = supplierId ? supplierById(supplierId) : undefined;
 
   if (!supplier) {
@@ -196,7 +199,10 @@ export default function SupplierProfile() {
                   </tr>
                 </thead>
                 <tbody>
-                  {supplier.certs.map((c) => (
+                  {/* Certificates the SVS team has approved since join the list,
+                      always in date; the status above still reads the gate's
+                      own certificates, so an approval never moves it (spec §4.4). */}
+                  {certsWithApproved(supplier.id, supplier.certs, evidence).map((c) => (
                     <tr key={c.name} className="border-b border-line last:border-b-0">
                       <td className="px-3.5 py-2.5 font-semibold">{c.name}</td>
                       <td className="px-3.5 py-2.5">

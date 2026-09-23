@@ -113,7 +113,8 @@ export const ANALYTICS_EXAMPLE = [
   { label: 'Avg. response time', value: '2.1 hrs', barPct: 86 },
 ] as const;
 
-/** 30-day quote-request sparkline data (illustrative). */
+/** The last 30 days of quote requests (38, one peak) — the same series the analytics
+ *  screen draws, from REQUESTS_90 in data/analytics.ts. Illustrative. */
 export const SPARKLINE_30D = [
-  1, 2, 1, 0, 3, 2, 1, 2, 4, 1, 0, 2, 3, 1, 2, 0, 1, 3, 2, 4, 2, 1, 0, 2, 1, 3, 2, 1, 2, 3,
+  1, 1, 3, 0, 0, 0, 1, 4, 1, 1, 1, 0, 0, 2, 3, 2, 1, 1, 0, 0, 3, 2, 1, 1, 1, 0, 0, 3, 2, 3,
 ] as const;

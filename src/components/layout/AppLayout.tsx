@@ -7,8 +7,10 @@ import { invoiceState } from '../../lib/invoices';
 import { useNeedsYou } from '../../lib/needsYou';
 import { RESET_DEMO_TOAST, resetDemo } from '../../lib/resetDemo';
 import { persistent } from '../../lib/storage';
+import { evidenceOpenCount } from '../../lib/svsDesk';
 import { useFocusTrap } from '../../lib/useFocusTrap';
 import { useApp } from '../../store/app';
+import { useSvsDesk } from '../../store/svsDesk';
 import { Tour, TourPrompt } from '../../tour/Tour';
 import { Loader } from '../motif/Loader';
 import { Icon, type IconName } from '../ui/Icon';
@@ -49,7 +51,7 @@ interface NavItem {
   icon: IconName;
   end?: boolean;
   /** Which live count, if any, rides on this item. */
-  badge?: 'quotes' | 'invoices';
+  badge?: 'quotes' | 'invoices' | 'svs';
 }
 
 const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
@@ -74,7 +76,7 @@ const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
     items: [
       { to: '/app/quotes', label: 'Quotes', icon: 'message-square-quote', badge: 'quotes' },
       { to: '/app/invoices', label: 'Invoices', icon: 'receipt', badge: 'invoices' },
-      { to: '/app/svs', label: 'SVS', icon: 'shield-check' },
+      { to: '/app/svs', label: 'SVS', icon: 'shield-check', badge: 'svs' },
       { to: '/app/tiers', label: 'Tiers', icon: 'layers' },
     ],
   },
@@ -86,14 +88,28 @@ const INTERNAL_ITEM: NavItem = { to: '/app/internal', label: 'Internal', icon: '
 
 /** The count riding on a nav item, when there is one to ride. Quotes is
  *  neutral — three replies to compare is work, not a deadline. Invoices goes
- *  warn, because a review window closes whether or not anyone looks. */
-function NavBadge({ count, tone }: { count: number; tone: 'neutral' | 'warn' }) {
+ *  warn, because a review window closes whether or not anyone looks. SVS is
+ *  info (23 Sep): certificates waiting on the SVS team are a queue to work,
+ *  not a lapse — the lapses stay in the bell and the alerts banner. */
+type NavBadgeTone = 'neutral' | 'warn' | 'info';
+
+const NAV_BADGE_TONES: Record<NavBadgeTone, string> = {
+  neutral: 'bg-white/12',
+  warn: 'bg-warn',
+  info: 'bg-sea shadow-[inset_0_0_0_1px_rgba(255,255,255,0.28)]',
+};
+
+const NAV_BADGE_TONE_FOR: Record<NonNullable<NavItem['badge']>, NavBadgeTone> = {
+  quotes: 'neutral',
+  invoices: 'warn',
+  svs: 'info',
+};
+
+function NavBadge({ count, tone }: { count: number; tone: NavBadgeTone }) {
   return (
     <span
       aria-hidden="true"
-      className={`ml-auto grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold text-white ${
-        tone === 'warn' ? 'bg-warn' : 'bg-white/12'
-      }`}
+      className={`ml-auto grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold text-white ${NAV_BADGE_TONES[tone]}`}
     >
       {count}
     </span>
@@ -135,8 +151,8 @@ function SidebarLink({
       <span className={collapsed ? 'sr-only' : undefined}>
         {collapsed && count > 0 ? `${item.label} (${count})` : item.label}
       </span>
-      {!collapsed && count > 0 ? (
-        <NavBadge count={count} tone={item.badge === 'invoices' ? 'warn' : 'neutral'} />
+      {!collapsed && count > 0 && item.badge ? (
+        <NavBadge count={count} tone={NAV_BADGE_TONE_FOR[item.badge]} />
       ) : null}
     </NavLink>
   );
@@ -146,10 +162,13 @@ function SidebarLink({
 interface NavCounts {
   quotes: number;
   invoices: number;
+  /** Certificate evidence waiting on the SVS team. */
+  svs: number;
 }
 
 function useNavCounts(): NavCounts {
   const invoiceDecisions = useApp((s) => s.invoiceDecisions);
+  const evidence = useSvsDesk((s) => s.evidence);
   return {
     quotes: QUOTES.length,
     // Only what is still inside the client's seven-day window: a matched
@@ -157,6 +176,7 @@ function useNavCounts(): NavCounts {
     invoices: INVOICES.filter(
       (inv) => invoiceState(inv.receivedDaysAgo, invoiceDecisions[inv.id]) === 'awaiting',
     ).length,
+    svs: evidenceOpenCount(evidence),
   };
 }
 
@@ -379,18 +399,22 @@ function ResetDemo() {
         <span className="hidden whitespace-nowrap md:inline">Reset demo</span>
       </button>
       {open ? (
+        // On a phone the trigger sits mid-bar, so a panel hung off its right
+        // edge ran off the left of the screen; below `sm` it spans the bar
+        // inside the 16px gutter instead (the blurred header is its box).
         <div
           id="reset-demo-panel"
           role="dialog"
           aria-label="Reset demo"
-          className="absolute top-[calc(100%+8px)] right-0 z-[60] w-[300px] max-w-[88vw] rounded-brand border border-line bg-white p-3.5 shadow-[0_12px_40px_rgba(10,37,64,0.14)]"
+          className="absolute top-[calc(100%+8px)] right-0 z-[60] w-[300px] max-w-[88vw] rounded-brand border border-line bg-white p-3.5 shadow-[0_12px_40px_rgba(10,37,64,0.14)] max-sm:fixed max-sm:inset-x-4 max-sm:top-[66px] max-sm:w-auto max-sm:max-w-none"
         >
           <p className="m-0 text-[13.5px] font-semibold text-ink">
             Put every screen back to its starting state?
           </p>
           <p className="mt-1.5 mb-3 text-[12.5px] leading-snug text-ink-soft">
-            Quotes, invoices, procurement, crew change, logistics, customs, the beta previews, the
-            tier selection and the tour offer all go back to how a first visitor finds them.
+            Quotes, invoices, procurement, crew change, logistics, customs, certificates sent to the
+            SVS, onboarding decisions, supplier quotes, the beta previews, the tier selection and
+            the tour offer all go back to how a first visitor finds them.
           </p>
           <div className="flex items-center gap-2">
             <button

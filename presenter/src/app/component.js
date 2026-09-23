@@ -183,6 +183,12 @@ class Component extends DCLogic {
     if ((parts[0] === 'logistics' || parts[0] === 'customs') && parts[1]) {
       return { route: parts[0], profileId: null, section: parts[1] };
     }
+    /* An SVS tab (23 Sep): '#/svs/onboarding' is the site's
+       /app/svs?section=onboarding. Only the three tabs are sections; anything
+       else opens the register, the default, as an unknown ?section= does. */
+    if (parts[0] === 'svs' && parts[1]) {
+      return { route: 'svs', profileId: null, section: ['register', 'onboarding', 'evidence'].includes(parts[1]) ? parts[1] : null };
+    }
     const valid = ['home', 'clients', 'suppliers', 'about', 'dashboard', 'internal', 'marketplace', 'agency', 'logistics', 'customs', 'procurement', 'crew-change', 'quotes', 'invoices', 'tiers', 'svs', 'analytics', 'certification', 'bunkers', 'kitchen-sink'];
     return { route: valid.includes(parts[0]) ? parts[0] : 'home', profileId: null, section: null };
   }
@@ -445,6 +451,8 @@ class Component extends DCLogic {
       accepted: null, sent: false,
       tourDismissed: false, tourStep: null,
       dashView: 'client',
+      /* the SVS register's status filter is screen state, not a preference */
+      svsFilter: 'all',
       modal: null, rq: null,
       resetArmed: false
     }, this._featureState());
@@ -800,7 +808,9 @@ class Component extends DCLogic {
           name: s.name, cat: s.cat, esg: s.esg, esgStyle: this._esgStyle(s.esg),
           rating: s.rating.toFixed(1) + ' ★ · ' + s.ratingCount + ' ratings',
           gold: s.goldBand === 'held' && status !== 'blocked',
-          certs: s.certs.map((c) => ({
+          /* plus any new certificate the SVS team has approved (desk-state.js);
+             the status above still reads s.certs alone, so it cannot move */
+          certs: this._dkCertsFor(s).map((c) => ({
             text: c.label + (c.state === 'ok' ? '' : (c.state === 'due' ? ' · due' : ' · lapsed')),
             style: 'display:inline-block;border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;margin:1px 2px;white-space:nowrap;' +
               (c.state === 'ok' ? 'background:#E7F4EF;color:#047857;' : (c.state === 'due' ? 'background:#FBF0E1;color:#B45309;' : 'background:#FBEAEA;color:#B91C1C;'))
@@ -1063,7 +1073,7 @@ class Component extends DCLogic {
           supGoldNote: sup && sup.goldBandDate
             ? sup.goldBandDate + '. The Gold Band is held from the audit, not from advertising \u2014 it appears here the day it is passed, and goes the day compliance lapses.'
             : '',
-          supCerts: sup ? sup.certs.map(function (c) {
+          supCerts: sup ? self._dkCertsFor(sup).map(function (c) {
             const bg = c.state === 'lapsed' ? '#FBEAEA' : c.state === 'due' ? '#FBF0E1' : '#E7F4EF';
             const fg = c.state === 'lapsed' ? '#B91C1C' : c.state === 'due' ? '#B45309' : '#047857';
             const tail = c.state === 'due' ? ' \u00b7 ' + c.days + ' days' : c.state === 'lapsed' ? ' \u00b7 lapsed' : '';
@@ -1077,7 +1087,9 @@ class Component extends DCLogic {
           supKeeps: self._gbp(job - Math.round(job * band / 100)),
           supKeepsLine: 'yours, after the ' + band + '% Premium band',
           supJobLine: 'A ' + self._gbp(job) + ' job won through the platform',
-          goSupProfile: function () { self.setState({ profileId: 'silver-city-welding' }); self.nav('supplier'); }
+          /* '#/supplier' alone is not a route (it fell through to the landing
+             page); the profile address carries the supplier's id */
+          goSupProfile: function () { self.nav('supplier/' + DK.DEMO_SUPPLIER_ID); }
         };
       })(this),
 
@@ -1145,12 +1157,16 @@ class Component extends DCLogic {
 
       /* KPI tiles — series are illustrative seven-week histories ending on
          the headline value, same as the site's DASHBOARD_KPIS. Flat keys so
-         each tile can carry its own literal icon in the partial. */
+         each tile can carry its own literal icon in the partial. The SVS
+         tile reads the onboarding queue (desk-state.js): 52 plus every
+         applicant approved, and the applicants still open (seed: 52, 4). */
       ...(function (self) {
+        const apps = st.dkApplications || [];
+        const verified = 52 + DK_approvedCount(apps);
         const K = [
           { label: 'Active jobs', value: '14', delta: '+3 this week', tone: 'up', pts: [9, 10, 12, 11, 13, 11, 14] },
           { label: 'Open quote requests', value: st.sent ? '9' : '6', delta: st.sent ? '9 just issued for MV Choice' : '2 replies awaiting review', tone: 'flat', pts: [2, 4, 3, 5, 4, 6, st.sent ? 9 : 6] },
-          { label: 'SVS-verified suppliers', value: '52', delta: '4 onboarding', tone: 'up', pts: [44, 46, 47, 48, 50, 51, 52] },
+          { label: 'SVS-verified suppliers', value: String(verified), delta: DK_openCount(apps) + ' onboarding', tone: 'up', pts: [44, 46, 47, 48, 50, 51, verified] },
           { label: 'Admin time saved a month', value: '31 hrs', delta: 'vs the manual workflow', tone: 'flat', pts: [22, 24, 26, 27, 29, 30, 31] }
         ];
         const out = {};
@@ -1310,7 +1326,7 @@ class Component extends DCLogic {
       profBlocked: profStatus === 'blocked',
       profDue: profStatus === 'due',
       profVerified: !!prof && profStatus !== 'blocked',
-      profCerts: prof ? prof.certs.map(certChip) : [],
+      profCerts: prof ? this._dkCertsFor(prof).map(certChip) : [],
       profActivity: prof ? prof.activity : [],
       profFacts: prof ? this._listingFacts(prof) : [],
       profHasFacts: !!(prof && this._listingFacts(prof).length),

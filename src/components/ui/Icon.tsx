@@ -11,22 +11,34 @@ import type { ReactNode, SVGProps } from 'react';
  * distribute this software for any purpose with or without fee is hereby
  * granted, provided that the above copyright notice and this permission
  * notice appear in all copies.
+ *
+ * Paths are copied verbatim from lucide-static (the 23 Sep additions — upload,
+ * file-plus, user-plus, eye, trending-up, bar-chart-3, calendar, clock, star,
+ * inbox, list-checks, zap, external-link — from v1.47.0).
  */
 
 export type IconName =
   | 'anchor'
   | 'arrow-right'
   | 'badge-check'
+  | 'bar-chart-3'
   | 'bell'
   | 'briefcase'
+  | 'calendar'
   | 'check'
   | 'chevron-right'
   | 'chevrons-left'
   | 'circle-check'
   | 'clipboard-list'
+  | 'clock'
+  | 'external-link'
+  | 'eye'
   | 'file-check'
+  | 'file-plus'
+  | 'inbox'
   | 'layers'
   | 'layout-dashboard'
+  | 'list-checks'
   | 'mail'
   | 'menu'
   | 'message-square-quote'
@@ -37,11 +49,16 @@ export type IconName =
   | 'shield-check'
   | 'ship'
   | 'stamp'
+  | 'star'
   | 'store'
   | 'timer'
+  | 'trending-up'
   | 'triangle-alert'
   | 'truck'
-  | 'x';
+  | 'upload'
+  | 'user-plus'
+  | 'x'
+  | 'zap';
 
 const PATHS: Record<IconName, ReactNode> = {
   anchor: (
@@ -232,6 +249,95 @@ const PATHS: Record<IconName, ReactNode> = {
     <>
       <path d="M18 6 6 18" />
       <path d="m6 6 12 12" />
+    </>
+  ),
+  'bar-chart-3': (
+    <>
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="M18 17V9" />
+      <path d="M13 17V5" />
+      <path d="M8 17v-3" />
+    </>
+  ),
+  calendar: (
+    <>
+      <path d="M8 2v3" />
+      <path d="M16 2v3" />
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </>
+  ),
+  'external-link': (
+    <>
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  'file-plus': (
+    <>
+      <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+      <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+      <path d="M9 15h6" />
+      <path d="M12 18v-6" />
+    </>
+  ),
+  inbox: (
+    <>
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+    </>
+  ),
+  'list-checks': (
+    <>
+      <path d="M13 5h8" />
+      <path d="M13 12h8" />
+      <path d="M13 19h8" />
+      <path d="m3 17 2 2 4-4" />
+      <path d="m3 7 2 2 4-4" />
+    </>
+  ),
+  star: (
+    <>
+      <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+    </>
+  ),
+  'trending-up': (
+    <>
+      <path d="M16 7h6v6" />
+      <path d="m22 7-8.5 8.5-5-5L2 17" />
+    </>
+  ),
+  upload: (
+    <>
+      <path d="M12 3v12" />
+      <path d="m17 8-5-5-5 5" />
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    </>
+  ),
+  'user-plus': (
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" x2="19" y1="8" y2="14" />
+      <line x1="22" x2="16" y1="11" y2="11" />
+    </>
+  ),
+  zap: (
+    <>
+      <path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z" />
     </>
   ),
 };

@@ -73,5 +73,25 @@
           </div>
         </div>
       </div>
+
+      <!-- Chart kit (live dashboards, 23 Sep): every chart from app/features/viz.js, on sample data -->
+      <section aria-labelledby="vz-kit-title" style="margin-top:36px;" data-testid="vz-gallery">
+        <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Charts</p>
+        <h2 id="vz-kit-title" style="font-size:20px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;font-family:'Space Grotesk',sans-serif;">Chart kit</h2>
+        <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:720px;">Hand-drawn SVG and HTML, no chart library. Point at a chart, tap it, or tab to it and use the arrow keys; every chart carries its numbers in a table. Sample data, illustrative only.</p>
+        <div style="margin-top:16px;">{{ vzGalleryPalette }}</div>
+        <div style="margin-top:18px;">{{ vzGalleryKpis }}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(460px,100%),1fr));gap:18px;margin-top:18px;align-items:start;">
+          <div style="grid-column:1/-1;min-width:0;">{{ vzGalleryTraffic }}</div>
+          <div style="min-width:0;">{{ vzGallerySpend }}</div>
+          <div style="min-width:0;">{{ vzGalleryEarnings }}</div>
+          <div style="min-width:0;">{{ vzGalleryFunnel }}</div>
+          <div style="min-width:0;">{{ vzGalleryBenchmark }}</div>
+          <div style="min-width:0;">{{ vzGallerySources }}</div>
+          <div style="min-width:0;">{{ vzGalleryRatings }}</div>
+          <div style="min-width:0;">{{ vzGalleryHeatmap }}</div>
+          <div style="min-width:0;">{{ vzGalleryExpiry }}</div>
+        </div>
+      </section>
     </main>
   </sc-if>
