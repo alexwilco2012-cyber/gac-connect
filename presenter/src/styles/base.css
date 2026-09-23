@@ -132,6 +132,27 @@
     .gac-strip-label { width: auto !important; flex: 1 1 auto !important; }
   }
 
+  /* ==== Live dashboards (23 Sep): responsive rules for the deck's dashboard.
+     Client view classes gac-cd-*, supplier view classes gac-sd-*.
+     Rules go between this line and the matching end marker. ==== */
+  /* ==== end dashboard rules ==== */
+
+  /* The three blocks below are kept apart on purpose, so the three deck
+     screens can be built side by side and merged without their rules
+     touching each other. Keep them in this order. */
+
+  /* ==== Live dashboards (23 Sep): responsive rules for the deck's SVS
+     screen, classes gac-sv-*. Rules go between this line and its end marker. ==== */
+  /* ==== end SVS rules ==== */
+
+  /* Charts and analytics share the viz kit's inline styles; anything that
+     needs a media query or :hover lives in the block that follows, and
+     nowhere else. */
+
+  /* ==== Live dashboards (23 Sep): responsive rules for the deck's supplier
+     analytics, classes gac-an-*. Rules go between this line and its end marker. ==== */
+  /* ==== end analytics rules ==== */
+
   /* `animation:none` drops the fill state with the animation, so anything
      that starts at opacity 0 must be forced visible rather than left there. */
   @media (prefers-reduced-motion: reduce) {
