@@ -1,7 +1,140 @@
-  <!-- Applicant panel (live dashboards, 23 Sep): an onboarding applicant's
-       checklist, trail and decision on the SVS screen (spec §4.5). Stub from
-       task T4 so the include line exists; task T10 replaces it, with sv*
-       bindings from features/svs-screen.js. -->
-  <sc-if value="{{ false }}" hint-placeholder-val="{{ false }}">
-    <div></div>
+  <!-- Applicant panel (live dashboards, 23 Sep; spec §4.5). One onboarding
+       applicant's eight checks, the open information request, the decision
+       and the audit trail, in a wide dialog — mirrors the site's
+       src/screens/app/svs/ApplicantPanel.tsx. Its notes are typed inside the
+       dialog, so nothing behind it hears the keys. "Approve and list" stays
+       disabled until DK_canApprove, and the reason is written beside it.
+       Bindings: svAp* from app/features/svs-screen.js; Escape closes it
+       through that module's escape(), and the core's componentDidUpdate moves
+       focus in and gives it back. -->
+  <sc-if value="{{ svAppOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(10,37,64,.45);display:grid;place-items:center;z-index:91;padding:16px;" sc-camel-on-click="{{ svAp.overlay }}">
+      <div id="sv-applicant-dialog" class="gac-sv-dialog" role="dialog" aria-modal="true" aria-labelledby="sv-applicant-title" style="background:#FFFFFF;border-radius:14px;max-width:720px;width:100%;max-height:calc(100dvh - 32px);overflow-y:auto;padding:24px;box-sizing:border-box;box-shadow:0 24px 60px rgba(10,37,64,.25);">
+        <header style="display:flex;align-items:flex-start;gap:14px;">
+          <span aria-hidden="true" style="{{ svAp.monoStyle }}">{{ svAp.mono }}</span>
+          <div style="min-width:0;flex:1;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ svAp.eyebrow }}</p>
+            <h2 id="sv-applicant-title" tabindex="-1" style="font-family:'Space Grotesk',sans-serif;font-size:20px;line-height:1.2;font-weight:700;letter-spacing:-.01em;margin:2px 0 0;">{{ svAp.company }}</h2>
+            <p style="margin:2px 0 0;font-size:13px;color:#33475F;">{{ svAp.sub }}</p>
+          </div>
+          <button type="button" class="gac-sv-close" aria-label="Close applicant panel" sc-camel-on-click="{{ svAp.close }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+        </header>
+
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
+          <sc-if value="{{ svAp.approved }}" hint-placeholder-val="{{ false }}"><span style="{{ svAp.approvedStyle }}">✓ Approved</span></sc-if>
+          <sc-if value="{{ svAp.declined }}" hint-placeholder-val="{{ false }}"><span style="{{ svAp.declinedStyle }}">✗ Declined</span></sc-if>
+          <sc-if value="{{ svAp.showSla }}" hint-placeholder-val="{{ true }}"><span style="{{ svAp.slaStyle }}">{{ svAp.slaLabel }}</span></sc-if>
+          <span style="{{ svAp.riskStyle }}">{{ svAp.riskLabel }}</span>
+          <sc-if value="{{ svAp.awaiting }}" hint-placeholder-val="{{ false }}"><span style="{{ svAp.awaitingStyle }}">Awaiting applicant</span></sc-if>
+        </div>
+
+        <sc-if value="{{ svAp.isOpen }}" hint-placeholder-val="{{ true }}">
+          <ol aria-label="Onboarding stage" style="list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;">
+            <sc-for list="{{ svAp.stages }}" as="s" hint-placeholder-count="4">
+              <li aria-current="{{ s.current }}" style="min-width:0;">
+                <span aria-hidden="true" style="{{ s.barStyle }}"></span>
+                <span style="{{ s.labelStyle }}"><sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true">✓&nbsp;</span></sc-if>{{ s.label }}<sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}"><span class="gac-sv-sr"> (done)</span></sc-if></span>
+              </li>
+            </sc-for>
+          </ol>
+        </sc-if>
+        <sc-if value="{{ svAp.isClosed }}" hint-placeholder-val="{{ false }}">
+          <p style="{{ svAp.outcomeStyle }}"><strong>{{ svAp.outcomeWord }}</strong>{{ svAp.outcomeRest }}</p>
+        </sc-if>
+
+        <sc-if value="{{ svAp.hasInfo }}" hint-placeholder-val="{{ false }}">
+          <div id="sv-info-box" tabindex="-1" style="margin-top:16px;border:1px solid #CFE2EE;border-radius:8px;background:rgba(232,241,247,.6);padding:12px 14px;">
+            <p style="margin:0;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#0E5E8A;">Waiting on the applicant</p>
+            <p style="margin:4px 0 0;font-size:13.5px;color:#0A2540;">{{ svAp.info }}</p>
+            <sc-if value="{{ svAp.canAnswer }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px;">
+                <button type="button" class="gac-sv-btn gac-sv-btn-ghost gac-sv-btn-sm" sc-camel-on-click="{{ svAp.answer }}">Mark as answered</button>
+                <span style="font-size:12px;color:#33475F;">Simulates the applicant’s reply.</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <section aria-labelledby="sv-applicant-checks" style="margin-top:20px;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;">
+            <h3 id="sv-applicant-checks" tabindex="-1" style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin:0;">Checks</h3>
+            <p style="margin:0;font-size:12.5px;font-weight:600;color:#0A2540;font-variant-numeric:tabular-nums;">{{ svAp.checksLine }}</p>
+          </div>
+          <span aria-hidden="true" style="display:block;height:6px;margin-top:8px;overflow:hidden;border-radius:999px;background:#E8F1F7;"><span style="{{ svAp.barStyle }}"></span></span>
+          <ul style="list-style:none;margin:8px 0 0;padding:0;">
+            <sc-for list="{{ svAp.checks }}" as="ck" hint-placeholder-count="8">
+              <li class="gac-sv-check-row">
+                <span><span style="{{ ck.pillStyle }}">{{ ck.pill }}</span></span>
+                <span style="font-size:13.5px;line-height:1.35;color:#0A2540;">{{ ck.label }}</span>
+                <sc-if value="{{ ck.showCtl }}" hint-placeholder-val="{{ true }}">
+                  <span class="gac-sv-check-ctl">
+                    <span role="group" aria-label="{{ ck.label }}" class="gac-sv-seg-group">
+                      <sc-for list="{{ ck.opts }}" as="o" hint-placeholder-count="3">
+                        <button type="button" class="gac-sv-seg" aria-pressed="{{ o.pressed }}" title="{{ o.title }}" style="{{ o.style }}" sc-camel-on-click="{{ o.on }}">{{ o.text }}</button>
+                      </sc-for>
+                    </span>
+                  </span>
+                </sc-if>
+              </li>
+            </sc-for>
+          </ul>
+        </section>
+
+        <sc-if value="{{ svAp.showDecision }}" hint-placeholder-val="{{ true }}">
+          <section aria-label="Decision" style="margin-top:16px;padding-top:16px;border-top:1px solid #E5EAF1;">
+            <sc-if value="{{ svAp.modeNote }}" hint-placeholder-val="{{ false }}">
+              <form sc-camel-on-submit="{{ svAp.noteSubmit }}" sc-camel-no-validate="{{ true }}">
+                <label for="sv-ap-note" class="gac-sv-label">{{ svAp.note.label }}</label>
+                <textarea id="sv-ap-note" rows="3" sc-camel-max-length="400" class="gac-sv-input gac-sv-textarea" value="{{ svAp.note.text }}" placeholder="{{ svAp.note.placeholder }}" aria-invalid="{{ svAp.note.invalid }}" sc-camel-on-change="{{ svAp.noteChange }}"></textarea>
+                <p style="margin:4px 0 0;text-align:right;font-size:11.5px;color:#33475F;font-variant-numeric:tabular-nums;">{{ svAp.note.count }}</p>
+                <sc-if value="{{ svAp.note.showAlert }}" hint-placeholder-val="{{ false }}">
+                  <p role="alert" class="gac-sv-alert">{{ svAp.note.alert }}</p>
+                </sc-if>
+                <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:16px;">
+                  <button type="button" class="gac-sv-btn gac-sv-btn-ghost" sc-camel-on-click="{{ svAp.noteCancel }}">Cancel</button>
+                  <button type="submit" class="{{ svAp.note.submitClass }}">{{ svAp.note.submitLabel }}</button>
+                </div>
+              </form>
+            </sc-if>
+            <sc-if value="{{ svAp.modeNone }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                <sc-if value="{{ svAp.canMove }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" class="gac-sv-btn gac-sv-btn-ghost gac-sv-wide" sc-camel-on-click="{{ svAp.move }}">{{ svAp.moveLabel }}</button>
+                </sc-if>
+                <sc-if value="{{ svAp.canRequest }}" hint-placeholder-val="{{ true }}">
+                  <button type="button" data-sv-action="info" class="gac-sv-btn gac-sv-btn-ghost gac-sv-wide" sc-camel-on-click="{{ svAp.request }}">Request more information</button>
+                </sc-if>
+                <button type="button" data-sv-action="decline" class="gac-sv-btn gac-sv-btn-danger gac-sv-wide" sc-camel-on-click="{{ svAp.decline }}">Decline</button>
+                <button type="button" data-sv-action="approve" class="gac-sv-btn gac-sv-btn-primary gac-sv-wide gac-sv-push" disabled="{{ svAp.approveDisabled }}" aria-describedby="{{ svAp.approveDescribedBy }}" sc-camel-on-click="{{ svAp.approve }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg>Approve and list</button>
+              </div>
+              <sc-if value="{{ svAp.hasBlocker }}" hint-placeholder-val="{{ true }}">
+                <p id="sv-approve-blocker" data-testid="approve-blocker" style="display:flex;align-items:flex-start;gap:8px;margin:12px 0 0;border-radius:8px;background:#F4F7FA;padding:10px 12px;font-size:12.5px;color:#33475F;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E5E8A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;margin-top:1px;"><path d="M13 5h8"></path><path d="M13 12h8"></path><path d="M13 19h8"></path><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path></svg><span><strong style="color:#0A2540;">Not ready to approve.</strong> {{ svAp.blocker }}</span></p>
+              </sc-if>
+              <sc-if value="{{ svAp.ready }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:12px 0 0;font-size:12.5px;color:#33475F;">Every check is complete. Approving lists the supplier at the next marketplace publish (simulated).</p>
+              </sc-if>
+            </sc-if>
+          </section>
+        </sc-if>
+
+        <section aria-labelledby="sv-applicant-trail" style="margin-top:20px;padding-top:16px;border-top:1px solid #E5EAF1;">
+          <h3 id="sv-applicant-trail" style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin:0;">Audit trail</h3>
+          <p style="margin:2px 0 0;font-size:12px;color:#33475F;">Newest first · recorded by role</p>
+          <ol data-testid="audit-trail" style="list-style:none;margin:12px 0 0;padding:0;">
+            <sc-for list="{{ svAp.trail }}" as="t" hint-placeholder-count="3">
+              <li style="{{ t.rowStyle }}">
+                <span aria-hidden="true" style="position:relative;display:flex;justify-content:center;">
+                  <span style="{{ t.dotStyle }}"></span>
+                  <sc-if value="{{ t.hasLine }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;top:16px;bottom:-14px;left:50%;width:1px;transform:translateX(-50%);background:#E5EAF1;"></span></sc-if>
+                </span>
+                <div style="min-width:0;">
+                  <p style="margin:0;font-size:13px;line-height:1.4;color:#0A2540;">{{ t.text }}</p>
+                  <p style="margin:2px 0 0;font-size:11.5px;color:#33475F;font-variant-numeric:tabular-nums;">{{ t.meta }}</p>
+                </div>
+              </li>
+            </sc-for>
+          </ol>
+        </section>
+      </div>
+    </div>
   </sc-if>
