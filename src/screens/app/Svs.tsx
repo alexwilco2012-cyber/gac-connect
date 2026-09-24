@@ -1,51 +1,117 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card } from '../../components/ui/Card';
-import { CertChip } from '../../components/ui/CertChip';
-import { Chip } from '../../components/ui/Chip';
+import { useCallback, useState } from 'react';
+import { Button } from '../../components/ui/Button';
 import { Eyebrow } from '../../components/ui/Eyebrow';
-import { GoldBandPill, StatusPill } from '../../components/ui/Pill';
-import { Rating } from '../../components/ui/Rating';
-import { ESG_PLANNED_NOTE } from '../../data/related';
-import { complianceWatch, deriveStatus, goldBandActive, watchLine } from '../../lib/svs';
-import type { SupplierStatus } from '../../lib/svs';
-import { GOLD_BAND } from '../../data/goldBand';
+import { Icon } from '../../components/ui/Icon';
+import { MEDIAN_VERIFY_LABEL, SLA_DAYS } from '../../data/svsDesk';
 import { SUPPLIERS } from '../../data/suppliers';
+import { complianceWatch, watchLine } from '../../lib/svs';
+import { evidenceOpenCount, onboardingOpenCount, slaState } from '../../lib/svsDesk';
+import { useSvsDesk } from '../../store/svsDesk';
+import { EvidenceQueue } from './svs/EvidenceQueue';
+import { InviteModal } from './svs/InviteModal';
+import { Onboarding } from './svs/Onboarding';
+import { Register, type SvsFilter } from './svs/Register';
+import { SectionTabs, type SectionTab } from './svs/SectionTabs';
+import { SvsKpis, type SvsKpi } from './svs/SvsKpis';
+import { midSentence, refNumber } from './svs/ui';
+import { useSvsSection } from './svs/useSvsSection';
 
-type SvsFilter = 'all' | SupplierStatus | 'gold-band';
-
-const FILTERS: { key: SvsFilter; label: string }[] = [
-  { key: 'all', label: 'All statuses' },
-  { key: 'verified', label: 'Verified' },
-  { key: 'renewal-due', label: 'Renewal due' },
-  { key: 'blocked', label: 'Blocked' },
-  { key: 'gold-band', label: 'Gold Band' },
-];
-
+/**
+ * SVS — the Supplier Vetting System's desk (live dashboards, 23 Sep; spec §4.5).
+ *
+ * The register is still the front of the screen, exactly as before, and the
+ * alerts banner stays directly under the header on every tab: it is tour stop
+ * 11, and it is the one thing on the screen a client would recognise. Beside
+ * the register sit the SVS team's two working queues — new suppliers moving
+ * through onboarding, and certificate evidence sent in by suppliers — with
+ * the four numbers the team runs on above them. The section lives in the URL
+ * (`?section=onboarding`), so a reload or a shared link opens the same queue.
+ *
+ * Nothing here feeds `useNeedsYou`: the SVS team's queue is not the client's
+ * "Waiting on you", and the bell never moves on an SVS decision.
+ */
 export default function Svs() {
-  const navigate = useNavigate();
-  const watch = complianceWatch(SUPPLIERS);
+  const [section, setSection] = useSvsSection();
+  const applications = useSvsDesk((s) => s.applications);
+  const evidence = useSvsDesk((s) => s.evidence);
   const [filter, setFilter] = useState<SvsFilter>('all');
+  const [inviteOpen, setInviteOpen] = useState(false);
 
-  const rows = useMemo(() => {
-    const withStatus = SUPPLIERS.map((s) => ({
-      ...s,
-      status: deriveStatus(s.certs),
-      goldBandHeld: goldBandActive(s.goldBand, s.certs),
-    }));
-    if (filter === 'all') return withStatus;
-    if (filter === 'gold-band') return withStatus.filter((s) => s.goldBandHeld);
-    return withStatus.filter((s) => s.status === filter);
-  }, [filter]);
+  const watch = complianceWatch(SUPPLIERS);
+  const blocked = watch.filter((w) => w.status === 'blocked').length;
+  const onboarding = onboardingOpenCount(applications);
+  const overdue = applications.filter(
+    (a) => a.outcome === 'open' && slaState(a).state === 'over',
+  ).length;
+  const toReview = evidenceOpenCount(evidence);
+  const oldest = evidence
+    .filter((e) => e.stage === 'submitted')
+    .sort((a, b) => refNumber(a.id) - refNumber(b.id))[0];
+
+  const kpis: SvsKpi[] = [
+    {
+      id: 'onboarding',
+      label: 'In onboarding',
+      value: String(onboarding),
+      note: overdue
+        ? `${overdue} past the ${SLA_DAYS}-day target`
+        : `All inside the ${SLA_DAYS}-day target`,
+      icon: 'user-plus',
+    },
+    {
+      id: 'evidence',
+      label: 'Evidence to review',
+      value: String(toReview),
+      note: oldest ? `Oldest sent ${midSentence(oldest.submittedAt)}` : 'Queue clear',
+      icon: 'file-check',
+    },
+    {
+      id: 'alerts',
+      label: 'Compliance alerts',
+      value: String(watch.length),
+      note: `${blocked} blocked · ${watch.length - blocked} renewals due`,
+      icon: 'triangle-alert',
+      tone: 'warn',
+    },
+    {
+      id: 'verify',
+      label: 'Median time to verify',
+      value: MEDIAN_VERIFY_LABEL,
+      note: `Target ${SLA_DAYS} working days`,
+      icon: 'clock',
+    },
+  ];
+
+  const tabs: SectionTab[] = [
+    { id: 'register', label: 'Register', icon: 'shield-check' },
+    { id: 'onboarding', label: 'Onboarding', icon: 'user-plus', count: onboarding },
+    { id: 'evidence', label: 'Evidence', labelTail: ' queue', icon: 'file-check', count: toReview },
+  ];
+
+  // Stable, so the invite modal's focus trap does not restart on each render.
+  const closeInvite = useCallback(() => setInviteOpen(false), []);
+
+  function invited() {
+    setInviteOpen(false);
+    setSection('onboarding');
+  }
 
   return (
     <div className="screen-enter">
-      <Eyebrow>Supplier Vetting System · proprietary</Eyebrow>
-      <h1 className="mt-1 font-display text-2xl font-bold">Compliance at a glance</h1>
-      <p className="mt-1 max-w-[680px] text-[14px] text-ink-soft">
-        Certification is a mandatory vetting field. Expiries trigger automatic alerts at 90, 30, and
-        7 days; lapsed suppliers cannot be booked.
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        <div className="min-w-0">
+          <Eyebrow>Supplier Vetting System · proprietary</Eyebrow>
+          <h1 className="mt-1 font-display text-2xl font-bold">Compliance at a glance</h1>
+          <p className="mt-1 max-w-[680px] text-[14px] text-ink-soft">
+            Certification is a mandatory vetting field. Expiries trigger automatic alerts at 90, 30,
+            and 7 days; lapsed suppliers cannot be booked.
+          </p>
+        </div>
+        <Button onClick={() => setInviteOpen(true)} className="max-sm:w-full">
+          <Icon name="user-plus" size={17} />
+          Invite a supplier
+        </Button>
+      </div>
 
       {/* Derived from the supplier data (complianceWatch), never hand-counted
           — the same list feeds the dashboard and the top-bar bell. */}
@@ -66,99 +132,33 @@ export default function Svs() {
           .join(' ')}
       </div>
 
-      <div
-        className="mt-4 flex flex-wrap gap-2"
-        role="group"
-        aria-label="Filter by status or audit tier"
-      >
-        {FILTERS.map((f) => (
-          <Chip key={f.key} pressed={filter === f.key} onClick={() => setFilter(f.key)}>
-            {f.label}
-          </Chip>
-        ))}
+      <SvsKpis kpis={kpis} />
+
+      <div className="mt-6">
+        <SectionTabs
+          tabs={tabs}
+          current={section}
+          onSelect={setSection}
+          controls="svs-section-panel"
+        />
       </div>
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full border-collapse overflow-hidden rounded-brand border border-line bg-white text-[13.5px]">
-          <thead>
-            <tr>
-              {['Supplier', 'Category', 'Certifications', 'ESG (planned)', 'Rating', 'Status'].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="bg-ink px-3.5 py-2.5 text-left text-[12px] tracking-[0.05em] text-white uppercase"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((s) => (
-              <tr
-                key={s.id}
-                className="cursor-pointer border-b border-line last:border-b-0 hover:bg-sea-soft/40"
-                onClick={() => navigate(`/app/marketplace/${s.id}`)}
-              >
-                <td className="px-3.5 py-3">
-                  <button
-                    type="button"
-                    className="cursor-pointer border-none bg-transparent p-0 text-left font-bold text-ink hover:text-sea hover:underline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/app/marketplace/${s.id}`);
-                    }}
-                  >
-                    {s.name}
-                  </button>
-                </td>
-                <td className="px-3.5 py-3">{s.category}</td>
-                <td className="px-3.5 py-3">
-                  {s.certs.map((c) => (
-                    <CertChip key={c.name} cert={c} />
-                  ))}
-                </td>
-                <td
-                  className={`px-3.5 py-3 font-bold ${
-                    s.esg === 'A' ? 'text-success' : s.esg === 'B' ? 'text-[#3E7C2F]' : 'text-warn'
-                  }`}
-                >
-                  {s.esg}
-                </td>
-                <td className="px-3.5 py-3 whitespace-nowrap">
-                  <Rating rating={s.rating} count={s.ratingCount} size="sm" />
-                </td>
-                <td className="px-3.5 py-3">
-                  <div className="flex flex-col items-start gap-1.5">
-                    <StatusPill status={s.status} />
-                    {s.goldBandHeld ? <GoldBandPill /> : null}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div id="svs-section-panel" className="mt-5">
+        {section === 'onboarding' ? (
+          <Onboarding />
+        ) : section === 'evidence' ? (
+          <EvidenceQueue />
+        ) : (
+          <Register filter={filter} onFilter={setFilter} />
+        )}
       </div>
 
-      <Card className="mt-5">
-        <Eyebrow>What the proprietary SVS adds</Eyebrow>
-        <p className="mt-2 text-[14px]">
-          Keyword search across 40+ service categories · supplier self-service portal · automated
-          expiry alerts · live performance ratings fed from completed platform transactions, each
-          shown with the number of ratings submitted · the GAC Verified badge as a visible mark of
-          quality · GAC Gold Band as the paid annual audit tier above it. Owned by GAC — built for
-          us by a third-party developer, now moving to full Group IT maintenance. The platform is
-          what turns it commercial.
-        </p>
-        <p className="mt-2 text-[13px] text-ink-soft">{ESG_PLANNED_NOTE}</p>
-      </Card>
+      <p className="mt-6 text-[12px] text-ink-soft">
+        Figures are illustrative. Onboarding checks, evidence reviews and invitations are simulated
+        — nothing is sent, and an approved applicant is listed at the next marketplace publish.
+      </p>
 
-      <Card className="mt-4">
-        <Eyebrow>{GOLD_BAND.name}</Eyebrow>
-        <p className="mt-2 text-[14px]">{GOLD_BAND.summary}</p>
-        <p className="mt-2 text-[12.5px] text-ink-soft">{GOLD_BAND.rule}</p>
-      </Card>
+      <InviteModal open={inviteOpen} onClose={closeInvite} onInvited={invited} />
     </div>
   );
 }

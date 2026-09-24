@@ -319,5 +319,6 @@ export function isCrewRequest(v: unknown): v is CrewRequest {
 export function stampLabel(d: Date = new Date()): string {
   const day = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return `${day} · ${time}`;
+  // en-GB abbreviates September to 'Sept'; every other date on the site reads 'Sep'.
+  return `${day.replace('Sept', 'Sep')} · ${time}`;
 }

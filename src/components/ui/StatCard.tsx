@@ -3,11 +3,12 @@ import { Icon, type IconName } from './Icon';
 import { Sparkline } from './Sparkline';
 
 /**
- * Stat card (02 §components, restyled 25 Aug): label and number lead, the
- * delta reads as a tinted chip, and an optional icon medallion and sparkline
- * make the number feel tracked rather than stated. Callers without the new
- * props (Analytics, marketing) render as before, minus the plain-text delta
- * which is now always a chip.
+ * Stat card (02 §components, restyled 25 Aug; live dashboards 23 Sep):
+ * label and number lead, the delta reads as a tinted chip against a named
+ * period, and an optional icon medallion and 36px sparkline (end dot on a
+ * white ring) make the number feel tracked rather than stated. `barPct` is
+ * still accepted for older callers, but a bar labelled "per cent of scale"
+ * says nothing — new screens use a sparkline or a benchmark instead.
  */
 const DELTA_TONE = {
   success: 'bg-success-soft text-success',
@@ -33,15 +34,15 @@ export function StatCard({
   series?: readonly number[];
 }) {
   return (
-    <Card>
+    <Card className="flex flex-col">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[12px] text-ink-soft">{label}</p>
-          <p className="mt-0.5 font-display text-[26px] font-bold">{value}</p>
+          <p className="mt-0.5 font-display text-[26px] leading-tight font-bold">{value}</p>
           {delta ? (
-            <p className="mt-1">
+            <p className="mt-1.5">
               <span
-                className={`inline-block rounded-full px-2 py-0.5 text-[11.5px] font-bold whitespace-nowrap ${DELTA_TONE[deltaTone]}`}
+                className={`inline-block max-w-full rounded-[10px] px-2 py-0.5 text-[11.5px] leading-snug font-bold ${DELTA_TONE[deltaTone]}`}
               >
                 {delta}
               </span>
@@ -57,7 +58,9 @@ export function StatCard({
           </span>
         ) : null}
       </div>
-      {series ? <Sparkline points={series} className="mt-3" /> : null}
+      {series && series.length > 1 ? (
+        <Sparkline points={series} height={36} className="mt-auto pt-3" />
+      ) : null}
       {barPct !== undefined ? (
         <div
           className="mt-2.5 h-1.5 overflow-hidden rounded bg-sea-soft"

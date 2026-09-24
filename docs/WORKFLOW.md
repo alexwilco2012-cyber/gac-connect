@@ -55,7 +55,7 @@ change, newest first.
 
 Every push to any branch triggers automatic jobs on GitHub:
 
-1. **CI** — lint, 67 unit tests, the Playwright smoke journeys, the brand-string
+1. **CI** — lint, 441 unit tests, the Playwright smoke journeys, the brand-string
    guard, and a full build. Red/green next to the change.
 2. **Deploy** — builds the live site from `main` *and* a preview for every other
    branch, then publishes the whole set to GitHub Pages in one go. This is why

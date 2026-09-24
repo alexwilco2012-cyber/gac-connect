@@ -268,6 +268,8 @@ describe('Crew change — data guardrails', () => {
 
   it('created-at label is a short British stamp', () => {
     expect(stampLabel(new Date(2026, 7, 18, 9, 41))).toBe('Tue 18 Aug · 09:41');
+    // The en-GB locale writes "Sept"; every other date on the site reads "Sep".
+    expect(stampLabel(new Date(2026, 8, 24, 10, 15))).toBe('Thu 24 Sep · 10:15');
   });
 });
 

@@ -112,8 +112,3 @@ export const ANALYTICS_EXAMPLE = [
   { label: 'Win rate', value: '34%', barPct: 34 },
   { label: 'Avg. response time', value: '2.1 hrs', barPct: 86 },
 ] as const;
-
-/** 30-day quote-request sparkline data (illustrative). */
-export const SPARKLINE_30D = [
-  1, 2, 1, 0, 3, 2, 1, 2, 4, 1, 0, 2, 3, 1, 2, 0, 1, 3, 2, 4, 2, 1, 0, 2, 1, 3, 2, 1, 2, 3,
-] as const;

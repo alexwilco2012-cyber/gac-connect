@@ -161,7 +161,9 @@ const INV_PILL_BASE = 'display:inline-flex;align-items:center;gap:5px;border-rad
 const INV_PILL_TONES = {
   neutral: 'background:#FAFBFD;color:#33475F;border:1px solid #CBD6E2;',
   info: 'background:#E8F1F7;color:#0E5E8A;',
-  warn: 'background:#FBF6E3;color:#9A7B14;border:1px solid #E5D89A;',
+  /* the site's Pill 'warn': a tight review window is a status, and gold is
+     reserved for in-house identity, so never the gold in-house pill here */
+  warn: 'background:#FBF0E1;color:#A84D08;',
   verified: 'background:#E7F4EF;color:#047857;'
 };
 const INV_BTN_PRIMARY = 'display:inline-flex;align-items:center;justify-content:center;min-height:44px;background:#0E5E8A;color:#FFFFFF;border:none;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;white-space:nowrap;';

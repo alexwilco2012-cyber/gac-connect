@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -11,9 +11,15 @@ export function useFocusTrap<T extends HTMLElement>(open: boolean, onClose: () =
   const ref = useRef<T>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
 
+  // Record the opener in a layout effect: a child that focuses its own field
+  // in a passive effect runs before this hook's passive effect, and would
+  // otherwise be taken for the element to hand focus back to.
+  useLayoutEffect(() => {
+    if (open) restoreRef.current = document.activeElement as HTMLElement | null;
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
-    restoreRef.current = document.activeElement as HTMLElement | null;
 
     const node = ref.current;
     if (node) {

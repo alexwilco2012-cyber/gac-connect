@@ -1,5 +1,8 @@
   <sc-if value="{{ isMarketplace }}" hint-placeholder-val="{{ false }}">
-    <main data-screen-label="Marketplace" style="max-width:1180px;margin:0 auto;padding:0 0 80px;animation:fadeUp .25s ease;">
+    <!-- width:100% as on the SVS screen: with margin:0 auto alone the main
+         sized to its content inside the column flex container and ran 3px
+         past a 375px screen, so the page scrolled sideways. -->
+    <main data-screen-label="Marketplace" style="max-width:1180px;width:100%;box-sizing:border-box;margin:0 auto;padding:0 0 80px;animation:fadeUp .25s ease;">
       <!-- A band, not a hero (2 Sep). Anyone on this screen has already been
            sold to on the landing page or has arrived from the QR; what they
            want here is the search box, so it sits on the same line as the name
@@ -96,7 +99,7 @@
                 <sc-if value="{{ s.goldBand }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#0A2540;color:#FFC72C;border:1px solid #C9A227;white-space:nowrap;">◆ GAC Gold Band</span></sc-if>
                 <sc-if value="{{ s.blocked }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBEAEA;color:#B91C1C;">✗ Booking blocked</span></sc-if>
                 <sc-if value="{{ s.verified }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#E7F4EF;color:#047857;">✓ GAC Verified</span></sc-if>
-                <sc-if value="{{ s.due }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF0E1;color:#B45309;">⚠ Renewal due</span></sc-if>
+                <sc-if value="{{ s.due }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#FBF0E1;color:#A84D08;">⚠ Renewal due</span></sc-if>
               </div>
               <p style="display:flex;flex-wrap:wrap;align-items:baseline;gap:0 14px;margin:4px 0 0;font-size:13px;color:#33475F;">
                 <span><span style="color:#9A7B14;font-weight:700;">{{ s.ratingLabel }}</span> <span style="color:#33475F;">{{ s.ratingCountLabel }}</span></span>

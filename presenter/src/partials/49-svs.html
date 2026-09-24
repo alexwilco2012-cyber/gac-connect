@@ -1,48 +1,321 @@
+  <!-- SVS — the Supplier Vetting System's desk (live dashboards, 23 Sep;
+       spec §4.5). Mirrors the site's src/screens/app/Svs.tsx and svs/*: the
+       header with "Invite a supplier", the alerts banner (tour stop 11, so it
+       stays directly under the header on every tab), the team's four numbers,
+       then Register · Onboarding · Evidence queue. The register is the core's
+       table and chips (svsRows / svsChips); everything prefixed sv comes from
+       app/features/svs-screen.js. The applicant panel is 77-applicant-modal,
+       the invite form and the evidence note dialog are 78-invite-modal.
+
+       The main takes width:100% so it stretches inside the column flex
+       container; without it, margin:0 auto let the register's 760px table
+       set the page width and the screen scrolled sideways at 375px. -->
   <sc-if value="{{ isSvs }}" hint-placeholder-val="{{ false }}">
-    <main data-screen-label="SVS" style="max-width:1180px;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
-      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Supplier Vetting System · proprietary</p>
-      <h1 style="font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 0;">Compliance at a glance</h1>
-      <p style="color:#33475F;margin:4px 0 0;font-size:14px;">Certification is a mandatory vetting field. Expiries trigger automatic alerts at 90, 30, and 7 days; lapsed suppliers cannot be booked.</p>
+    <main data-screen-label="SVS" class="gac-sv-main" style="max-width:1180px;width:100%;box-sizing:border-box;margin:0 auto;padding:28px 24px 80px;animation:fadeUp .25s ease;">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;">
+        <div style="min-width:0;flex:1 1 420px;">
+          <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">Supplier Vetting System · proprietary</p>
+          <h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.01em;line-height:1.25;margin:4px 0 0;">Compliance at a glance</h1>
+          <p style="color:#33475F;margin:4px 0 0;font-size:14px;max-width:680px;">Certification is a mandatory vetting field. Expiries trigger automatic alerts at 90, 30, and 7 days; lapsed suppliers cannot be booked.</p>
+        </div>
+        <button type="button" class="gac-sv-btn gac-sv-btn-primary gac-sv-invite" sc-camel-on-click="{{ svOpenInvite }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg>
+          Invite a supplier
+        </button>
+      </div>
 
-      <div style="border-left:4px solid #B45309;background:#FBF0E1;border-radius:8px;padding:12px 16px;margin:14px 0;font-size:13.5px;"><strong>{{ svsAlertCount }} alerts:</strong> {{ svsAlertLine }}</div>
+      <!-- Derived from the supplier data (the core's compliance watch), never
+           hand-counted: the same list feeds the dashboard and the bell. -->
+      <div data-tour="svs" style="border-left:4px solid #A84D08;background:#FBF0E1;border-radius:8px;padding:12px 16px;margin:16px 0 0;font-size:13.5px;"><strong>{{ svsAlertCount }} alerts:</strong> {{ svsAlertLine }}</div>
 
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;" role="group" aria-label="Filter by status">
-        <sc-for list="{{ svsChips }}" as="fc" hint-placeholder-count="4">
-          <button style="{{ fc.style }}" sc-camel-on-click="{{ fc.on }}" aria-pressed="{{ fc.pressed }}">{{ fc.label }}</button>
+      <!-- The SVS team's four numbers: one bordered strip, live from the
+           desk state and the watch. The inset shadows draw the cell rules. -->
+      <dl class="gac-sv-kpis" data-testid="svs-kpis" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:16px 0 0;overflow:hidden;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);">
+        <sc-for list="{{ svKpis }}" as="k" hint-placeholder-count="4">
+          <div class="gac-sv-kpi" data-testid="{{ k.testId }}" style="display:flex;align-items:flex-start;gap:12px;min-width:0;padding:16px 20px;margin-bottom:-1px;box-shadow:inset -1px 0 0 #E5EAF1, inset 0 -1px 0 #E5EAF1;">
+            <span class="gac-sv-kpi-icon" aria-hidden="true" style="{{ k.iconStyle }}">{{ k.icon }}</span>
+            <div style="min-width:0;">
+              <dt style="font-size:12px;line-height:1.35;color:#33475F;">{{ k.label }}</dt>
+              <dd data-kpi-value="" style="margin:2px 0 0;font-family:'Space Grotesk',sans-serif;font-size:22px;line-height:1.2;font-weight:700;font-variant-numeric:tabular-nums;color:#0A2540;">{{ k.value }}</dd>
+              <dd style="margin:2px 0 0;font-size:11.5px;line-height:1.35;color:#33475F;">{{ k.note }}</dd>
+            </div>
+          </div>
+        </sc-for>
+      </dl>
+
+      <!-- The section switch: a group of aria-pressed buttons, like the
+           register's filters, drawn as an underlined strip so it reads as the
+           screen's sections rather than one more row of filters. -->
+      <div class="gac-sv-tabs" role="group" aria-label="SVS sections" style="position:relative;display:flex;gap:8px;overflow-x:auto;border-bottom:1px solid #E5EAF1;margin-top:24px;">
+        <sc-for list="{{ svTabs }}" as="t" hint-placeholder-count="3">
+          <button type="button" class="gac-sv-tab" aria-pressed="{{ t.pressed }}" aria-controls="sv-section-panel" aria-label="{{ t.aria }}" style="{{ t.style }}" sc-camel-on-click="{{ t.on }}"><span class="gac-sv-tab-icon" style="{{ t.iconStyle }}">{{ t.icon }}</span><span>{{ t.label }}<sc-if value="{{ t.hasTail }}" hint-placeholder-val="{{ false }}"><span class="gac-sv-tab-tail">{{ t.tail }}</span></sc-if></span><sc-if value="{{ t.hasCount }}" hint-placeholder-val="{{ true }}"><span style="{{ t.countStyle }}">{{ t.count }}</span></sc-if></button>
         </sc-for>
       </div>
 
-      <div style="overflow-x:auto;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);">
-        <sc-raw-table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px;">
-          <sc-raw-thead>
-            <sc-raw-tr>
-              <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Supplier</sc-raw-th>
-              <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Category</sc-raw-th>
-              <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Certifications</sc-raw-th>
-              <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">ESG (planned)</sc-raw-th>
-              <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Rating</sc-raw-th>
-              <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Status</sc-raw-th>
-            </sc-raw-tr>
-          </sc-raw-thead>
-          <sc-raw-tbody>
-            <sc-for list="{{ svsRows }}" as="r" hint-placeholder-count="5">
-              <sc-raw-tr sc-camel-on-click="{{ r.onOpen }}" title="Open supplier profile" style="cursor:pointer;" style-hover="background:#F4F8FB;">
-                <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><button style="background:none;border:none;padding:0;font-weight:700;color:#0A2540;cursor:pointer;font-family:inherit;font-size:13.5px;" style-hover="color:#0E5E8A;" sc-camel-on-click="{{ r.onOpen }}">{{ r.name }}</button></sc-raw-td>
-                <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;">{{ r.cat }}</sc-raw-td>
-                <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><sc-for list="{{ r.certs }}" as="cc" hint-placeholder-count="2"><span style="{{ cc.style }}">{{ cc.text }}</span></sc-for></sc-raw-td>
-                <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><span style="{{ r.esgStyle }}">{{ r.esg }}</span></sc-raw-td>
-                <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;">{{ r.rating }}</sc-raw-td>
-                <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><span style="{{ r.statusStyle }}">{{ r.statusLabel }}</span> <sc-if value="{{ r.gold }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#0A2540;color:#FFC72C;border:1px solid #C9A227;white-space:nowrap;">◆ GAC Gold Band</span></sc-if></sc-raw-td>
-              </sc-raw-tr>
+      <div id="sv-section-panel" style="margin-top:20px;">
+
+        <!-- ================= Register ================= -->
+        <sc-if value="{{ svIsRegister }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;" role="group" aria-label="Filter by status or audit tier">
+            <sc-for list="{{ svsChips }}" as="fc" hint-placeholder-count="4">
+              <button style="{{ fc.style }}" sc-camel-on-click="{{ fc.on }}" aria-pressed="{{ fc.pressed }}">{{ fc.label }}</button>
             </sc-for>
-          </sc-raw-tbody>
-        </sc-raw-table>
+          </div>
+
+          <div style="overflow-x:auto;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);">
+            <sc-raw-table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px;">
+              <sc-raw-thead>
+                <sc-raw-tr>
+                  <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Supplier</sc-raw-th>
+                  <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Category</sc-raw-th>
+                  <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Certifications</sc-raw-th>
+                  <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">ESG (planned)</sc-raw-th>
+                  <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Rating</sc-raw-th>
+                  <sc-raw-th style="background:#0A2540;color:#FFFFFF;text-align:left;padding:10px 14px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;">Status</sc-raw-th>
+                </sc-raw-tr>
+              </sc-raw-thead>
+              <sc-raw-tbody>
+                <sc-for list="{{ svsRows }}" as="r" hint-placeholder-count="5">
+                  <sc-raw-tr sc-camel-on-click="{{ r.onOpen }}" title="Open supplier profile" style="cursor:pointer;" style-hover="background:#F4F8FB;">
+                    <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><button type="button" class="gac-sv-link" style="font-size:13.5px;" sc-camel-on-click="{{ r.onOpen }}">{{ r.name }}</button></sc-raw-td>
+                    <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;">{{ r.cat }}</sc-raw-td>
+                    <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><sc-for list="{{ r.certs }}" as="cc" hint-placeholder-count="2"><span style="{{ cc.style }}">{{ cc.text }}</span></sc-for></sc-raw-td>
+                    <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><span style="{{ r.esgStyle }}">{{ r.esg }}</span></sc-raw-td>
+                    <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;white-space:nowrap;">{{ r.rating }}</sc-raw-td>
+                    <sc-raw-td style="padding:11px 14px;border-bottom:1px solid #E5EAF1;"><span style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;"><span style="{{ r.statusStyle }}">{{ r.statusLabel }}</span><sc-if value="{{ r.gold }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;background:#0A2540;color:#FFC72C;border:1px solid #C9A227;white-space:nowrap;">◆ GAC Gold Band</span></sc-if></span></sc-raw-td>
+                  </sc-raw-tr>
+                </sc-for>
+              </sc-raw-tbody>
+            </sc-raw-table>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;margin-top:20px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">What the proprietary SVS adds</p>
+            <p style="margin:8px 0 0;font-size:14px;">Keyword search across 40+ service categories · supplier self-service portal · automated expiry alerts · live performance ratings fed from completed platform transactions, each shown with the number of ratings submitted · the GAC Verified badge as a visible mark of quality · GAC Gold Band as the paid annual audit tier above it. Owned by GAC — built for us by a third-party developer, now moving to full Group IT maintenance. The platform is what turns it commercial.</p>
+            <p style="margin:8px 0 0;font-size:13px;color:#33475F;">ESG ratings are planned, not live. GAC does not score suppliers for ESG today — the grades here show how they would read once ESG reporting is established within GAC.</p>
+          </div>
+
+          <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;margin-top:16px;">
+            <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">GAC Gold Band</p>
+            <p style="margin:8px 0 0;font-size:14px;">A paid annual audit above standard verification, open to Premium suppliers at £1,500 a year: documentation, insurance, performance history and a site visit. Suppliers who pass carry the Gold Band badge in the marketplace, so clients see at a glance which suppliers GAC has looked at most closely. Standard verification stays free.</p>
+            <p style="margin:8px 0 0;font-size:12.5px;color:#33475F;">Renewed annually. No supplier can advertise their way into it, and it comes off if compliance lapses — the same rule that governs every other badge on the platform.</p>
+          </div>
+        </sc-if>
+
+        <!-- ================= Onboarding ================= -->
+        <sc-if value="{{ svIsOnboarding }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:4px 16px;">
+            <div>
+              <!-- tabindex -1: focus lands here if a closed applicant's card has left the board -->
+              <h2 id="sv-board-title" tabindex="-1" style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0;">Supplier onboarding</h2>
+              <p style="margin:2px 0 0;max-width:760px;font-size:13px;color:#33475F;">New suppliers pass four stages and eight checks before they are listed. The target is a decision inside {{ svSlaDays }} working days.</p>
+            </div>
+            <p class="gac-sv-board-hint" aria-hidden="true" style="display:none;margin:0;font-size:12.5px;color:#33475F;">Scroll the board sideways →</p>
+          </div>
+
+          <!-- Four columns side by side on a projector (1280px up); from 640px
+               two by two, so the board never scrolls sideways and the Decision
+               column is never the one off-screen; on a phone it scrolls
+               sideways with snap, and never scrolls inside itself. -->
+          <div class="gac-sv-board" data-testid="svs-board" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px;padding-top:4px;">
+            <sc-for list="{{ svColumns }}" as="col" hint-placeholder-count="4">
+              <section class="gac-sv-col" data-testid="{{ col.testId }}" aria-labelledby="{{ col.headingId }}" style="position:relative;display:flex;flex-direction:column;min-width:0;box-sizing:border-box;border:1px solid #E5EAF1;border-radius:12px;background:#F4F7FA;padding:10px;">
+                <div style="padding:2px 4px 10px;">
+                  <h3 id="{{ col.headingId }}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;font-size:13.5px;font-weight:700;color:#0A2540;">
+                    <span><span style="margin-right:6px;font-size:11.5px;font-weight:600;color:#33475F;font-variant-numeric:tabular-nums;">{{ col.num }}</span>{{ col.stage }}</span>
+                    <span style="min-width:24px;box-sizing:border-box;border:1px solid #E5EAF1;border-radius:999px;background:#FFFFFF;padding:1px 8px;text-align:center;font-size:11.5px;font-weight:700;color:#33475F;font-variant-numeric:tabular-nums;">{{ col.count }}<span class="gac-sv-sr">{{ col.countSr }}</span></span>
+                  </h3>
+                  <p style="margin:2px 0 0;font-size:11.5px;color:#33475F;">{{ col.note }}</p>
+                </div>
+                <sc-if value="{{ col.hasCards }}" hint-placeholder-val="{{ true }}">
+                  <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;">
+                    <sc-for list="{{ col.cards }}" as="c" hint-placeholder-count="1">
+                      <li class="gac-sv-card">
+                        <div style="display:flex;align-items:flex-start;gap:10px;">
+                          <span aria-hidden="true" style="{{ c.monoStyle }}">{{ c.mono }}</span>
+                          <div style="min-width:0;flex:1;">
+                            <button type="button" id="{{ c.cardId }}" class="gac-sv-card-btn" sc-camel-on-click="{{ c.onOpen }}">{{ c.company }}</button>
+                            <p style="margin:2px 0 0;font-size:12.5px;line-height:1.35;color:#33475F;">{{ c.sub }}</p>
+                          </div>
+                        </div>
+                        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:12px;font-size:12px;">
+                          <span style="font-weight:600;color:#0A2540;font-variant-numeric:tabular-nums;white-space:nowrap;">{{ c.checks }}</span>
+                          <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#33475F;">{{ c.arrived }}</span>
+                        </div>
+                        <span aria-hidden="true" style="display:block;height:6px;margin-top:6px;overflow:hidden;border-radius:999px;background:#E8F1F7;"><span style="{{ c.barStyle }}"></span></span>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
+                          <span style="{{ c.slaStyle }}">{{ c.slaLabel }}</span>
+                          <span style="{{ c.riskStyle }}">{{ c.riskLabel }}</span>
+                          <sc-if value="{{ c.awaiting }}" hint-placeholder-val="{{ false }}"><span style="{{ c.awaitingStyle }}">Awaiting applicant</span></sc-if>
+                        </div>
+                      </li>
+                    </sc-for>
+                  </ul>
+                </sc-if>
+                <sc-if value="{{ col.empty }}" hint-placeholder-val="{{ false }}">
+                  <p style="display:grid;place-items:center;min-height:92px;margin:0;box-sizing:border-box;border:1px dashed #CBD6E2;border-radius:10px;padding:0 12px;text-align:center;font-size:12.5px;color:#33475F;">Nothing at this stage</p>
+                </sc-if>
+              </section>
+            </sc-for>
+          </div>
+
+          <section data-testid="svs-decided" aria-labelledby="sv-decided-title" style="margin-top:20px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
+            <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;">
+              <h2 id="sv-decided-title" tabindex="-1" style="font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0;">Decided</h2>
+              <sc-if value="{{ svHasDecided }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:12.5px;color:#33475F;">{{ svDecidedCount }}</p></sc-if>
+            </div>
+            <sc-if value="{{ svHasDecided }}" hint-placeholder-val="{{ false }}">
+              <ul style="list-style:none;margin:14px 0 0;padding:0;">
+                <sc-for list="{{ svDecided }}" as="d" hint-placeholder-count="1">
+                  <li class="gac-sv-decided-row">
+                    <span aria-hidden="true" style="{{ d.monoStyle }}">{{ d.mono }}</span>
+                    <div style="min-width:0;">
+                      <button type="button" id="{{ d.cardId }}" class="gac-sv-link" sc-camel-on-click="{{ d.onOpen }}">{{ d.company }}</button>
+                      <p style="margin:0;font-size:12.5px;color:#33475F;">{{ d.sub }}</p>
+                      <p style="margin:4px 0 0;font-size:13px;color:#0A2540;">{{ d.note }}</p>
+                    </div>
+                    <span class="gac-sv-decided-pill"><span style="{{ d.pillStyle }}">{{ d.pill }}</span></span>
+                  </li>
+                </sc-for>
+              </ul>
+            </sc-if>
+            <sc-if value="{{ svNoDecided }}" hint-placeholder-val="{{ true }}">
+              <p style="margin:12px 0 0;border:1px dashed #CBD6E2;border-radius:8px;padding:16px;font-size:13px;color:#33475F;">No decisions yet. Approve or decline an applicant from the Decision column and it moves here, with the note the applicant sees.</p>
+            </sc-if>
+          </section>
+        </sc-if>
+
+        <!-- ================= Evidence queue ================= -->
+        <sc-if value="{{ svIsEvidence }}" hint-placeholder-val="{{ false }}">
+          <div class="gac-sv-evgrid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px;align-items:start;">
+            <section class="gac-sv-evlist" aria-labelledby="sv-ev-list-title" style="position:sticky;top:74px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:16px;">
+              <div style="padding:0 6px 12px;">
+                <h2 id="sv-ev-list-title" style="font-family:'Space Grotesk',sans-serif;font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0;">Evidence queue</h2>
+                <p style="margin:2px 0 0;font-size:12.5px;color:#33475F;">{{ svEvWaiting }}</p>
+              </div>
+              <sc-if value="{{ svEvHasRows }}" hint-placeholder-val="{{ true }}">
+                <ul data-testid="evidence-list" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;">
+                  <sc-for list="{{ svEvRows }}" as="r" hint-placeholder-count="2">
+                    <li>
+                      <button type="button" class="gac-sv-evrow" aria-pressed="{{ r.pressed }}" style="{{ r.style }}" sc-camel-on-click="{{ r.on }}">
+                        <span style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:4px 12px;">
+                          <span style="min-width:0;font-size:13.5px;line-height:1.35;font-weight:700;color:#0A2540;">{{ r.supplier }}</span>
+                          <span style="{{ r.statusStyle }}">{{ r.status }}</span>
+                        </span>
+                        <span style="display:block;margin-top:4px;font-size:13px;line-height:1.35;color:#0A2540;">{{ r.cert }}</span>
+                        <span style="display:block;margin-top:4px;font-size:12px;color:#33475F;font-variant-numeric:tabular-nums;">{{ r.meta }}</span>
+                      </button>
+                    </li>
+                  </sc-for>
+                </ul>
+              </sc-if>
+              <sc-if value="{{ svEvNoRows }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0;padding:0 6px;font-size:13px;color:#33475F;">No evidence has been sent in.</p>
+              </sc-if>
+            </section>
+
+            <div id="sv-ev-detail" data-testid="evidence-detail" style="min-width:0;scroll-margin-top:74px;background:#FFFFFF;border:1px solid #E5EAF1;border-radius:14px;box-shadow:0 1px 3px rgba(10,37,64,.07);padding:22px;">
+              <sc-if value="{{ svEvHasSelected }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px 12px;">
+                  <div style="min-width:0;">
+                    <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">{{ svEv.eyebrow }}</p>
+                    <h2 id="sv-ev-title" tabindex="-1" style="font-family:'Space Grotesk',sans-serif;font-size:18px;line-height:1.3;font-weight:700;letter-spacing:-.01em;margin:4px 0 0;">{{ svEv.title }}</h2>
+                    <p style="margin:2px 0 0;font-size:13px;color:#33475F;">{{ svEv.sub }}</p>
+                  </div>
+                  <span style="{{ svEv.statusStyle }}">{{ svEv.status }}</span>
+                </div>
+
+                <!-- The document preview: a mock of the certificate on a light
+                     grid, watermarked SPECIMEN. The upload is simulated, so there
+                     is no real document to show, and the caption says so. The
+                     seal is drawn in sea, never gold. -->
+                <figure data-testid="document-preview" style="margin:16px 0 0;">
+                  <div class="gac-sv-docgrid" style="border:1px solid #E5EAF1;border-radius:8px;padding:20px;background-color:#F4F7FA;background-image:linear-gradient(#E5EAF1 1px, transparent 1px), linear-gradient(90deg, #E5EAF1 1px, transparent 1px);background-size:16px 16px;background-position:-1px -1px;">
+                    <div role="img" aria-label="{{ svEv.docLabel }}" style="position:relative;margin:0 auto;max-width:460px;overflow:hidden;border-radius:4px;background:#FFFFFF;padding:6px;box-shadow:0 6px 20px rgba(10,37,64,.12);">
+                      <div class="gac-sv-docinner" style="position:relative;overflow:hidden;border-radius:2px;border:1px solid #CFE2EE;padding:20px 24px;">
+                        <span aria-hidden="true" style="pointer-events:none;position:absolute;inset:0;display:grid;place-items:center;">
+                          <span class="gac-sv-watermark" style="display:block;transform:rotate(-16deg);font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;letter-spacing:.06em;white-space:nowrap;color:rgba(10,37,64,.07);">SPECIMEN — illustrative</span>
+                        </span>
+                        <div style="position:relative;">
+                          <p style="margin:0;font-size:9.5px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#0E5E8A;">{{ svEv.docKind }}</p>
+                          <p class="gac-sv-doctitle" style="margin:6px 0 0;font-family:'Space Grotesk',sans-serif;font-size:18px;line-height:1.25;font-weight:700;color:#0A2540;">{{ svEv.title }}</p>
+                          <p style="margin:10px 0 0;font-size:10.5px;color:#33475F;">Issued to</p>
+                          <p style="margin:0;font-size:13px;font-weight:700;color:#0A2540;">{{ svEv.supplier }}</p>
+                          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid #E5EAF1;">
+                            <div style="min-width:0;font-size:11px;line-height:1.6;color:#33475F;">
+                              <p style="margin:0;">Issued by <span style="font-weight:600;color:#0A2540;">{{ svEv.issuer }}</span></p>
+                              <p style="margin:0;">Reference <span style="font-weight:600;color:#0A2540;font-variant-numeric:tabular-nums;">{{ svEv.reference }}</span></p>
+                              <p style="margin:0;font-variant-numeric:tabular-nums;">{{ svEv.dates }}</p>
+                            </div>
+                            <svg sc-camel-view-box="0 0 48 48" width="48" height="48" aria-hidden="true" style="flex-shrink:0;"><polygon points="24.00,1.00 27.47,4.30 31.87,2.39 34.00,6.68 38.78,6.38 39.32,11.14 43.92,12.50 42.79,17.16 46.65,20.01 44.00,24.00 46.65,27.99 42.79,30.84 43.92,35.50 39.32,36.86 38.78,41.62 34.00,41.32 31.87,45.61 27.47,43.70 24.00,47.00 20.53,43.70 16.13,45.61 14.00,41.32 9.22,41.62 8.68,36.86 4.08,35.50 5.21,30.84 1.35,27.99 4.00,24.00 1.35,20.01 5.21,17.16 4.08,12.50 8.68,11.14 9.22,6.38 14.00,6.68 16.13,2.39 20.53,4.30" fill="#E8F1F7" stroke="#0E5E8A" stroke-width="1.25"></polygon><circle cx="24" cy="24" r="14.5" fill="none" stroke="#0E5E8A" stroke-width="1.25"></circle><circle cx="24" cy="24" r="12" fill="none" stroke="#0E5E8A" stroke-width="0.75" stroke-dasharray="1.5 1.5"></circle><path d="m18.5 24.5 3.6 3.6 7.4-7.6" fill="none" stroke="#0E5E8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- The file on one line, the simulated-upload note always on
+                       the next: left to wrap, the note broke onto a line of its
+                       own starting with a dash (the site's DocumentPreview). -->
+                  <figcaption style="display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin-top:10px;font-size:12.5px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E5E8A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="m9 15 2 2 4-4"></path></svg>
+                    <span style="min-width:0;overflow-wrap:break-word;font-weight:600;color:#0A2540;">{{ svEv.fileName }}&nbsp;· <span style="white-space:nowrap;">{{ svEv.fileSize }}</span></span>
+                    <span style="flex-basis:100%;color:#33475F;">A simulated upload: only the name and size are kept.</span>
+                  </figcaption>
+                </figure>
+
+                <dl class="gac-sv-fields" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;margin:16px 0 0;padding-top:14px;border-top:1px solid #E5EAF1;">
+                  <sc-for list="{{ svEv.fields }}" as="f" hint-placeholder-count="8">
+                    <div class="gac-sv-field" style="padding:6px 0;">
+                      <dt style="font-size:12px;color:#33475F;">{{ f.k }}</dt>
+                      <dd style="margin:2px 0 0;font-size:13.5px;font-weight:600;color:#0A2540;">{{ f.v }}</dd>
+                    </div>
+                  </sc-for>
+                </dl>
+
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid #E5EAF1;">
+                  <sc-if value="{{ svEv.isOpen }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                      <button type="button" class="gac-sv-btn gac-sv-btn-primary gac-sv-wide" sc-camel-on-click="{{ svEv.approve }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg>Approve</button>
+                      <button type="button" class="gac-sv-btn gac-sv-btn-ghost gac-sv-wide" sc-camel-on-click="{{ svEv.request }}">Request information</button>
+                      <button type="button" class="gac-sv-btn gac-sv-btn-danger gac-sv-wide" sc-camel-on-click="{{ svEv.reject }}">Reject</button>
+                    </div>
+                    <p style="margin:10px 0 0;font-size:12.5px;color:#33475F;">{{ svEv.approveNote }}</p>
+                  </sc-if>
+                  <sc-if value="{{ svEv.isDecided }}" hint-placeholder-val="{{ false }}">
+                    <div id="sv-ev-outcome" tabindex="-1" style="{{ svEv.outcomeStyle }}">
+                      <p style="margin:0;font-weight:700;">{{ svEv.outcomeHead }}</p>
+                      <sc-if value="{{ svEv.hasNote }}" hint-placeholder-val="{{ false }}"><p style="margin:4px 0 0;color:#0A2540;">{{ svEv.noteLine }}</p></sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+
+                <section aria-labelledby="sv-ev-trail" style="margin-top:20px;padding-top:16px;border-top:1px solid #E5EAF1;">
+                  <h3 id="sv-ev-trail" style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin:0;">Audit trail</h3>
+                  <p style="margin:2px 0 0;font-size:12px;color:#33475F;">Newest first · recorded by role</p>
+                  <ol data-testid="audit-trail" style="list-style:none;margin:12px 0 0;padding:0;">
+                    <sc-for list="{{ svEv.trail }}" as="t" hint-placeholder-count="1">
+                      <li style="{{ t.rowStyle }}">
+                        <span aria-hidden="true" style="position:relative;display:flex;justify-content:center;">
+                          <span style="{{ t.dotStyle }}"></span>
+                          <sc-if value="{{ t.hasLine }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:16px;bottom:-14px;left:50%;width:1px;transform:translateX(-50%);background:#E5EAF1;"></span></sc-if>
+                        </span>
+                        <div style="min-width:0;">
+                          <p style="margin:0;font-size:13px;line-height:1.4;color:#0A2540;">{{ t.text }}</p>
+                          <p style="margin:2px 0 0;font-size:11.5px;color:#33475F;font-variant-numeric:tabular-nums;">{{ t.meta }}</p>
+                        </div>
+                      </li>
+                    </sc-for>
+                  </ol>
+                </section>
+              </sc-if>
+              <sc-if value="{{ svEvNoSelected }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0;font-size:13px;color:#33475F;">Pick an item to review it.</p>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
       </div>
 
-      <div style="background:#FFFFFF;border:1px solid #E5EAF1;border-radius:10px;box-shadow:0 1px 3px rgba(10,37,64,.08),0 4px 14px rgba(10,37,64,.06);padding:20px;margin-top:18px;">
-        <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E5E8A;margin:0;">What the proprietary SVS adds</p>
-        <p style="margin:8px 0 0;font-size:14px;">Keyword search across 40+ service categories · supplier self-service portal · automated expiry alerts · live performance ratings fed from completed platform transactions · the GAC Verified badge as a visible mark of quality · GAC Gold Band as the paid annual audit tier above it. Owned by GAC — built for us by a third-party developer, now moving to full Group IT maintenance. The platform is what turns it commercial.</p>
-        <p style="margin:8px 0 0;font-size:13px;color:#5B6B80;">ESG ratings are planned, not live. GAC does not score suppliers for ESG today — the grades here show how they would read once ESG reporting is established within GAC.</p>
-      </div>
+      <p style="margin:24px 0 0;font-size:12px;color:#33475F;">Figures are illustrative. Onboarding checks, evidence reviews and invitations are simulated — nothing is sent, and an approved applicant is listed at the next marketplace publish.</p>
     </main>
   </sc-if>

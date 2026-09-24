@@ -18,10 +18,12 @@ import {
   REPLY_WINDOWS,
   replyWindowById,
 } from '../../lib/requests';
+import { approvedCount, onboardingOpenCount } from '../../lib/svsDesk';
 import { annualSaving, isFullStack, tierPct } from '../../lib/tier';
 import { CATEGORY_SERVICE, relatedServicesFor } from '../../data/related';
 import { DASHBOARD_KPIS, PREDICTED_NEEDS, VESSELS } from '../../data/vessels';
 import { useApp } from '../../store/app';
+import { useSvsDesk } from '../../store/svsDesk';
 
 /**
  * Internal — the GAC agent desk (26 Aug; rebuilt to the 5 Sep design handoff).
@@ -134,12 +136,25 @@ export default function Internal() {
   const tier = useApp((s) => s.tier);
   const spend = useApp((s) => s.spend);
   const needsYou = useNeedsYou();
+  const applications = useSvsDesk((s) => s.applications);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [replyWindowId, setReplyWindowId] = useState(DEFAULT_REPLY_WINDOW);
 
   const pct = tierPct(tier);
   const fullStack = isFullStack(tier);
   const saving = annualSaving(spend, tier);
+
+  // The SVS KPI reads the SVS desk (live dashboards, 23 Sep): an applicant
+  // approved on the SVS screen joins the verified count and leaves onboarding.
+  const kpis = DASHBOARD_KPIS.map((k) =>
+    k.label === 'SVS-verified suppliers'
+      ? {
+          ...k,
+          value: String(Number(k.value) + approvedCount(applications)),
+          delta: `${onboardingOpenCount(applications)} onboarding`,
+        }
+      : k,
+  );
 
   function sendQuoteRequests() {
     const window_ = replyWindowById(replyWindowId);
@@ -191,7 +206,7 @@ export default function Internal() {
         className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] overflow-hidden rounded-brand border border-line bg-white shadow-card"
         data-tour="kpis"
       >
-        {DASHBOARD_KPIS.map((k) => (
+        {kpis.map((k) => (
           <div
             key={k.label}
             className="-mb-px px-[22px] py-[18px] shadow-[inset_-1px_0_0_#E5EAF1,inset_0_-1px_0_#E5EAF1]"
