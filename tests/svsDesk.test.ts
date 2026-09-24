@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SUPPLIERS, supplierById } from '../src/data/suppliers';
+import { CLIENT_ACTIVITY } from '../src/data/clientDesk';
 import {
+  AWAITING_QUOTES,
   RECOMMENDED_FOR_WELDING,
   SILVER_CITY_VAULT,
+  SUPPLIER_INBOX,
   VAULT_AS_OF_ISO,
 } from '../src/data/supplierDesk';
 import {
@@ -242,6 +245,23 @@ describe('formatting helpers', () => {
     expect(deskStamp(new Date(2026, 8, 23, 21, 1))).toBe('Today 21:01');
     expect(deskStamp(new Date(2026, 8, 24, 0, 0))).toBe('Today 00:00');
     expect(SEED_EVIDENCE[0]!.submittedAt).toMatch(/^Today \d{2}:\d{2}$/);
+  });
+
+  it('every seeded “Today” stamp comes before the demo’s 08:00, so working-day entries read later', () => {
+    // A new entry sorts above the seeds ("newest first"); stamped from the
+    // device during the working day, it must also read later than them.
+    const seeds = JSON.stringify([
+      SEED_EVIDENCE,
+      SEED_APPLICATIONS,
+      CLIENT_ACTIVITY,
+      SUPPLIER_INBOX,
+      AWAITING_QUOTES,
+    ]);
+    const stamps = [...seeds.matchAll(/Today (\d{2}:\d{2})/g)].map((m) => m[1]!);
+    expect(stamps).toContain('07:35');
+    for (const hhmm of stamps) expect(hhmm < '08:00').toBe(true);
+    const first = deskStamp(new Date(2026, 8, 24, 8, 0)).slice('Today '.length);
+    expect(stamps.every((hhmm) => hhmm < first)).toBe(true);
   });
 
   it('formatDateGB writes British dates without a leading zero', () => {

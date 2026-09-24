@@ -181,10 +181,13 @@ export function todayISO(): string {
 
 /**
  * "Today 09:12" — how the desks stamp a trail entry, a submission or a sent
- * quote: this device's time of day, worded like the seeded "Today 08:05". The
+ * quote: this device's time of day, worded like the seeded "Today 07:35". The
  * seeds are written from the demo's Thursday morning, so a calendar date beside
  * them would read as another day and break "newest first" (spec §4.3, revised
- * 23 Sep). Impure: store actions only.
+ * 23 Sep). Every seeded "Today" stamp sits before the demo's 08:00 "now", so an
+ * entry made in the working day reads later than the seeds it sorts above; a
+ * run before 07:35 on the device can still read earlier, and that is accepted.
+ * Impure: store actions only.
  */
 export function deskStamp(d: Date = new Date()): string {
   const hh = String(d.getHours()).padStart(2, '0');
@@ -362,7 +365,12 @@ function approvedStatus(state: 'ok' | 'due' | 'lapsed'): {
     : inForceStatus(state);
 }
 
-function refNumber(id: string): number {
+/**
+ * The trailing number of a reference ('EVD-2041' → 2041). References are
+ * issued in order, so this is what "newest" means everywhere on the desk: the
+ * latest submission here and the newest-first lists on the SVS screens.
+ */
+export function refNumber(id: string): number {
   return Number(/(\d+)$/.exec(id)?.[1] ?? 0);
 }
 

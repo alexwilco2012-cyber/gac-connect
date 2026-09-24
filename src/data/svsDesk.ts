@@ -251,9 +251,9 @@ export const SEED_EVIDENCE: EvidenceSubmission[] = [
     daysLeft: 357,
     fileName: 'LOLER-60t-crawler.pdf',
     fileSize: 1_258_291,
-    submittedAt: 'Today 08:05',
+    submittedAt: 'Today 07:35',
     stage: 'submitted',
-    trail: [{ at: 'Today 08:05', by: 'Supplier', text: 'Renewal uploaded: LOLER-60t-crawler.pdf' }],
+    trail: [{ at: 'Today 07:35', by: 'Supplier', text: 'Renewal uploaded: LOLER-60t-crawler.pdf' }],
   },
   {
     id: 'EVD-2036',

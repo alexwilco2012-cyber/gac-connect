@@ -157,19 +157,6 @@ function SV_focusApplicant(id) {
   }, 20);
 }
 
-/* The core moves focus into a dialog when the first one appears; this covers
-   the case where another dialog (the tour card) was already on screen. */
-function SV_focusIntoDialog(id) {
-  setTimeout(() => {
-    const d = document.getElementById(id);
-    if (!d || d.contains(document.activeElement)) return;
-    const first = d.querySelector(
-      'input:not([type="hidden"]),select,textarea,button:not([disabled]),[tabindex]:not([tabindex="-1"])',
-    );
-    if (first) first.focus();
-  }, 20);
-}
-
 /* ---------- icons (Lucide, ISC licence — the site's Icon.tsx paths) ---------- */
 
 const SV_ICON_PATHS = {
@@ -442,7 +429,6 @@ function SV_noteVals(note, spec) {
     /* ---- onboarding board ---- */
     const openApp = (id) => {
       this.setState({ svAppId: id, svAppNote: null });
-      SV_focusIntoDialog('sv-applicant-dialog');
     };
     const openApps = apps.filter((a) => a.outcome === 'open');
     const card = (a) => {
@@ -561,7 +547,6 @@ function SV_noteVals(note, spec) {
             tried: false,
           },
         });
-        SV_focusIntoDialog('sv-invite-dialog');
       },
 
       /* onboarding */
@@ -837,7 +822,6 @@ Object.assign(Component.prototype, {
     const kind = item.kind === 'renewal' ? 'Renewal' : 'New certificate';
     const openNote = (k) => {
       this.setState({ svEvNote: { id: item.id, kind: k, text: '', tried: false } });
-      SV_focusIntoDialog('sv-evnote-dialog');
     };
     const outcomeTone =
       item.stage === 'approved'
@@ -876,7 +860,9 @@ Object.assign(Component.prototype, {
         DK_formatDateGB(item.issuedOn) +
         ' · Expires ' +
         DK_formatDateGB(item.expiresOn),
-      file: item.fileName + ' · ' + DK_fileSizeLabel(item.fileSize),
+      /* "{fileName} · {size}": the dot keeps to the name, the size never splits */
+      fileName: item.fileName,
+      fileSize: DK_fileSizeLabel(item.fileSize),
 
       fields: [
         ['Supplier', item.supplierName],

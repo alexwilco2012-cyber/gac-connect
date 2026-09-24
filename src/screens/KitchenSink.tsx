@@ -43,7 +43,7 @@ import { ANALYTICS_EXAMPLE } from '../data/plans';
 import { EARNINGS_MONTHS, EARNINGS_WON, SUPPLIER_KPIS } from '../data/supplierDesk';
 import { monthlySaving, spendSeries } from '../lib/clientDesk';
 import { supplierKeeps } from '../lib/commission';
-import { compactGbp, gbp } from '../lib/format';
+import { compactGbp, count, gbp, plural } from '../lib/format';
 import { session } from '../lib/storage';
 import { tierPct } from '../lib/tier';
 import { useApp } from '../store/app';
@@ -70,9 +70,6 @@ const KS_CERTS: {
 
 /** The lines the gallery's chips switch; Procurement is held at any tier. */
 const LINE_SWITCHES = ['agency', 'logistics', 'customs'] as const;
-
-const plural = (n: number, one: string, many: string) =>
-  `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
 /**
  * Hidden component gallery for design review (05 §E2). Not linked from nav.
@@ -385,7 +382,6 @@ function Segmented<T extends string | number>({
 function ChartsGallery() {
   const [period, setPeriod] = useState<Period>(30);
   const [held, setHeld] = useState({ agency: true, logistics: true, customs: false });
-  const count = (n: number) => n.toLocaleString('en-GB');
 
   // Views and quote requests: the analytics screen's series for the period.
   const trend = seriesFor(period);

@@ -283,7 +283,7 @@ richer record). `RECOMMENDED_FOR_WELDING` = the three above + "ISO 9001 quality 
 `SEED_EVIDENCE` (two, from other **verified** suppliers so approving them changes no status):
 | id | supplier | kind | type | issuer | ref | issued | expires | file | submitted |
 |---|---|---|---|---|---|---|---|---|---|
-| EVD-2038 | Caledonia Lifting | renewal | LOLER thorough examination report (label: "LOLER thorough examination — 60t crawler crane") | Northgate Lifting Inspection | LOL-26-5512 | 16 Sep 2026 | 15 Sep 2027 | LOLER-60t-crawler.pdf · 1.2 MB | Today 08:05 |
+| EVD-2038 | Caledonia Lifting | renewal | LOLER thorough examination report (label: "LOLER thorough examination — 60t crawler crane") | Northgate Lifting Inspection | LOL-26-5512 | 16 Sep 2026 | 15 Sep 2027 | LOLER-60t-crawler.pdf · 1.2 MB | Today 07:35 (moved before the demo's 08:00 "now", 24 Sep) |
 | EVD-2036 | Aberdeen Offshore Medical | new | ISO 45001 occupational health and safety | Northgate Quality Assurance | OHS-45-0877 | 1 Sep 2026 | 31 Aug 2029 | ISO45001-certificate.pdf · 312 KB | Yesterday 15:40 |
 (Use the exact `SUPPLIERS` ids `caledonia-lifting` / `aberdeen-offshore-medical`.)
 
@@ -332,7 +332,7 @@ Site `src/store/svsDesk.ts` → `useSvsDesk` with `evidence`, `applications` (ke
 Every action appends an audit-trail entry (role labels). Revised 23 Sep: desk stamps (trail
 entries, `submittedAt`, `sentAt`) read **"Today HH:MM"** from the device's time of day, not a
 calendar date — the seeds are written from the demo's Thursday morning, so an absolute date beside
-"Today 08:05" reads as a different day and breaks "newest first".
+"Today 07:35" reads as a different day and breaks "newest first". Every seed stamped "Today" sits before the demo's 08:00, so a new entry sorts correctly unless the demo runs before 07:35 local time (accepted).
 Site `src/store/supplierDesk.ts` → `useSupplierDesk` with `quotes` (key `supplierDesk.quotes`),
 `sendQuote(requestId, { amountGbp, leadTime, validity, note })`, `reset()`.
 Deck: one feature module owns the same state under `pres.desk.evidence`, `pres.desk.applications`,

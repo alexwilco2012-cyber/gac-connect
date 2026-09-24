@@ -239,6 +239,37 @@ test('the spend chart and the feed follow the lines held in the tier card', asyn
   await expect(activity).not.toContainText('Consignment collected in Glasgow');
 });
 
+test('with no switchable line held, the spend chart stops promising a tier saving', async ({
+  page,
+}) => {
+  await openClientView(page);
+  const spend = page.getByTestId('client-spend');
+  const saving = page.getByTestId('client-spend-saving');
+  const plot = spend.getByRole('group', { name: /GAC spend by service line/ });
+  const swatch = saving.locator('xpath=preceding-sibling::span[@aria-hidden="true"]');
+
+  // Seeded at 2%: the saving, its swatch, the panel and the words for it.
+  await expect(spend).toContainText(
+    'By service line, with what your tier discount saved underneath',
+  );
+  await expect(saving).toHaveText('£3,420 saved at 2%');
+  await expect(swatch).toHaveCount(1);
+  await expect(plot).toHaveAttribute('aria-label', /with the tier saving below$/);
+  await expect(spend.locator('svg').getByText('Saved by your tier discount')).toHaveCount(1);
+
+  // Agency off leaves Procurement alone, which earns no discount: all of it goes.
+  await page.getByRole('switch', { name: 'Agency' }).click();
+  await expect(saving).toHaveText('No tier discount held yet');
+  await expect(swatch).toHaveCount(0);
+  await expect(spend.getByText('By service line', { exact: true })).toBeVisible();
+  await expect(spend).not.toContainText('saved underneath');
+  await expect(plot).toHaveAttribute(
+    'aria-label',
+    'GAC spend by service line per month, April to September',
+  );
+  await expect(spend.locator('svg').getByText('Saved by your tier discount')).toHaveCount(0);
+});
+
 test('the spend chart shows its numbers and answers the keyboard', async ({ page }) => {
   await openClientView(page);
   const spend = page.getByTestId('client-spend');

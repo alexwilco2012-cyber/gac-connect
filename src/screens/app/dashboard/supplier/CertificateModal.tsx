@@ -150,6 +150,8 @@ function CertificateForm({ mode, onClose }: { mode: CertModalMode; onClose: () =
   const fileInput = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<CertForm>(() => initialForm(mode));
+  // Read once as the form mounts (never in render): the latest issue date the picker offers.
+  const [today] = useState(todayISO);
   const [problems, setProblems] = useState<string[]>([]);
   const [tried, setTried] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -327,6 +329,7 @@ function CertificateForm({ mode, onClose }: { mode: CertModalMode; onClose: () =
             <input
               id={`${ids}-issued`}
               type="date"
+              max={today}
               value={form.issuedOn}
               onChange={(e) => update({ issuedOn: e.target.value })}
               className={`${INPUT} tabular-nums`}

@@ -1,6 +1,7 @@
 import { ChartFigure, TimeSeriesPanels, VIZ, type TableSpec } from '../../../components/charts';
 import { PERIOD_SUMMARY, seriesFor, weeklySums, type Period } from '../../../data/analytics';
-import { count, daysAboveCategory } from './model';
+import { count } from '../../../lib/format';
+import { daysAboveCategory } from './model';
 
 /**
  * Views and quote requests (spec §5 item 2): two small multiples on one

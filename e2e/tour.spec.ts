@@ -73,3 +73,37 @@ test('the landing page offers the tour without scrolling, and starts it', async 
   await expect(page).toHaveURL(/\/app\/internal$/);
   await expect(page.getByRole('dialog', { name: /^Tour step/ })).toContainText('Tour · 1 of 14');
 });
+
+test('the dashboard stop opens the Client view, whichever view was left on', async ({ page }) => {
+  // Someone looked at the supplier side before taking the tour.
+  await page.goto('/app/dashboard');
+  await page.getByRole('button', { name: 'Supplier view' }).click();
+  await expect(page.getByRole('heading', { name: 'Silver City Welding', level: 1 })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Start the tour' }).click();
+  const card = page.getByRole('dialog', { name: /^Tour step/ });
+  for (let step = 2; step <= 14; step++) {
+    await page.getByRole('button', { name: 'Next →' }).click();
+    await expect(card).toContainText(`Tour · ${step} of 14`);
+  }
+
+  // "What the client sees" points at the consolidation card, so it is there.
+  await expect(card).toContainText('What the client sees');
+  await expect(page).toHaveURL(/\/app\/dashboard$/);
+  await expect(page.getByRole('button', { name: 'Client view' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  const consolidation = page.locator('main [data-tour="consolidation"]');
+  await expect(consolidation).toBeVisible();
+  await expect(consolidation).toBeInViewport();
+
+  // Switched away and come back to the stop: the Client view again.
+  await page.getByRole('button', { name: 'Supplier view' }).click();
+  await expect(consolidation).toHaveCount(0);
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(card).toContainText('Tour · 13 of 14');
+  await page.getByRole('button', { name: 'Next →' }).click();
+  await expect(card).toContainText('Tour · 14 of 14');
+  await expect(consolidation).toBeVisible();
+});

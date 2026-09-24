@@ -97,13 +97,16 @@ export function DocumentPreview({ item }: { item: EvidenceSubmission }) {
           </div>
         </div>
       </div>
+      {/* The file on one line, the simulated-upload note always on the next:
+          left to wrap, the note broke onto a line of its own starting with a dash. */}
       <figcaption className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12.5px]">
         <Icon name="file-check" size={15} className="shrink-0 text-sea" />
-        <span className="font-semibold text-ink">
-          {item.fileName} · {fileSizeLabel(item.fileSize)}
+        <span className="min-w-0 font-semibold break-words text-ink">
+          {item.fileName}&nbsp;·{' '}
+          <span className="whitespace-nowrap">{fileSizeLabel(item.fileSize)}</span>
         </span>
-        <span className="text-ink-soft">
-          — a simulated upload: only the name and size are kept.
+        <span className="basis-full text-ink-soft">
+          A simulated upload: only the name and size are kept.
         </span>
       </figcaption>
     </figure>

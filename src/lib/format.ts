@@ -12,12 +12,22 @@ export function compactGbp(n: number): string {
   return gbp(n);
 }
 
+/** "1,264" — a count, grouped the British way. */
+export function count(n: number): string {
+  return n.toLocaleString('en-GB');
+}
+
+/** "1 rating" / "1,264 profile views" — a count with its noun, singular at one. */
+export function plural(n: number, one: string, many: string): string {
+  return `${count(n)} ${n === 1 ? one : many}`;
+}
+
 /** "127 ratings" / "1 rating" — the count of ratings actually submitted. */
-export function ratingsCount(count: number): string {
-  return `${count.toLocaleString('en-GB')} ${count === 1 ? 'rating' : 'ratings'}`;
+export function ratingsCount(n: number): string {
+  return plural(n, 'rating', 'ratings');
 }
 
 /** "4.9 ★ · 127 ratings" — score plus the number behind it, always together. */
-export function ratingLine(rating: number, count: number): string {
-  return `${rating.toFixed(1)} ★ · ${ratingsCount(count)}`;
+export function ratingLine(rating: number, ratingCount: number): string {
+  return `${rating.toFixed(1)} ★ · ${ratingsCount(ratingCount)}`;
 }

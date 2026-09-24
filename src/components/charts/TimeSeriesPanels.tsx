@@ -1,4 +1,5 @@
 import { useId, useRef, type PointerEvent } from 'react';
+import { count } from '../../lib/format';
 import { ChartTooltip, type TooltipRow } from './ChartTooltip';
 import { VIZ } from './palette';
 import {
@@ -42,8 +43,6 @@ const TITLE = 36;
 const PANEL_GAP = 22;
 const AXIS = 26;
 
-const plain = (n: number) => n.toLocaleString('en-GB');
-
 interface PanelGeo {
   panel: TimeSeriesPanel;
   titleY: number;
@@ -80,7 +79,7 @@ export function TimeSeriesPanels({
 
   // ——— layout ———
   const geo0 = panels.map((p) => {
-    const axis = p.axisFormat ?? plain;
+    const axis = p.axisFormat ?? count;
     const all = [...p.values, ...(p.benchmark?.values ?? [])];
     const vmax = all.length ? Math.max(...all) : 0;
     const integer = p.values.every(Number.isInteger) && vmax >= 2;

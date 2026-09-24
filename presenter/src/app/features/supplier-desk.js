@@ -460,6 +460,19 @@ function SD_refocus() {
     const h = React.createElement;
     const sup = this.SUPPLIERS.find((s) => s.id === DK.DEMO_SUPPLIER_ID);
     const onScreen = st.route === 'dashboard' && st.dashView === 'supplier';
+    /* Left the supplier view with a dialog open (Back, the tour, the client
+       switch): drop the draft after this render rather than during it, as
+       svs-screen does. The site's modals unmount with the view, so a draft
+       never outlives it there either. */
+    if (!onScreen && (st.sdQuote || st.sdCert) && !this._sdTidyT) {
+      this._sdTidyT = setTimeout(() => {
+        this._sdTidyT = null;
+        const s = this.state;
+        if (!(s.route === 'dashboard' && s.dashView === 'supplier')) {
+          this.setState({ sdQuote: null, sdCert: null });
+        }
+      }, 0);
+    }
     const evidence = st.dkEvidence || [];
     const quotes = st.dkQuotes || {};
     const status = SD_statusPill(sup ? this.deriveStatus(sup) : 'verified');
@@ -820,7 +833,8 @@ function SD_refocus() {
       sdReviews: DK.RECENT_REVIEWS.map((r, i) => ({
         stars: r.stars + ' ★',
         by: r.by,
-        job: r.job + ' · ',
+        /* no-break space: the dot stays with the job, never opens a line */
+        job: r.job + ' · ',
         when: r.when,
         text: '“' + r.text + '”',
         rowStyle:
@@ -912,6 +926,8 @@ function SD_refocus() {
       sdCertRef: form.reference,
       sdOnRef: (e) => patchForm({ reference: e.target.value }),
       sdCertIssued: form.issuedOn,
+      /* the picker offers no future issue date; validation still refuses one */
+      sdCertIssuedMax: DK_todayISO(),
       sdOnIssued: (e) => patchForm({ issuedOn: e.target.value }),
       sdCertExpires: form.expiresOn,
       sdOnExpires: (e) => patchForm({ expiresOn: e.target.value }),
@@ -1048,6 +1064,9 @@ function SD_refocus() {
   },
 
   escape() {
+    /* A dialog is only ever on screen in the supplier view; off it, the
+       Escape belongs to whatever is showing (the tour, an SVS dialog). */
+    if (!(this.state.route === 'dashboard' && this.state.dashView === 'supplier')) return false;
     if (this.state.sdCert) {
       this.setState({ sdCert: null });
       SD_refocus();

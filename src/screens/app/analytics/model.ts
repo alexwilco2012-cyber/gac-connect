@@ -7,6 +7,7 @@ import {
   WEEKDAY_NAMES,
   type Period,
 } from '../../../data/analytics';
+import { count, plural } from '../../../lib/format';
 
 /**
  * What the analytics screen says about its figures — pure, so the words and
@@ -24,11 +25,6 @@ export function parsePeriod(raw: string | null): Period | null {
   if (raw === '90') return 90;
   return null;
 }
-
-export const count = (n: number) => n.toLocaleString('en-GB');
-
-export const plural = (n: number, one: string, many: string) =>
-  `${count(n)} ${n === 1 ? one : many}`;
 
 /** Whole-number share of a total, for "168 · 41%". */
 export const sharePct = (v: number, total: number) =>

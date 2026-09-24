@@ -7,7 +7,8 @@ import {
   WEEKDAYS,
   type Period,
 } from '../../../data/analytics';
-import { count, plural, readDemand, sharePct } from './model';
+import { count, plural } from '../../../lib/format';
+import { readDemand, sharePct } from './model';
 
 /**
  * Lower bound of each colour step. The 90-day grid holds about three times

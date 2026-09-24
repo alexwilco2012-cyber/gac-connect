@@ -1,3 +1,7 @@
+  <!-- z-index 95: above the page and the Outlook drawer, below every modal
+       overlay (96 and 97), so the card never covers a dialog's buttons and a
+       dialog opened mid-tour keeps the keyboard (the core's handoff and Tab
+       trap). Non-modal, so it has no aria-modal. -->
   <sc-if value="{{ tourOpen }}" hint-placeholder-val="{{ false }}">
     <div role="dialog" aria-label="Guided tour" class="gac-tour-card" style="position:fixed;bottom:26px;right:26px;z-index:95;background:#0A2540;color:#FFFFFF;border-radius:12px;padding:18px 20px;width:330px;max-width:88vw;box-shadow:0 8px 30px rgba(10,37,64,.35);">
       <div style="display:flex;align-items:center;gap:8px;">

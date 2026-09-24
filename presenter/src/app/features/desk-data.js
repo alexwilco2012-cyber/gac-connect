@@ -757,7 +757,9 @@ const DK = DK_deepFreeze(
       },
     ];
     /* Two submissions waiting on the SVS team, newest first, from suppliers
-       already Verified (their SUPPLIERS ids), so approving them moves no status. */
+       already Verified (their SUPPLIERS ids), so approving them moves no status.
+       Every "Today" seed sits before the demo's 08:00 "now", so an entry the
+       desks stamp during a demo reads later than the seeds. */
     const SEED_EVIDENCE = [
       {
         id: 'EVD-2038',
@@ -773,10 +775,10 @@ const DK = DK_deepFreeze(
         daysLeft: 357,
         fileName: 'LOLER-60t-crawler.pdf',
         fileSize: 1258291,
-        submittedAt: 'Today 08:05',
+        submittedAt: 'Today 07:35',
         stage: 'submitted',
         trail: [
-          { at: 'Today 08:05', by: 'Supplier', text: 'Renewal uploaded: LOLER-60t-crawler.pdf' },
+          { at: 'Today 07:35', by: 'Supplier', text: 'Renewal uploaded: LOLER-60t-crawler.pdf' },
         ],
       },
       {
@@ -1145,9 +1147,12 @@ function DK_todayISO() {
 
 /* "Today 09:12": how the desks stamp a trail entry, a submission or a sent
    quote (the site's deskStamp): this device's time of day, worded like the
-   seeded "Today 08:05". The seeds are written from the demo's Thursday
+   seeded "Today 07:35". The seeds are written from the demo's Thursday
    morning, so a calendar date beside them would read as another day and
-   break "newest first" (spec §4.3, revised 23 Sep). Impure: actions only. */
+   break "newest first" (spec §4.3, revised 23 Sep). Every seeded "Today"
+   stamp sits before the demo's 08:00 "now", so an entry made in the working
+   day reads later than the seeds it sorts above; a run before 07:35 on the
+   device can still read earlier, and that is accepted. Impure: actions only. */
 function DK_deskStamp(d) {
   const dt = d || new Date();
   const hh = String(dt.getHours()).padStart(2, '0');

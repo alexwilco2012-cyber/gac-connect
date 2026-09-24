@@ -41,10 +41,8 @@ export function initials(name: string): string {
   return name.slice(0, 2).toUpperCase() || '·';
 }
 
-/** The trailing number of a reference ('EVD-2041' → 2041), for newest-first ordering. */
-export function refNumber(id: string): number {
-  return Number(/(\d+)$/.exec(id)?.[1] ?? 0);
-}
+/** Newest-first ordering uses the desk's own rule, so the screens and lib/svsDesk agree. */
+export { refNumber } from '../../../lib/svsDesk';
 
 /**
  * A relative label as it reads mid-sentence: "Yesterday 15:40" → "yesterday

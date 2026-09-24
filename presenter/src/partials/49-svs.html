@@ -253,10 +253,13 @@
                       </div>
                     </div>
                   </div>
+                  <!-- The file on one line, the simulated-upload note always on
+                       the next: left to wrap, the note broke onto a line of its
+                       own starting with a dash (the site's DocumentPreview). -->
                   <figcaption style="display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;margin-top:10px;font-size:12.5px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E5E8A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="m9 15 2 2 4-4"></path></svg>
-                    <span style="font-weight:600;color:#0A2540;">{{ svEv.file }}</span>
-                    <span style="color:#33475F;">— a simulated upload: only the name and size are kept.</span>
+                    <span style="min-width:0;overflow-wrap:break-word;font-weight:600;color:#0A2540;">{{ svEv.fileName }}&nbsp;· <span style="white-space:nowrap;">{{ svEv.fileSize }}</span></span>
+                    <span style="flex-basis:100%;color:#33475F;">A simulated upload: only the name and size are kept.</span>
                   </figcaption>
                 </figure>
 

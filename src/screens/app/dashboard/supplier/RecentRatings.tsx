@@ -28,8 +28,9 @@ export function RecentRatings({ className = '' }: { className?: string }) {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] leading-snug font-semibold text-ink">{r.by}</p>
+              {/* The dot is tied to the job, so no line ever starts with it. */}
               <p className="text-[12px] leading-snug text-ink-soft">
-                {r.job} · <span className="whitespace-nowrap">{r.when}</span>
+                {r.job}&nbsp;· <span className="whitespace-nowrap">{r.when}</span>
               </p>
               <p className="mt-1 text-[13px] leading-snug text-ink">“{r.text}”</p>
             </div>

@@ -229,6 +229,7 @@ class Component extends DCLogic {
     };
     window.addEventListener('hashchange', this._onHash);
     this._onKey = (e) => {
+      if (e.key === 'Tab' && !this.state.presOn) { this._trapDialogTab(e); return; }
       if (e.key === 'Escape') {
         if (this._featureEscape()) { /* a feature module closed its own modal */ }
         else if (this.state.resetArmed) this.setState({ resetArmed: false });
@@ -286,24 +287,47 @@ class Component extends DCLogic {
     /* The landing screen may have just been rendered (or re-rendered after a
        hotspot swap), so the observer has a fresh element to watch. */
     this._watchConsolidation();
-    /* Dialog focus parity with the site's Modal: when any [role=dialog] appears,
-       move focus to its first control (remembering what had focus); when the
-       last dialog goes, give focus back. Runs after every commit, so it costs
-       one querySelector; it never steals focus while a dialog is already open. */
-    const dlg = document.querySelector('[role="dialog"]');
+    /* Dialog focus parity with the site's Modal: when a dialog appears, move
+       focus to its first control (remembering what had focus); when it goes,
+       give focus back. Modal dialogs (aria-modal) and the non-modal ones (the
+       tour card, the reset panel) are tracked apart, so a modal opened while
+       the tour card is up still takes focus and hands it back. Modals go
+       first, so closing one gives its opener focus before anything else moves.
+       Runs after every commit, so it costs two querySelectors; it never steals
+       focus while a dialog of the same kind is already open. */
+    this._dlgHandoff('[role="dialog"][aria-modal="true"]', '_dlgModal');
+    this._dlgHandoff('[role="dialog"]:not([aria-modal="true"])', '_dlgPlain');
+  }
+  _dlgHandoff(sel, key) {
+    const dlg = document.querySelector(sel);
     if (!dlg) {
-      if (this._dlgOpen) {
-        this._dlgOpen = false;
-        const back = this._dlgReturn; this._dlgReturn = null;
+      if (this[key]) {
+        const back = this[key].ret; this[key] = null;
         if (back && document.contains(back) && typeof back.focus === 'function') back.focus();
       }
       return;
     }
-    if (this._dlgOpen) return;
-    this._dlgOpen = true;
-    this._dlgReturn = document.activeElement;
+    if (this[key]) return;
+    this[key] = { ret: document.activeElement };
     const first = dlg.querySelector('input:not([type="hidden"]),select,textarea,button:not([disabled]),[tabindex]:not([tabindex="-1"])');
     if (first && !dlg.contains(document.activeElement)) first.focus();
+  }
+  /* Tab stays inside the topmost modal dialog, as the site's useFocusTrap
+     keeps it: past the last control it wraps to the first, and back; in
+     between, the browser moves focus as usual. Focus that has somehow left
+     the dialog comes straight back in. The opening has its own trap
+     (_advTrapTab). */
+  _trapDialogTab(e) {
+    const open = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+    const dlg = open[open.length - 1];
+    if (!dlg) return;
+    const items = Array.from(dlg.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])'))
+      .filter((el) => !el.disabled && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden');
+    if (!items.length) { e.preventDefault(); return; }
+    const first = items[0], last = items[items.length - 1], at = document.activeElement;
+    if (!dlg.contains(at)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+    else if (e.shiftKey && at === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
   }
   componentWillUnmount() {
     window.removeEventListener('hashchange', this._onHash);
@@ -474,6 +498,23 @@ class Component extends DCLogic {
     }, this._featureState());
     this.setState(fresh);
     this.toastMsg('Demo reset — every screen is back to its starting state.');
+  }
+
+  /* ---------- tour ----------
+     Every way onto a stop (start, Next, Back) comes through here. The
+     dashboard stop, "What the client sees", points at the consolidation card,
+     which only the client view carries: landing there turns the switch to
+     Client and keeps it, as a click on the switch would. */
+  _tourGo(i) {
+    const stop = this.TOUR[i];
+    if (!stop) return;
+    const patch = { tourStep: i };
+    if (stop.route === 'dashboard' && this.state.dashView !== 'client') {
+      patch.dashView = 'client';
+      this._set('dash-view', 'client');
+    }
+    this.setState(patch);
+    this.nav(stop.route);
   }
 
   /* ---------- toast ---------- */
@@ -1335,17 +1376,14 @@ class Component extends DCLogic {
       tourBody: stop ? stop.body : '',
       tourHasBack: tourOpen && st.tourStep > 0,
       tourNextLabel: tourOpen && st.tourStep === this.TOUR.length - 1 ? 'Finish' : 'Next',
-      startTour: () => { this.setState({ tourStep: 0 }); this.nav(this.TOUR[0].route); },
+      startTour: () => this._tourGo(0),
       dismissTourPrompt: () => { this.setState({ tourDismissed: true }); this._set('tour-dismissed', true); },
       skipTour: this._skipTour,
-      tourBack: () => {
-        const i = Math.max(0, this.state.tourStep - 1);
-        this.setState({ tourStep: i }); this.nav(this.TOUR[i].route);
-      },
+      tourBack: () => this._tourGo(Math.max(0, this.state.tourStep - 1)),
       tourNext: () => {
         const i = this.state.tourStep;
         if (i >= this.TOUR.length - 1) { this._skipTour(); this.toastMsg('Tour complete. Everything you just saw persists between visits — pick any tab and carry on.'); return; }
-        this.setState({ tourStep: i + 1 }); this.nav(this.TOUR[i + 1].route);
+        this._tourGo(i + 1);
       }
     };
 

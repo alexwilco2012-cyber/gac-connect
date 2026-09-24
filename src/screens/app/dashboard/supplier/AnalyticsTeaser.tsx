@@ -1,25 +1,14 @@
 import { ChartFigure, FunnelBars } from '../../../../components/charts';
 import { ButtonLink } from '../../../../components/ui/Button';
 import { Icon } from '../../../../components/ui/Icon';
-import { PERIOD_SUMMARY } from '../../../../data/analytics';
-import { count } from '../../analytics/model';
+import { PERIOD_SUMMARY, stepRate } from '../../../../data/analytics';
+import { count } from '../../../../lib/format';
 
 /**
  * Where the work comes from (spec §3): a three-step funnel from the last 30
  * days — profile views, quote requests, jobs won — and the way into the full
  * analytics screen. Benchmarking is Premium only; the copy says so.
  */
-
-/**
- * A step as a share of the one before, rounded as `funnelRateLabels` in
- * data/analytics rounds it ("9.2%", "32%"). That helper is tied to the full
- * funnel's five steps and verbs, so the rule is repeated here for this
- * three-step one; keep the two in step.
- */
-function rate(from: number, to: number): string {
-  const pct = from ? (to / from) * 100 : 0;
-  return pct >= 20 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
-}
 
 export function AnalyticsTeaser({ className = '' }: { className?: string }) {
   const s = PERIOD_SUMMARY[30];
@@ -28,7 +17,8 @@ export function AnalyticsTeaser({ className = '' }: { className?: string }) {
     { label: 'Quote requests', value: s.requests },
     { label: 'Jobs won', value: s.won },
   ];
-  const shortRates = [rate(s.views, s.requests), rate(s.requests, s.won)];
+  // Each step as a share of the one before, rounded as the full funnel rounds it.
+  const shortRates = [stepRate(s.views, s.requests), stepRate(s.requests, s.won)];
   const rates = [
     `${shortRates[0]} of views asked for a quote`,
     `${shortRates[1]} of requests became a job`,

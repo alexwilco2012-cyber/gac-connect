@@ -28,9 +28,11 @@ export function Modal({
 
   if (!open) return null;
 
+  // Above the tour card (z-95), so a presenter running the tour never finds
+  // the card over a dialog's buttons; toasts (z-100) still show on top.
   return (
     <div
-      className="fixed inset-0 z-[90] grid place-items-center bg-ink/45 p-4"
+      className="fixed inset-0 z-[96] grid place-items-center bg-ink/45 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

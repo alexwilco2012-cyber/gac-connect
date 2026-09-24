@@ -1,7 +1,7 @@
 import { ChartFigure, HBarList } from '../../../components/charts';
 import { RATINGS_DISTRIBUTION } from '../../../data/analytics';
-import { ratingsCount } from '../../../lib/format';
-import { count, sharePct } from './model';
+import { count, ratingsCount } from '../../../lib/format';
+import { sharePct } from './model';
 
 /**
  * Ratings (spec §5 item 7): the score never travels without its count, and

@@ -267,14 +267,22 @@ export const FUNNEL_RATE_VERBS: readonly string[] = [
   'won',
 ];
 
+/**
+ * One funnel step as a share of the one before: whole per cent from 20% up,
+ * one decimal below it ("13.9%", "9.2%", "92%"), so a small rate keeps its
+ * detail and a large one does not pretend to it. The one rounding rule for
+ * every funnel on the site.
+ */
+export function stepRate(from: number, to: number): string {
+  const pct = from === 0 ? 0 : (to / from) * 100;
+  return pct >= 20 ? `${Math.round(pct)}%` : `${pct.toFixed(1)}%`;
+}
+
 /** "13.9% opened your profile", "9.2% asked for a quote", "92% quoted", "34% won". */
 export function funnelRateLabels(funnel: readonly { value: number }[]): string[] {
-  return FUNNEL_RATE_VERBS.map((verb, i) => {
-    const from = funnel[i]?.value ?? 0;
-    const to = funnel[i + 1]?.value ?? 0;
-    const pct = from === 0 ? 0 : (to / from) * 100;
-    return `${pct >= 20 ? Math.round(pct) : pct.toFixed(1)}% ${verb}`;
-  });
+  return FUNNEL_RATE_VERBS.map(
+    (verb, i) => `${stepRate(funnel[i]?.value ?? 0, funnel[i + 1]?.value ?? 0)} ${verb}`,
+  );
 }
 
 /** Ratings behind the 4.4 ★ · 72 ratings on the profile. All time, not per period. */

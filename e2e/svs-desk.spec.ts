@@ -78,6 +78,9 @@ test('the register is the default, and the tabs switch and survive a reload', as
   const detail = page.getByTestId('evidence-detail');
   await expect(detail).toContainText('LOLER thorough examination — 60t crawler crane');
   await expect(detail).toContainText('LOLER-60t-crawler.pdf · 1.2 MB');
+  await expect(detail.locator('figcaption')).toContainText(
+    /MB\s*A simulated upload: only the name and size are kept\.$/,
+  );
   await expect(page.getByTestId('document-preview')).toContainText('SPECIMEN — illustrative');
 
   await page.reload();

@@ -1,6 +1,7 @@
 import { ChartFigure, HBarList, VIZ } from '../../../components/charts';
 import { PERIOD_SUMMARY, type Period } from '../../../data/analytics';
-import { count, sharePct } from './model';
+import { count } from '../../../lib/format';
+import { sharePct } from './model';
 
 /**
  * Where clients found you (spec §5 item 5): ranked bars on one hue, value and

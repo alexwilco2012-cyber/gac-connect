@@ -34,7 +34,7 @@ function sortQueue(evidence: readonly EvidenceSubmission[]): EvidenceSubmission[
   );
 }
 
-/** "Submitted today 08:05", "Submitted yesterday 15:40", "Submitted Thu 24 Sep · 10:15". */
+/** "Submitted today 07:35", "Submitted yesterday 15:40". */
 function submittedLine(at: string): string {
   return `Submitted ${midSentence(at)}`;
 }

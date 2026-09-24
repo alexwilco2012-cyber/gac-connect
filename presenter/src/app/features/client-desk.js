@@ -395,17 +395,20 @@ function CD_spendChart(calc) {
           color: '#33475F',
         },
       },
-      h('span', {
-        'aria-hidden': 'true',
-        style: {
-          display: 'inline-block',
-          width: '10px',
-          height: '10px',
-          borderRadius: '2px',
-          transform: 'translateY(1px)',
-          background: VZ.C.derived,
-        },
-      }),
+      /* the swatch keys the savings panel, so it goes when the panel does */
+      pct > 0
+        ? h('span', {
+            'aria-hidden': 'true',
+            style: {
+              display: 'inline-block',
+              width: '10px',
+              height: '10px',
+              borderRadius: '2px',
+              transform: 'translateY(1px)',
+              background: VZ.C.derived,
+            },
+          })
+        : null,
       h(
         'span',
         { 'data-testid': 'client-spend-saving', style: { fontVariantNumeric: 'tabular-nums' } },
@@ -426,7 +429,11 @@ function CD_spendChart(calc) {
   return VZ.figure({
     testId: 'client-spend',
     title: 'GAC spend, last six months',
-    subtitle: 'By service line, with what your tier discount saved underneath',
+    /* at 0% there is no savings panel underneath, so nothing promises one */
+    subtitle:
+      pct > 0
+        ? 'By service line, with what your tier discount saved underneath'
+        : 'By service line',
     takeaway: takeaway,
     headline: headline,
     footnote: 'Illustrative figures. The chart follows the lines held in the tier card above.',
@@ -474,7 +481,8 @@ function CD_spendChart(calc) {
                 }
               : undefined,
           ariaLabel:
-            'GAC spend by service line per month, April to September, with the tier saving below',
+            'GAC spend by service line per month, April to September' +
+            (pct > 0 ? ', with the tier saving below' : ''),
         }),
       ),
     ],

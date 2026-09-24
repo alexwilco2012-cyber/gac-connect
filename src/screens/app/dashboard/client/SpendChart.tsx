@@ -15,7 +15,9 @@ import { useApp } from '../../../../store/app';
 /**
  * "GAC spend, last six months" (spec §2, row 3 left): stacked columns of the
  * lines the client holds, ladder order bottom to top, with what the tier
- * discount saved in an aligned panel underneath.
+ * discount saved in an aligned panel underneath. With no switchable line held
+ * there is no discount, so the panel, its swatch in the headline and every
+ * word that promises it go together.
  *
  * It reads the same `useApp` tier the consolidation card's pillars write, so
  * switching a pillar moves the legend, the bars and the saving while you
@@ -59,7 +61,11 @@ export function SpendChart() {
     <ChartFigure
       testId="client-spend"
       title="GAC spend, last six months"
-      subtitle="By service line, with what your tier discount saved underneath"
+      subtitle={
+        pct > 0
+          ? 'By service line, with what your tier discount saved underneath'
+          : 'By service line'
+      }
       takeaway={takeaway}
       headline={
         <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -70,11 +76,14 @@ export function SpendChart() {
             {gbp(total)}
           </span>
           <span className="inline-flex items-baseline gap-1.5 text-[13px] text-ink-soft">
-            <span
-              aria-hidden="true"
-              className="inline-block h-2.5 w-2.5 translate-y-px rounded-[2px]"
-              style={{ background: VIZ.derived }}
-            />
+            {/* The swatch keys the savings panel, so it goes when the panel does. */}
+            {pct > 0 ? (
+              <span
+                aria-hidden="true"
+                className="inline-block h-2.5 w-2.5 translate-y-px rounded-[2px]"
+                style={{ background: VIZ.derived }}
+              />
+            ) : null}
             <span data-testid="client-spend-saving" className="tabular-nums">
               {pct > 0 ? (
                 <>
@@ -126,7 +135,9 @@ export function SpendChart() {
                 }
               : undefined
           }
-          ariaLabel="GAC spend by service line per month, April to September, with the tier saving below"
+          ariaLabel={`GAC spend by service line per month, April to September${
+            pct > 0 ? ', with the tier saving below' : ''
+          }`}
         />
       </div>
     </ChartFigure>

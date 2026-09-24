@@ -1,5 +1,8 @@
   <sc-if value="{{ isMarketplace }}" hint-placeholder-val="{{ false }}">
-    <main data-screen-label="Marketplace" style="max-width:1180px;margin:0 auto;padding:0 0 80px;animation:fadeUp .25s ease;">
+    <!-- width:100% as on the SVS screen: with margin:0 auto alone the main
+         sized to its content inside the column flex container and ran 3px
+         past a 375px screen, so the page scrolled sideways. -->
+    <main data-screen-label="Marketplace" style="max-width:1180px;width:100%;box-sizing:border-box;margin:0 auto;padding:0 0 80px;animation:fadeUp .25s ease;">
       <!-- A band, not a hero (2 Sep). Anyone on this screen has already been
            sold to on the landing page or has arrived from the QR; what they
            want here is the search box, so it sits on the same line as the name

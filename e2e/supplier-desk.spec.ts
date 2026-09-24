@@ -150,6 +150,8 @@ test('a certificate goes to the SVS team, survives a reload and goes with Reset 
   await expect(dialog.getByLabel('Describe the certificate')).toHaveCount(0);
   await dialog.getByLabel('Issuing body').fill('Northgate Quality Assurance');
   await dialog.getByLabel('Reference or certificate number').fill('QA-9001-2618');
+  // The picker offers nothing after today, as the check on send insists.
+  await expect(dialog.getByLabel('Issue date')).toHaveAttribute('max', TODAY);
   await dialog.getByLabel('Issue date').fill(EXAMPLE_ISSUED);
   await dialog.getByLabel('Expiry date').fill(EXAMPLE_EXPIRES);
 
@@ -324,11 +326,11 @@ test('a renewal is made out against the certificate in force, approved renewal i
           daysLeft: 728,
           fileName: 'GWO-BST-2292.pdf',
           fileSize: 319488,
-          submittedAt: 'Today 08:05',
+          submittedAt: 'Today 07:35',
           stage: 'approved',
           trail: [
-            { at: 'Today 08:05', by: 'Supplier', text: 'Certificate uploaded' },
-            { at: 'Today 09:10', by: 'SVS team', text: 'Verified by the SVS team' },
+            { at: 'Today 07:35', by: 'Supplier', text: 'Certificate uploaded' },
+            { at: 'Today 07:50', by: 'SVS team', text: 'Verified by the SVS team' },
           ],
         },
       ]),

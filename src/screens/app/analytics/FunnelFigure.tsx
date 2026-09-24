@@ -1,6 +1,7 @@
 import { ChartFigure, FunnelBars } from '../../../components/charts';
 import { funnelRateLabels, PERIOD_SUMMARY, type Period } from '../../../data/analytics';
-import { count, sharePct } from './model';
+import { count } from '../../../lib/format';
+import { sharePct } from './model';
 
 /**
  * From search to signed job (spec §5 item 3): five bars on one linear scale,

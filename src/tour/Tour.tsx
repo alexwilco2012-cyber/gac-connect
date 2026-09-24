@@ -6,6 +6,9 @@ import { TOUR_STEPS } from './steps';
 /** Below this width the coach-mark stops chasing anchors and becomes a sheet. */
 const NARROW = 640;
 
+/** The stop whose anchor lives in the dashboard's Client view. */
+const DASHBOARD_ROUTE = '/app/dashboard';
+
 function useIsNarrow() {
   const [narrow, setNarrow] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < NARROW,
@@ -34,6 +37,7 @@ export function Tour() {
   const nextTourStep = useApp((s) => s.nextTourStep);
   const prevTourStep = useApp((s) => s.prevTourStep);
   const dismissTour = useApp((s) => s.dismissTour);
+  const setDashboardView = useApp((s) => s.setDashboardView);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -47,6 +51,14 @@ export function Tour() {
   useEffect(() => {
     if (step && pathname !== step.route) navigate(step.route);
   }, [step, pathname, navigate]);
+
+  // The dashboard stop ("What the client sees") points at the consolidation
+  // card, which only the Client view carries: however the stop is reached
+  // (start, Next or Back), the dashboard opens on that view, persisted as a
+  // click on the switch would be. Once there, the switch is the visitor's.
+  useEffect(() => {
+    if (step?.route === DASHBOARD_ROUTE) setDashboardView('client');
+  }, [step, setDashboardView]);
 
   // Position the coach-mark near its anchor once the route has rendered.
   useLayoutEffect(() => {

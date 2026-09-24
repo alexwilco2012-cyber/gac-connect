@@ -9,7 +9,9 @@ import {
   VIEWS_90,
   WEEK_LABELS_13,
   WEEKDAYS,
+  funnelRateLabels,
   seriesFor,
+  stepRate,
   weeklySums,
   type Period,
 } from '../src/data/analytics';
@@ -164,6 +166,31 @@ describe('period summaries', () => {
     const s = PERIOD_SUMMARY[30];
     expect(s.winRate - s.categoryWinRate).toBe(7);
     expect(Math.round((s.categoryResponseHrs - s.responseHrs) * 10) / 10).toBe(3.3);
+  });
+});
+
+describe('funnel step rates', () => {
+  it('round to one decimal under 20% and to a whole per cent from 20% up', () => {
+    expect(stepRate(1000, 139)).toBe('13.9%');
+    expect(stepRate(100, 92)).toBe('92%');
+    expect(stepRate(100, 20)).toBe('20%');
+    expect(stepRate(1000, 199)).toBe('19.9%');
+    expect(stepRate(0, 5)).toBe('0.0%');
+  });
+
+  it('the full funnel and the dashboard teaser read the same figures (spec §5.1)', () => {
+    const s = PERIOD_SUMMARY[30];
+    expect(funnelRateLabels(s.funnel)).toEqual([
+      '13.9% opened your profile',
+      '9.2% asked for a quote',
+      '92% quoted',
+      '34% won',
+    ]);
+    // The teaser's steps skip "quoted": views → requests → won.
+    expect(stepRate(s.views, s.requests)).toBe('9.2%');
+    expect(funnelRateLabels(s.funnel)[1]).toBe(
+      `${stepRate(s.views, s.requests)} asked for a quote`,
+    );
   });
 });
 

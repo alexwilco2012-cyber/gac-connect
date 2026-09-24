@@ -16,9 +16,12 @@ import { tierPct, type TierSelection } from './tier';
  *
  * The spend chart and the activity feed follow the lines held in the tier
  * card: switch a pillar there and both move with it, because both read these
- * functions over the same `useApp` tier. Procurement is included at any tier,
- * so it is always held; the other three follow their switch. The arithmetic of
- * the discount itself stays in `lib/tier`.
+ * functions over the same `useApp` tier. In the chart, Procurement is included
+ * at any tier, so it is always held; the other three follow their switch. The
+ * feed hides only the Logistics and Customs rows while those pillars are off:
+ * Agency rows stay whatever the switch says, because the port calls on the
+ * screen are still GAC's. The arithmetic of the discount itself stays in
+ * `lib/tier`.
  */
 
 /** The lines the client holds, in ladder order. Procurement always. */
