@@ -3,6 +3,14 @@ import { DEFAULT_REQUEST } from '../data/procurement';
 import type { ProcurementLine, ProcurementRequest } from '../data/procurement';
 import { isFinalStage, nextStage, STAGES, stageReached } from '../lib/procurement';
 import type { Stage } from '../lib/procurement';
+import {
+  canSendSuggestion,
+  editsFor,
+  plannedCallFor,
+  suggestedRequestLines,
+  suggestionFor,
+} from '../lib/procurementSuggest';
+import type { SuggestionEdits } from '../lib/procurementSuggest';
 import { persistent } from '../lib/storage';
 
 /**
@@ -20,6 +28,8 @@ interface ProcurementState {
   stage: Stage;
   /** ISO timestamp for every stage reached so far; `sent` is when the email went. */
   stageTimes: StageTimes;
+  /** The client's changes to the suggested list (lines unticked, quantities changed). */
+  suggestion: SuggestionEdits | null;
 
   // Draft editing — only meaningful before the request is sent
   setLines(lines: ProcurementLine[]): void;
@@ -30,6 +40,12 @@ interface ProcurementState {
   setDeliveryPoint(value: string): void;
   setNeededBy(value: string): void;
 
+  // The suggested list, drafted from the vessel's previous calls
+  toggleSuggested(vesselId: string, itemId: string): void;
+  setSuggestedQty(vesselId: string, itemId: string, qty: number): void;
+  /** Puts the ticked suggested lines on the request for that vessel's call and sends it. */
+  sendSuggested(vesselId: string): void;
+
   // The Compass flow
   send(): void;
   advance(): void;
@@ -39,6 +55,7 @@ interface ProcurementState {
 const KEY_REQUEST = 'procurement.request';
 const KEY_STAGE = 'procurement.stage';
 const KEY_TIMES = 'procurement.stageTimes';
+const KEY_SUGGESTION = 'procurement.suggestion';
 
 const now = () => new Date().toISOString();
 
@@ -101,6 +118,29 @@ export function readStageTimes(stage: Stage = readStage()): StageTimes {
   return out;
 }
 
+/** The stored changes to the suggested list, or null when there are none or they look wrong. */
+export function readSuggestion(): SuggestionEdits | null {
+  const stored = persistent.get<unknown>(KEY_SUGGESTION, null);
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return null;
+  const e = stored as Record<string, unknown>;
+  if (
+    typeof e.vesselId !== 'string' ||
+    !Array.isArray(e.off) ||
+    !e.off.every((x) => typeof x === 'string') ||
+    !e.qty ||
+    typeof e.qty !== 'object' ||
+    Array.isArray(e.qty) ||
+    !Object.values(e.qty as Record<string, unknown>).every((q) => typeof q === 'number')
+  ) {
+    return null;
+  }
+  return {
+    vesselId: e.vesselId,
+    off: [...(e.off as string[])],
+    qty: { ...(e.qty as Record<string, number>) },
+  };
+}
+
 /** A request is sendable when it has at least one line and no blank descriptions. */
 export function canSend(request: ProcurementRequest): boolean {
   return request.lines.length > 0 && request.lines.every((l) => l.description.trim().length > 0);
@@ -116,6 +156,10 @@ export const useProcurement = create<ProcurementState>((set, get) => {
   function patchRequest(patch: Partial<ProcurementRequest>) {
     saveRequest({ ...get().request, ...patch });
   }
+  function saveSuggestion(suggestion: SuggestionEdits) {
+    persistent.set(KEY_SUGGESTION, suggestion);
+    set({ suggestion });
+  }
 
   const hydratedStage = readStage();
 
@@ -123,6 +167,7 @@ export const useProcurement = create<ProcurementState>((set, get) => {
     request: readRequest(),
     stage: hydratedStage,
     stageTimes: readStageTimes(hydratedStage),
+    suggestion: readSuggestion(),
 
     setLines(lines) {
       patchRequest({ lines });
@@ -153,6 +198,38 @@ export const useProcurement = create<ProcurementState>((set, get) => {
       patchRequest({ neededBy });
     },
 
+    toggleSuggested(vesselId, itemId) {
+      if (get().stage !== 'draft') return;
+      const e = editsFor(get().suggestion, vesselId);
+      const off = e.off.includes(itemId) ? e.off.filter((x) => x !== itemId) : [...e.off, itemId];
+      saveSuggestion({ ...e, off });
+    },
+    setSuggestedQty(vesselId, itemId, qty) {
+      if (get().stage !== 'draft') return;
+      const e = editsFor(get().suggestion, vesselId);
+      const q = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
+      saveSuggestion({ ...e, qty: { ...e.qty, [itemId]: q } });
+    },
+    sendSuggested(vesselId) {
+      if (get().stage !== 'draft') return;
+      const call = plannedCallFor(vesselId);
+      if (!call) return;
+      const suggested = suggestionFor(vesselId);
+      const e = editsFor(get().suggestion, vesselId);
+      if (!canSendSuggestion(suggested, e)) return;
+      // The ticked lines become the request for this call; from here on it is
+      // the same request, the same stages and the same invoice as a list the
+      // client writes by hand.
+      saveRequest({
+        ...get().request,
+        vesselId,
+        deliveryPoint: call.deliveryPoint,
+        neededBy: call.neededBy,
+        lines: suggestedRequestLines(suggested, e),
+      });
+      get().send();
+    },
+
     send() {
       if (get().stage !== 'draft' || !canSend(get().request)) return;
       // Snapshot the request as sent, so what is on disk is what went to Compass
@@ -177,7 +254,8 @@ export const useProcurement = create<ProcurementState>((set, get) => {
       persistent.remove(KEY_REQUEST);
       persistent.remove(KEY_STAGE);
       persistent.remove(KEY_TIMES);
-      set({ request: cloneDefault(), stage: 'draft', stageTimes: {} });
+      persistent.remove(KEY_SUGGESTION);
+      set({ request: cloneDefault(), stage: 'draft', stageTimes: {}, suggestion: null });
     },
   };
 });
