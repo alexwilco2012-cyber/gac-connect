@@ -689,6 +689,15 @@
                 </div>
               </div>
               <p id="loi-illustrative" data-testid="loi-illustrative" style="border-left:4px solid #A84D08;border-radius:8px;background:#FBF0E1;color:#A84D08;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
+              <section aria-labelledby="loi-data-notice-title" data-testid="loi-data-notice" style="margin:12px 0 0;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px 14px;">
+                <p id="loi-data-notice-title" style="font-size:13px;font-weight:700;margin:0;">{{ ccLetterNoticeTitle }}</p>
+                <p style="color:#33475F;font-size:12px;margin:2px 0 0;">{{ ccLetterNoticeIntro }}</p>
+                <ul style="margin:8px 0 0;padding:0 0 0 18px;">
+                  <sc-for list="{{ ccLetterNoticePoints }}" as="p" hint-placeholder-count="4">
+                    <li style="color:#33475F;font-size:12.5px;margin:0 0 6px;"><span style="font-weight:600;color:#0A2540;">{{ p.title }}.</span> {{ p.body }}</li>
+                  </sc-for>
+                </ul>
+              </section>
               <sc-if value="{{ ccLoiNotRequired }}" hint-placeholder-val="{{ false }}">
                 <p data-testid="loi-not-required" style="border-left:4px solid #0E5E8A;border-radius:8px;background:#E8F1F7;color:#0E5E8A;padding:8px 12px;font-size:12.5px;margin:12px 0 0;">{{ ccLoiNotRequiredNote }}</p>
               </sc-if>
@@ -753,6 +762,15 @@
               <p style="font-size:13.5px;font-weight:700;margin:0;">Disembarkation / repatriation letter — template</p>
               <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;">One crew member per letter. Details as printed in the passport.</p>
               <p id="repat-illustrative" data-testid="repat-illustrative" style="border-left:4px solid #A84D08;border-radius:8px;background:#FBF0E1;color:#A84D08;padding:8px 12px;font-size:12.5px;font-weight:600;margin:12px 0 0;">{{ ccIllustrative }}</p>
+              <section aria-labelledby="repat-data-notice-title" data-testid="repat-data-notice" style="margin:12px 0 0;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px 14px;">
+                <p id="repat-data-notice-title" style="font-size:13px;font-weight:700;margin:0;">{{ ccLetterNoticeTitle }}</p>
+                <p style="color:#33475F;font-size:12px;margin:2px 0 0;">{{ ccLetterNoticeIntro }}</p>
+                <ul style="margin:8px 0 0;padding:0 0 0 18px;">
+                  <sc-for list="{{ ccLetterNoticePoints }}" as="p" hint-placeholder-count="4">
+                    <li style="color:#33475F;font-size:12.5px;margin:0 0 6px;"><span style="font-weight:600;color:#0A2540;">{{ p.title }}.</span> {{ p.body }}</li>
+                  </sc-for>
+                </ul>
+              </section>
               <form style="margin-top:16px;" sc-camel-on-submit="{{ ccRepatSubmit }}" aria-describedby="repat-illustrative">
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;">
                   <sc-for list="{{ ccRepatFieldsA }}" as="f" hint-placeholder-count="5">
@@ -863,6 +881,19 @@
                 </sc-if>
                 <span style="color:#33475F;font-size:12.5px;">{{ r.note }}</span>
               </div>
+              <sc-if value="{{ r.canDelete }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #E5EAF1;">
+                  <sc-if value="{{ r.deleteNotArmed }}" hint-placeholder-val="{{ true }}">
+                    <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ r.onDeleteArm }}" data-testid="crew-letter-delete">Delete crew details</button>
+                    <span style="color:#33475F;font-size:12px;">{{ r.deleteAuto }}</span>
+                  </sc-if>
+                  <sc-if value="{{ r.deleteArmed }}" hint-placeholder-val="{{ false }}">
+                    <span style="color:#0A2540;font-size:12.5px;font-weight:600;">{{ r.deleteAsk }}</span>
+                    <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ r.onDeleteConfirm }}" data-testid="crew-letter-delete-confirm">Yes, delete</button>
+                    <button style="background:#FFFFFF;color:#0E5E8A;border:1.5px solid #CBD6E2;border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E5E8A;" sc-camel-on-click="{{ r.onDeleteCancel }}">Keep</button>
+                  </sc-if>
+                </div>
+              </sc-if>
             </div>
           </sc-for>
         </div>

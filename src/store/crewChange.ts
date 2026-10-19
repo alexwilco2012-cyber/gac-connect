@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { persistent } from '../lib/storage';
-import { isCrewRequest, nextStage, redactRequest, stampLabel } from '../lib/crewChange';
+import {
+  isCrewRequest,
+  isTerminalStage,
+  nextStage,
+  purgeExpiredLetters,
+  redactRequest,
+  stampLabel,
+} from '../lib/crewChange';
 import type { CrewKind, CrewRequest, LoiForm, RepatForm } from '../lib/crewChange';
 import {
   applyRetention,
@@ -83,6 +90,8 @@ interface CrewChangeState {
   deleteCrewData(id: string): void;
   /** The same, over every list that still holds personal data. */
   deleteAllCrewData(): void;
+  /** Deletes the personal details from one hand-filed letter at once. */
+  deleteLetterData(id: string): void;
   reset(): void;
 }
 
@@ -114,7 +123,10 @@ export function hydrateCrewChange(now: Date = new Date()): {
   const keptRequests = Array.isArray(rawRequests) ? rawRequests.filter(isCrewRequest) : [];
   const rawLists = persistent.get<unknown>(KEY_CREW_LISTS, []);
   const keptLists = Array.isArray(rawLists) ? rawLists.filter(isCrewListSubmission) : [];
-  const { lists, requests } = applyRetention(keptLists, keptRequests, now);
+  const retained = applyRetention(keptLists, keptRequests, now);
+  const lists = retained.lists;
+  // Hand-filed letters keep the same promise on their own clock.
+  const requests = purgeExpiredLetters(retained.requests, now);
   const droppedRequests = !Array.isArray(rawRequests) || keptRequests.length !== rawRequests.length;
   const droppedLists = !Array.isArray(rawLists) || keptLists.length !== rawLists.length;
   if (droppedRequests || requests !== keptRequests) persistent.set(KEY_REQUESTS, requests);
@@ -167,7 +179,11 @@ export const useCrewChange = create<CrewChangeState>((set, get) => ({
       if (r.id !== id) return r;
       let stage: string = r.stage;
       for (let i = 0; i < Math.max(1, steps); i += 1) stage = nextStage(r.kind, stage);
-      return { ...r, stage } as CrewRequest;
+      const done =
+        isTerminalStage(r.kind, stage) && !r.completedAtIso
+          ? { completedAtIso: new Date().toISOString() }
+          : {};
+      return { ...r, stage, ...done } as CrewRequest;
     });
     persistent.set(KEY_REQUESTS, requests);
     set({ requests });
@@ -247,6 +263,12 @@ export const useCrewChange = create<CrewChangeState>((set, get) => ({
     persistent.set(KEY_CREW_LISTS, crewLists);
     persistent.set(KEY_REQUESTS, requests);
     set({ crewLists, requests });
+  },
+
+  deleteLetterData(id) {
+    const requests = get().requests.map((r) => (r.id === id ? redactRequest(r) : r));
+    persistent.set(KEY_REQUESTS, requests);
+    set({ requests });
   },
 
   reset() {

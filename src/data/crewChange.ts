@@ -68,6 +68,37 @@ export const CREW_PORTS = ['Aberdeen', 'Peterhead', 'Montrose'] as const;
 export const ILLUSTRATIVE_NOTICE =
   'Illustrative — do not enter real passport data in this proof of concept.';
 
+/**
+ * The data-protection disclosure on both letter templates (19 Oct, owner's
+ * ask). Every promise here is kept by the code: the automatic deletion is
+ * `purgeExpiredLetters` (thirty days after the letter is returned), the
+ * sooner deletion is the letter card's Delete crew details, and the redacted
+ * card keeps only the reference, vessel and port.
+ */
+export const LETTER_DATA_NOTICE = {
+  title: 'How passport details are handled',
+  intro:
+    'Illustrative notice for this proof of concept. Crew data is handled under UK GDPR, and GAC’s published privacy notice governs the live service.',
+  points: [
+    {
+      title: 'Used for this letter only',
+      body: 'Names, dates of birth, nationality, passport details and flights are used to prepare this letter and have it endorsed, and for nothing else.',
+    },
+    {
+      title: 'Who sees them',
+      body: 'Your GAC agent, the carrier and UK Border Force, where the letter needs them. No supplier on the platform sees them.',
+    },
+    {
+      title: 'Deleted, history included',
+      body: 'Every personal detail is deleted automatically thirty days after the letter is returned to you. Delete crew details on the letter removes them at once. Only the reference, vessel and port stay, for the invoice.',
+    },
+    {
+      title: 'Crew members’ rights',
+      body: 'Crew can ask what is held about them, and for it to be corrected or deleted, through your GAC agent.',
+    },
+  ],
+} as const;
+
 /** How the letters flow — three cards under the header. */
 export const CREW_FLOW = [
   {

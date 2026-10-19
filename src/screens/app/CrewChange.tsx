@@ -17,6 +17,7 @@ import {
   CREW_SECTIONS,
   DEFAULT_CREW_SECTION,
   ILLUSTRATIVE_NOTICE,
+  LETTER_DATA_NOTICE,
   resolveCrewSection,
   IMMIGRATION_CHECKLIST,
   INFORMS_NOT_ADVISES,
@@ -39,6 +40,8 @@ import {
   formatCrewName,
   isRedactedRequest,
   isTerminalStage,
+  LETTER_RETENTION_DAYS,
+  letterPurgeLabel,
   loiRequired,
   simulateAction,
   stageIndex,
@@ -176,6 +179,29 @@ function IllustrativeNotice({ testId }: { testId: string }) {
     >
       {ILLUSTRATIVE_NOTICE}
     </p>
+  );
+}
+
+/** How passport details are handled — under the illustrative notice on both letter templates. */
+function LetterDataNotice({ testId }: { testId: string }) {
+  return (
+    <section
+      aria-labelledby={`${testId}-title`}
+      className="mt-3 rounded-lg border border-line bg-paper px-3.5 py-3"
+      data-testid={testId}
+    >
+      <p id={`${testId}-title`} className="text-[13px] font-bold">
+        {LETTER_DATA_NOTICE.title}
+      </p>
+      <p className="mt-0.5 text-[12px] text-ink-soft">{LETTER_DATA_NOTICE.intro}</p>
+      <ul className="mt-2 space-y-1.5">
+        {LETTER_DATA_NOTICE.points.map((p) => (
+          <li key={p.title} className="text-[12.5px] text-ink-soft">
+            <span className="font-semibold text-ink">{p.title}.</span> {p.body}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -883,6 +909,7 @@ function LoiSection({ state }: { state: TemplateState<LoiForm> }) {
 
         <div className="mt-3">
           <IllustrativeNotice testId="loi-illustrative" />
+          <LetterDataNotice testId="loi-data-notice" />
         </div>
 
         {!required ? (
@@ -1005,6 +1032,7 @@ function RepatSection({ state }: { state: TemplateState<RepatForm> }) {
         </p>
         <div className="mt-3">
           <IllustrativeNotice testId="repat-illustrative" />
+          <LetterDataNotice testId="repat-data-notice" />
         </div>
 
         <form
@@ -1157,7 +1185,9 @@ function StageTracker({ request }: { request: CrewRequest }) {
 
 function RequestCard({ request }: { request: CrewRequest }) {
   const advance = useCrewChange((s) => s.advance);
+  const deleteLetterData = useCrewChange((s) => s.deleteLetterData);
   const pushToast = useApp((s) => s.pushToast);
+  const [deleteArmed, setDeleteArmed] = useState(false);
   // A request raised from a crew list loses its personal data when the list's
   // data is deleted: the card keeps its reference, stage and call, not the name.
   const redacted = isRedactedRequest(request);
@@ -1170,7 +1200,7 @@ function RequestCard({ request }: { request: CrewRequest }) {
       ? `Joining ${request.form.joiningDate}`
       : `Disembarking ${request.form.disembarkationDate}`;
   const detail = redacted
-    ? `Details removed at the client’s request · ${vessel} · ${request.form.port}`
+    ? `Personal details deleted · ${vessel} · ${request.form.port}`
     : `${vessel} · ${request.form.port} · ${date}`;
   const action = simulateAction(request.kind, request.stage);
   const terminal = isTerminalStage(request.kind, request.stage);
@@ -1237,6 +1267,51 @@ function RequestCard({ request }: { request: CrewRequest }) {
         ) : null}
         <span className="text-[12.5px] text-ink-soft">{STAGE_NOTES[request.stage]}</span>
       </div>
+
+      {/* A letter filed by hand can have its details deleted here; one raised
+          from a crew list is deleted from that list's card, with the list. */}
+      {!redacted && !request.crewListId ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+          {deleteArmed ? (
+            <>
+              <span className="text-[12.5px] font-semibold text-ink">
+                Delete every personal detail on {request.id}? This cannot be undone.
+              </span>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  deleteLetterData(request.id);
+                  setDeleteArmed(false);
+                  pushToast(
+                    `${request.id}: crew details deleted. The reference, vessel and port stay for the invoice.`,
+                  );
+                }}
+                data-testid="crew-letter-delete-confirm"
+              >
+                Yes, delete
+              </Button>
+              <Button variant="ghost" onClick={() => setDeleteArmed(false)}>
+                Keep
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteArmed(true)}
+                data-testid="crew-letter-delete"
+              >
+                Delete crew details
+              </Button>
+              <span className="text-[12px] text-ink-soft">
+                {request.completedAtIso
+                  ? `Deleted automatically ${letterPurgeLabel(request.completedAtIso)} if you do not.`
+                  : `Deleted automatically ${LETTER_RETENTION_DAYS} days after the letter is returned.`}
+              </span>
+            </>
+          )}
+        </div>
+      ) : null}
     </Card>
   );
 }

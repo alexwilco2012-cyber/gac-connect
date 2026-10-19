@@ -282,7 +282,7 @@ export const CREW_TEMPLATE_FILE_NAME = 'crew-list-template.xlsx';
 export const CREW_DATA_NOTICE = {
   title: 'How crew data is handled',
   intro:
-    'Illustrative notice for this proof of concept — GAC’s published privacy notice governs the live service.',
+    'Illustrative notice for this proof of concept. Crew data is handled under UK GDPR, and GAC’s published privacy notice governs the live service.',
   points: [
     {
       title: 'What is collected',

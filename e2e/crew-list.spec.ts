@@ -232,7 +232,7 @@ test('crew list: demo list end to end — check, services, submit, LOIs raised, 
   for (const name of await loiCards.getByTestId('crew-name').allTextContents()) {
     expect(name).toBe('Personal data deleted');
   }
-  await expect(loiCards.first()).toContainText('Details removed at the client’s request');
+  await expect(loiCards.first()).toContainText('Personal details deleted');
   await expect(page.getByTestId('crew-list-delete-all')).toHaveCount(0);
 
   // Proved on the real surface: nothing personal is left anywhere in storage.

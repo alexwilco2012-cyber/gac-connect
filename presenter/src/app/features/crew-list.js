@@ -657,7 +657,7 @@ const CL_DEMO_FILE_NAME = 'crew-list-demo.xlsx';
 /* The data-protection disclosure shown before anything is uploaded. */
 const CL_DATA_NOTICE = {
   title: 'How crew data is handled',
-  intro: 'Illustrative notice for this proof of concept — GAC’s published privacy notice governs the live service.',
+  intro: 'Illustrative notice for this proof of concept. Crew data is handled under UK GDPR, and GAC’s published privacy notice governs the live service.',
   points: [
     { title: 'What is collected', body: 'Names, ranks, nationality, dates of birth, passport numbers and expiry dates, and flight details — the columns your list carries that a crew change needs.' },
     { title: 'Why', body: 'To arrange the crew change you ask for: the immigration letters, the rooms and the transport. Passport details are used only where a letter or a carrier requires them.' },
@@ -1242,7 +1242,9 @@ const CL_REMOVE_BTN = 'min-height:32px;min-width:32px;cursor:pointer;border-radi
     const kept = Array.isArray(raw) ? raw.filter(clIsSubmission) : [];
     const rawReqs = this._get(CC_KEY_REQUESTS, []);
     const keptReqs = Array.isArray(rawReqs) ? rawReqs.filter(ccIsCrewRequest) : [];
-    const sweep = clApplyRetention(kept, keptReqs, now);
+    const joint = clApplyRetention(kept, keptReqs, now);
+    /* Hand-filed letters keep the same promise on their own clock (site: purgeExpiredLetters). */
+    const sweep = { lists: joint.lists, requests: ccPurgeExpiredLetters(joint.requests, now) };
     const subs = sweep.lists;
     if (!Array.isArray(raw) || kept.length !== raw.length || subs !== kept) this._set(CL_KEY_LISTS, subs);
     if (!Array.isArray(rawReqs) || keptReqs.length !== rawReqs.length || sweep.requests !== keptReqs) this._set(CC_KEY_REQUESTS, sweep.requests);

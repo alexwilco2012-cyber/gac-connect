@@ -418,6 +418,7 @@ function ccIsCrewRequest(v) {
   /* Optional provenance from a crew list upload — absent on older entries. */
   if (v.crewListId !== undefined && typeof v.crewListId !== 'string') return false;
   if (v.redacted !== undefined && typeof v.redacted !== 'boolean') return false;
+  if (v.completedAtIso !== undefined && typeof v.completedAtIso !== 'string') return false;
   if (v.kind === 'loi') return ccIsLoiForm(v.form) && ccStageIndex('loi', v.stage) !== -1;
   if (v.kind === 'repat') return ccIsRepatForm(v.form) && ccStageIndex('repat', v.stage) !== -1;
   return false;
@@ -455,6 +456,41 @@ function ccRedactRequest(r) {
 }
 /* True when the request's personal data has been deleted — the card shows a placeholder, not a name. */
 function ccIsRedactedRequest(r) { return r.redacted === true; }
+
+/* Letters filed by hand keep the notice's promise on their own clock (site:
+   purgeExpiredLetters in lib/crewChange.ts): thirty days after the letter is
+   returned, every personal detail is deleted. A letter raised from a crew list
+   follows its list's clock (clApplyRetention). */
+const CC_LETTER_RETENTION_DAYS = 30;
+const CC_DAY_MS = 24 * 60 * 60 * 1000;
+function ccIsLetterDueForPurge(r, now) {
+  if (r.crewListId !== undefined || r.redacted === true || !r.completedAtIso) return false;
+  const done = new Date(r.completedAtIso).getTime();
+  if (!Number.isFinite(done)) return false;
+  return now.getTime() >= done + CC_LETTER_RETENTION_DAYS * CC_DAY_MS;
+}
+function ccPurgeExpiredLetters(requests, now) {
+  if (!requests.some((r) => ccIsLetterDueForPurge(r, now))) return requests;
+  return requests.map((r) => (ccIsLetterDueForPurge(r, now) ? ccRedactRequest(r) : r));
+}
+/* "on 18 Nov" — the day a returned letter's details will be deleted. */
+function ccLetterPurgeLabel(iso) {
+  const done = new Date(iso).getTime();
+  if (!Number.isFinite(done)) return CC_LETTER_RETENTION_DAYS + ' days after the letter is returned';
+  const at = new Date(done + CC_LETTER_RETENTION_DAYS * CC_DAY_MS);
+  return 'on ' + at.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('Sept', 'Sep');
+}
+/* The data-protection disclosure on both letter templates (site: LETTER_DATA_NOTICE). */
+const CC_LETTER_DATA_NOTICE = {
+  title: 'How passport details are handled',
+  intro: 'Illustrative notice for this proof of concept. Crew data is handled under UK GDPR, and GAC’s published privacy notice governs the live service.',
+  points: [
+    { title: 'Used for this letter only', body: 'Names, dates of birth, nationality, passport details and flights are used to prepare this letter and have it endorsed, and for nothing else.' },
+    { title: 'Who sees them', body: 'Your GAC agent, the carrier and UK Border Force, where the letter needs them. No supplier on the platform sees them.' },
+    { title: 'Deleted, history included', body: 'Every personal detail is deleted automatically thirty days after the letter is returned to you. Delete crew details on the letter removes them at once. Only the reference, vessel and port stay, for the invoice.' },
+    { title: 'Crew members’ rights', body: 'Crew can ask what is held about them, and for it to be corrected or deleted, through your GAC agent.' }
+  ]
+};
 /* 'Mon 18 Aug · 09:41' */
 function ccStampLabel(d) {
   const dt = d || new Date();
@@ -513,7 +549,9 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
          its value WINS the feature-state merge — it re-hydrates both keys
          through the joint retention rule (clApplyRetention). This line stands
          alone only if the crew-list module is ever removed. */
-      ccRequests: Array.isArray(raw) ? raw.filter(ccIsCrewRequest) : [],
+      ccRequests: ccPurgeExpiredLetters(Array.isArray(raw) ? raw.filter(ccIsCrewRequest) : [], new Date()),
+      /* which hand-filed letter's Delete crew details is armed — screen state, never persisted */
+      ccDeleteArmed: null,
       /* flight-timed planner (Taxis) — not persisted, same as the site's FlightPlanner state */
       trDirection: 'arriving',
       trFlightNo: 'ZZ 417',
@@ -584,7 +622,8 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
         if (r.id !== id) return r;
         let stage = r.stage;
         for (let i = 0; i < Math.max(1, steps || 1); i += 1) stage = ccNextStage(r.kind, stage);
-        return Object.assign({}, r, { stage: stage });
+        const done = ccIsTerminalStage(r.kind, stage) && !r.completedAtIso ? { completedAtIso: new Date().toISOString() } : {};
+        return Object.assign({}, r, { stage: stage }, done);
       });
       saveRequests(list);
     };
@@ -772,7 +811,7 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
         hasSource: !!r.crewListId, sourceLabel: 'from ' + (r.crewListId || ''),
         name: redacted ? 'Personal data deleted' : ccFormatCrewName(r.form.familyName, r.form.forenames),
         line: redacted
-          ? 'Details removed at the client’s request · ' + (vessel ? vessel.name : '—') + ' · ' + r.form.port
+          ? 'Personal details deleted · ' + (vessel ? vessel.name : '—') + ' · ' + r.form.port
           : (vessel ? vessel.name : '—') + ' · ' + r.form.port + ' · ' + (r.kind === 'loi' ? 'Joining ' + r.form.joiningDate : 'Disembarking ' + r.form.disembarkationDate),
         stageLabel: (terminal ? '✓ ' : '') + r.stage,
         stageStyle: CC_PILL + CC_PILL_TONE[tone] + 'white-space:normal;',
@@ -789,7 +828,24 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
         onAdvance: () => { if (action) advance(r.id, action.steps); },
         terminal: terminal,
         onDownload: () => self.toastMsg('Illustrative — the endorsed letter would download here as a PDF.'),
-        note: CC_STAGE_NOTES[r.stage] || ''
+        note: CC_STAGE_NOTES[r.stage] || '',
+        /* A letter filed by hand can have its details deleted here; one raised
+           from a crew list is deleted from that list's card, with the list. */
+        canDelete: !redacted && !r.crewListId,
+        deleteArmed: st.ccDeleteArmed === r.id,
+        deleteNotArmed: st.ccDeleteArmed !== r.id,
+        deleteAsk: 'Delete every personal detail on ' + r.id + '? This cannot be undone.',
+        deleteAuto: r.completedAtIso
+          ? 'Deleted automatically ' + ccLetterPurgeLabel(r.completedAtIso) + ' if you do not.'
+          : 'Deleted automatically ' + CC_LETTER_RETENTION_DAYS + ' days after the letter is returned.',
+        onDeleteArm: () => self.setState({ ccDeleteArmed: r.id }),
+        onDeleteCancel: () => self.setState({ ccDeleteArmed: null }),
+        onDeleteConfirm: () => {
+          const list = self.state.ccRequests.map((x) => (x.id === r.id ? ccRedactRequest(x) : x));
+          self._set(CC_KEY_REQUESTS, list);
+          self.setState({ ccRequests: list, ccDeleteArmed: null });
+          self.toastMsg(r.id + ': crew details deleted. The reference, vessel and port stay for the invoice.');
+        }
       };
     });
 
@@ -896,6 +952,9 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       ccChecklist: CC_CHECKLIST, ccLoiNotOktb: CC_LOI_NOT_OKTB, ccInformsNotAdvises: CC_INFORMS_NOT_ADVISES,
       /* LOI */
       ccIllustrative: CC_ILLUSTRATIVE_NOTICE,
+      ccLetterNoticeTitle: CC_LETTER_DATA_NOTICE.title,
+      ccLetterNoticeIntro: CC_LETTER_DATA_NOTICE.intro,
+      ccLetterNoticePoints: CC_LETTER_DATA_NOTICE.points,
       ccLoiVisaAria: loi.visaNational ? 'true' : 'false',
       ccLoiVisaTrack: CC_SWITCH + (loi.visaNational ? 'background:#0E5E8A;' : 'background:#CBD6E2;'),
       ccLoiVisaKnob: CC_KNOB + (loi.visaNational ? 'left:23px;' : 'left:3px;'),
