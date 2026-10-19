@@ -10,8 +10,8 @@ import { SupplierView } from './dashboard/SupplierView';
 /**
  * Dashboard — the client's and the supplier's view of the platform (26 Aug).
  *
- * The platform is a marketplace first and a workflow second, so `/app` opens on
- * the marketplace and this screen answers the question the two paying sides
+ * `/app` opens here (19 Oct; it opened on the marketplace from 26 Aug), and this
+ * screen answers the question the two paying sides
  * actually arrive with: a client asks "where is my work, and what is waiting on
  * me"; a supplier asks "am I being found, and does my paperwork still hold".
  * The agent's working desk — predictive procurement, the 48-hour strip, the

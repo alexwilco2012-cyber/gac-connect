@@ -667,7 +667,7 @@ class Component extends DCLogic {
         (this._navHeld(r, route) ? 'color:#FFFFFF;background:rgba(255,255,255,.14);box-shadow:inset 0 -3px 0 #C9A227;' : 'color:#B9C8D6;')
     });
     const navItems = isPlatform
-      ? [mk('Marketplace', 'marketplace'), mk('Dashboard', 'dashboard'), mk('Agency', 'agency'), mk('Logistics', 'logistics'), mk('Customs', 'customs'), mk('Procurement', 'procurement'), mk('Quotes', 'quotes'), mk('Invoices', 'invoices'), mk('SVS', 'svs'), mk('Tiers', 'tiers'), mk('Internal', 'internal')]
+      ? [mk('Dashboard', 'dashboard'), mk('Marketplace', 'marketplace'), mk('Agency', 'agency'), mk('Logistics', 'logistics'), mk('Customs', 'customs'), mk('Procurement', 'procurement'), mk('Quotes', 'quotes'), mk('Invoices', 'invoices'), mk('SVS', 'svs'), mk('Tiers', 'tiers'), mk('Internal', 'internal')]
       : [mk('Home', 'home'), mk('For Clients', 'clients'), mk('For Suppliers', 'suppliers'), mk('About', 'about')];
 
     /* marketplace */

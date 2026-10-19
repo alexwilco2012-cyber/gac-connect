@@ -17,12 +17,13 @@ import Landing from './screens/marketing/Landing';
  * Everything that moved keeps its old address as a redirect that carries the
  * query string, so shared deep links and printed references still resolve.
  *
- * `/app` is the marketplace (26 Aug). This platform is a marketplace first and a
- * workflow second, so the front door is the directory, not a work queue: the
- * index redirects rather than rendering, keeping one canonical address for the
- * marketplace so the nav highlight and every shared link agree. `/app/dashboard`
- * is the client and supplier view; `/app/internal` is the agent desk that used
- * to hold the index.
+ * `/app` is the dashboard (19 Oct, from the owner's FF06 proposal: the platform
+ * "will open first to the dashboard of clients / suppliers, depending on who is
+ * using it"). It was the marketplace from 26 Aug. The dashboard is the client and
+ * supplier view, with the Client / Supplier choice remembered, so whoever opens
+ * the platform lands on their own work; the marketplace is one click away. The
+ * index redirects rather than rendering, keeping one canonical address so the
+ * nav highlight and every shared link agree. `/app/internal` is the agent desk.
  */
 const importers = {
   ForClients: () => import('./screens/marketing/ForClients'),
@@ -101,8 +102,8 @@ export const routes: RouteObject[] = [
         path: 'app',
         element: lazily(<AppLayout />),
         children: [
-          // Marketplace first: the front door is the directory, not a queue.
-          { index: true, element: <RouteRedirect to="/app/marketplace" /> },
+          // The front door is the client's or supplier's own dashboard (19 Oct).
+          { index: true, element: <RouteRedirect to="/app/dashboard" /> },
           { path: 'dashboard', element: lazily(<Dashboard />) },
 
           // Service lines

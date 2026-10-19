@@ -7,11 +7,12 @@ import { categoryCounts } from '../src/lib/marketplace';
 import { CATEGORIES, SUPPLIERS } from '../src/data/suppliers';
 
 /**
- * The marketplace-first information architecture (26 Aug).
+ * The front door (19 Oct; marketplace-first from 26 Aug).
  *
- * GAC Connect is a marketplace first and a workflow second, and that is an
- * ordering decision that lives in exactly two places: which address `/app`
- * opens on, and where the agent desk sits. Both are easy to undo by accident
+ * The owner's FF06 proposal says the platform opens on the dashboard of the
+ * client or supplier using it. That is an ordering decision that lives in
+ * exactly two places: which address `/app` opens on, and where the agent desk
+ * sits. Both are easy to undo by accident
  * during an unrelated change, so both are pinned here.
  */
 
@@ -23,18 +24,19 @@ const appRoutes = (() => {
 const at = (path: string): RouteObject | undefined => appRoutes.find((r) => r.path === path);
 
 describe('the platform front door', () => {
-  it('opens /app on the marketplace, not on a work queue', () => {
+  it('opens /app on the client and supplier dashboard', () => {
     const index = appRoutes.find((r) => r.index);
     expect(index).toBeDefined();
     const el = index!.element as ReactElement<{ to: string }>;
     expect(el.type).toBe(RouteRedirect);
-    expect(el.props.to).toBe('/app/marketplace');
+    expect(el.props.to).toBe('/app/dashboard');
   });
 
-  it('keeps one canonical address for the marketplace, so links and the nav agree', () => {
+  it('keeps one canonical address for the dashboard, so links and the nav agree', () => {
+    expect(at('dashboard')).toBeDefined();
     expect(at('marketplace')).toBeDefined();
     // The index redirects rather than rendering a second copy of the screen.
-    expect(appRoutes.find((r) => r.index)?.element).not.toBe(at('marketplace')?.element);
+    expect(appRoutes.find((r) => r.index)?.element).not.toBe(at('dashboard')?.element);
   });
 
   it('gives the client and supplier view, and the agent desk, addresses of their own', () => {

@@ -20,16 +20,16 @@
           </div>
 
           <nav aria-label="Platform" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:8px 10px 16px;">
-            <!-- Marketplace first, workflow second (26 Aug): the directory is
-                 the platform's front door, and Dashboard - the client's and the
-                 supplier's view - sits under it. -->
-            <button style="{{ nsMarketplace }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goMarketplace }}" aria-pressed="{{ npMarketplace }}">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"></path><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"></path><path d="M2 7h20"></path><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"></path></svg>
-              <span class="gac-side-label">Marketplace</span>
-            </button>
+            <!-- Dashboard first (19 Oct, the owner's FF06 proposal): the platform
+                 opens on the client's or supplier's own view, and the
+                 marketplace - the directory - sits under it. -->
             <button style="{{ nsDashboard }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goDashboard }}" aria-pressed="{{ npDashboard }}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="M3 3h7v9H3z"></path><path d="M14 3h7v5h-7z"></path><path d="M14 12h7v9h-7z"></path><path d="M3 16h7v5H3z"></path></svg>
               <span class="gac-side-label">Dashboard</span>
+            </button>
+            <button style="{{ nsMarketplace }}" style-hover="color:#FFFFFF;background:rgba(255,255,255,.08);" sc-camel-on-click="{{ goMarketplace }}" aria-pressed="{{ npMarketplace }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"></path><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"></path><path d="M2 7h20"></path><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"></path></svg>
+              <span class="gac-side-label">Marketplace</span>
             </button>
 
             <p class="gac-side-heading" style="margin:18px 0 6px;padding:0 12px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.62);">Service lines</p>
