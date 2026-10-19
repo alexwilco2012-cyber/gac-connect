@@ -123,6 +123,32 @@
                         <li style="{{ t.style }}" data-stage-state="{{ t.state }}"><span aria-hidden="true">{{ t.glyph }}</span> <strong>{{ t.label }}</strong></li>
                       </sc-for>
                     </ol>
+                    <!-- GB EORI held on the client record, confirmed per call with a tick -->
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:8px 12px;margin-top:12px;" data-testid="consignment-eori">
+                      <p style="color:#33475F;font-size:12.5px;margin:0;"><span style="font-weight:600;color:#0A2540;">{{ c.eoriLine }}</span> · {{ c.eoriNote }}</p>
+                      <label for="{{ c.eoriInputId }}" style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0A2540;cursor:pointer;"><input type="checkbox" id="{{ c.eoriInputId }}" checked="{{ c.eoriChecked }}" sc-camel-on-change="{{ c.onEori }}" data-testid="eori-confirm" style="width:16px;height:16px;accent-color:#0E5E8A;cursor:pointer;">{{ c.eoriConfirmLabel }}</label>
+                    </div>
+                    <!-- the forklift timed to the freight: needed-by is the freight ETA -->
+                    <sc-if value="{{ c.hasFlt }}" hint-placeholder-val="{{ false }}">
+                      <div style="border:1px solid #0E5E8A;background:#E8F1F7;border-radius:8px;padding:12px;margin-top:12px;" data-testid="flt-suggestion" data-requested="{{ c.fltRequested }}">
+                        <p style="font-size:13px;font-weight:700;color:#0A2540;margin:0;">{{ c.fltTitle }}</p>
+                        <sc-if value="{{ c.fltIsRequested }}" hint-placeholder-val="{{ false }}">
+                          <p style="font-size:12.5px;color:#0A2540;margin:4px 0 0;" data-testid="flt-requested">{{ c.fltRequestedText }}</p>
+                        </sc-if>
+                        <sc-if value="{{ c.fltIsOpen }}" hint-placeholder-val="{{ true }}">
+                          <p style="font-size:12.5px;color:#0A2540;margin:4px 0 0;" data-testid="flt-text">{{ c.fltText }}</p>
+                        </sc-if>
+                        <p style="font-size:11.5px;color:#33475F;margin:4px 0 0;" data-testid="flt-rule">{{ c.fltRule }}</p>
+                        <sc-if value="{{ c.fltCanAct }}" hint-placeholder-val="{{ true }}">
+                          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;">
+                            <sc-if value="{{ c.fltCanRequest }}" hint-placeholder-val="{{ true }}">
+                              <button style="{{ slCBookStyle }}" sc-camel-on-click="{{ c.onFlt }}" data-testid="flt-request">{{ c.fltButton }}</button>
+                            </sc-if>
+                            <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ c.onFltDelay }}" data-testid="flt-delay">{{ c.fltDelayLabel }}</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
                     <sc-if value="{{ c.needsCustoms }}" hint-placeholder-val="{{ false }}">
                       <p style="color:#33475F;font-size:12.5px;margin:12px 0 0;" data-testid="consignment-customs"><button style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:#0E5E8A;cursor:pointer;" sc-camel-on-click="{{ c.onCustoms }}">{{ c.customsLine }}</button></p>
                     </sc-if>
@@ -174,6 +200,9 @@
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px;">
                   <label style="{{ slLabelStyle }}">Entry type<sc-raw-select value="{{ slDKind }}" sc-camel-on-change="{{ slOnDKind }}" style="{{ slInputStyle }}"><sc-for list="{{ slKindOptions }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
                   <label style="{{ slLabelStyle }}">Against a movement<sc-raw-select value="{{ slDConsignmentRef }}" sc-camel-on-change="{{ slOnDConsignment }}" data-testid="declaration-consignment" style="{{ slInputStyle }}"><sc-for list="{{ slMovementOptions }}" as="o" hint-placeholder-count="2"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></sc-raw-select></label>
+                  <sc-if value="{{ slDHasEori }}" hint-placeholder-val="{{ false }}">
+                    <p style="grid-column:1/-1;border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:8px 12px;color:#33475F;font-size:12.5px;margin:0;" data-testid="declaration-eori"><span style="font-weight:600;color:#0A2540;">{{ slDEoriLine }}</span>{{ slDEoriRest }}</p>
+                  </sc-if>
                   <label style="{{ slLabelStyle }}grid-column:1/-1;">What the goods are<input type="text" value="{{ slDGoods }}" sc-camel-on-change="{{ slOnDGoods }}" data-testid="d-goods" placeholder="What the item is, what it is made of, what it does" style="{{ slInputStyle }}"></label>
                   <label style="{{ slLabelStyle }}">Moving from<input type="text" value="{{ slDFrom }}" sc-camel-on-change="{{ slOnDFrom }}" data-testid="d-from" placeholder="Rotterdam" style="{{ slInputStyle }}"></label>
                   <label style="{{ slLabelStyle }}">Moving to<input type="text" value="{{ slDTo }}" sc-camel-on-change="{{ slOnDTo }}" data-testid="d-to" placeholder="Aberdeen — Regent Quay" style="{{ slInputStyle }}"></label>
@@ -219,7 +248,7 @@
                         <h3 style="font-size:16.5px;font-weight:700;margin:6px 0 0;">{{ d.goods }}</h3>
                         <p style="color:#33475F;font-size:13px;margin:2px 0 0;">{{ d.routeLine }}</p>
                         <sc-if value="{{ d.hasMovement }}" hint-placeholder-val="{{ true }}">
-                          <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;" data-testid="declaration-movement">Against <button style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:#0E5E8A;cursor:pointer;" sc-camel-on-click="{{ d.onMovement }}">{{ d.movementLabel }}</button></p>
+                          <p style="color:#33475F;font-size:12.5px;margin:2px 0 0;" data-testid="declaration-movement">Against <button style="background:none;border:none;padding:0;font:inherit;font-weight:700;color:#0E5E8A;cursor:pointer;" sc-camel-on-click="{{ d.onMovement }}">{{ d.movementLabel }}</button><sc-if value="{{ d.hasEori }}" hint-placeholder-val="{{ true }}"><span data-testid="declaration-card-eori">{{ d.eoriSuffix }}</span></sc-if></p>
                         </sc-if>
                       </div>
                       <span style="{{ d.stagePillStyle }}">{{ d.stageLabel }}</span>
@@ -237,6 +266,34 @@
                         <button style="{{ slCBookStyle }}" sc-camel-on-click="{{ d.onNote }}">Clearance note</button>
                       </sc-if>
                     </div>
+                    <!-- ask the customs team: call back or email, logged on the entry (simulated) -->
+                    <sc-if value="{{ d.askLogged }}" hint-placeholder-val="{{ false }}">
+                      <div style="border:1px solid #047857;background:#E7F4EF;border-radius:8px;padding:8px 12px;margin-top:12px;font-size:12.5px;" data-testid="customs-team-request" data-channel="{{ d.askChannel }}">
+                        <p style="font-weight:600;color:#047857;margin:0;">{{ d.askOutcome }}</p>
+                        <sc-if value="{{ d.askHasQuestion }}" hint-placeholder-val="{{ false }}"><p style="color:#33475F;margin:2px 0 0;">{{ d.askQuestion }}</p></sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ d.askCanOpen }}" hint-placeholder-val="{{ true }}">
+                      <div style="margin-top:12px;"><button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ d.onAskOpen }}" data-testid="ask-customs-team">{{ d.askLabel }}</button></div>
+                    </sc-if>
+                    <sc-if value="{{ d.askIsOpen }}" hint-placeholder-val="{{ false }}">
+                      <fieldset style="border:1px solid #E5EAF1;border-radius:8px;background:#FAFBFD;padding:12px;margin:12px 0 0;" data-testid="ask-team-panel">
+                        <legend style="padding:0 4px;font-size:12.5px;font-weight:700;">{{ d.askLabel }}</legend>
+                        <p style="color:#33475F;font-size:12.5px;margin:0;">{{ slAskIntro }}</p>
+                        <div role="radiogroup" aria-label="How to reply" style="display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;">
+                          <sc-for list="{{ d.askChannels }}" as="ch" hint-placeholder-count="2">
+                            <label for="{{ ch.inputId }}" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;"><input type="radio" id="{{ ch.inputId }}" name="{{ ch.group }}" checked="{{ ch.checked }}" sc-camel-on-change="{{ ch.onPick }}" style="width:16px;height:16px;accent-color:#0E5E8A;cursor:pointer;">{{ ch.label }}</label>
+                          </sc-for>
+                        </div>
+                        <label for="{{ d.askQuestionId }}" style="{{ slLabelStyle }}margin-top:10px;">Your question (optional)</label>
+                        <textarea id="{{ d.askQuestionId }}" rows="3" sc-camel-max-length="{{ slAskMax }}" value="{{ slAskQuestion }}" sc-camel-on-change="{{ slOnAskQuestion }}" placeholder="What you would like the customs team to look at" style="{{ slInputStyle }}resize:vertical;"></textarea>
+                        <p style="color:#33475F;font-size:11.5px;margin:6px 0 0;">{{ slAskNotice }}</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;">
+                          <button style="{{ slCBookStyle }}" sc-camel-on-click="{{ d.onAskSend }}" data-testid="ask-team-send">Send to the customs team</button>
+                          <button style="{{ slCGhostStyle }}" sc-camel-on-click="{{ d.onAskCancel }}">Cancel</button>
+                        </div>
+                      </fieldset>
+                    </sc-if>
                   </div>
                 </sc-for>
               </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LineSectionStrip } from '../../components/LineSections';
+import { RequestQuoteModal } from '../../components/RequestQuoteModal';
+import type { RequestTarget } from '../../components/RequestQuoteModal';
 import { ServiceLineHub } from '../../components/ServiceLineHub';
 import type { LiveStat } from '../../components/ServiceLineHub';
 import { Button } from '../../components/ui/Button';
@@ -9,12 +11,16 @@ import { Eyebrow } from '../../components/ui/Eyebrow';
 import { Pill } from '../../components/ui/Pill';
 import { StageTrack } from '../../components/ui/StageTrack';
 import { Toggle } from '../../components/ui/Toggle';
+import { CLIENT_EORI, EORI_CONFIRM_LABEL, EORI_NOTE } from '../../data/customs';
 import {
   CONSIGNMENT_NOTICE,
   CUSTOMS_POINTER,
   DELIVERY_POINTS,
   DEMO_CONSIGNMENT,
   EMPTY_CONSIGNMENT,
+  FLT_DELAY_LABEL,
+  FLT_SERVICE,
+  FLT_SUGGESTION_TITLE,
   LOGISTICS_INTRO,
   ORIGIN_EXAMPLES,
   PROJECT_CARGO,
@@ -28,6 +34,12 @@ import {
   CONSIGNMENT_STAGES,
   consignmentAction,
   consignmentStageTone,
+  FLT_RULE,
+  fltMovedText,
+  fltRequestButton,
+  fltRequestedText,
+  fltSuggestion,
+  fltSuggestionText,
   isConsignmentDelivered,
   validateConsignment,
 } from '../../lib/logistics';
@@ -236,12 +248,86 @@ function BookingForm() {
 
 /* ------------------------------------------------------------ Consignments */
 
-function ConsignmentCard({ consignment }: { consignment: Consignment }) {
+/**
+ * The forklift suggestion: freight going to a quay with a piece too heavy to
+ * land by hand. Needed-by is the freight ETA read live, so when the ETA moves
+ * the suggestion moves with it, and a forklift already requested says so.
+ */
+function FltSuggestion({
+  consignment,
+  onRequest,
+}: {
+  consignment: Consignment;
+  onRequest: (t: RequestTarget) => void;
+}) {
+  const requestFlt = useLogistics((s) => s.requestFlt);
+  const delayEta = useLogistics((s) => s.delayEta);
+  const flt = fltSuggestion(consignment);
+  if (!flt) return null;
+  const { form } = consignment;
+  const delivered = isConsignmentDelivered(consignment.stage);
+
+  return (
+    <div
+      className="mt-3 rounded-lg border border-sea bg-sea-soft p-3"
+      data-testid="flt-suggestion"
+      data-requested={flt.requested ? 'true' : 'false'}
+    >
+      <p className="text-[13px] font-bold text-ink">{FLT_SUGGESTION_TITLE}</p>
+      {flt.requested ? (
+        <p className="mt-1 text-[12.5px] text-ink" data-testid="flt-requested">
+          {fltRequestedText(consignment.fltRequestedFor ?? flt.neededBy, form.deliveryPoint)}
+          {flt.moved ? ` ${fltMovedText(flt.neededBy)}` : ''}
+        </p>
+      ) : (
+        <p className="mt-1 text-[12.5px] text-ink" data-testid="flt-text">
+          {fltSuggestionText(flt.perPieceKg, form.deliveryPoint, flt.neededBy)}
+        </p>
+      )}
+      <p className="mt-1 text-[11.5px] text-ink-soft" data-testid="flt-rule">
+        {FLT_RULE}
+      </p>
+      {delivered ? null : (
+        <div className="mt-2.5 flex flex-wrap gap-2.5">
+          {flt.requested ? null : (
+            <Button
+              onClick={() =>
+                onRequest({
+                  category: 'FLT',
+                  service: `${FLT_SERVICE}, ${consignment.id}`,
+                  vesselId: form.vesselId,
+                  neededBy: flt.neededBy,
+                  onSent: (neededBy) => requestFlt(consignment.id, neededBy),
+                })
+              }
+              data-testid="flt-request"
+            >
+              {fltRequestButton(flt.neededBy)}
+            </Button>
+          )}
+          <Button variant="ghost" onClick={() => delayEta(consignment.id)} data-testid="flt-delay">
+            {FLT_DELAY_LABEL}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ConsignmentCard({
+  consignment,
+  onRequest,
+}: {
+  consignment: Consignment;
+  onRequest: (t: RequestTarget) => void;
+}) {
   const advance = useLogistics((s) => s.advance);
+  const setEoriConfirmed = useLogistics((s) => s.setEoriConfirmed);
   const pushToast = useApp((s) => s.pushToast);
   const { form } = consignment;
   const action = consignmentAction(consignment.stage);
   const delivered = isConsignmentDelivered(consignment.stage);
+  const eoriId = `eori-${consignment.id}`;
 
   return (
     <Card
@@ -264,6 +350,9 @@ function ConsignmentCard({ consignment }: { consignment: Consignment }) {
           <p className="mt-0.5 text-[12.5px] text-ink-soft">
             {form.pieces} {Number(form.pieces) === 1 ? 'piece' : 'pieces'} · {form.weightKg} kg ·
             ready {form.readyDate}
+            {consignment.eta ? (
+              <span data-testid="consignment-eta"> · ETA {consignment.eta}</span>
+            ) : null}
           </p>
         </div>
         <div className="max-w-full [&>span]:whitespace-normal">
@@ -275,6 +364,31 @@ function ConsignmentCard({ consignment }: { consignment: Consignment }) {
       </div>
 
       <StageTrack stages={CONSIGNMENT_STAGES} current={consignment.stage} />
+
+      <div
+        className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-line bg-paper px-3 py-2"
+        data-testid="consignment-eori"
+      >
+        <p className="text-[12.5px] text-ink-soft">
+          <span className="font-semibold text-ink">GB EORI {CLIENT_EORI}</span> · {EORI_NOTE}
+        </p>
+        <label
+          htmlFor={eoriId}
+          className="flex cursor-pointer items-center gap-2 text-[12.5px] font-semibold text-ink"
+        >
+          <input
+            id={eoriId}
+            type="checkbox"
+            checked={consignment.eoriConfirmed === true}
+            onChange={(e) => setEoriConfirmed(consignment.id, e.target.checked)}
+            className="h-4 w-4 accent-sea"
+            data-testid="eori-confirm"
+          />
+          {EORI_CONFIRM_LABEL}
+        </label>
+      </div>
+
+      <FltSuggestion consignment={consignment} onRequest={onRequest} />
 
       {form.fromOutsideUk ? (
         <p className="mt-3 text-[12.5px] text-ink-soft" data-testid="consignment-customs">
@@ -312,6 +426,7 @@ function ConsignmentCard({ consignment }: { consignment: Consignment }) {
 function ConsignmentsSection() {
   const consignments = useLogistics((s) => s.consignments);
   const reset = useLogistics((s) => s.reset);
+  const [target, setTarget] = useState<RequestTarget | null>(null);
   const running = consignments.filter((c) => !isConsignmentDelivered(c.stage)).length;
 
   return (
@@ -338,9 +453,10 @@ function ConsignmentsSection() {
 
       <div className="space-y-4" data-testid="consignments">
         {consignments.map((c) => (
-          <ConsignmentCard key={c.id} consignment={c} />
+          <ConsignmentCard key={c.id} consignment={c} onRequest={setTarget} />
         ))}
       </div>
+      <RequestQuoteModal target={target} onClose={() => setTarget(null)} />
     </div>
   );
 }

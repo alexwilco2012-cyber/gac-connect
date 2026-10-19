@@ -525,12 +525,14 @@ class Component extends DCLogic {
   }
 
   /* ---------- booking (blocked rule enforced here, not just in UI) ---------- */
-  _requestQuote(s) {
+  /* `extra` lets a screen prefill the request (the forklift suggestion passes
+     the vessel, the freight ETA as needed-by, and an onSent hook). */
+  _requestQuote(s, extra) {
     if (this.deriveStatus(s) === 'blocked') {
       this.toastMsg(s.name + ' is blocked — insurance certificate lapsed. Booking is refused until evidence is uploaded and verified.', 'SVS');
       return;
     }
-    this.setState({ rq: { id: s.id, name: s.name, cat: s.cat, windowId: '4h', related: {}, meals: false, nights: 1, bookedWindow: 'Fri 06:00–18:00' } });
+    this.setState({ rq: Object.assign({ id: s.id, name: s.name, cat: s.cat, windowId: '4h', related: {}, meals: false, nights: 1, bookedWindow: 'Fri 06:00–18:00' }, extra || {}) });
   }
   /* Deadline advice — a taxi can be quoted in ten minutes; a crane cannot. */
   _deadlineAdvice(hours) {
@@ -547,17 +549,18 @@ class Component extends DCLogic {
   _sendRq() {
     const rq = this.state.rq; if (!rq) return;
     const win = this.REPLY_WINDOWS.find((w) => w.id === rq.windowId) || this.REPLY_WINDOWS[3];
-    const service = this.CATEGORY_SERVICE[rq.cat] || rq.cat;
+    const service = rq.service || this.CATEGORY_SERVICE[rq.cat] || rq.cat;
     const isHotel = rq.cat === 'Hotels';
     const related = (this.RELATED[rq.cat] || []).filter((r) => rq.related[r.id]);
     const hotelChosen = related.some((r) => r.meals);
     const mealLine = 'meal allowance ' + this._gbp(this._mealPerDay(rq.nights)) + '/day, ' + rq.nights + (rq.nights === 1 ? ' night' : ' nights');
-    const parts = [(isHotel ? 'Booking request' : 'Quote request') + ' sent to ' + rq.name + ' — ' + service + ', MV Choice.', 'Reply-by window: ' + win.label + '.'];
+    const parts = [(isHotel ? 'Booking request' : 'Quote request') + ' sent to ' + rq.name + ' — ' + service + ', ' + (rq.vesselName || 'MV Choice') + '.', 'Reply-by window: ' + win.label + '.'];
     if (isHotel) parts.push('Rate indicative and subject to availability — your agent confirms the booking on the platform' + (rq.meals ? ' (' + mealLine + ')' : '') + '.');
     if (this._isOverrunCat(rq.cat)) parts.push('Price covers the booked window ' + (rq.bookedWindow || '').trim() + '; overrun not included, subject to change, supplier T&Cs included.');
     if (related.length) parts.push(related.length + ' related ' + (related.length === 1 ? 'service' : 'services') + ' passed to your GAC agent' + (hotelChosen && rq.meals ? ' (' + mealLine + ')' : '') + '.');
     this.setState({ rq: null });
     this.toastMsg(parts.join(' '));
+    if (typeof rq.onSent === 'function') rq.onSent(rq.neededBy || 'Fri 06:00');
   }
   _openModal(name, price) {
     const s = this.SUPPLIERS.find((x) => x.name === name);
@@ -1329,7 +1332,9 @@ class Component extends DCLogic {
       rqOpen: !!rq,
       rqName: rq ? rq.name : '',
       rqDialogLabel: rq ? 'Request a quote — ' + rq.name : 'Quote request',
-      rqService: rq ? (this.CATEGORY_SERVICE[rq.cat] || rq.cat) : '',
+      rqService: rq ? (rq.service || this.CATEGORY_SERVICE[rq.cat] || rq.cat) : '',
+      rqVesselLine: rq ? (rq.vesselLine || 'MV Choice · Aberdeen') : '',
+      rqNeededBy: rq ? (rq.neededBy || 'Fri 06:00') : '',
       rqIsHotel: !!(rq && rq.cat === 'Hotels'),
       rqIsOverrun: !!(rq && this._isOverrunCat(rq.cat)),
       rqOverrunTerms: this.OVERRUN_TERMS,

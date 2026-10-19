@@ -1,8 +1,13 @@
 import { create } from 'zustand';
 import { SEED_DECLARATIONS } from '../data/customs';
 import { stampLabel } from '../lib/crewChange';
-import { isDeclaration, nextDeclarationRef, nextDeclarationStage } from '../lib/customs';
-import type { Declaration, DeclarationForm } from '../lib/customs';
+import {
+  customsTeamRequest,
+  isDeclaration,
+  nextDeclarationRef,
+  nextDeclarationStage,
+} from '../lib/customs';
+import type { CustomsTeamChannel, Declaration, DeclarationForm } from '../lib/customs';
 import { persistent } from '../lib/storage';
 
 /**
@@ -35,6 +40,8 @@ interface CustomsState {
   /** Moves an entry on by one or more stages; 'Cleared' holds. */
   advance(id: string, steps?: number): void;
   remove(id: string): void;
+  /** Logs a request for the customs team on the entry (simulated — nothing is sent). */
+  askTeam(id: string, channel: CustomsTeamChannel, question: string): void;
   reset(): void;
 }
 
@@ -68,6 +75,14 @@ export const useCustoms = create<CustomsState>((set, get) => ({
 
   remove(id) {
     const declarations = get().declarations.filter((d) => d.id !== id);
+    persistent.set(KEY_DECLARATIONS, declarations);
+    set({ declarations });
+  },
+
+  askTeam(id, channel, question) {
+    const declarations = get().declarations.map((d) =>
+      d.id === id ? { ...d, teamRequest: customsTeamRequest(channel, question, stampLabel()) } : d,
+    );
     persistent.set(KEY_DECLARATIONS, declarations);
     set({ declarations });
   },

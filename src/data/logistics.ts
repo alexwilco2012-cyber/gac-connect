@@ -35,6 +35,11 @@ export const CONSIGNMENT_NOTICE =
 export const CUSTOMS_POINTER =
   'Arriving from outside the UK, so it needs a customs entry. Raise it under Customs and the declaration is tied to this movement.';
 
+/* The forklift suggestion — freight going to the quay that needs lifting. */
+export const FLT_SUGGESTION_TITLE = 'Forklift needed at the quay';
+export const FLT_DELAY_LABEL = 'Simulate: freight ETA moves two hours later';
+export const FLT_SERVICE = 'Forklift (FLT) with operator at the quay';
+
 /** Warehousing section — what the Aberdeen warehouse does for a call. */
 export const WAREHOUSING = [
   {
@@ -71,17 +76,19 @@ const seed = (
   id: string,
   stage: Consignment['stage'],
   createdAt: string,
+  eta: string,
   form: ConsignmentForm,
-): Consignment => ({ id, stage, createdAt, form });
+): Consignment => ({ id, stage, createdAt, eta, form });
 
 /**
  * Two movements already running when the visitor arrives, so the screen shows
  * a line in progress rather than an empty state. One is a routine UK road
- * movement; the other comes from outside the UK and therefore carries the
- * customs cross-link.
+ * movement into the warehouse (no forklift suggested: it is not going to a
+ * quay); the other comes from outside the UK to Regent Quay as a single 380 kg
+ * crate, so it carries the customs cross-link and the forklift suggestion.
  */
 export const SEED_CONSIGNMENTS: Consignment[] = [
-  seed('CN-2041', 'In transit', 'Mon 18 Aug · 08:15', {
+  seed('CN-2041', 'In transit', 'Mon 18 Aug · 08:15', 'Thu 16:00', {
     description: 'Deck spares and hose reels, 4 pallets',
     origin: 'Grangemouth',
     deliveryPoint: 'Aberdeen — GAC warehouse',
@@ -92,7 +99,7 @@ export const SEED_CONSIGNMENTS: Consignment[] = [
     weightKg: '1250',
     fromOutsideUk: false,
   }),
-  seed('CN-2042', 'Booked', 'Tue 19 Aug · 14:40', {
+  seed('CN-2042', 'Booked', 'Tue 19 Aug · 14:40', 'Fri 14:00', {
     description: 'Replacement thruster seal kit, 1 crate',
     origin: 'Rotterdam',
     deliveryPoint: 'Aberdeen — Regent Quay',
