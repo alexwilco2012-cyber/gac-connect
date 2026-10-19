@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { SEED_CONSIGNMENTS } from '../data/logistics';
-import { isConsignment, nextConsignmentRef, nextConsignmentStage } from '../lib/logistics';
+import { VESSELS } from '../data/vessels';
+import {
+  bookingEta,
+  isConsignment,
+  nextConsignmentRef,
+  nextConsignmentStage,
+  shiftEta,
+  SIMULATED_DELAY_HOURS,
+} from '../lib/logistics';
 import type { Consignment, ConsignmentForm } from '../lib/logistics';
 import { stampLabel } from '../lib/crewChange';
 import { persistent } from '../lib/storage';
@@ -40,6 +48,12 @@ interface LogisticsState {
   /** Moves a consignment on one stage; the last stage holds. */
   advance(id: string): void;
   remove(id: string): void;
+  /** Records that a forklift was requested for this movement, for the given needed-by time. */
+  requestFlt(id: string, neededBy: string): void;
+  /** The demo's simulated delay: the freight ETA moves two hours later. */
+  delayEta(id: string): void;
+  /** The "Confirm for this call" tick against the EORI on the client record. */
+  setEoriConfirmed(id: string, confirmed: boolean): void;
   reset(): void;
 }
 
@@ -54,6 +68,8 @@ export const useLogistics = create<LogisticsState>((set, get) => ({
       stage: 'Booked',
       createdAt: stampLabel(),
     };
+    const vessel = VESSELS.find((v) => v.id === form.vesselId);
+    if (vessel) consignment.eta = bookingEta(vessel.timeline.label);
     const consignments = [consignment, ...get().consignments];
     persistent.set(KEY_CONSIGNMENTS, consignments);
     set({ consignments });
@@ -70,6 +86,30 @@ export const useLogistics = create<LogisticsState>((set, get) => ({
 
   remove(id) {
     const consignments = get().consignments.filter((c) => c.id !== id);
+    persistent.set(KEY_CONSIGNMENTS, consignments);
+    set({ consignments });
+  },
+
+  requestFlt(id, neededBy) {
+    const consignments = get().consignments.map((c) =>
+      c.id === id ? { ...c, fltRequestedFor: neededBy } : c,
+    );
+    persistent.set(KEY_CONSIGNMENTS, consignments);
+    set({ consignments });
+  },
+
+  delayEta(id) {
+    const consignments = get().consignments.map((c) =>
+      c.id === id && c.eta ? { ...c, eta: shiftEta(c.eta, SIMULATED_DELAY_HOURS) } : c,
+    );
+    persistent.set(KEY_CONSIGNMENTS, consignments);
+    set({ consignments });
+  },
+
+  setEoriConfirmed(id, confirmed) {
+    const consignments = get().consignments.map((c) =>
+      c.id === id ? { ...c, eoriConfirmed: confirmed } : c,
+    );
     persistent.set(KEY_CONSIGNMENTS, consignments);
     set({ consignments });
   },

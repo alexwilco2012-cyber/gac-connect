@@ -45,6 +45,12 @@ export interface RequestTarget {
   category: string;
   /** Overrides the category's default service label. */
   service?: string;
+  /** Prefills the vessel (a logistics movement knows which one). */
+  vesselId?: string;
+  /** Prefills needed-by — the forklift suggestion passes the freight ETA. */
+  neededBy?: string;
+  /** Called with the needed-by time once the request is sent. */
+  onSent?: (neededBy: string) => void;
 }
 
 const ADVICE_TONE = {
@@ -137,8 +143,10 @@ export function RequestQuoteModal({
 function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () => void }) {
   const pushToast = useApp((s) => s.pushToast);
 
-  const [vesselId, setVesselId] = useState(VESSELS[0]!.id);
-  const [neededBy, setNeededBy] = useState('Fri 06:00');
+  const [vesselId, setVesselId] = useState(
+    VESSELS.some((v) => v.id === target.vesselId) ? target.vesselId! : VESSELS[0]!.id,
+  );
+  const [neededBy, setNeededBy] = useState(target.neededBy ?? 'Fri 06:00');
   const [windowId, setWindowId] = useState(DEFAULT_REPLY_WINDOW);
   const [related, setRelated] = useState<Record<string, boolean>>({});
   const [meals, setMeals] = useState(false);
@@ -188,6 +196,7 @@ function RequestForm({ target, onClose }: { target: RequestTarget; onClose: () =
       );
     }
     pushToast(parts.join(' '));
+    target.onSent?.(neededBy.trim() || (target.neededBy ?? ''));
     onClose();
   }
 

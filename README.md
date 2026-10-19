@@ -14,10 +14,15 @@ carries the number submitted. From the 17 August review: FLT and crane prices co
 window only (overrun not included, subject to change, supplier T&Cs included); **Procurement** is
 a working example of the Compass flow (list emailed straight to Compass, GAC's procurement
 branch, which sources and supplies every line itself, confirms the list back, and invoices via
-Compass under GAC — one invoice at Compass's prices); and **Crew change** gathers hotels,
-**taxis** (timed to the crew's tracked flight), **launches** (capacity and freight-included per
-launch, port by port), immigration guidance, and the LOI / repatriation-letter templates that GAC
-endorses, or UK Border Force endorses, and returns.
+Compass under GAC — one invoice at Compass's prices); and **Crew change** opens on a **crew list
+upload** (23 Aug): the coordinator drops in the `.xlsx` or `.csv` they already keep, the platform
+reads the headers in the browser (no library, nothing sent until Submit), masks the passport
+numbers, asks which of **LOIs, hotel rooms and taxis** the crew needs and raises them from the
+list, and a **data-handling notice** plus a one-click **Delete crew data** (redacts the list and
+every letter raised from it; automatic thirty days after completion) covers the GDPR side. Beside
+it: hotels, **taxis** (timed to the crew's tracked flight), **launches** (capacity and
+freight-included per launch, port by port), immigration guidance, and the LOI /
+repatriation-letter templates that GAC endorses, or UK Border Force endorses, and returns.
 
 The platform is navigated by **service line** — Agency, Logistics, Customs, Procurement — the way
 GAC sells and invoices, with Customs on its own tab so the 2 / 4 / 7 tier discount reads straight

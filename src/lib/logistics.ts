@@ -46,6 +46,16 @@ export interface Consignment {
   form: ConsignmentForm;
   stage: ConsignmentStage;
   createdAt: string;
+  /**
+   * When the freight is due at its delivery point — 'Fri 14:00'. Shared with
+   * everything booked against it (the forklift follows it). Optional because
+   * entries stored by an older build have none.
+   */
+  eta?: string;
+  /** The needed-by time a forklift was requested for, once it has been. */
+  fltRequestedFor?: string;
+  /** The client ticked "Confirm for this call" against the EORI on record. */
+  eoriConfirmed?: boolean;
 }
 
 export function nextConsignmentStage(stage: string): ConsignmentStage {
@@ -139,7 +149,112 @@ export function isConsignmentForm(v: unknown): v is ConsignmentForm {
 export function isConsignment(v: unknown): v is Consignment {
   if (!isRecord(v)) return false;
   if (typeof v.id !== 'string' || typeof v.createdAt !== 'string') return false;
+  if (v.eta !== undefined && typeof v.eta !== 'string') return false;
+  if (v.fltRequestedFor !== undefined && typeof v.fltRequestedFor !== 'string') return false;
+  if (v.eoriConfirmed !== undefined && typeof v.eoriConfirmed !== 'boolean') return false;
   return isConsignmentForm(v.form) && isStageOf(CONSIGNMENT_STAGES, v.stage);
+}
+
+/* ------------------------------------------------- ETA and the forklift */
+
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+const ETA_PATTERN = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d{2}):(\d{2})$/;
+
+/**
+ * Moves an ETA such as 'Fri 14:00' by whole or part hours, rolling over the
+ * day (and the week). Anything that is not in that shape comes back unchanged
+ * rather than being guessed at.
+ */
+export function shiftEta(eta: string, hours: number): string {
+  const m = ETA_PATTERN.exec(eta.trim());
+  if (!m) return eta;
+  const week = 7 * 24 * 60;
+  const day = DAYS.indexOf(m[1] as (typeof DAYS)[number]);
+  const start = day * 24 * 60 + Number(m[2]) * 60 + Number(m[3]);
+  const total = (((start + Math.round(hours * 60)) % week) + week) % week;
+  const d = DAYS[Math.floor(total / (24 * 60))]!;
+  const hh = Math.floor((total % (24 * 60)) / 60);
+  const mm = total % 60;
+  return `${d} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+/** How far ahead of the vessel's call time a new booking is planned to land. */
+export const QUAY_LEAD_HOURS = 2;
+
+/** The ETA a new booking is given: two hours before the vessel's call time. */
+export function bookingEta(vesselCallTime: string): string {
+  return shiftEta(vesselCallTime, -QUAY_LEAD_HOURS);
+}
+
+/** The simulated delay the demo applies to a freight ETA, in hours. */
+export const SIMULATED_DELAY_HOURS = 2;
+
+/**
+ * A piece heavier than this needs lifting with a forklift (FLT) rather than
+ * by hand, so a movement to a quay that carries one gets a forklift suggested.
+ */
+export const FLT_THRESHOLD_KG = 250;
+
+/** The rule, in the words the screen uses. */
+export const FLT_RULE = `Suggested when a movement goes to a quay and the weight per piece (gross weight ÷ pieces) is over ${FLT_THRESHOLD_KG} kg.`;
+
+/** Delivered to a berth rather than into the warehouse. */
+export function isQuayDelivery(deliveryPoint: string): boolean {
+  return /\bQuay\b/.test(deliveryPoint);
+}
+
+/** Gross weight ÷ pieces, rounded up to the kilo; null when either is not a number. */
+export function weightPerPieceKg(
+  form: Pick<ConsignmentForm, 'pieces' | 'weightKg'>,
+): number | null {
+  const pieces = Number(form.pieces.trim());
+  const weight = Number(form.weightKg.trim());
+  if (!Number.isFinite(pieces) || !Number.isFinite(weight) || pieces <= 0 || weight <= 0) {
+    return null;
+  }
+  return Math.ceil(weight / pieces);
+}
+
+/**
+ * The forklift suggestion for a movement, or null when none applies: it goes
+ * to a quay, it is not there yet, it has an ETA, and a piece is over the
+ * threshold. The needed-by time is the freight's ETA, read live, so the
+ * suggestion follows the ETA whenever it moves.
+ */
+export function fltSuggestion(
+  c: Consignment,
+): { neededBy: string; perPieceKg: number; requested: boolean; moved: boolean } | null {
+  const requested = typeof c.fltRequestedFor === 'string';
+  if (!c.eta || !isQuayDelivery(c.form.deliveryPoint)) return null;
+  // Once the cargo is on the quay there is nothing left to suggest; a forklift
+  // already requested stays on the record.
+  if (isConsignmentDelivered(c.stage) && !requested) return null;
+  const perPieceKg = weightPerPieceKg(c.form);
+  if (perPieceKg === null || perPieceKg <= FLT_THRESHOLD_KG) return null;
+  return {
+    neededBy: c.eta,
+    perPieceKg,
+    requested,
+    moved: requested && c.fltRequestedFor !== c.eta,
+  };
+}
+
+/* The suggestion's sentences — both surfaces print exactly these. */
+
+export function fltSuggestionText(perPieceKg: number, deliveryPoint: string, eta: string): string {
+  return `${perPieceKg} kg a piece is over ${FLT_THRESHOLD_KG} kg, so a forklift with operator is suggested at ${deliveryPoint} for the freight ETA, ${eta}.`;
+}
+
+export function fltRequestedText(requestedFor: string, deliveryPoint: string): string {
+  return `Forklift requested for ${requestedFor} at ${deliveryPoint}.`;
+}
+
+export function fltMovedText(eta: string): string {
+  return `The freight ETA is now ${eta}; your GAC agent moves the forklift to match.`;
+}
+
+export function fltRequestButton(eta: string): string {
+  return `Request a forklift for ${eta}`;
 }
 
 /**

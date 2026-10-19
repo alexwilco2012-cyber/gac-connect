@@ -64,7 +64,7 @@ const PR_COMPASS_ADDRESS = 'procurement@compass.example';
 /* The platform user who raises the request. */
 const PR_SENDER = { name: 'A. Wilkinson', org: 'Aberdeen Agency' };
 /* Illustrative demo prices per line id; added lines take the fallback. Nothing here is a real Compass price. */
-const PR_PRICES_GBP = { 'engine-room': 1240, provisions: 2150, 'deck-stores': 860, 'bonded-stores': 540, 'galley-gas': 190 };
+const PR_PRICES_GBP = { 'engine-room': 1240, provisions: 2150, 'deck-stores': 860, 'bonded-stores': 540, 'galley-gas': 190, 'mooring-tails': 520, shackles: 340 };
 const PR_PRICE_FALLBACK_GBP = 250;
 /* The client's paperwork carries Compass's prices only (17 Aug review, owner's follow-up):
    Compass prices every line through its own network and the client sees those
@@ -77,10 +77,58 @@ const PR_RULES = [
 ];
 const PR_SIMULATION_NOTICE = 'Illustrative — the Compass side is simulated in this proof of concept. No email is sent and every price is a demo figure.';
 
+/* ── the suggested list (data/procurementHistory.ts + lib/procurementSuggest.ts) ──
+   Drafted from a vessel's previous calls once her next call is planned, and
+   sent to the client before she arrives. Rules: the last PR_SUGGEST_WINDOW
+   calls (fewer if that is all there are); a line is suggested when it was
+   ordered on at least half of them; the quantity is the median of the calls it
+   was ordered on, rounded up to a whole unit. Every vessel, date and quantity
+   is fictional. */
+const PR_SUGGEST_WINDOW = 6;
+const PR_STORES_ITEMS = [
+  { id: 'engine-room', description: 'Engine room consumables — lube oil, filters', unit: { one: 'lot', other: 'lots' } },
+  { id: 'provisions', description: 'Fresh provisions', unit: { one: 'day', other: 'days' } },
+  { id: 'galley-gas', description: 'Galley gas', unit: { one: 'cylinder · 47 kg', other: 'cylinders · 47 kg' } },
+  { id: 'mooring-tails', description: 'Mooring tails', unit: { one: 'tail', other: 'tails' } },
+  { id: 'shackles', description: 'Shackles', unit: { one: 'shackle', other: 'shackles' } },
+  { id: 'bonded-stores', description: 'Bonded stores', unit: { one: 'lot', other: 'lots' } },
+  { id: 'chart-corrections', description: 'Chart corrections', unit: { one: 'folio', other: 'folios' } },
+  { id: 'deck-paint', description: 'Deck paint — touch-up', unit: { one: 'tin', other: 'tins' } }
+];
+const PR_PLANNED_CALLS = [
+  { vesselId: 'choice', port: 'Aberdeen', eta: 'Fri 08:00', deliveryPoint: 'Regent Quay, Aberdeen', neededBy: 'Fri 08:00' },
+  { vesselId: 'boreal', port: 'Peterhead', eta: 'Fri 14:30', deliveryPoint: 'Smith Quay, Peterhead', neededBy: 'Fri 14:30' }
+];
+/* Previous calls per vessel, newest first: [date, [[itemId, qty], …]]. MV Granite Coast has no call planned. */
+const PR_CALL_HISTORY = {
+  choice: [
+    ['2026-10-02', [['engine-room', 1], ['provisions', 5], ['galley-gas', 2], ['mooring-tails', 4], ['shackles', 8], ['chart-corrections', 1]]],
+    ['2026-09-11', [['engine-room', 1], ['provisions', 5], ['mooring-tails', 4], ['bonded-stores', 1]]],
+    ['2026-08-21', [['engine-room', 1], ['provisions', 4], ['galley-gas', 3], ['shackles', 6], ['deck-paint', 2]]],
+    ['2026-07-31', [['engine-room', 1], ['provisions', 5], ['galley-gas', 2], ['mooring-tails', 2], ['bonded-stores', 1]]],
+    ['2026-07-10', [['engine-room', 2], ['provisions', 6], ['galley-gas', 2], ['shackles', 8], ['chart-corrections', 1]]],
+    ['2026-06-19', [['engine-room', 1], ['provisions', 5], ['mooring-tails', 6], ['bonded-stores', 1]]]
+  ],
+  boreal: [
+    ['2026-09-26', [['engine-room', 1], ['provisions', 7], ['galley-gas', 1]]],
+    ['2026-08-29', [['engine-room', 1], ['provisions', 7], ['chart-corrections', 1]]],
+    ['2026-08-01', [['engine-room', 1], ['provisions', 6], ['galley-gas', 1], ['mooring-tails', 2]]],
+    ['2026-07-04', [['engine-room', 2], ['provisions', 7]]]
+  ]
+};
+const PR_SUGGESTION_COPY = {
+  pill: 'Drafted before the call',
+  intro: 'Drafted from what she ordered on her previous calls, ready before she arrives. Untick anything she does not need this time, change a quantity, then send the list to Compass.',
+  sendLabel: 'Send suggested list to Compass',
+  noneTicked: 'Tick at least one line to send',
+  badQty: 'Every ticked line needs a quantity of 1 or more'
+};
+
 /* ── persistence keys (store/procurement.ts, presenter-prefixed) ── */
 const PR_KEY_REQUEST = 'pres.procurement.request';
 const PR_KEY_STAGE = 'pres.procurement.stage';
 const PR_KEY_TIMES = 'pres.procurement.stageTimes';
+const PR_KEY_SUGGESTION = 'pres.procurement.suggestion';
 
 /* ── styles (inline, mirroring the marketplace partial's strings) ── */
 const PR_PILL_BASE = 'display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;letter-spacing:.02em;white-space:nowrap;';
@@ -199,6 +247,58 @@ function prTimeOf(iso) {
   return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
 function prNow() { return new Date().toISOString(); }
+
+/* ── suggested list helpers (lib/procurementSuggest.ts) ── */
+function prMedianQty(values) {
+  if (!values.length) return 0;
+  const sorted = values.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return Math.ceil(sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2);
+}
+function prMeetsThreshold(times, calls) { return calls > 0 && times * 2 >= calls; }
+function prFormatQty(qty, unit) { return qty + ' ' + (qty === 1 ? unit.one : unit.other); }
+function prRecentCalls(vesselId) {
+  return (PR_CALL_HISTORY[vesselId] || []).slice().sort((a, b) => b[0].localeCompare(a[0])).slice(0, PR_SUGGEST_WINDOW);
+}
+function prPlannedCallFor(vesselId) { return PR_PLANNED_CALLS.find((c) => c.vesselId === vesselId) || null; }
+/* Every catalogue item that meets the threshold, most often ordered first, then in catalogue order. */
+function prSuggestionFor(vesselId) {
+  if (!prPlannedCallFor(vesselId)) return [];
+  const calls = prRecentCalls(vesselId);
+  const n = calls.length;
+  const out = [];
+  PR_STORES_ITEMS.forEach((item, order) => {
+    const qtys = [];
+    calls.forEach((c) => { const l = c[1].find((x) => x[0] === item.id); if (l && l[1] > 0) qtys.push(l[1]); });
+    if (!prMeetsThreshold(qtys.length, n)) return;
+    out.push({ itemId: item.id, description: item.description, unit: item.unit, qty: prMedianQty(qtys), timesOrdered: qtys.length, reason: 'Ordered on ' + qtys.length + ' of the last ' + n + ' calls', order: order });
+  });
+  return out.sort((a, b) => b.timesOrdered - a.timesOrdered || a.order - b.order);
+}
+/* Edits apply to the vessel they were made for; any other vessel starts clean. */
+function prEditsFor(edits, vesselId) {
+  return edits && edits.vesselId === vesselId ? edits : { vesselId: vesselId, off: [], qty: {} };
+}
+function prIsTicked(edits, itemId) { return edits.off.indexOf(itemId) === -1; }
+function prEffectiveQty(line, edits) { return typeof edits.qty[line.itemId] === 'number' ? edits.qty[line.itemId] : line.qty; }
+/* The ticked lines as procurement lines — the same shape a hand-written list has. */
+function prSuggestedRequestLines(suggested, edits) {
+  return suggested.filter((l) => prIsTicked(edits, l.itemId)).map((l) => ({ id: l.itemId, description: l.description, qty: prFormatQty(prEffectiveQty(l, edits), l.unit) }));
+}
+function prCanSendSuggestion(suggested, edits) {
+  const ticked = suggested.filter((l) => prIsTicked(edits, l.itemId));
+  return ticked.length > 0 && ticked.every((l) => { const q = prEffectiveQty(l, edits); return Number.isInteger(q) && q >= 1; });
+}
+/* The stored changes to the suggested list, or null when there are none or they look wrong. */
+function prReadSuggestion(get) {
+  const e = get(PR_KEY_SUGGESTION, null);
+  if (!e || typeof e !== 'object' || Array.isArray(e)) return null;
+  if (typeof e.vesselId !== 'string' || !Array.isArray(e.off) || !e.off.every((x) => typeof x === 'string') ||
+      !e.qty || typeof e.qty !== 'object' || Array.isArray(e.qty) || !Object.keys(e.qty).every((k) => typeof e.qty[k] === 'number')) {
+    return null;
+  }
+  return { vesselId: e.vesselId, off: e.off.slice(), qty: Object.assign({}, e.qty) };
+}
 function prFocus(id) { setTimeout(() => { const el = document.getElementById(id); if (el) el.focus(); }, 0); }
 
 (Component._features = Component._features || []).push({
@@ -209,6 +309,7 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       prRequest: prReadRequest(get),
       prStage: stage,
       prStageTimes: prReadStageTimes(get, stage),
+      prSuggestion: prReadSuggestion(get),
       prNewDesc: '',
       prNewQty: ''
     };
@@ -226,7 +327,7 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
     const invLines = prInvoiceLines(request);
     const totals = prInvoiceTotals(invLines);
     const nextLabel = PR_SIMULATE_LABELS[stage] || '';
-    const dirty = !draft || JSON.stringify(request) !== JSON.stringify(PR_DEFAULT_REQUEST);
+    const dirty = !draft || !!st.prSuggestion || JSON.stringify(request) !== JSON.stringify(PR_DEFAULT_REQUEST);
     const pill = PR_STAGE_PILL[stage] || PR_STAGE_PILL.draft;
     const sendable = prCanSend(request);
     const n = request.lines.length;
@@ -237,6 +338,64 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
     const patchRequest = (patch) => saveRequest(Object.assign({}, this.state.prRequest, patch));
     const updateLine = (id, patch) => patchRequest({ lines: this.state.prRequest.lines.map((l) => (l.id === id ? Object.assign({}, l, patch) : l)) });
     const removeLine = (id) => patchRequest({ lines: this.state.prRequest.lines.filter((l) => l.id !== id) });
+    /* Send a request to Compass (store/procurement.ts send). The suggested list
+       calls this too, with its ticked lines, so both reach the same pipeline. */
+    const sendRequest = (req) => {
+      const cur = this.state;
+      if (cur.prStage !== 'draft' || !prCanSend(req)) return;
+      /* Snapshot the request as sent, so what is on disk is what went to Compass. */
+      this._set(PR_KEY_REQUEST, req);
+      const times = Object.assign({}, cur.prStageTimes, { sent: prNow() });
+      this._set(PR_KEY_STAGE, 'sent');
+      this._set(PR_KEY_TIMES, times);
+      this.setState({ prRequest: req, prStage: 'sent', prStageTimes: times });
+      const v = prVesselFor(req);
+      const count = req.lines.length;
+      this.toastMsg(req.ref + ' sent to Compass — ' + count + ' ' + (count === 1 ? 'line' : 'lines') + ', ' + v.name + ', needed ' + req.neededBy + '. Compass sources and supplies every line; you see one invoice, from GAC.');
+      prFocus('pres-compass-email');
+    };
+
+    /* The suggested list for the request's vessel (screens/app/procurement/SuggestedList.tsx). */
+    const sgCall = prPlannedCallFor(request.vesselId);
+    const sgLines = prSuggestionFor(request.vesselId);
+    const sgHasList = !!sgCall && sgLines.length > 0;
+    const sgEdits = prEditsFor(st.prSuggestion, request.vesselId);
+    const sgCalls = prRecentCalls(request.vesselId).length;
+    const sgTickedCount = sgLines.filter((l) => prIsTicked(sgEdits, l.itemId)).length;
+    const sgSendable = prCanSendSuggestion(sgLines, sgEdits);
+    const saveSuggestion = (next) => { this._set(PR_KEY_SUGGESTION, next); this.setState({ prSuggestion: next }); };
+    const sgToggle = (itemId) => {
+      if (this.state.prStage !== 'draft') return;
+      const e = prEditsFor(this.state.prSuggestion, this.state.prRequest.vesselId);
+      const off = e.off.indexOf(itemId) === -1 ? e.off.concat([itemId]) : e.off.filter((x) => x !== itemId);
+      saveSuggestion(Object.assign({}, e, { off: off }));
+    };
+    const sgSetQty = (itemId, value) => {
+      if (this.state.prStage !== 'draft') return;
+      const e = prEditsFor(this.state.prSuggestion, this.state.prRequest.vesselId);
+      const num = Number(value);
+      const qty = Object.assign({}, e.qty);
+      qty[itemId] = Number.isFinite(num) ? Math.max(0, Math.floor(num)) : 0;
+      saveSuggestion(Object.assign({}, e, { qty: qty }));
+    };
+    const sgRows = sgLines.map((l) => {
+      const on = prIsTicked(sgEdits, l.itemId);
+      const q = prEffectiveQty(l, sgEdits);
+      return {
+        itemId: l.itemId, description: l.description, reason: l.reason,
+        ticked: on, untick: !on, tickedAttr: on ? 'true' : 'false',
+        tickId: 'suggested-' + l.itemId, qtyId: 'suggested-qty-' + l.itemId,
+        tickTestId: 'suggested-tick-' + l.itemId, qtyTestId: 'suggested-qty-' + l.itemId, reasonTestId: 'suggested-reason-' + l.itemId,
+        qtyLabel: 'Quantity: ' + l.description,
+        qty: q > 0 ? String(q) : '',
+        unit: q === 1 ? l.unit.one : l.unit.other,
+        descStyle: 'display:block;font-size:13.5px;font-weight:700;' + (on ? 'color:#0A2540;' : 'color:#33475F;text-decoration:line-through;'),
+        qtyStyle: 'display:block;min-height:40px;width:76px;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;' + (on ? '' : 'opacity:.5;'),
+        onTick: () => sgToggle(l.itemId),
+        onQty: (e) => sgSetQty(l.itemId, e.target.value)
+      };
+    });
+
     const addLine = (description, qty) => {
       const desc = description.trim();
       if (!desc) return;
@@ -343,19 +502,37 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       prSendHint: sendable
         ? 'The platform composes the email and shows it here — nothing to type'
         : (n === 0 ? 'Add at least one line to send' : 'Every line needs a description before it can go to Compass'),
-      prSend: () => {
+      prSend: () => sendRequest(this.state.prRequest),
+
+      /* suggested list — shown only while the request is a draft */
+      sgPlanned: draft && sgHasList,
+      sgNone: draft && !sgHasList,
+      sgNoneText: 'No call planned for ' + vessel.name + ' yet. A suggested list is drafted from her previous calls once one is.',
+      sgEyebrow: 'Suggested list · from the last ' + sgCalls + ' calls',
+      sgTitle: sgCall ? 'Next call · ' + vessel.name + ' · ' + sgCall.port + ' · ETA ' + sgCall.eta : '',
+      sgIntro: PR_SUGGESTION_COPY.intro,
+      sgPill: PR_SUGGESTION_COPY.pill,
+      sgPillStyle: prPill('info'),
+      sgRows: sgRows,
+      sgRule: 'A line is suggested when it was ordered on at least half of the last ' + sgCalls + ' calls. The quantity is the usual order, the median.',
+      sgSendLabel: PR_SUGGESTION_COPY.sendLabel,
+      sgSendDisabled: !sgSendable,
+      sgSendBtnStyle: PR_BTN_PRIMARY + (!sgSendable ? PR_BTN_DISABLED : ''),
+      sgHint: sgSendable
+        ? 'Goes to Compass as ' + request.ref + ' in place of the draft below, through the same steps to one invoice'
+        : (sgTickedCount === 0 ? PR_SUGGESTION_COPY.noneTicked : PR_SUGGESTION_COPY.badQty),
+      sgSend: () => {
         const cur = this.state;
-        if (cur.prStage !== 'draft' || !prCanSend(cur.prRequest)) return;
-        /* Snapshot the request as sent, so what is on disk is what went to Compass. */
-        this._set(PR_KEY_REQUEST, cur.prRequest);
-        const times = Object.assign({}, cur.prStageTimes, { sent: prNow() });
-        this._set(PR_KEY_STAGE, 'sent');
-        this._set(PR_KEY_TIMES, times);
-        this.setState({ prStage: 'sent', prStageTimes: times });
-        const v = prVesselFor(cur.prRequest);
-        const count = cur.prRequest.lines.length;
-        this.toastMsg(cur.prRequest.ref + ' sent to Compass — ' + count + ' ' + (count === 1 ? 'line' : 'lines') + ', ' + v.name + ', needed ' + cur.prRequest.neededBy + '. Compass sources and supplies every line; you see one invoice, from GAC.');
-        prFocus('pres-compass-email');
+        if (cur.prStage !== 'draft') return;
+        const vid = cur.prRequest.vesselId;
+        const callNow = prPlannedCallFor(vid);
+        if (!callNow) return;
+        const sug = prSuggestionFor(vid);
+        const e = prEditsFor(cur.prSuggestion, vid);
+        if (!prCanSendSuggestion(sug, e)) return;
+        /* The ticked lines become the request for this call; from here on it is the
+           same request, the same stages and the same invoice as a hand-written list. */
+        sendRequest(Object.assign({}, cur.prRequest, { vesselId: vid, deliveryPoint: callNow.deliveryPoint, neededBy: callNow.neededBy, lines: prSuggestedRequestLines(sug, e) }));
       },
 
       /* email preview */
@@ -392,8 +569,8 @@ function prFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       /* Compass strip */
       prDirty: dirty,
       prReset: () => {
-        prRemove(PR_KEY_REQUEST); prRemove(PR_KEY_STAGE); prRemove(PR_KEY_TIMES);
-        this.setState({ prRequest: prCloneDefault(), prStage: 'draft', prStageTimes: {}, prNewDesc: '', prNewQty: '' });
+        prRemove(PR_KEY_REQUEST); prRemove(PR_KEY_STAGE); prRemove(PR_KEY_TIMES); prRemove(PR_KEY_SUGGESTION);
+        this.setState({ prRequest: prCloneDefault(), prStage: 'draft', prStageTimes: {}, prSuggestion: null, prNewDesc: '', prNewQty: '' });
         prFocus('procurement-request');
       }
     };

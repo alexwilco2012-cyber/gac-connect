@@ -7,7 +7,9 @@ import type { LaunchDetails } from '../data/suppliers';
  * flight and times the transport to it. Arriving on-signers: flight lands →
  * taxi from the airport → quay → launch to the vessel. Departing off-signers:
  * launch from the vessel → quay → taxi to the airport, back from the check-in
- * deadline. A delay re-times every leg from the new estimate.
+ * deadline. A delay re-times every leg from the new estimate, and
+ * `lib/delayNotices` turns the re-timed legs into one notice per party on the
+ * run (taxi, launch, hotel, the client's GAC agent).
  *
  * There is no live feed in this proof of concept: `trackFlight` looks a
  * flight up in a small illustrative table and a "delay" is applied on demand.
@@ -87,6 +89,10 @@ export const TRANSFER_BUFFERS = {
   checkInBeforeDepartureMin: 120,
   /** Illustrative delay for the "Simulate" button. */
   simulatedDelayMin: 40,
+  /** A further slip once the flight is already late, so the notices can be seen to go out again. */
+  furtherDelayMin: 20,
+  /** Aberdeen airport ↔ the crew hotels by Regent Quay, by road. Illustrative. */
+  hotelRoadMin: 25,
 } as const;
 
 /** 'ZZ 417' / 'zz417' / ' Zz-417 ' → 'ZZ417'. */
@@ -124,10 +130,18 @@ export function launchTransitMin(
   return m ? Number(m[1]) : 30;
 }
 
+/**
+ * Who a leg belongs to. The flight is the feed's; the others are the
+ * suppliers a delay has to reach — `lib/delayNotices` reads the party list
+ * off the legs rather than from copy.
+ */
+export type LegParty = 'flight' | 'taxi' | 'launch' | 'hotel';
+
 export interface TransferLeg {
   label: string;
   time: string;
   note?: string;
+  party?: LegParty;
 }
 
 export interface TransferPlan {
@@ -141,27 +155,84 @@ export interface TransferPlan {
  * Arriving on-signers: land → taxi → quay → launch → vessel.
  * Departing off-signers: vessel → launch → quay → taxi → airport by the check-in deadline.
  * `launch` is null when the vessel is alongside (no launch leg).
+ *
+ * `hotel` (a hotel name) is a room booked that night. The flight-timed run
+ * then ends at the hotel (arriving: airport → hotel) or starts there
+ * (departing: hotel → airport), and the launch runs on another day, so it is
+ * left off this run.
  */
 export function planTransfers(
   status: FlightStatus,
   port: string,
   launch: Pick<LaunchDetails, 'transit' | 'vesselName'> | null,
+  hotel: string | null = null,
 ): TransferPlan {
+  const flightNote = status.delayMin ? `delayed ${status.delayMin} min` : 'on time';
+  const delayedText = status.delayMin ? `, delayed ${status.delayMin} min` : '';
+  if (hotel) {
+    const road = TRANSFER_BUFFERS.hotelRoadMin;
+    if (status.direction === 'arriving') {
+      const pickup = addMinutes(status.estimated, TRANSFER_BUFFERS.bagsAndImmigrationMin);
+      const checkIn = addMinutes(pickup, road);
+      return {
+        direction: 'arriving',
+        legs: [
+          { label: 'Flight lands', time: status.estimated, note: flightNote, party: 'flight' },
+          {
+            label: 'Taxi pickup at arrivals',
+            time: pickup,
+            note: `${TRANSFER_BUFFERS.bagsAndImmigrationMin} min for bags and immigration`,
+            party: 'taxi',
+          },
+          {
+            label: `Check in, ${hotel}`,
+            time: checkIn,
+            note: `${road} min by road · room booked that night`,
+            party: 'hotel',
+          },
+        ],
+        summary: `Taxi pickup ${pickup} at arrivals, timed to ${status.flight} (${status.estimated}${delayedText}); check in at ${hotel} ${checkIn}.`,
+      };
+    }
+    const atAirport = addMinutes(status.estimated, -TRANSFER_BUFFERS.checkInBeforeDepartureMin);
+    const pickup = addMinutes(atAirport, -road);
+    return {
+      direction: 'departing',
+      legs: [
+        {
+          label: `Check out, ${hotel}`,
+          time: pickup,
+          note: 'room booked the night before',
+          party: 'hotel',
+        },
+        {
+          label: 'Taxi pickup at the hotel',
+          time: pickup,
+          note: `${road} min by road`,
+          party: 'taxi',
+        },
+        {
+          label: 'At the airport',
+          time: atAirport,
+          note: `${TRANSFER_BUFFERS.checkInBeforeDepartureMin} min before departure`,
+        },
+        { label: 'Flight departs', time: status.estimated, note: flightNote, party: 'flight' },
+      ],
+      summary: `Check out of ${hotel} and taxi ${pickup} for ${status.flight} departing ${status.estimated}${status.delayMin ? ` (delayed ${status.delayMin} min)` : ''}.`,
+    };
+  }
   const taxi = TRANSFER_BUFFERS.taxiMin[port] ?? 30;
   const transit = launchTransitMin(launch);
   if (status.direction === 'arriving') {
     const pickup = addMinutes(status.estimated, TRANSFER_BUFFERS.bagsAndImmigrationMin);
     const quay = addMinutes(pickup, taxi);
     const legs: TransferLeg[] = [
-      {
-        label: 'Flight lands',
-        time: status.estimated,
-        note: status.delayMin ? `delayed ${status.delayMin} min` : 'on time',
-      },
+      { label: 'Flight lands', time: status.estimated, note: flightNote, party: 'flight' },
       {
         label: 'Taxi pickup at arrivals',
         time: pickup,
         note: `${TRANSFER_BUFFERS.bagsAndImmigrationMin} min for bags and immigration`,
+        party: 'taxi',
       },
       { label: `Arrive at the quay, ${port}`, time: quay, note: `${taxi} min by road` },
     ];
@@ -171,6 +242,7 @@ export function planTransfers(
         label: `Launch departs (${launch.vesselName})`,
         time: dep,
         note: `${TRANSFER_BUFFERS.quayHandoverMin} min quay handover`,
+        party: 'launch',
       });
       legs.push({
         label: 'Alongside the vessel',
@@ -183,7 +255,7 @@ export function planTransfers(
     return {
       direction: 'arriving',
       legs,
-      summary: `Taxi pickup ${pickup} at arrivals, timed to ${status.flight} (${status.estimated}${status.delayMin ? `, delayed ${status.delayMin} min` : ''})${launch ? `; launch ${launch.vesselName} ${legs[3]!.time} from the quay` : ''}.`,
+      summary: `Taxi pickup ${pickup} at arrivals, timed to ${status.flight} (${status.estimated}${delayedText})${launch ? `; launch ${launch.vesselName} ${legs[3]!.time} from the quay` : ''}.`,
     };
   }
   // Departing — work back from the check-in deadline.
@@ -197,6 +269,7 @@ export function planTransfers(
       label: `Launch leaves the vessel (${launch.vesselName})`,
       time: launchDep,
       note: `${transit} min transit`,
+      party: 'launch',
     });
     legs.push({
       label: `Ashore at the quay, ${port}`,
@@ -206,17 +279,18 @@ export function planTransfers(
   } else {
     legs.push({ label: `Leave the vessel alongside, ${port}`, time: taxiPickup });
   }
-  legs.push({ label: 'Taxi pickup at the quay', time: taxiPickup, note: `${taxi} min by road` });
+  legs.push({
+    label: 'Taxi pickup at the quay',
+    time: taxiPickup,
+    note: `${taxi} min by road`,
+    party: 'taxi',
+  });
   legs.push({
     label: 'At the airport',
     time: atAirport,
     note: `${TRANSFER_BUFFERS.checkInBeforeDepartureMin} min before departure`,
   });
-  legs.push({
-    label: 'Flight departs',
-    time: status.estimated,
-    note: status.delayMin ? `delayed ${status.delayMin} min` : 'on time',
-  });
+  legs.push({ label: 'Flight departs', time: status.estimated, note: flightNote, party: 'flight' });
   return {
     direction: 'departing',
     legs,

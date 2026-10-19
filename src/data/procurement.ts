@@ -76,6 +76,9 @@ export const ILLUSTRATIVE_PRICES_GBP: Record<string, number> = {
   'deck-stores': 860,
   'bonded-stores': 540,
   'galley-gas': 190,
+  // Lines that reach a request from the suggested list (data/procurementHistory).
+  'mooring-tails': 520,
+  shackles: 340,
 };
 
 export const ILLUSTRATIVE_LINE_PRICE_FALLBACK_GBP = 250;

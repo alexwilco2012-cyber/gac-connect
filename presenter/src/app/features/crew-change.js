@@ -8,7 +8,14 @@
    src/screens/app/CrewChange.tsx, src/lib/crewChange.ts, src/lib/transfers.ts,
    src/data/crewChange.ts and src/store/crewChange.ts — copy verbatim, rules
    ported verbatim. The launches panel on the Launches section is bound by
-   features/launches.js. All data on this screen is illustrative and fictional.
+   features/launches.js; the Crew list section (first in the strip and the
+   default since 23 Aug — upload, services, GDPR deletion) is bound by
+   features/crew-list.js, which is included straight after this module and
+   reads its helpers (vessels, ports, dates, the flight feed, the style strings,
+   the requests store keys) from the shared x-dc scope. An LOI raised from a
+   crew list lands in ccRequests tagged crewListId and is redacted when the
+   list's personal data is deleted; the requests list here renders that. All
+   data on this screen is illustrative and fictional.
 
    Deep link: the core maps '#/crew-change/<section>' (and '#/launches', which is
    '#/crew-change/launches') to route 'crew-change' with state.routeSection =
@@ -19,6 +26,9 @@
 
 /* ---------- copy tables (src/data/crewChange.ts) ---------- */
 const CC_SECTIONS = [
+  /* First and the default (owner's ask, 23 Aug): the list is where a coordinator's
+     crew change starts; the other sections are the services that hang off it. */
+  { id: 'crew-list', label: 'Crew list', summary: 'Upload the crew list you already keep — names, passports, flights — and the platform offers the LOIs, hotel rooms and taxis that follow from it. One upload, not one form per crew member.' },
   { id: 'hotels', label: 'Hotels', summary: 'Rooms for crew held ashore — off-signers, transit crews, medical stand-downs.' },
   { id: 'taxis', label: 'Taxis', summary: 'Airport, hotel and quay runs, timed to the crew member’s tracked flight when you give us the flight number.' },
   { id: 'launches', label: 'Launches', summary: 'Crew, stores and light freight out to vessels at anchor — capacity and whether freight is included, launch by launch, port by port.' },
@@ -30,7 +40,9 @@ const CC_SECTIONS = [
    were split ('#/crew-change/transfers') still lands somewhere sensible instead
    of silently dropping the visitor on Hotels (site: RETIRED_CREW_SECTIONS). */
 const CC_RETIRED_SECTIONS = { transfers: 'taxis' };
-const CC_DEFAULT_SECTION = 'hotels';
+/* '#/crew-change' with no section means the crew list (site: DEFAULT_CREW_SECTION);
+   hotels deep links are '#/crew-change/hotels'. */
+const CC_DEFAULT_SECTION = 'crew-list';
 function ccIsSectionId(v) { return !!v && CC_SECTIONS.some((s) => s.id === v); }
 /* The section a hash asks for: current id, retired id, or the default. */
 function ccResolveSection(v) {
@@ -83,7 +95,11 @@ const TR_BUFFERS = {
   taxiMin: { Aberdeen: 25, Peterhead: 55, Montrose: 60, Macduff: 75 },
   quayHandoverMin: 20,
   checkInBeforeDepartureMin: 120,
-  simulatedDelayMin: 40
+  simulatedDelayMin: 40,
+  /* A further slip once the flight is already late, so the notices can be seen to go out again. */
+  furtherDelayMin: 20,
+  /* Aberdeen airport ↔ the crew hotels by Regent Quay, by road. Illustrative. */
+  hotelRoadMin: 25
 };
 const TR_DIRECTIONS = [
   { id: 'arriving', label: 'On-signers arriving', hint: 'flight lands → taxi → quay → launch' },
@@ -119,21 +135,55 @@ function trLaunchTransitMin(launch) {
 }
 /* Arriving on-signers: land → taxi → quay → launch → vessel.
    Departing off-signers: vessel → launch → quay → taxi → airport by the check-in deadline.
-   `launch` is null when the vessel is alongside (no launch leg). */
-function trPlanTransfers(status, port, launch) {
+   `launch` is null when the vessel is alongside (no launch leg). `hotel` (a hotel
+   name) is a room booked that night: the run then ends at the hotel (arriving) or
+   starts there (departing), and the launch runs on another day, so it is left off.
+   Each leg carries its `party` (flight / taxi / launch / hotel) so the delay
+   notices read who to tell off the legs (site: TransferLeg.party). */
+function trPlanTransfers(status, port, launch, hotel) {
+  const flightNote = status.delayMin ? 'delayed ' + status.delayMin + ' min' : 'on time';
+  const delayedText = status.delayMin ? ', delayed ' + status.delayMin + ' min' : '';
+  if (hotel) {
+    const road = TR_BUFFERS.hotelRoadMin;
+    if (status.direction === 'arriving') {
+      const pickup = trAddMinutes(status.estimated, TR_BUFFERS.bagsAndImmigrationMin);
+      const checkIn = trAddMinutes(pickup, road);
+      return {
+        direction: 'arriving',
+        legs: [
+          { label: 'Flight lands', time: status.estimated, note: flightNote, party: 'flight' },
+          { label: 'Taxi pickup at arrivals', time: pickup, note: TR_BUFFERS.bagsAndImmigrationMin + ' min for bags and immigration', party: 'taxi' },
+          { label: 'Check in, ' + hotel, time: checkIn, note: road + ' min by road · room booked that night', party: 'hotel' }
+        ],
+        summary: 'Taxi pickup ' + pickup + ' at arrivals, timed to ' + status.flight + ' (' + status.estimated + delayedText + '); check in at ' + hotel + ' ' + checkIn + '.'
+      };
+    }
+    const atAirportH = trAddMinutes(status.estimated, -TR_BUFFERS.checkInBeforeDepartureMin);
+    const pickupH = trAddMinutes(atAirportH, -road);
+    return {
+      direction: 'departing',
+      legs: [
+        { label: 'Check out, ' + hotel, time: pickupH, note: 'room booked the night before', party: 'hotel' },
+        { label: 'Taxi pickup at the hotel', time: pickupH, note: road + ' min by road', party: 'taxi' },
+        { label: 'At the airport', time: atAirportH, note: TR_BUFFERS.checkInBeforeDepartureMin + ' min before departure' },
+        { label: 'Flight departs', time: status.estimated, note: flightNote, party: 'flight' }
+      ],
+      summary: 'Check out of ' + hotel + ' and taxi ' + pickupH + ' for ' + status.flight + ' departing ' + status.estimated + (status.delayMin ? ' (delayed ' + status.delayMin + ' min)' : '') + '.'
+    };
+  }
   const taxi = TR_BUFFERS.taxiMin[port] ?? 30;
   const transit = trLaunchTransitMin(launch);
   if (status.direction === 'arriving') {
     const pickup = trAddMinutes(status.estimated, TR_BUFFERS.bagsAndImmigrationMin);
     const quay = trAddMinutes(pickup, taxi);
     const legs = [
-      { label: 'Flight lands', time: status.estimated, note: status.delayMin ? 'delayed ' + status.delayMin + ' min' : 'on time' },
-      { label: 'Taxi pickup at arrivals', time: pickup, note: TR_BUFFERS.bagsAndImmigrationMin + ' min for bags and immigration' },
+      { label: 'Flight lands', time: status.estimated, note: flightNote, party: 'flight' },
+      { label: 'Taxi pickup at arrivals', time: pickup, note: TR_BUFFERS.bagsAndImmigrationMin + ' min for bags and immigration', party: 'taxi' },
       { label: 'Arrive at the quay, ' + port, time: quay, note: taxi + ' min by road' }
     ];
     if (launch) {
       const dep = trAddMinutes(quay, TR_BUFFERS.quayHandoverMin);
-      legs.push({ label: 'Launch departs (' + launch.vesselName + ')', time: dep, note: TR_BUFFERS.quayHandoverMin + ' min quay handover' });
+      legs.push({ label: 'Launch departs (' + launch.vesselName + ')', time: dep, note: TR_BUFFERS.quayHandoverMin + ' min quay handover', party: 'launch' });
       legs.push({ label: 'Alongside the vessel', time: trAddMinutes(dep, transit), note: transit + ' min transit' });
     } else {
       legs.push({ label: 'Board the vessel alongside', time: quay });
@@ -141,7 +191,7 @@ function trPlanTransfers(status, port, launch) {
     return {
       direction: 'arriving',
       legs: legs,
-      summary: 'Taxi pickup ' + pickup + ' at arrivals, timed to ' + status.flight + ' (' + status.estimated + (status.delayMin ? ', delayed ' + status.delayMin + ' min' : '') + ')' +
+      summary: 'Taxi pickup ' + pickup + ' at arrivals, timed to ' + status.flight + ' (' + status.estimated + delayedText + ')' +
         (launch ? '; launch ' + launch.vesselName + ' ' + legs[3].time + ' from the quay' : '') + '.'
     };
   }
@@ -152,20 +202,56 @@ function trPlanTransfers(status, port, launch) {
   if (launch) {
     const quayArrive = trAddMinutes(taxiPickup, -TR_BUFFERS.quayHandoverMin);
     const launchDep = trAddMinutes(quayArrive, -transit);
-    legs.push({ label: 'Launch leaves the vessel (' + launch.vesselName + ')', time: launchDep, note: transit + ' min transit' });
+    legs.push({ label: 'Launch leaves the vessel (' + launch.vesselName + ')', time: launchDep, note: transit + ' min transit', party: 'launch' });
     legs.push({ label: 'Ashore at the quay, ' + port, time: quayArrive, note: TR_BUFFERS.quayHandoverMin + ' min quay handover' });
   } else {
     legs.push({ label: 'Leave the vessel alongside, ' + port, time: taxiPickup });
   }
-  legs.push({ label: 'Taxi pickup at the quay', time: taxiPickup, note: taxi + ' min by road' });
+  legs.push({ label: 'Taxi pickup at the quay', time: taxiPickup, note: taxi + ' min by road', party: 'taxi' });
   legs.push({ label: 'At the airport', time: atAirport, note: TR_BUFFERS.checkInBeforeDepartureMin + ' min before departure' });
-  legs.push({ label: 'Flight departs', time: status.estimated, note: status.delayMin ? 'delayed ' + status.delayMin + ' min' : 'on time' });
+  legs.push({ label: 'Flight departs', time: status.estimated, note: flightNote, party: 'flight' });
   return {
     direction: 'departing',
     legs: legs,
     summary: (launch ? 'Launch ' + launch.vesselName + ' leaves the vessel ' + legs[0].time + '; ' : '') +
       'taxi ' + taxiPickup + ' from the quay for ' + status.flight + ' departing ' + status.estimated + (status.delayMin ? ' (delayed ' + status.delayMin + ' min)' : '') + '.'
   };
+}
+/* ---------- delay notices (src/lib/delayNotices.ts, verbatim) ----------
+   When the feed reports a delay the platform re-times the legs and tells every
+   supplier on the run, and the client's GAC agent, what moved. The party list is
+   read off the run's own legs; nothing is sent in this proof of concept. */
+const TR_AGENT_NAME = 'Your GAC agent';
+const TR_PARTY_ROLE = { taxi: 'Taxi operator', launch: 'Launch operator', hotel: 'Hotel', agent: 'Agent' };
+const TR_DELAY_NOTICE_NOTE = 'Illustrative — these notices are simulated here and nothing is sent. In production the platform messages each supplier on the run and your GAC agent as soon as the feed reports a delay, and again if it changes.';
+/* Taxis planner: a room booked that night takes the launch off the flight-timed run. */
+const CC_TAXIS_HOTEL_NOTE = 'With a room booked that night, the launch runs on another day, so it is not part of this run.';
+function trClockTime(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+/* One notice per party on the run, each with its own leg's booked and re-timed
+   time; empty when nothing moved. `booked` is the same run on time. */
+function trDelayNotices(booked, current, parties, notifiedAt) {
+  const moved = current.some((leg, i) => booked[i] && booked[i].time !== leg.time);
+  if (!moved) return [];
+  const notices = [];
+  ['taxi', 'launch', 'hotel'].forEach((party) => {
+    const name = parties[party];
+    if (!name) return;
+    const now = current.find((l) => l.party === party);
+    const was = booked.find((l) => l.party === party);
+    if (!now || !was) return;
+    notices.push({ party: party, role: TR_PARTY_ROLE[party], name: name, leg: now.label, from: was.time, to: now.time, notifiedAt: notifiedAt });
+  });
+  const flightNow = current.find((l) => l.party === 'flight');
+  const flightWas = booked.find((l) => l.party === 'flight');
+  if (flightNow && flightWas) {
+    /* The flight leads an arriving run and closes a departing one. */
+    const whole = current.indexOf(flightNow) === 0 ? 'and every leg after it' : 'and every leg before it';
+    notices.push({ party: 'agent', role: TR_PARTY_ROLE.agent, name: TR_AGENT_NAME, leg: flightNow.label + ', ' + whole, from: flightWas.time, to: flightNow.time, notifiedAt: notifiedAt });
+  }
+  return notices;
+}
+function trDelayNoticeSummary(flight, delayMin, count) {
+  return flight + ' delayed ' + delayMin + ' min — ' + count + ' ' + (count === 1 ? 'party' : 'parties') + ' told, each with the new time for their own leg.';
 }
 /* Launch operators and their home ports come from the shared roster (entries carrying a .launch block). */
 function trLaunchSuppliers(list) { return list.filter((s) => s.launch !== undefined); }
@@ -188,7 +274,7 @@ const CC_VESSELS = [
 const CC_ILLUSTRATIVE_NOTICE = 'Illustrative — do not enter real passport data in this proof of concept.';
 const CC_FLOW = [
   { title: 'The platform holds the templates', body: 'One template per letter, kept current by GAC. You never start from a blank page or an old email attachment.' },
-  { title: 'You fill them in', body: 'One letter per crew member, details as printed in the passport, vessel and port as on the call, flights as on the itinerary.' },
+  { title: 'You fill them in — or upload the list', body: 'One letter per crew member, details as printed in the passport. Upload your own crew list and the letters are raised from it; delete the crew’s details when the job is done.' },
   { title: 'GAC endorses or routes, then returns', body: 'LOIs are signed by GAC as agents and sent back. Repatriation letters go to UK Border Force for endorsement and come back endorsed.' }
 ];
 const CC_CHECKLIST = [
@@ -329,10 +415,82 @@ function ccIsCrewRequest(v) {
   if (!ccIsRecord(v)) return false;
   if (typeof v.id !== 'string' || typeof v.createdAt !== 'string') return false;
   if (typeof v.stage !== 'string') return false;
+  /* Optional provenance from a crew list upload — absent on older entries. */
+  if (v.crewListId !== undefined && typeof v.crewListId !== 'string') return false;
+  if (v.redacted !== undefined && typeof v.redacted !== 'boolean') return false;
+  if (v.completedAtIso !== undefined && typeof v.completedAtIso !== 'string') return false;
   if (v.kind === 'loi') return ccIsLoiForm(v.form) && ccStageIndex('loi', v.stage) !== -1;
   if (v.kind === 'repat') return ccIsRepatForm(v.form) && ccStageIndex('repat', v.stage) !== -1;
   return false;
 }
+/* What a redacted field reads — a dash, never a blank that could look like an unfinished form. */
+const CC_REDACTED_FIELD = '—';
+/* An LOI form with every personal detail replaced by a dash. Vessel and port are
+   not personal and stay, so the letter still reads as belonging to the right
+   call; the visa-national flag stays because it says nothing about an
+   individual once the name is gone (site: redactLoiForm). */
+function ccRedactLoiForm(form) {
+  return {
+    familyName: CC_REDACTED_FIELD, forenames: CC_REDACTED_FIELD, nationality: CC_REDACTED_FIELD, dateOfBirth: CC_REDACTED_FIELD,
+    passportNumber: CC_REDACTED_FIELD, passportExpiry: CC_REDACTED_FIELD, vesselId: form.vesselId, port: form.port,
+    joiningDate: CC_REDACTED_FIELD, arrivingFlight: CC_REDACTED_FIELD, visaNational: form.visaNational
+  };
+}
+/* The repatriation form redacted the same way; vessel and port stay, flights go. */
+function ccRedactRepatForm(form) {
+  return {
+    familyName: CC_REDACTED_FIELD, forenames: CC_REDACTED_FIELD, dateOfBirth: CC_REDACTED_FIELD, nationality: CC_REDACTED_FIELD,
+    passportNumber: CC_REDACTED_FIELD, vesselId: form.vesselId, port: form.port, disembarkationDate: CC_REDACTED_FIELD,
+    joinedOutsideUk: form.joinedOutsideUk, flights: form.flights.map(function () { return CC_REDACTED_FIELD; })
+  };
+}
+/* A request with its personal fields replaced by dashes, whichever kind it is
+   (site: redactRequest). Only LOIs are raised from a crew list today, but a
+   deletion helper that silently skips one kind is exactly the hole a
+   retention rule must not have. */
+function ccRedactRequest(r) {
+  if (r.redacted === true) return r;
+  return r.kind === 'loi'
+    ? Object.assign({}, r, { form: ccRedactLoiForm(r.form), redacted: true })
+    : Object.assign({}, r, { form: ccRedactRepatForm(r.form), redacted: true });
+}
+/* True when the request's personal data has been deleted — the card shows a placeholder, not a name. */
+function ccIsRedactedRequest(r) { return r.redacted === true; }
+
+/* Letters filed by hand keep the notice's promise on their own clock (site:
+   purgeExpiredLetters in lib/crewChange.ts): thirty days after the letter is
+   returned, every personal detail is deleted. A letter raised from a crew list
+   follows its list's clock (clApplyRetention). */
+const CC_LETTER_RETENTION_DAYS = 30;
+const CC_DAY_MS = 24 * 60 * 60 * 1000;
+function ccIsLetterDueForPurge(r, now) {
+  if (r.crewListId !== undefined || r.redacted === true || !r.completedAtIso) return false;
+  const done = new Date(r.completedAtIso).getTime();
+  if (!Number.isFinite(done)) return false;
+  return now.getTime() >= done + CC_LETTER_RETENTION_DAYS * CC_DAY_MS;
+}
+function ccPurgeExpiredLetters(requests, now) {
+  if (!requests.some((r) => ccIsLetterDueForPurge(r, now))) return requests;
+  return requests.map((r) => (ccIsLetterDueForPurge(r, now) ? ccRedactRequest(r) : r));
+}
+/* "on 18 Nov" — the day a returned letter's details will be deleted. */
+function ccLetterPurgeLabel(iso) {
+  const done = new Date(iso).getTime();
+  if (!Number.isFinite(done)) return CC_LETTER_RETENTION_DAYS + ' days after the letter is returned';
+  const at = new Date(done + CC_LETTER_RETENTION_DAYS * CC_DAY_MS);
+  return 'on ' + at.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).replace('Sept', 'Sep');
+}
+/* The data-protection disclosure on both letter templates (site: LETTER_DATA_NOTICE). */
+const CC_LETTER_DATA_NOTICE = {
+  title: 'How passport details are handled',
+  intro: 'Illustrative notice for this proof of concept. Crew data is handled under UK GDPR, and GAC’s published privacy notice governs the live service.',
+  points: [
+    { title: 'Used for this letter only', body: 'Names, dates of birth, nationality, passport details and flights are used to prepare this letter and have it endorsed, and for nothing else.' },
+    { title: 'Who sees them', body: 'Your GAC agent, the carrier and UK Border Force, where the letter needs them. No supplier on the platform sees them.' },
+    { title: 'Deleted, history included', body: 'Every personal detail is deleted automatically thirty days after the letter is returned to you. Delete crew details on the letter removes them at once. Only the reference, vessel and port stay, for the invoice.' },
+    { title: 'Crew members’ rights', body: 'Crew can ask what is held about them, and for it to be corrected or deleted, through your GAC agent.' }
+  ]
+};
 /* 'Mon 18 Aug · 09:41' */
 function ccStampLabel(d) {
   const dt = d || new Date();
@@ -387,7 +545,13 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       ccLoiProblems: [],
       ccRepat: Object.assign({}, CC_REPAT_DEMO_FORM, { flights: CC_REPAT_DEMO_FORM.flights.slice() }),
       ccRepatProblems: [],
-      ccRequests: Array.isArray(raw) ? raw.filter(ccIsCrewRequest) : [],
+      /* crew-list.js (included after this module) returns ccRequests too and
+         its value WINS the feature-state merge — it re-hydrates both keys
+         through the joint retention rule (clApplyRetention). This line stands
+         alone only if the crew-list module is ever removed. */
+      ccRequests: ccPurgeExpiredLetters(Array.isArray(raw) ? raw.filter(ccIsCrewRequest) : [], new Date()),
+      /* which hand-filed letter's Delete crew details is armed — screen state, never persisted */
+      ccDeleteArmed: null,
       /* flight-timed planner (Taxis) — not persisted, same as the site's FlightPlanner state */
       trDirection: 'arriving',
       trFlightNo: 'ZZ 417',
@@ -396,7 +560,11 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       trLaunchId: launches.length ? launches[0].id : '',
       trTracked: null,
       trNotFound: null,
-      trDelay: 0
+      trDelay: 0,
+      /* a room that night (hotel id, '' for none) and when the simulated delay
+         notices went out — stamped each time the delay changes */
+      trHotelId: '',
+      trNotifiedAt: ''
     };
   },
 
@@ -454,7 +622,8 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
         if (r.id !== id) return r;
         let stage = r.stage;
         for (let i = 0; i < Math.max(1, steps || 1); i += 1) stage = ccNextStage(r.kind, stage);
-        return Object.assign({}, r, { stage: stage });
+        const done = ccIsTerminalStage(r.kind, stage) && !r.completedAtIso ? { completedAtIso: new Date().toISOString() } : {};
+        return Object.assign({}, r, { stage: stage }, done);
       });
       saveRequests(list);
     };
@@ -483,27 +652,39 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
     const taxiPorts = ccTaxiPorts(trLaunchPorts(self.SUPPLIERS));
     const taxis = self.SUPPLIERS.filter((s) => s.cat === 'Taxis');
     const launchesHere = launches.filter((l) => l.launch.port === st.trPort);
-    const trLaunchSup = st.trLaunchId === '' ? null : (launchesHere.find((l) => l.id === st.trLaunchId) || null);
+    /* Hotels the planner can put on a run (a room that night); blocked ones are never offered. */
+    const trHotels = self.SUPPLIERS.filter((s) => s.cat === 'Hotels' && self.deriveStatus(s) !== 'blocked');
+    const trHotel = trHotels.find((h) => h.id === st.trHotelId) || null;
+    /* A room that night takes the launch off this run (it runs on another day). */
+    const trLaunchSup = st.trLaunchId === '' || trHotel ? null : (launchesHere.find((l) => l.id === st.trLaunchId) || null);
     const trStatus = st.trTracked ? trTrackFlight(st.trTracked.flight, st.trDelay) : null;
-    const trPlan = trStatus ? trPlanTransfers(trStatus, st.trPort, trLaunchSup ? trLaunchSup.launch : null) : null;
+    const trPlan = trStatus ? trPlanTransfers(trStatus, st.trPort, trLaunchSup ? trLaunchSup.launch : null, trHotel ? trHotel.name : null) : null;
     const trPaxN = Math.max(1, Math.floor(Number(st.trPax) || 1));
     const trTaxi = taxis.find((t) => (st.trPort === 'Macduff' ? t.id === 'deveron-cabs' : t.id === 'regent-quay-cars')) || taxis[0] || null;
+    /* The same run on time, so each party's notice can say what its leg moved from. */
+    const trBooked = trStatus && trStatus.delayMin
+      ? trPlanTransfers(trTrackFlight(trStatus.flight, 0), st.trPort, trLaunchSup ? trLaunchSup.launch : null, trHotel ? trHotel.name : null)
+      : null;
+    const trNotices = trBooked && trPlan
+      ? trDelayNotices(trBooked.legs, trPlan.legs, { taxi: trTaxi ? trTaxi.name : 'Taxi operator', launch: trLaunchSup ? trLaunchSup.name : null, hotel: trHotel ? trHotel.name : null }, st.trNotifiedAt)
+      : [];
+    const trSetDelay = (min) => self.setState({ trDelay: min, trNotifiedAt: min ? trClockTime(new Date()) : '' });
     const trSuggestions = Object.keys(TR_DEMO_FLIGHTS).map((k) => TR_DEMO_FLIGHTS[k]).filter((f) => f.direction === st.trDirection);
     const trTrack = () => {
       const found = trTrackFlight(self.state.trFlightNo);
       if (!found) { self.setState({ trTracked: null, trNotFound: self.state.trFlightNo.trim() || 'that flight' }); return; }
-      self.setState({ trNotFound: null, trDelay: 0, trDirection: found.direction, trTracked: found });
+      self.setState({ trNotFound: null, trDelay: 0, trNotifiedAt: '', trDirection: found.direction, trTracked: found });
     };
     const trPickDirection = (d) => {
       /* Offer a matching demo flight so the button always has something to track. */
       const first = Object.keys(TR_DEMO_FLIGHTS).map((k) => TR_DEMO_FLIGHTS[k]).find((f) => f.direction === d);
-      self.setState({ trDirection: d, trTracked: null, trNotFound: null, trDelay: 0, trFlightNo: first ? first.flight : self.state.trFlightNo });
+      self.setState({ trDirection: d, trTracked: null, trNotFound: null, trDelay: 0, trNotifiedAt: '', trFlightNo: first ? first.flight : self.state.trFlightNo });
     };
     const trSend = () => {
       if (!trPlan || !trStatus) return;
       const who = trPaxN + ' ' + (trPaxN === 1 ? 'crew member' : 'crew');
       self.toastMsg('Transport request sent — ' + who + ', ' + trStatus.flight + ' ' + trStatus.route + '. ' + trPlan.summary +
-        ' Taxi ' + (trTaxi ? trTaxi.name : 'operator') + (trLaunchSup ? ', launch ' + trLaunchSup.name : '') + ' — both hold the flight and re-time on a delay.');
+        ' Taxi ' + (trTaxi ? trTaxi.name : 'operator') + (trLaunchSup ? ', launch ' + trLaunchSup.name : '') + (trHotel ? ', hotel ' + trHotel.name : '') + ' — everyone on the run holds the flight and is told of a delay.');
     };
     const trLegs = trPlan ? trPlan.legs.map((leg, i) => ({
       n: String(i + 1), label: leg.label, hasNote: !!leg.note, note: leg.note ? '· ' + leg.note : '',
@@ -618,12 +799,20 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       const terminal = ccIsTerminalStage(r.kind, r.stage);
       const current = ccStageIndex(r.kind, r.stage);
       const tone = ccStageTone(r.kind, r.stage);
+      /* A request raised from a crew list loses its personal data when the list's
+         data is deleted: the card keeps its reference, stage and call, not the
+         name (site: RequestCard). */
+      const redacted = ccIsRedactedRequest(r);
       return {
         id: r.id, testId: 'crew-request-' + r.id, kind: r.kind, stage: r.stage,
+        redactedAttr: redacted ? 'true' : null,
         kindLabel: r.kind === 'loi' ? 'LOI' : 'Repat',
         meta: r.id + ' · ' + r.createdAt,
-        name: ccFormatCrewName(r.form.familyName, r.form.forenames),
-        line: (vessel ? vessel.name : '—') + ' · ' + r.form.port + ' · ' + (r.kind === 'loi' ? 'Joining ' + r.form.joiningDate : 'Disembarking ' + r.form.disembarkationDate),
+        hasSource: !!r.crewListId, sourceLabel: 'from ' + (r.crewListId || ''),
+        name: redacted ? 'Personal data deleted' : ccFormatCrewName(r.form.familyName, r.form.forenames),
+        line: redacted
+          ? 'Personal details deleted · ' + (vessel ? vessel.name : '—') + ' · ' + r.form.port
+          : (vessel ? vessel.name : '—') + ' · ' + r.form.port + ' · ' + (r.kind === 'loi' ? 'Joining ' + r.form.joiningDate : 'Disembarking ' + r.form.disembarkationDate),
         stageLabel: (terminal ? '✓ ' : '') + r.stage,
         stageStyle: CC_PILL + CC_PILL_TONE[tone] + 'white-space:normal;',
         tracker: ccStagesFor(r.kind).map((s, i) => {
@@ -639,7 +828,24 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
         onAdvance: () => { if (action) advance(r.id, action.steps); },
         terminal: terminal,
         onDownload: () => self.toastMsg('Illustrative — the endorsed letter would download here as a PDF.'),
-        note: CC_STAGE_NOTES[r.stage] || ''
+        note: CC_STAGE_NOTES[r.stage] || '',
+        /* A letter filed by hand can have its details deleted here; one raised
+           from a crew list is deleted from that list's card, with the list. */
+        canDelete: !redacted && !r.crewListId,
+        deleteArmed: st.ccDeleteArmed === r.id,
+        deleteNotArmed: st.ccDeleteArmed !== r.id,
+        deleteAsk: 'Delete every personal detail on ' + r.id + '? This cannot be undone.',
+        deleteAuto: r.completedAtIso
+          ? 'Deleted automatically ' + ccLetterPurgeLabel(r.completedAtIso) + ' if you do not.'
+          : 'Deleted automatically ' + CC_LETTER_RETENTION_DAYS + ' days after the letter is returned.',
+        onDeleteArm: () => self.setState({ ccDeleteArmed: r.id }),
+        onDeleteCancel: () => self.setState({ ccDeleteArmed: null }),
+        onDeleteConfirm: () => {
+          const list = self.state.ccRequests.map((x) => (x.id === r.id ? ccRedactRequest(x) : x));
+          self._set(CC_KEY_REQUESTS, list);
+          self.setState({ ccRequests: list, ccDeleteArmed: null });
+          self.toastMsg(r.id + ': crew details deleted. The reference, vessel and port stay for the invoice.');
+        }
       };
     });
 
@@ -649,12 +855,13 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       /* section strip */
       ccSections: ccSections,
       ccSectionId: section.id, ccSectionLabel: section.label, ccSectionSummary: section.summary,
+      ccIsCrewList: section.id === 'crew-list',
       ccIsHotels: section.id === 'hotels', ccIsTaxis: section.id === 'taxis', ccIsLaunches: section.id === 'launches',
       ccIsImmigration: section.id === 'immigration', ccIsLoi: section.id === 'loi', ccIsRepat: section.id === 'repat',
       /* dashboard "Plan taxis" / "Book a launch" — open Crew change straight on that
          section (site: ?section=taxis / ?section=launches). The hash is the only
          record of the section, so a plain "Open crew change" ('#/crew-change',
-         no section) afterwards lands on Hotels, as a bare /app/crew-change does. */
+         no section) afterwards lands on the Crew list, as a bare /app/crew-change does. */
       goTaxis: self._go('crew-change/taxis'),
       goLaunches: self._go('crew-change/launches'),
       /* hotels */
@@ -682,6 +889,15 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       trLaunchOptions: launchesHere.map((l) => ({ value: l.id, label: l.launch.vesselName + ' · ' + l.name + ' · ' + l.launch.transit })),
       trLaunchId: st.trLaunchId,
       onTrLaunch: (e) => self.setState({ trLaunchId: e.target.value }),
+      trLaunchDisabled: !!trHotel,
+      trLaunchDescribedBy: trHotel ? 'flight-hotel-note' : '',
+      trLaunchSelectStyle: 'display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;' + (trHotel ? 'opacity:.6;cursor:not-allowed;' : ''),
+      trHotelOptions: trHotels.map((h) => ({ value: h.id, label: h.name })),
+      trHotelId: st.trHotelId,
+      onTrHotel: (e) => self.setState({ trHotelId: e.target.value }),
+      trHasHotel: !!trHotel,
+      trHotelName: trHotel ? trHotel.name : '',
+      trHotelNote: CC_TAXIS_HOTEL_NOTE,
       trSuggestions: trSuggestions.map((f, i) => ({
         sep: i ? ' · ' : '', flight: f.flight, tail: ' ' + f.route + ' ' + f.scheduled,
         on: () => self.setState({ trFlightNo: f.flight })
@@ -689,7 +905,19 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       trTrack: trTrack,
       trHasStatus: !!(trStatus && trPlan),
       trDelayBtnLabel: st.trDelay ? 'Simulate: back on time' : 'Simulate: flight delayed ' + TR_BUFFERS.simulatedDelayMin + ' min',
-      trToggleDelay: () => self.setState({ trDelay: self.state.trDelay ? 0 : TR_BUFFERS.simulatedDelayMin }),
+      trToggleDelay: () => trSetDelay(self.state.trDelay ? 0 : TR_BUFFERS.simulatedDelayMin),
+      trHasDelayed: !!(trStatus && trPlan && st.trDelay),
+      trFurtherDelayLabel: 'Simulate: a further ' + TR_BUFFERS.furtherDelayMin + ' min',
+      trFurtherDelay: () => trSetDelay(self.state.trDelay + TR_BUFFERS.furtherDelayMin),
+      /* delay notices — one line per party on the run (CrewChange.tsx, delay-notices) */
+      trHasNotices: trNotices.length > 0,
+      trNoticeSummary: trStatus && trNotices.length ? trDelayNoticeSummary(trStatus.flight, trStatus.delayMin, trNotices.length) : '',
+      trNotices: trNotices.map((n, i) => ({
+        testId: 'delay-notice-' + n.party, name: n.name, role: '· ' + n.role, leg: n.leg,
+        from: n.from, to: n.to, notified: 'notified ' + n.notifiedAt,
+        style: 'display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px;font-size:13px;padding-bottom:6px;' + (i === trNotices.length - 1 ? '' : 'border-bottom:1px dashed #E5EAF1;')
+      })),
+      trNoticeNote: TR_DELAY_NOTICE_NOTE,
       trFeedNote: TR_FLIGHT_FEED_NOTE,
       trNotFound: !!st.trNotFound,
       trNotFoundText: 'The feed does not know ' + (st.trNotFound || 'that flight') + '. Check the number, or pick one of the demo flights above — in production your agent times the transport from the itinerary instead.',
@@ -724,6 +952,9 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       ccChecklist: CC_CHECKLIST, ccLoiNotOktb: CC_LOI_NOT_OKTB, ccInformsNotAdvises: CC_INFORMS_NOT_ADVISES,
       /* LOI */
       ccIllustrative: CC_ILLUSTRATIVE_NOTICE,
+      ccLetterNoticeTitle: CC_LETTER_DATA_NOTICE.title,
+      ccLetterNoticeIntro: CC_LETTER_DATA_NOTICE.intro,
+      ccLetterNoticePoints: CC_LETTER_DATA_NOTICE.points,
       ccLoiVisaAria: loi.visaNational ? 'true' : 'false',
       ccLoiVisaTrack: CC_SWITCH + (loi.visaNational ? 'background:#0E5E8A;' : 'background:#CBD6E2;'),
       ccLoiVisaKnob: CC_KNOB + (loi.visaNational ? 'left:23px;' : 'left:3px;'),
@@ -753,6 +984,10 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       ccRequestsCount: 'Requests · ' + requests.length,
       ccRequestsSummary: requests.length === 0 ? 'No requests yet — submit a template above'
         : (inProgress === 0 ? 'All letters returned' : inProgress + ' in progress · ' + (requests.length - inProgress) + ' returned'),
+      /* Both overridden by features/crew-list.js (feature vals merge in include
+         order, and it is included after this module): Reset demo clears the crew
+         lists too, and the button shows while a crew list exists, as the site's
+         reset() and RequestsList do. These stay so this module reads on its own. */
       ccHasRequests: requests.length > 0,
       ccReset: () => { self._set(CC_KEY_REQUESTS, []); self._set(CC_KEY_SEQ, 0); self.setState({ ccRequests: [] }); },
       /* dashboard crew card — live count of letters not yet returned (src/screens/app/Dashboard.tsx);

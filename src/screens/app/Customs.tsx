@@ -10,26 +10,41 @@ import { Pill } from '../../components/ui/Pill';
 import { StageTrack } from '../../components/ui/StageTrack';
 import { Toggle } from '../../components/ui/Toggle';
 import {
+  ASK_TEAM_INTRO,
+  ASK_TEAM_LABEL,
+  ASK_TEAM_NOTICE,
+  CLIENT_EORI,
   CUSTOMS_INTRO,
   DECLARATION_NOTICE,
   DELAY_NOTE,
   DEMO_DECLARATION,
   DOCUMENT_CHECKLIST,
   EMPTY_DECLARATION,
+  EORI_NOTE,
   INFORMS_NOT_ADVISES,
 } from '../../data/customs';
 import { AGENT_ENGAGED, serviceLine } from '../../data/serviceLines';
 import type { LineService } from '../../data/serviceLines';
 import {
+  CUSTOMS_QUESTION_MAX,
+  CUSTOMS_TEAM_CHANNELS,
+  customsTeamChannelLabel,
+  customsTeamOutcome,
   DECLARATION_KINDS,
   DECLARATION_STAGES,
   declarationAction,
   declarationStageTone,
+  eoriCallStatus,
   isCleared,
   openDeclarations,
   validateDeclaration,
 } from '../../lib/customs';
-import type { Declaration, DeclarationForm, DeclarationKind } from '../../lib/customs';
+import type {
+  CustomsTeamChannel,
+  Declaration,
+  DeclarationForm,
+  DeclarationKind,
+} from '../../lib/customs';
 import { needingCustoms } from '../../lib/logistics';
 import { useLineSection } from '../../lib/useLineSection';
 import { useApp } from '../../store/app';
@@ -43,9 +58,10 @@ import { useLogistics } from '../../store/logistics';
  *
  * Two rules are on the page rather than in a comment: the platform will not
  * accept a declaration until the client confirms the document set is complete
- * (an incomplete set is what actually holds goods at the border), and GAC
- * informs rather than advises — the classification and the declared position
- * stay the client's. Submission and the HMRC response are simulated.
+ * (an incomplete set is what actually holds goods at the border), and the
+ * platform does not give customs advice — the customs team does, and a
+ * declaration carries a way to ask them. Submission, the HMRC response and the
+ * customs team's call or email are simulated.
  */
 
 const INPUT =
@@ -72,12 +88,15 @@ function DeclarationFormCard() {
   function pickConsignment(ref: string) {
     const c = available.find((x) => x.id === ref);
     if (!c) {
-      set('consignmentRef', '');
+      setForm((f) => ({ ...f, consignmentRef: '', eori: undefined }));
       return;
     }
+    // The EORI comes across from the client record with the movement — the
+    // client confirms it per call on the consignment, never re-enters it.
     setForm((f) => ({
       ...f,
       consignmentRef: c.id,
+      eori: CLIENT_EORI,
       goods: f.goods || c.form.description,
       movedFrom: c.form.origin,
       movedTo: c.form.deliveryPoint,
@@ -139,6 +158,18 @@ function DeclarationFormCard() {
             ))}
           </select>
         </label>
+        {form.eori && form.consignmentRef ? (
+          <p
+            className="rounded-lg border border-line bg-paper px-3 py-2 text-[12.5px] text-ink-soft sm:col-span-2"
+            data-testid="declaration-eori"
+          >
+            <span className="font-semibold text-ink">GB EORI {form.eori}</span> · {EORI_NOTE} ·{' '}
+            {eoriCallStatus(
+              consignments.some((c) => c.id === form.consignmentRef && c.eoriConfirmed === true),
+              form.consignmentRef,
+            )}
+          </p>
+        ) : null}
         <label className={`${LABEL} sm:col-span-2`}>
           What the goods are
           <input
@@ -232,6 +263,105 @@ function DeclarationFormCard() {
 
 /* ------------------------------------------------------------ Declarations */
 
+/**
+ * Ask the customs team — call back or email, with an optional question. The
+ * request is logged on the entry; the call and the email are simulated and
+ * nobody is named.
+ */
+function AskCustomsTeam({ declaration }: { declaration: Declaration }) {
+  const askTeam = useCustoms((s) => s.askTeam);
+  const pushToast = useApp((s) => s.pushToast);
+  const [open, setOpen] = useState(false);
+  const [channel, setChannel] = useState<CustomsTeamChannel>('call');
+  const [question, setQuestion] = useState('');
+  const logged = declaration.teamRequest;
+  const fieldId = `ask-team-${declaration.id}`;
+
+  if (logged) {
+    return (
+      <div
+        className="mt-3 rounded-lg border border-success bg-success-soft px-3 py-2 text-[12.5px]"
+        data-testid="customs-team-request"
+        data-channel={logged.channel}
+      >
+        <p className="font-semibold text-success">
+          {customsTeamOutcome(logged.channel)} · asked {logged.at}
+        </p>
+        {logged.question ? (
+          <p className="mt-0.5 text-ink-soft">Your question: “{logged.question}”</p>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (!open) {
+    return (
+      <div className="mt-3">
+        <Button variant="ghost" onClick={() => setOpen(true)} data-testid="ask-customs-team">
+          {ASK_TEAM_LABEL}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <fieldset
+      className="mt-3 rounded-lg border border-line bg-paper p-3"
+      data-testid="ask-team-panel"
+    >
+      <legend className="px-1 text-[12.5px] font-bold">{ASK_TEAM_LABEL}</legend>
+      <p className="text-[12.5px] text-ink-soft">{ASK_TEAM_INTRO}</p>
+      <div className="mt-2.5 flex flex-wrap gap-4" role="radiogroup" aria-label="How to reply">
+        {CUSTOMS_TEAM_CHANNELS.map((ch) => (
+          <label
+            key={ch}
+            className="flex cursor-pointer items-center gap-2 text-[13px] font-semibold"
+          >
+            <input
+              type="radio"
+              name={`${fieldId}-channel`}
+              value={ch}
+              checked={channel === ch}
+              onChange={() => setChannel(ch)}
+              className="h-4 w-4 accent-sea"
+            />
+            {customsTeamChannelLabel(ch)}
+          </label>
+        ))}
+      </div>
+      <label htmlFor={fieldId} className={`${LABEL} mt-2.5 block`}>
+        Your question (optional)
+      </label>
+      <textarea
+        id={fieldId}
+        value={question}
+        maxLength={CUSTOMS_QUESTION_MAX}
+        onChange={(e) => setQuestion(e.target.value)}
+        rows={3}
+        className={INPUT}
+        placeholder="What you would like the customs team to look at"
+      />
+      <p className="mt-1.5 text-[11.5px] text-ink-soft">{ASK_TEAM_NOTICE}</p>
+      <div className="mt-2.5 flex flex-wrap gap-2.5">
+        <Button
+          onClick={() => {
+            askTeam(declaration.id, channel, question);
+            pushToast(
+              `${declaration.id}: ${customsTeamOutcome(channel).toLowerCase()}. ${ASK_TEAM_NOTICE}`,
+            );
+          }}
+          data-testid="ask-team-send"
+        >
+          Send to the customs team
+        </Button>
+        <Button variant="ghost" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
+    </fieldset>
+  );
+}
+
 function DeclarationCard({ declaration }: { declaration: Declaration }) {
   const advance = useCustoms((s) => s.advance);
   const pushToast = useApp((s) => s.pushToast);
@@ -267,6 +397,9 @@ function DeclarationCard({ declaration }: { declaration: Declaration }) {
               >
                 {form.consignmentRef}
               </Link>
+              {form.eori ? (
+                <span data-testid="declaration-card-eori"> · GB EORI {form.eori}</span>
+              ) : null}
             </p>
           ) : null}
         </div>
@@ -300,6 +433,8 @@ function DeclarationCard({ declaration }: { declaration: Declaration }) {
           </Button>
         ) : null}
       </div>
+
+      <AskCustomsTeam declaration={declaration} />
     </Card>
   );
 }

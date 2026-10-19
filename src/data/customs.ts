@@ -20,6 +20,26 @@ export const INFORMS_NOT_ADVISES =
 export const DECLARATION_NOTICE =
   'Illustrative — do not enter real commodity codes, EORI numbers or entry references in this proof of concept.';
 
+/**
+ * The client record's GB EORI — one value for the demo client. All zeros after
+ * the prefix so it cannot be mistaken for a real number (lib/customs
+ * `isIllustrativeEori` is the test). Never replace it with a real one.
+ */
+export const CLIENT_EORI = 'GB000000000000';
+
+/** Shown beside the EORI wherever it appears. */
+export const EORI_NOTE = 'Illustrative — held on your client record';
+
+/** The tick on each consignment — the client confirms, never re-enters. */
+export const EORI_CONFIRM_LABEL = 'Confirm for this call';
+
+/* Ask the customs team — from a declaration. */
+export const ASK_TEAM_LABEL = 'Ask the customs team';
+export const ASK_TEAM_INTRO =
+  'A question about classification, valuation or the declared position goes to our customs team, so the answer comes from one place. Choose how they get back to you.';
+export const ASK_TEAM_NOTICE =
+  'Simulated in this proof of concept — no call is placed and no email is sent.';
+
 /** What the client is confirming when they tick the document box. */
 export const DOCUMENT_CHECKLIST = [
   {
@@ -68,6 +88,7 @@ export const SEED_DECLARATIONS: Declaration[] = [
   seed('DEC-1187', 'Submitted to HMRC', 'Tue 19 Aug · 15:05', {
     kind: 'Import clearance',
     consignmentRef: 'CN-2042',
+    eori: CLIENT_EORI,
     goods: 'Thruster seal kit — rubber and steel seals for a marine propulsion unit',
     movedFrom: 'Rotterdam',
     movedTo: 'Aberdeen — Regent Quay',

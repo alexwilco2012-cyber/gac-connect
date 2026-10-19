@@ -121,11 +121,67 @@ const SL_PROJECT_CARGO = [
   { title: 'Customs planned, not discovered', body: 'A project moving from outside the UK has its entry prepared while the load is still on the road, so nothing waits at the gate for paperwork.' }
 ];
 const SL_SEED_CONSIGNMENTS = [
-  { id: 'CN-2041', stage: 'In transit', createdAt: 'Mon 18 Aug · 08:15', form: { description: 'Deck spares and hose reels, 4 pallets', origin: 'Grangemouth', deliveryPoint: 'Aberdeen — GAC warehouse', vesselId: 'choice', mode: 'Road', readyDate: '18 Aug 2026', pieces: '4', weightKg: '1250', fromOutsideUk: false } },
-  { id: 'CN-2042', stage: 'Booked', createdAt: 'Tue 19 Aug · 14:40', form: { description: 'Replacement thruster seal kit, 1 crate', origin: 'Rotterdam', deliveryPoint: 'Aberdeen — Regent Quay', vesselId: 'granite-coast', mode: 'Sea', readyDate: '21 Aug 2026', pieces: '1', weightKg: '380', fromOutsideUk: true } }
+  { id: 'CN-2041', stage: 'In transit', createdAt: 'Mon 18 Aug · 08:15', eta: 'Thu 16:00', form: { description: 'Deck spares and hose reels, 4 pallets', origin: 'Grangemouth', deliveryPoint: 'Aberdeen — GAC warehouse', vesselId: 'choice', mode: 'Road', readyDate: '18 Aug 2026', pieces: '4', weightKg: '1250', fromOutsideUk: false } },
+  { id: 'CN-2042', stage: 'Booked', createdAt: 'Tue 19 Aug · 14:40', eta: 'Fri 14:00', form: { description: 'Replacement thruster seal kit, 1 crate', origin: 'Rotterdam', deliveryPoint: 'Aberdeen — Regent Quay', vesselId: 'granite-coast', mode: 'Sea', readyDate: '21 Aug 2026', pieces: '1', weightKg: '380', fromOutsideUk: true } }
 ];
 const SL_EMPTY_CONSIGNMENT = { description: '', origin: '', deliveryPoint: SL_DELIVERY_POINTS[0], vesselId: 'choice', mode: 'Road', readyDate: '', pieces: '', weightKg: '', fromOutsideUk: false };
 const SL_DEMO_CONSIGNMENT = { description: 'Valve skid and fittings, 2 crates', origin: 'Stavanger', deliveryPoint: 'Aberdeen — Regent Quay', vesselId: 'choice', mode: 'Sea', readyDate: '26 Aug 2026', pieces: '2', weightKg: '860', fromOutsideUk: true };
+
+/* ── the forklift timed to the freight, and the ETA it follows (lib/logistics.ts
+   fltSuggestion, shiftEta, bookingEta) — same rule, same words ── */
+const SL_FLT_THRESHOLD_KG = 250;
+const SL_FLT_RULE = 'Suggested when a movement goes to a quay and the weight per piece (gross weight ÷ pieces) is over ' + SL_FLT_THRESHOLD_KG + ' kg.';
+const SL_FLT_TITLE = 'Forklift needed at the quay';
+const SL_FLT_DELAY_LABEL = 'Simulate: freight ETA moves two hours later';
+const SL_FLT_SERVICE = 'Forklift (FLT) with operator at the quay';
+const SL_DELAY_HOURS = 2;
+const SL_QUAY_LEAD_HOURS = 2;
+const SL_HIRE_WINDOW_HOURS = 12;
+const SL_DEFAULT_BOOKED_WINDOW = 'Fri 06:00–18:00';
+const SL_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+function slPad(n) { return (n < 10 ? '0' : '') + n; }
+/* 'Fri 23:00' + 2 → 'Sat 01:00'; anything not shaped like that comes back as it was. */
+function slShiftEta(eta, hours) {
+  const m = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d{2}):(\d{2})$/.exec(String(eta).trim());
+  if (!m) return eta;
+  const week = 7 * 24 * 60;
+  const start = SL_DAYS.indexOf(m[1]) * 24 * 60 + Number(m[2]) * 60 + Number(m[3]);
+  const total = (((start + Math.round(hours * 60)) % week) + week) % week;
+  return SL_DAYS[Math.floor(total / (24 * 60))] + ' ' + slPad(Math.floor((total % (24 * 60)) / 60)) + ':' + slPad(total % 60);
+}
+function slIsQuay(deliveryPoint) { return /\bQuay\b/.test(deliveryPoint); }
+function slPerPiece(form) {
+  const pieces = Number(String(form.pieces).trim());
+  const weight = Number(String(form.weightKg).trim());
+  if (!isFinite(pieces) || !isFinite(weight) || pieces <= 0 || weight <= 0) return null;
+  return Math.ceil(weight / pieces);
+}
+function slFltSuggestion(c) {
+  const requested = typeof c.fltRequestedFor === 'string';
+  if (!c.eta || !slIsQuay(c.form.deliveryPoint)) return null;
+  if (slIsFinal(SL_CONSIGNMENT_STAGES, c.stage) && !requested) return null;
+  const perPiece = slPerPiece(c.form);
+  if (perPiece === null || perPiece <= SL_FLT_THRESHOLD_KG) return null;
+  return { neededBy: c.eta, perPieceKg: perPiece, requested: requested, moved: requested && c.fltRequestedFor !== c.eta };
+}
+function slFltSuggestionText(perPiece, deliveryPoint, eta) { return perPiece + ' kg a piece is over ' + SL_FLT_THRESHOLD_KG + ' kg, so a forklift with operator is suggested at ' + deliveryPoint + ' for the freight ETA, ' + eta + '.'; }
+function slFltRequestedText(requestedFor, deliveryPoint) { return 'Forklift requested for ' + requestedFor + ' at ' + deliveryPoint + '.'; }
+function slFltMovedText(eta) { return 'The freight ETA is now ' + eta + '; your GAC agent moves the forklift to match.'; }
+/* data/quotes.ts bookedWindowFrom — the window the hire price covers follows needed-by. */
+function slBookedWindow(neededBy) {
+  const m = /^(.*?)(\d{1,2}):(\d{2})\s*$/.exec(String(neededBy).trim());
+  if (!m || Number(m[2]) > 23 || Number(m[3]) > 59) return SL_DEFAULT_BOOKED_WINDOW;
+  return m[1] + m[2] + ':' + m[3] + '–' + slPad((Number(m[2]) + SL_HIRE_WINDOW_HOURS) % 24) + ':' + m[3];
+}
+
+/* ── GB EORI on the client record (data/customs.ts) — all zeros after the
+   prefix, so it can never pass for a real number ── */
+const SL_CLIENT_EORI = 'GB000000000000';
+const SL_EORI_NOTE = 'Illustrative — held on your client record';
+const SL_EORI_CONFIRM_LABEL = 'Confirm for this call';
+function slEoriCallStatus(confirmed, ref) {
+  return confirmed ? 'Confirmed for this call on ' + ref : 'Not yet confirmed for this call — tick it on ' + ref + ' under Logistics';
+}
 
 /* ── customs (lib/customs.ts) ── */
 const SL_DECLARATION_STAGES = ['Documents received', 'Declaration prepared', 'Submitted to HMRC', 'Cleared'];
@@ -149,17 +205,28 @@ const SL_DOCUMENT_CHECKLIST = [
 ];
 const SL_DELAY_NOTE = 'An entry raised on an incomplete set is the commonest reason goods sit at the border. The platform will not take a declaration until the set is confirmed complete, which is a day saved at the gate rather than a form saved at the desk.';
 const SL_SEED_DECLARATIONS = [
-  { id: 'DEC-1187', stage: 'Submitted to HMRC', createdAt: 'Tue 19 Aug · 15:05', form: { kind: 'Import clearance', consignmentRef: 'CN-2042', goods: 'Thruster seal kit — rubber and steel seals for a marine propulsion unit', movedFrom: 'Rotterdam', movedTo: 'Aberdeen — Regent Quay', packages: '1', grossWeightKg: '380', documentsConfirmed: true } }
+  { id: 'DEC-1187', stage: 'Submitted to HMRC', createdAt: 'Tue 19 Aug · 15:05', form: { kind: 'Import clearance', consignmentRef: 'CN-2042', eori: SL_CLIENT_EORI, goods: 'Thruster seal kit — rubber and steel seals for a marine propulsion unit', movedFrom: 'Rotterdam', movedTo: 'Aberdeen — Regent Quay', packages: '1', grossWeightKg: '380', documentsConfirmed: true } }
 ];
 const SL_EMPTY_DECLARATION = { kind: 'Import clearance', consignmentRef: '', goods: '', movedFrom: '', movedTo: '', packages: '', grossWeightKg: '', documentsConfirmed: false };
+/* Ask the customs team (lib/customs.ts) — call back or email, logged on the
+   entry; simulated, nobody named, no address. */
+const SL_ASK_TEAM_LABEL = 'Ask the customs team';
+const SL_ASK_TEAM_INTRO = 'A question about classification, valuation or the declared position goes to our customs team, so the answer comes from one place. Choose how they get back to you.';
+const SL_ASK_TEAM_NOTICE = 'Simulated in this proof of concept — no call is placed and no email is sent.';
+const SL_TEAM_CHANNELS = [
+  { id: 'call', label: 'Call me back', outcome: 'Customs team will call you back' },
+  { id: 'email', label: 'Reply by email', outcome: 'Customs team will reply by email' }
+];
+const SL_QUESTION_MAX = 500;
+function slTeamChannel(id) { return SL_TEAM_CHANNELS.find((c) => c.id === id) || SL_TEAM_CHANNELS[0]; }
 const SL_DEMO_DECLARATION = { kind: 'T1 transit', consignmentRef: '', goods: 'Valve skid and fittings — carbon steel valve assembly on a transport frame', movedFrom: 'Stavanger', movedTo: 'Aberdeen — Regent Quay', packages: '2', grossWeightKg: '860', documentsConfirmed: false };
 
 /* The three demo vessels (data/vessels.ts). Procurement carries the same table;
    both are fictional and both must stay in step with the site. */
 const SL_VESSELS = [
-  { id: 'choice', name: 'MV Choice', port: 'Aberdeen' },
-  { id: 'boreal', name: 'MV Boreal', port: 'Peterhead' },
-  { id: 'granite-coast', name: 'MV Granite Coast', port: 'Aberdeen' }
+  { id: 'choice', name: 'MV Choice', port: 'Aberdeen', callTime: 'Fri 08:00' },
+  { id: 'boreal', name: 'MV Boreal', port: 'Peterhead', callTime: 'Fri 14:30' },
+  { id: 'granite-coast', name: 'MV Granite Coast', port: 'Aberdeen', callTime: 'Sat 06:00' }
 ];
 
 /* ── persistence keys (presenter-prefixed) ── */
@@ -254,17 +321,23 @@ function slIsRecord(v) { return !!v && typeof v === 'object'; }
 function slIsConsignment(v) {
   if (!slIsRecord(v) || typeof v.id !== 'string' || typeof v.createdAt !== 'string') return false;
   if (SL_CONSIGNMENT_STAGES.indexOf(v.stage) === -1 || !slIsRecord(v.form)) return false;
+  if (v.eta !== undefined && typeof v.eta !== 'string') return false;
+  if (v.fltRequestedFor !== undefined && typeof v.fltRequestedFor !== 'string') return false;
+  if (v.eoriConfirmed !== undefined && typeof v.eoriConfirmed !== 'boolean') return false;
   return SL_CONSIGNMENT_REQUIRED.every((pair) => typeof v.form[pair[0]] === 'string') &&
     typeof v.form.fromOutsideUk === 'boolean' && SL_CONSIGNMENT_MODES.indexOf(v.form.mode) !== -1;
 }
 function slIsDeclaration(v) {
   if (!slIsRecord(v) || typeof v.id !== 'string' || typeof v.createdAt !== 'string') return false;
   if (SL_DECLARATION_STAGES.indexOf(v.stage) === -1 || !slIsRecord(v.form)) return false;
+  if (v.teamRequest !== undefined && !(slIsRecord(v.teamRequest) && SL_TEAM_CHANNELS.some((c) => c.id === v.teamRequest.channel) &&
+    typeof v.teamRequest.question === 'string' && typeof v.teamRequest.at === 'string')) return false;
+  if (v.form.eori !== undefined && typeof v.form.eori !== 'string') return false;
   return SL_DECLARATION_REQUIRED.every((pair) => typeof v.form[pair[0]] === 'string') &&
     typeof v.form.consignmentRef === 'string' && typeof v.form.documentsConfirmed === 'boolean' &&
     SL_DECLARATION_KINDS.indexOf(v.form.kind) !== -1;
 }
-function slClone(list) { return list.map((x) => ({ id: x.id, stage: x.stage, createdAt: x.createdAt, form: Object.assign({}, x.form) })); }
+function slClone(list) { return list.map((x) => Object.assign({}, x, { form: Object.assign({}, x.form) })); }
 function slRead(get, key, seed, guard) {
   const raw = get(key, null);
   if (raw === null) return slClone(seed);
@@ -307,7 +380,11 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       slConsignmentForm: Object.assign({}, SL_EMPTY_CONSIGNMENT),
       slConsignmentProblems: [],
       slDeclarationForm: Object.assign({}, SL_EMPTY_DECLARATION),
-      slDeclarationProblems: []
+      slDeclarationProblems: [],
+      /* the ask-the-customs-team panel: which entry it is open on, and its draft */
+      slAskOpen: null,
+      slAskChannel: 'call',
+      slAskQuestion: ''
     };
   },
 
@@ -408,16 +485,56 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
     const saveConsignments = (list) => { self._set(SL_KEY_CONSIGNMENTS, list); self.setState({ slConsignments: list }); };
     const vesselName = (id) => { const v = SL_VESSELS.find((x) => x.id === id); return v ? v.name : '—'; };
 
+    const patchConsignment = (id, patch) => saveConsignments(self.state.slConsignments.map((x) => (x.id === id ? Object.assign({}, x, patch) : x)));
+
     const consignmentCards = consignments.map((c) => {
       const delivered = slIsFinal(SL_CONSIGNMENT_STAGES, c.stage);
       const action = SL_CONSIGNMENT_ACTIONS[c.stage] || '';
+      const flt = slFltSuggestion(c);
+      const vessel = SL_VESSELS.find((v) => v.id === c.form.vesselId);
       return {
         id: c.id, testId: 'consignment-' + c.id, stage: c.stage,
         modePill: slPill('neutral'), mode: c.form.mode,
         meta: c.id + ' · ' + c.createdAt,
         description: c.form.description,
         routeLine: c.form.origin + ' → ' + c.form.deliveryPoint + ' · ' + vesselName(c.form.vesselId),
-        detailLine: c.form.pieces + ' ' + (Number(c.form.pieces) === 1 ? 'piece' : 'pieces') + ' · ' + c.form.weightKg + ' kg · ready ' + c.form.readyDate,
+        detailLine: c.form.pieces + ' ' + (Number(c.form.pieces) === 1 ? 'piece' : 'pieces') + ' · ' + c.form.weightKg + ' kg · ready ' + c.form.readyDate + (c.eta ? ' · ETA ' + c.eta : ''),
+        /* GB EORI on the client record — confirmed per call with a tick, never re-entered */
+        eoriLine: 'GB EORI ' + SL_CLIENT_EORI,
+        eoriNote: SL_EORI_NOTE,
+        eoriConfirmLabel: SL_EORI_CONFIRM_LABEL,
+        eoriInputId: 'sl-eori-' + c.id,
+        eoriChecked: c.eoriConfirmed === true,
+        onEori: (e) => patchConsignment(c.id, { eoriConfirmed: !!e.target.checked }),
+        /* the forklift suggestion — needed-by is the freight ETA, read live */
+        hasFlt: !!flt,
+        fltRequested: flt && flt.requested ? 'true' : 'false',
+        fltIsRequested: !!(flt && flt.requested),
+        fltIsOpen: !!(flt && !flt.requested),
+        fltTitle: SL_FLT_TITLE,
+        fltText: flt ? slFltSuggestionText(flt.perPieceKg, c.form.deliveryPoint, flt.neededBy) : '',
+        fltRequestedText: flt && flt.requested ? slFltRequestedText(c.fltRequestedFor, c.form.deliveryPoint) + (flt.moved ? ' ' + slFltMovedText(flt.neededBy) : '') : '',
+        fltRule: SL_FLT_RULE,
+        fltCanAct: !!flt && !delivered,
+        fltCanRequest: !!flt && !flt.requested && !delivered,
+        fltButton: flt ? 'Request a forklift for ' + flt.neededBy : '',
+        onFlt: () => {
+          const live = self.state.slConsignments.find((x) => x.id === c.id) || c;
+          const neededBy = live.eta || '';
+          self._requestQuote({ id: 'flt', name: 'FLT suppliers', cat: 'FLT', certs: [] }, {
+            service: SL_FLT_SERVICE + ', ' + c.id,
+            vesselName: vessel ? vessel.name : 'MV Choice',
+            vesselLine: vessel ? vessel.name + ' · ' + vessel.port : 'MV Choice · Aberdeen',
+            neededBy: neededBy,
+            bookedWindow: slBookedWindow(neededBy),
+            onSent: (when) => patchConsignment(c.id, { fltRequestedFor: when })
+          });
+        },
+        fltDelayLabel: SL_FLT_DELAY_LABEL,
+        onFltDelay: () => {
+          const live = self.state.slConsignments.find((x) => x.id === c.id);
+          if (live && live.eta) patchConsignment(c.id, { eta: slShiftEta(live.eta, SL_DELAY_HOURS) });
+        },
         stagePillStyle: slPill(slStageTone(SL_CONSIGNMENT_STAGES, c.stage)),
         stageLabel: (delivered ? '✓ ' : '') + c.stage,
         track: slTrack(SL_CONSIGNMENT_STAGES, c.stage),
@@ -440,6 +557,8 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
     const declarationCards = declarations.map((d) => {
       const cleared = slIsFinal(SL_DECLARATION_STAGES, d.stage);
       const action = SL_DECLARATION_ACTIONS[d.stage];
+      const asked = d.teamRequest || null;
+      const askOpen = !asked && st.slAskOpen === d.id;
       return {
         id: d.id, testId: 'declaration-' + d.id, stage: d.stage,
         kindPill: slPill('neutral'), kind: d.form.kind,
@@ -448,6 +567,32 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
         routeLine: d.form.movedFrom + ' → ' + d.form.movedTo + ' · ' + d.form.packages + ' ' + (Number(d.form.packages) === 1 ? 'package' : 'packages') + ' · ' + d.form.grossWeightKg + ' kg',
         hasMovement: !!d.form.consignmentRef,
         movementLabel: d.form.consignmentRef,
+        hasEori: !!d.form.eori,
+        eoriSuffix: d.form.eori ? ' · GB EORI ' + d.form.eori : '',
+        /* ask the customs team — logged on the entry, simulated */
+        askLogged: !!asked,
+        askChannel: asked ? asked.channel : '',
+        askOutcome: asked ? slTeamChannel(asked.channel).outcome + ' · asked ' + asked.at : '',
+        askHasQuestion: !!(asked && asked.question),
+        askQuestion: asked && asked.question ? 'Your question: “' + asked.question + '”' : '',
+        askCanOpen: !asked && !askOpen,
+        askIsOpen: askOpen,
+        askLabel: SL_ASK_TEAM_LABEL,
+        onAskOpen: () => self.setState({ slAskOpen: d.id, slAskChannel: 'call', slAskQuestion: '' }),
+        askChannels: SL_TEAM_CHANNELS.map((ch) => ({
+          id: ch.id, label: ch.label, inputId: 'sl-ask-' + d.id + '-' + ch.id, group: 'sl-ask-' + d.id + '-channel',
+          checked: st.slAskChannel === ch.id,
+          onPick: () => self.setState({ slAskChannel: ch.id })
+        })),
+        askQuestionId: 'sl-ask-' + d.id,
+        onAskSend: () => {
+          const ch = slTeamChannel(self.state.slAskChannel);
+          const request = { channel: ch.id, question: String(self.state.slAskQuestion || '').trim().slice(0, SL_QUESTION_MAX), at: slStamp() };
+          saveDeclarations(self.state.slDeclarations.map((x) => (x.id === d.id ? Object.assign({}, x, { teamRequest: request }) : x)));
+          self.setState({ slAskOpen: null, slAskQuestion: '' });
+          self.toastMsg(d.id + ': ' + ch.outcome.toLowerCase() + '. ' + SL_ASK_TEAM_NOTICE);
+        },
+        onAskCancel: () => self.setState({ slAskOpen: null }),
         onMovement: () => self.nav('logistics'),
         stagePillStyle: slPill(slStageTone(SL_DECLARATION_STAGES, d.stage)),
         stageLabel: (cleared ? '✓ ' : '') + d.stage,
@@ -561,7 +706,11 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
         self.setState({ slConsignmentProblems: problems });
         if (problems.length) return;
         const id = slNextRef(self.state.slConsignments, 'CN', 2040);
-        const list = [{ id: id, form: Object.assign({}, form), stage: 'Booked', createdAt: slStamp() }].concat(self.state.slConsignments);
+        const bookedVessel = SL_VESSELS.find((v) => v.id === form.vesselId);
+        const booked = { id: id, form: Object.assign({}, form), stage: 'Booked', createdAt: slStamp() };
+        /* lands on the quay two hours before the vessel's call time (lib/logistics.ts bookingEta) */
+        if (bookedVessel) booked.eta = slShiftEta(bookedVessel.callTime, -SL_QUAY_LEAD_HOURS);
+        const list = [booked].concat(self.state.slConsignments);
         saveConsignments(list);
         self.setState({ slConsignmentForm: Object.assign({}, SL_EMPTY_CONSIGNMENT) });
         self.toastMsg(id + ' booked — ' + vesselName(form.vesselId) + ', ' + form.deliveryPoint + '. Illustrative: no carrier is contacted.');
@@ -593,10 +742,12 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       slOnDConsignment: (e) => {
         const ref = e.target.value;
         const c = available.find((x) => x.id === ref);
-        if (!c) { setD({ consignmentRef: '' }); return; }
+        if (!c) { setD({ consignmentRef: '', eori: undefined }); return; }
         const cur = self.state.slDeclarationForm;
+        /* the EORI comes across from the client record with the movement */
         setD({
           consignmentRef: c.id,
+          eori: SL_CLIENT_EORI,
           goods: cur.goods || c.form.description,
           movedFrom: c.form.origin,
           movedTo: c.form.deliveryPoint,
@@ -604,6 +755,14 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
           grossWeightKg: c.form.weightKg
         });
       },
+      slDHasEori: !!(dForm.eori && dForm.consignmentRef),
+      slDEoriLine: 'GB EORI ' + (dForm.eori || ''),
+      slDEoriRest: ' · ' + SL_EORI_NOTE + ' · ' + slEoriCallStatus(consignments.some((c) => c.id === dForm.consignmentRef && c.eoriConfirmed === true), dForm.consignmentRef),
+      slAskIntro: SL_ASK_TEAM_INTRO,
+      slAskNotice: SL_ASK_TEAM_NOTICE,
+      slAskQuestion: st.slAskQuestion,
+      slAskMax: SL_QUESTION_MAX,
+      slOnAskQuestion: (e) => self.setState({ slAskQuestion: e.target.value }),
       slDGoods: dForm.goods,
       slOnDGoods: (e) => setD({ goods: e.target.value }),
       slDFrom: dForm.movedFrom,
@@ -638,7 +797,7 @@ function slFocus(id) { setTimeout(() => { const el = document.getElementById(id)
       slDeclarationsSummary: declarations.length === 0
         ? 'No entries raised'
         : openEntries.length + ' open · ' + (declarations.length - openEntries.length) + ' cleared',
-      slResetDeclarations: () => { try { localStorage.removeItem('gac-connect:' + SL_KEY_DECLARATIONS); } catch (e) {} self.setState({ slDeclarations: slClone(SL_SEED_DECLARATIONS) }); },
+      slResetDeclarations: () => { try { localStorage.removeItem('gac-connect:' + SL_KEY_DECLARATIONS); } catch (e) {} self.setState({ slDeclarations: slClone(SL_SEED_DECLARATIONS), slAskOpen: null }); },
       slWarnPillStyle: slPill('warn')
     };
   },

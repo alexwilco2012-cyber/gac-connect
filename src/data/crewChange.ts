@@ -2,12 +2,14 @@ import type { LoiForm, RepatForm } from '../lib/crewChange';
 import { VESSELS } from './vessels';
 
 /**
- * Crew change screen copy and demo data (17 Aug 2026 review). All illustrative
- * and deliberately fictional — the demo forms carry obviously fake passport
- * details, and the screen tells the user not to enter real ones.
+ * Crew change screen copy and demo data (17 Aug 2026 review; crew list upload
+ * added 23 Aug). All illustrative and deliberately fictional — the demo forms
+ * carry obviously fake passport details, and the screen tells the user not to
+ * enter real ones. The crew list's own copy lives in `./crewList.ts`.
  */
 
-export type CrewSectionId = 'hotels' | 'taxis' | 'launches' | 'immigration' | 'loi' | 'repat';
+export type CrewSectionId =
+  'crew-list' | 'hotels' | 'taxis' | 'launches' | 'immigration' | 'loi' | 'repat';
 
 export interface CrewSection {
   id: CrewSectionId;
@@ -17,6 +19,12 @@ export interface CrewSection {
 }
 
 export const CREW_SECTIONS: CrewSection[] = [
+  {
+    id: 'crew-list',
+    label: 'Crew list',
+    summary:
+      'Upload the crew list you already keep — names, passports, flights — and the platform offers the LOIs, hotel rooms and taxis that follow from it. One upload, not one form per crew member.',
+  },
   {
     id: 'hotels',
     label: 'Hotels',
@@ -60,6 +68,37 @@ export const CREW_PORTS = ['Aberdeen', 'Peterhead', 'Montrose'] as const;
 export const ILLUSTRATIVE_NOTICE =
   'Illustrative — do not enter real passport data in this proof of concept.';
 
+/**
+ * The data-protection disclosure on both letter templates (19 Oct, owner's
+ * ask). Every promise here is kept by the code: the automatic deletion is
+ * `purgeExpiredLetters` (thirty days after the letter is returned), the
+ * sooner deletion is the letter card's Delete crew details, and the redacted
+ * card keeps only the reference, vessel and port.
+ */
+export const LETTER_DATA_NOTICE = {
+  title: 'How passport details are handled',
+  intro:
+    'Illustrative notice for this proof of concept. Crew data is handled under UK GDPR, and GAC’s published privacy notice governs the live service.',
+  points: [
+    {
+      title: 'Used for this letter only',
+      body: 'Names, dates of birth, nationality, passport details and flights are used to prepare this letter and have it endorsed, and for nothing else.',
+    },
+    {
+      title: 'Who sees them',
+      body: 'Your GAC agent, the carrier and UK Border Force, where the letter needs them. No supplier on the platform sees them.',
+    },
+    {
+      title: 'Deleted, history included',
+      body: 'Every personal detail is deleted automatically thirty days after the letter is returned to you. Delete crew details on the letter removes them at once. Only the reference, vessel and port stay, for the invoice.',
+    },
+    {
+      title: 'Crew members’ rights',
+      body: 'Crew can ask what is held about them, and for it to be corrected or deleted, through your GAC agent.',
+    },
+  ],
+} as const;
+
 /** How the letters flow — three cards under the header. */
 export const CREW_FLOW = [
   {
@@ -67,8 +106,8 @@ export const CREW_FLOW = [
     body: 'One template per letter, kept current by GAC. You never start from a blank page or an old email attachment.',
   },
   {
-    title: 'You fill them in',
-    body: 'One letter per crew member, details as printed in the passport, vessel and port as on the call, flights as on the itinerary.',
+    title: 'You fill them in — or upload the list',
+    body: 'One letter per crew member, details as printed in the passport. Upload your own crew list and the letters are raised from it; delete the crew’s details when the job is done.',
   },
   {
     title: 'GAC endorses or routes, then returns',
@@ -84,12 +123,21 @@ export const TAXIS_INTRO =
 export const TAXIS_LAUNCH_POINTER =
   'The planner times the launch leg with the taxi. The launch operators themselves — capacity, freight and port notes — are under Launches.';
 
+/** Taxis planner: a room booked that night takes the launch off the flight-timed run. */
+export const TAXIS_HOTEL_NOTE =
+  'With a room booked that night, the launch runs on another day, so it is not part of this run.';
+
 /** Launches → Taxis: the reciprocal pointer, so a run can be hung off the flight. */
 export const LAUNCHES_TAXI_POINTER =
   'A run can be timed to the crew member’s tracked flight — the planner under Taxis times the taxi and the launch to the same flight.';
 
-/** Which section the screen opens on when the URL carries no ?section=. */
-export const DEFAULT_CREW_SECTION: CrewSectionId = 'hotels';
+/**
+ * Which section the screen opens on when the URL carries no ?section=. The
+ * crew list is where a coordinator's crew change starts; the other sections
+ * are the services that hang off it (23 Aug 2026). Hotels deep links are
+ * `?section=hotels`.
+ */
+export const DEFAULT_CREW_SECTION: CrewSectionId = 'crew-list';
 
 export function isCrewSectionId(v: string | null | undefined): v is CrewSectionId {
   return !!v && CREW_SECTIONS.some((s) => s.id === v);

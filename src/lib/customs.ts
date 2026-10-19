@@ -6,10 +6,10 @@ import { isFinalStageIn, isStageOf, nextStageIn, stageReachedIn, stageToneIn } f
  * is why the line carries the 7% tier and why no third party appears anywhere
  * on this screen.
  *
- * The boundary matters and is printed on the screen: **GAC informs, it does
- * not advise.** The tariff classification, the customs valuation and the
- * declared customs position remain the importer's or exporter's own — GAC
- * prepares and submits the entry against what the client declares.
+ * The boundary matters and is printed on the screen (rule changed 2026-09-07):
+ * the platform does not give customs advice; GAC's customs team does, and the
+ * client can ask them from a declaration (call back or email). The platform
+ * shows what a declaration needs and where it has got to.
  *
  * Submission and the HMRC response are simulated in this proof of concept and
  * say so.
@@ -30,6 +30,12 @@ export interface DeclarationForm {
   kind: DeclarationKind;
   /** The logistics movement this entry covers — 'CN-2042', or blank if standalone. */
   consignmentRef: string;
+  /**
+   * The GB EORI carried across from the client record when the entry is
+   * raised against a movement. Optional: a standalone entry has none, and
+   * entries stored by an older build predate it. Always the illustrative value.
+   */
+  eori?: string;
   goods: string;
   movedFrom: string;
   movedTo: string;
@@ -44,6 +50,74 @@ export interface Declaration {
   form: DeclarationForm;
   stage: DeclarationStage;
   createdAt: string;
+  /** The client asked the customs team for help on this entry. */
+  teamRequest?: CustomsTeamRequest;
+}
+
+/* ------------------------------------------------ Ask the customs team */
+
+/** How the customs team gets back to the client. */
+export const CUSTOMS_TEAM_CHANNELS = ['call', 'email'] as const;
+export type CustomsTeamChannel = (typeof CUSTOMS_TEAM_CHANNELS)[number];
+
+export interface CustomsTeamRequest {
+  channel: CustomsTeamChannel;
+  /** Optional — the client can ask without writing anything. */
+  question: string;
+  at: string;
+}
+
+/** The choice as the client reads it on the button. */
+export function customsTeamChannelLabel(channel: CustomsTeamChannel): string {
+  return channel === 'call' ? 'Call me back' : 'Reply by email';
+}
+
+/** What is logged on the declaration once the request has gone. */
+export function customsTeamOutcome(channel: CustomsTeamChannel): string {
+  return channel === 'call'
+    ? 'Customs team will call you back'
+    : 'Customs team will reply by email';
+}
+
+/** Longest question kept; anything beyond is cut rather than refused. */
+export const CUSTOMS_QUESTION_MAX = 500;
+
+/** The request as stored: question trimmed and capped, blank allowed. */
+export function customsTeamRequest(
+  channel: CustomsTeamChannel,
+  question: string,
+  at: string,
+): CustomsTeamRequest {
+  return { channel, question: question.trim().slice(0, CUSTOMS_QUESTION_MAX), at };
+}
+
+export function isCustomsTeamRequest(v: unknown): v is CustomsTeamRequest {
+  if (typeof v !== 'object' || v === null) return false;
+  const r = v as Record<string, unknown>;
+  return (
+    (CUSTOMS_TEAM_CHANNELS as readonly string[]).includes(r.channel as string) &&
+    typeof r.question === 'string' &&
+    typeof r.at === 'string'
+  );
+}
+
+/**
+ * The demo EORI is all zeros after the GB prefix — plainly not a number HMRC
+ * would issue — and this is the test for it, so a real-looking value cannot
+ * slip into the seed.
+ */
+export function isIllustrativeEori(v: string): boolean {
+  return /^GB0{12}$/.test(v);
+}
+
+/**
+ * Whether the EORI carried onto an entry has been confirmed for this call on
+ * the movement it came from — in the words the declaration form shows.
+ */
+export function eoriCallStatus(confirmed: boolean, consignmentRef: string): string {
+  return confirmed
+    ? `Confirmed for this call on ${consignmentRef}`
+    : `Not yet confirmed for this call — tick it on ${consignmentRef} under Logistics`;
 }
 
 export function nextDeclarationStage(stage: string): DeclarationStage {
@@ -130,6 +204,7 @@ export function isDeclarationForm(v: unknown): v is DeclarationForm {
   return (
     REQUIRED.every(([key]) => typeof v[key] === 'string') &&
     typeof v.consignmentRef === 'string' &&
+    (v.eori === undefined || typeof v.eori === 'string') &&
     typeof v.documentsConfirmed === 'boolean' &&
     (DECLARATION_KINDS as readonly string[]).includes(v.kind as string)
   );
@@ -139,6 +214,7 @@ export function isDeclarationForm(v: unknown): v is DeclarationForm {
 export function isDeclaration(v: unknown): v is Declaration {
   if (!isRecord(v)) return false;
   if (typeof v.id !== 'string' || typeof v.createdAt !== 'string') return false;
+  if (v.teamRequest !== undefined && !isCustomsTeamRequest(v.teamRequest)) return false;
   return isDeclarationForm(v.form) && isStageOf(DECLARATION_STAGES, v.stage);
 }
 

@@ -25,9 +25,9 @@ import { Wordmark } from './Wordmark';
  * (find, compare, pay), then the commercial and compliance views. Customs
  * keeps its own entry so the 2 / 4 / 7 tier reads straight off the nav.
  *
- * Marketplace leads (26 Aug): this platform is a marketplace first and a workflow
- * second, so the directory is the first item and the front door, and Dashboard
- * — now the client and supplier view — sits under it. Internal is pinned to the
+ * Dashboard leads (19 Oct): `/app` opens on the client and supplier view, as
+ * the owner's FF06 proposal describes, so it is the first item and the
+ * marketplace — the directory every booking starts from — sits under it. Internal is pinned to the
  * foot of the column, below a rule and out of the client's reading path,
  * because the agent desk is the one part of this nav a client or a supplier
  * would never open.
@@ -58,8 +58,8 @@ const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
   {
     heading: null,
     items: [
-      { to: '/app/marketplace', label: 'Marketplace', icon: 'store' },
       { to: '/app/dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+      { to: '/app/marketplace', label: 'Marketplace', icon: 'store' },
     ],
   },
   {

@@ -24,6 +24,7 @@ import {
 import type { Stage, StageStatus } from '../../lib/procurement';
 import { useApp } from '../../store/app';
 import { canSend, useProcurement } from '../../store/procurement';
+import { SuggestedList } from './procurement/SuggestedList';
 
 /**
  * Procurement via Compass — a working example of the flow raised on 17 Aug
@@ -64,6 +65,7 @@ export default function Procurement() {
   const request = useProcurement((s) => s.request);
   const stage = useProcurement((s) => s.stage);
   const stageTimes = useProcurement((s) => s.stageTimes);
+  const suggestion = useProcurement((s) => s.suggestion);
   const updateLine = useProcurement((s) => s.updateLine);
   const removeLine = useProcurement((s) => s.removeLine);
   const addLine = useProcurement((s) => s.addLine);
@@ -89,7 +91,8 @@ export default function Procurement() {
   const lines = invoiceLines(request);
   const totals = invoiceTotals(lines);
   const nextLabel = simulateLabel(stage);
-  const dirty = !draft || JSON.stringify(request) !== JSON.stringify(DEFAULT_REQUEST);
+  const dirty =
+    !draft || suggestion !== null || JSON.stringify(request) !== JSON.stringify(DEFAULT_REQUEST);
   const pill = STAGE_PILL[stage];
   const lineCount = request.lines.length;
   const lineWord = lineCount === 1 ? 'line' : 'lines';
@@ -200,6 +203,18 @@ export default function Procurement() {
           </Card>
         ))}
       </div>
+
+      {/* The suggested list for the vessel's planned call, drafted from her
+          previous calls. Once sent it is the request below, like any other. */}
+      {draft ? (
+        <div className="mt-6">
+          <SuggestedList
+            onSent={() => {
+              focusNext.current = 'email';
+            }}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-6 grid items-start gap-5 lg:grid-cols-[1.35fr_1fr]">
         {/* ── Left: the request, then the composed email ── */}

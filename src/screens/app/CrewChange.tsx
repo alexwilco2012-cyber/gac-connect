@@ -17,6 +17,7 @@ import {
   CREW_SECTIONS,
   DEFAULT_CREW_SECTION,
   ILLUSTRATIVE_NOTICE,
+  LETTER_DATA_NOTICE,
   resolveCrewSection,
   IMMIGRATION_CHECKLIST,
   INFORMS_NOT_ADVISES,
@@ -28,6 +29,7 @@ import {
   REPAT_INTRO,
   REPAT_QUESTION,
   STAGE_NOTES,
+  TAXIS_HOTEL_NOTE,
   TAXIS_INTRO,
   TAXIS_LAUNCH_POINTER,
 } from '../../data/crewChange';
@@ -36,7 +38,10 @@ import { SUPPLIERS } from '../../data/suppliers';
 import { VESSELS } from '../../data/vessels';
 import {
   formatCrewName,
+  isRedactedRequest,
   isTerminalStage,
+  LETTER_RETENTION_DAYS,
+  letterPurgeLabel,
   loiRequired,
   simulateAction,
   stageIndex,
@@ -46,6 +51,12 @@ import {
   validateRepat,
 } from '../../lib/crewChange';
 import type { CrewRequest, LoiForm, RepatForm } from '../../lib/crewChange';
+import {
+  clockTime,
+  DELAY_NOTICE_NOTE,
+  delayNotices,
+  delayNoticeSummary,
+} from '../../lib/delayNotices';
 import { launchPorts, launchSuppliers } from '../../lib/launches';
 import type { LaunchSupplier } from '../../lib/launches';
 import { deriveStatus, isBookable } from '../../lib/svs';
@@ -60,11 +71,16 @@ import {
 import type { Direction, FlightStatus } from '../../lib/transfers';
 import { useApp } from '../../store/app';
 import { useCrewChange } from '../../store/crewChange';
+import { CrewListSection } from './crew/CrewListSection';
 
 /**
- * Crew change — hotels, taxis, launches, immigration guidance, and the two
- * letter templates (LOI for on-signers, repatriation letter for off-signers).
- * The client fills a template in; GAC endorses the LOI as agents, or routes the
+ * Crew change — the crew list, hotels, taxis, launches, immigration guidance,
+ * and the two letter templates (LOI for on-signers, repatriation letter for
+ * off-signers). The crew list comes first (owner's ask, 23 Aug 2026): the
+ * coordinator uploads the spreadsheet they already keep and the LOIs, rooms
+ * and taxis follow from it, with the personal data deleted when the job is
+ * done — that section lives in `./crew/CrewListSection.tsx`. Otherwise the
+ * client fills a template in; GAC endorses the LOI as agents, or routes the
  * repatriation letter to UK Border Force, and returns it. One letter per crew
  * member. Taxis and launches are sections in their own right (17 Aug review,
  * owner's follow-up: taxis are not just the tail of a launch booking), and each
@@ -78,6 +94,8 @@ const LABEL = 'text-[12.5px] font-semibold text-ink-soft';
 
 const HOTELS = SUPPLIERS.filter((s) => s.category === 'Hotels');
 const TAXIS = SUPPLIERS.filter((s) => s.category === 'Taxis');
+/** Hotels the planner can put on a run (a room that night); blocked ones are never offered. */
+const HOTEL_ROOMS = HOTELS.filter((h) => isBookable(h.certs));
 const LAUNCHES = launchSuppliers(SUPPLIERS);
 const LAUNCH_PORTS = launchPorts(SUPPLIERS);
 /** Taxis run to every port the crew change covers; launches only to some of them. */
@@ -161,6 +179,29 @@ function IllustrativeNotice({ testId }: { testId: string }) {
     >
       {ILLUSTRATIVE_NOTICE}
     </p>
+  );
+}
+
+/** How passport details are handled — under the illustrative notice on both letter templates. */
+function LetterDataNotice({ testId }: { testId: string }) {
+  return (
+    <section
+      aria-labelledby={`${testId}-title`}
+      className="mt-3 rounded-lg border border-line bg-paper px-3.5 py-3"
+      data-testid={testId}
+    >
+      <p id={`${testId}-title`} className="text-[13px] font-bold">
+        {LETTER_DATA_NOTICE.title}
+      </p>
+      <p className="mt-0.5 text-[12px] text-ink-soft">{LETTER_DATA_NOTICE.intro}</p>
+      <ul className="mt-2 space-y-1.5">
+        {LETTER_DATA_NOTICE.points.map((p) => (
+          <li key={p.title} className="text-[12.5px] text-ink-soft">
+            <span className="font-semibold text-ink">{p.title}.</span> {p.body}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -278,19 +319,43 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
   const [launchId, setLaunchId] = useState<string>(LAUNCHES[0]?.id ?? '');
   const [tracked, setTracked] = useState<FlightStatus | null>(null);
   const [notFound, setNotFound] = useState<string | null>(null);
-  const [delay, setDelay] = useState(0);
+  const [delay, setDelayMin] = useState(0);
+  const [hotelId, setHotelId] = useState('');
+  /** When the (simulated) delay notices went out — stamped each time the delay changes. */
+  const [notifiedAt, setNotifiedAt] = useState('');
+
+  function setDelay(min: number) {
+    setDelayMin(min);
+    setNotifiedAt(min ? clockTime(new Date()) : '');
+  }
 
   const launchesHere = LAUNCHES.filter((l) => l.launch.port === port);
+  const hotel = HOTEL_ROOMS.find((h) => h.id === hotelId) ?? null;
+  // A room that night takes the launch off this run (it runs on another day).
   const launch: LaunchSupplier | null =
-    launchId === '' ? null : (launchesHere.find((l) => l.id === launchId) ?? null);
+    launchId === '' || hotel ? null : (launchesHere.find((l) => l.id === launchId) ?? null);
   const status = tracked ? trackFlight(tracked.flight, delay) : null;
-  const plan = status ? planTransfers(status, port, launch?.launch ?? null) : null;
+  const plan = status ? planTransfers(status, port, launch?.launch ?? null, hotel?.name) : null;
   const paxN = Math.max(1, Math.floor(Number(pax) || 1));
   const taxi =
     TAXIS.find((t) =>
       port === 'Macduff' ? t.id === 'deveron-cabs' : t.id === 'regent-quay-cars',
     ) ?? TAXIS[0];
   const suggestions = Object.values(DEMO_FLIGHTS).filter((f) => f.direction === direction);
+  // The same run on time, so each party's notice can say what its leg moved from.
+  const booked =
+    status && status.delayMin
+      ? planTransfers(trackFlight(status.flight)!, port, launch?.launch ?? null, hotel?.name)
+      : null;
+  const notices =
+    booked && plan
+      ? delayNotices(
+          booked.legs,
+          plan.legs,
+          { taxi: taxi?.name ?? 'Taxi operator', launch: launch?.name, hotel: hotel?.name },
+          notifiedAt,
+        )
+      : [];
 
   function track() {
     const found = trackFlight(flightNo);
@@ -319,7 +384,7 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
     if (!plan || !status) return;
     const who = `${paxN} ${paxN === 1 ? 'crew member' : 'crew'}`;
     pushToast(
-      `Transport request sent — ${who}, ${status.flight} ${status.route}. ${plan.summary} Taxi ${taxi?.name ?? 'operator'}${launch ? `, launch ${launch.name}` : ''} — both hold the flight and re-time on a delay.`,
+      `Transport request sent — ${who}, ${status.flight} ${status.route}. ${plan.summary} Taxi ${taxi?.name ?? 'operator'}${launch ? `, launch ${launch.name}` : ''}${hotel ? `, hotel ${hotel.name}` : ''} — everyone on the run holds the flight and is told of a delay.`,
     );
   }
 
@@ -355,7 +420,7 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
         ))}
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <label className={LABEL}>
           Flight number
           <input
@@ -407,8 +472,10 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
           <select
             value={launchId}
             onChange={(e) => setLaunchId(e.target.value)}
-            className={INPUT}
+            className={`${INPUT} disabled:cursor-not-allowed disabled:opacity-60`}
             data-testid="flight-launch"
+            disabled={hotel !== null}
+            aria-describedby={hotel ? 'flight-hotel-note' : undefined}
           >
             <option value="">None — vessel alongside</option>
             {launchesHere.map((l) => (
@@ -418,7 +485,32 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
             ))}
           </select>
         </label>
+        <label className={LABEL}>
+          Room that night
+          <select
+            value={hotelId}
+            onChange={(e) => setHotelId(e.target.value)}
+            className={INPUT}
+            data-testid="flight-hotel"
+          >
+            <option value="">None</option>
+            {HOTEL_ROOMS.map((h) => (
+              <option key={h.id} value={h.id}>
+                {h.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
+      {hotel ? (
+        <p
+          id="flight-hotel-note"
+          className="mt-1.5 text-[12px] text-ink-soft"
+          data-testid="flight-hotel-note"
+        >
+          {TAXIS_HOTEL_NOTE}
+        </p>
+      ) : null}
       <p className="mt-1.5 text-[12px] text-ink-soft" data-testid="taxis-launch-pointer">
         {TAXIS_LAUNCH_POINTER}{' '}
         <button
@@ -460,6 +552,15 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
             {delay
               ? 'Simulate: back on time'
               : `Simulate: flight delayed ${TRANSFER_BUFFERS.simulatedDelayMin} min`}
+          </Button>
+        ) : null}
+        {status && delay ? (
+          <Button
+            variant="ghost"
+            onClick={() => setDelay(delay + TRANSFER_BUFFERS.furtherDelayMin)}
+            data-testid="simulate-further-delay"
+          >
+            {`Simulate: a further ${TRANSFER_BUFFERS.furtherDelayMin} min`}
           </Button>
         ) : null}
         <span className="text-[12px] text-ink-soft">{FLIGHT_FEED_NOTE}</span>
@@ -546,6 +647,12 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
                   {paxN > launch.launch.maxPassengers ? ` — ${paxN} needs more than one run` : ''})
                 </>
               ) : null}
+              {hotel ? (
+                <>
+                  {' '}
+                  · Hotel: <strong className="text-ink">{hotel.name}</strong>
+                </>
+              ) : null}
             </p>
             <div className="mt-3">
               <Button onClick={send} data-testid="send-transport">
@@ -553,6 +660,51 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
               </Button>
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {/* Always mounted while a flight is tracked, so the live region announces the notices when they arrive. */}
+      {status && plan ? (
+        <div aria-live="polite">
+          {notices.length > 0 ? (
+            <div
+              className="mt-4 rounded-lg border border-line bg-paper p-3.5"
+              data-testid="delay-notices"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[12.5px] font-bold">Delay sent to everyone on this run</p>
+                <Pill tone="warn">Re-timed</Pill>
+              </div>
+              <p className="mt-0.5 text-[12.5px] text-ink-soft" data-testid="delay-notices-summary">
+                {delayNoticeSummary(status.flight, status.delayMin, notices.length)}
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {notices.map((n) => (
+                  <li
+                    key={n.party}
+                    data-testid={`delay-notice-${n.party}`}
+                    className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 border-b border-dashed border-line pb-1.5 text-[13px] last:border-b-0"
+                  >
+                    <span>
+                      <strong>{n.name}</strong>{' '}
+                      <span className="text-[12px] text-ink-soft">· {n.role}</span>
+                      <span className="block text-ink-soft">{n.leg}</span>
+                    </span>
+                    <span className="whitespace-nowrap">
+                      <span className="text-ink-soft">{n.from}</span> →{' '}
+                      <strong className="font-display">{n.to}</strong>
+                      <span className="ml-2 text-[12px] text-ink-soft">
+                        notified {n.notifiedAt}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[12px] text-ink-soft" data-testid="delay-notice-note">
+                {DELAY_NOTICE_NOTE}
+              </p>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </Card>
@@ -757,6 +909,7 @@ function LoiSection({ state }: { state: TemplateState<LoiForm> }) {
 
         <div className="mt-3">
           <IllustrativeNotice testId="loi-illustrative" />
+          <LetterDataNotice testId="loi-data-notice" />
         </div>
 
         {!required ? (
@@ -879,6 +1032,7 @@ function RepatSection({ state }: { state: TemplateState<RepatForm> }) {
         </p>
         <div className="mt-3">
           <IllustrativeNotice testId="repat-illustrative" />
+          <LetterDataNotice testId="repat-data-notice" />
         </div>
 
         <form
@@ -1031,21 +1185,34 @@ function StageTracker({ request }: { request: CrewRequest }) {
 
 function RequestCard({ request }: { request: CrewRequest }) {
   const advance = useCrewChange((s) => s.advance);
+  const deleteLetterData = useCrewChange((s) => s.deleteLetterData);
   const pushToast = useApp((s) => s.pushToast);
-  const name = formatCrewName(request.form.familyName, request.form.forenames);
+  const [deleteArmed, setDeleteArmed] = useState(false);
+  // A request raised from a crew list loses its personal data when the list's
+  // data is deleted: the card keeps its reference, stage and call, not the name.
+  const redacted = isRedactedRequest(request);
+  const name = redacted
+    ? 'Personal data deleted'
+    : formatCrewName(request.form.familyName, request.form.forenames);
   const vessel = VESSELS.find((v) => v.id === request.form.vesselId)?.name ?? '—';
   const date =
     request.kind === 'loi'
       ? `Joining ${request.form.joiningDate}`
       : `Disembarking ${request.form.disembarkationDate}`;
+  const detail = redacted
+    ? `Personal details deleted · ${vessel} · ${request.form.port}`
+    : `${vessel} · ${request.form.port} · ${date}`;
   const action = simulateAction(request.kind, request.stage);
   const terminal = isTerminalStage(request.kind, request.stage);
 
   return (
     <Card
+      tabIndex={-1}
+      className="outline-none focus-visible:ring-2 focus-visible:ring-sea"
       data-testid={`crew-request-${request.id}`}
       data-kind={request.kind}
       data-stage={request.stage}
+      data-redacted={redacted || undefined}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -1054,13 +1221,19 @@ function RequestCard({ request }: { request: CrewRequest }) {
             <span className="text-[12px] font-semibold tracking-[0.02em] text-ink-soft">
               {request.id} · {request.createdAt}
             </span>
+            {request.crewListId ? (
+              <span
+                className="rounded-md border border-line bg-paper px-1.5 py-0.5 text-[11.5px] font-semibold text-ink-soft"
+                data-testid="crew-request-source"
+              >
+                from {request.crewListId}
+              </span>
+            ) : null}
           </div>
           <h3 className="mt-1 font-display text-[17px] font-bold" data-testid="crew-name">
             {name}
           </h3>
-          <p className="mt-0.5 text-[13px] text-ink-soft">
-            {vessel} · {request.form.port} · {date}
-          </p>
+          <p className="mt-0.5 text-[13px] text-ink-soft">{detail}</p>
         </div>
         <div className="max-w-full [&>span]:whitespace-normal" data-testid="crew-stage">
           <Pill tone={stageTone(request.kind, request.stage)}>
@@ -1094,12 +1267,58 @@ function RequestCard({ request }: { request: CrewRequest }) {
         ) : null}
         <span className="text-[12.5px] text-ink-soft">{STAGE_NOTES[request.stage]}</span>
       </div>
+
+      {/* A letter filed by hand can have its details deleted here; one raised
+          from a crew list is deleted from that list's card, with the list. */}
+      {!redacted && !request.crewListId ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+          {deleteArmed ? (
+            <>
+              <span className="text-[12.5px] font-semibold text-ink">
+                Delete every personal detail on {request.id}? This cannot be undone.
+              </span>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  deleteLetterData(request.id);
+                  setDeleteArmed(false);
+                  pushToast(
+                    `${request.id}: crew details deleted. The reference, vessel and port stay for the invoice.`,
+                  );
+                }}
+                data-testid="crew-letter-delete-confirm"
+              >
+                Yes, delete
+              </Button>
+              <Button variant="ghost" onClick={() => setDeleteArmed(false)}>
+                Keep
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteArmed(true)}
+                data-testid="crew-letter-delete"
+              >
+                Delete crew details
+              </Button>
+              <span className="text-[12px] text-ink-soft">
+                {request.completedAtIso
+                  ? `Deleted automatically ${letterPurgeLabel(request.completedAtIso)} if you do not.`
+                  : `Deleted automatically ${LETTER_RETENTION_DAYS} days after the letter is returned.`}
+              </span>
+            </>
+          )}
+        </div>
+      ) : null}
     </Card>
   );
 }
 
 function RequestsList() {
   const requests = useCrewChange((s) => s.requests);
+  const crewLists = useCrewChange((s) => s.crewLists);
   const reset = useCrewChange((s) => s.reset);
   const inProgress = requests.filter((r) => !isTerminalStage(r.kind, r.stage)).length;
 
@@ -1134,7 +1353,10 @@ function RequestsList() {
           Every letter is tied to the port call in GAC Agent, so the vessel, port and dates on the
           letter match the call — and the endorsed copy sits with the job, not in an inbox.
         </span>
-        {requests.length > 0 ? (
+        {/* A crew list with the LOI toggle off raises no letters, but reset()
+            clears the crew lists too — so the button must show while either
+            collection holds anything. */}
+        {requests.length > 0 || crewLists.length > 0 ? (
           <Button
             variant="dark-outline"
             onClick={reset}
@@ -1193,15 +1415,17 @@ export default function CrewChange() {
 
   return (
     <div className="screen-enter">
-      <Eyebrow>Crew change · hotels, taxis, launches, immigration, letters</Eyebrow>
+      <Eyebrow>Crew change · crew list, hotels, taxis, launches, immigration, letters</Eyebrow>
       <h1 className="mt-1 font-display text-2xl font-bold">
         Everything a crew change needs, in one place
       </h1>
       <p className="mt-1 max-w-[760px] text-[14px] text-ink-soft">
-        Rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration
-        paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a
-        repatriation letter for each off-signer. The platform holds the templates, you fill them in,
-        GAC endorses or routes them and sends them back — one letter per crew member, always.
+        Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it; or
+        work section by section — rooms for crew held ashore, taxis and launches timed to the crew’s
+        flights, the immigration paperwork for visa-national crew, an Immigration Support Letter for
+        each on-signer and a repatriation letter for each off-signer. The platform holds the
+        templates, you fill them in, GAC endorses or routes them and sends them back — one letter
+        per crew member, always.
       </p>
 
       <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -1238,6 +1462,9 @@ export default function CrewChange() {
         <p className="mt-0.5 mb-3 text-[13.5px] text-ink-soft" data-testid="section-summary">
           {active.summary}
         </p>
+        {section === 'crew-list' ? (
+          <CrewListSection onOpenSection={(id) => setSection(id, true)} />
+        ) : null}
         {section === 'hotels' ? <HotelsSection onRequest={setTarget} /> : null}
         {section === 'taxis' ? (
           <TaxisSection onRequest={setTarget} onOpenLaunches={() => setSection('launches', true)} />

@@ -30,14 +30,14 @@ test('the nav carries the four service lines and no loose service tabs', async (
   await expect(nav(page).getByRole('link')).toHaveCount(11);
 });
 
-test('the nav leads with the marketplace and ends with the agent desk', async ({ page }) => {
+test('the nav leads with the dashboard and ends with the agent desk', async ({ page }) => {
   await page.goto('/app');
   await page.keyboard.press('Escape');
 
   const links = nav(page).getByRole('link');
-  // Marketplace first, workflow second — the ordering is the product decision.
-  await expect(links.first()).toHaveText('Marketplace');
-  await expect(links.nth(1)).toHaveText('Dashboard');
+  // The client's or supplier's own dashboard first (19 Oct, the FF06 proposal).
+  await expect(links.first()).toHaveText('Dashboard');
+  await expect(links.nth(1)).toHaveText('Marketplace');
   // Internal is pinned to the foot of the column, under its own rule.
   await expect(links.last()).toHaveText('Internal');
 
