@@ -36,6 +36,7 @@ import { SUPPLIERS } from '../../data/suppliers';
 import { VESSELS } from '../../data/vessels';
 import {
   formatCrewName,
+  isRedactedRequest,
   isTerminalStage,
   loiRequired,
   simulateAction,
@@ -60,11 +61,16 @@ import {
 import type { Direction, FlightStatus } from '../../lib/transfers';
 import { useApp } from '../../store/app';
 import { useCrewChange } from '../../store/crewChange';
+import { CrewListSection } from './crew/CrewListSection';
 
 /**
- * Crew change — hotels, taxis, launches, immigration guidance, and the two
- * letter templates (LOI for on-signers, repatriation letter for off-signers).
- * The client fills a template in; GAC endorses the LOI as agents, or routes the
+ * Crew change — the crew list, hotels, taxis, launches, immigration guidance,
+ * and the two letter templates (LOI for on-signers, repatriation letter for
+ * off-signers). The crew list comes first (owner's ask, 23 Aug 2026): the
+ * coordinator uploads the spreadsheet they already keep and the LOIs, rooms
+ * and taxis follow from it, with the personal data deleted when the job is
+ * done — that section lives in `./crew/CrewListSection.tsx`. Otherwise the
+ * client fills a template in; GAC endorses the LOI as agents, or routes the
  * repatriation letter to UK Border Force, and returns it. One letter per crew
  * member. Taxis and launches are sections in their own right (17 Aug review,
  * owner's follow-up: taxis are not just the tail of a launch booking), and each
@@ -1032,20 +1038,31 @@ function StageTracker({ request }: { request: CrewRequest }) {
 function RequestCard({ request }: { request: CrewRequest }) {
   const advance = useCrewChange((s) => s.advance);
   const pushToast = useApp((s) => s.pushToast);
-  const name = formatCrewName(request.form.familyName, request.form.forenames);
+  // A request raised from a crew list loses its personal data when the list's
+  // data is deleted: the card keeps its reference, stage and call, not the name.
+  const redacted = isRedactedRequest(request);
+  const name = redacted
+    ? 'Personal data deleted'
+    : formatCrewName(request.form.familyName, request.form.forenames);
   const vessel = VESSELS.find((v) => v.id === request.form.vesselId)?.name ?? '—';
   const date =
     request.kind === 'loi'
       ? `Joining ${request.form.joiningDate}`
       : `Disembarking ${request.form.disembarkationDate}`;
+  const detail = redacted
+    ? `Details removed at the client’s request · ${vessel} · ${request.form.port}`
+    : `${vessel} · ${request.form.port} · ${date}`;
   const action = simulateAction(request.kind, request.stage);
   const terminal = isTerminalStage(request.kind, request.stage);
 
   return (
     <Card
+      tabIndex={-1}
+      className="outline-none focus-visible:ring-2 focus-visible:ring-sea"
       data-testid={`crew-request-${request.id}`}
       data-kind={request.kind}
       data-stage={request.stage}
+      data-redacted={redacted || undefined}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -1054,13 +1071,19 @@ function RequestCard({ request }: { request: CrewRequest }) {
             <span className="text-[12px] font-semibold tracking-[0.02em] text-ink-soft">
               {request.id} · {request.createdAt}
             </span>
+            {request.crewListId ? (
+              <span
+                className="rounded-md border border-line bg-paper px-1.5 py-0.5 text-[11.5px] font-semibold text-ink-soft"
+                data-testid="crew-request-source"
+              >
+                from {request.crewListId}
+              </span>
+            ) : null}
           </div>
           <h3 className="mt-1 font-display text-[17px] font-bold" data-testid="crew-name">
             {name}
           </h3>
-          <p className="mt-0.5 text-[13px] text-ink-soft">
-            {vessel} · {request.form.port} · {date}
-          </p>
+          <p className="mt-0.5 text-[13px] text-ink-soft">{detail}</p>
         </div>
         <div className="max-w-full [&>span]:whitespace-normal" data-testid="crew-stage">
           <Pill tone={stageTone(request.kind, request.stage)}>
@@ -1100,6 +1123,7 @@ function RequestCard({ request }: { request: CrewRequest }) {
 
 function RequestsList() {
   const requests = useCrewChange((s) => s.requests);
+  const crewLists = useCrewChange((s) => s.crewLists);
   const reset = useCrewChange((s) => s.reset);
   const inProgress = requests.filter((r) => !isTerminalStage(r.kind, r.stage)).length;
 
@@ -1134,7 +1158,10 @@ function RequestsList() {
           Every letter is tied to the port call in GAC Agent, so the vessel, port and dates on the
           letter match the call — and the endorsed copy sits with the job, not in an inbox.
         </span>
-        {requests.length > 0 ? (
+        {/* A crew list with the LOI toggle off raises no letters, but reset()
+            clears the crew lists too — so the button must show while either
+            collection holds anything. */}
+        {requests.length > 0 || crewLists.length > 0 ? (
           <Button
             variant="dark-outline"
             onClick={reset}
@@ -1193,15 +1220,17 @@ export default function CrewChange() {
 
   return (
     <div className="screen-enter">
-      <Eyebrow>Crew change · hotels, taxis, launches, immigration, letters</Eyebrow>
+      <Eyebrow>Crew change · crew list, hotels, taxis, launches, immigration, letters</Eyebrow>
       <h1 className="mt-1 font-display text-2xl font-bold">
         Everything a crew change needs, in one place
       </h1>
       <p className="mt-1 max-w-[760px] text-[14px] text-ink-soft">
-        Rooms for crew held ashore, taxis and launches timed to the crew’s flights, the immigration
-        paperwork for visa-national crew, an Immigration Support Letter for each on-signer and a
-        repatriation letter for each off-signer. The platform holds the templates, you fill them in,
-        GAC endorses or routes them and sends them back — one letter per crew member, always.
+        Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it; or
+        work section by section — rooms for crew held ashore, taxis and launches timed to the crew’s
+        flights, the immigration paperwork for visa-national crew, an Immigration Support Letter for
+        each on-signer and a repatriation letter for each off-signer. The platform holds the
+        templates, you fill them in, GAC endorses or routes them and sends them back — one letter
+        per crew member, always.
       </p>
 
       <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -1238,6 +1267,9 @@ export default function CrewChange() {
         <p className="mt-0.5 mb-3 text-[13.5px] text-ink-soft" data-testid="section-summary">
           {active.summary}
         </p>
+        {section === 'crew-list' ? (
+          <CrewListSection onOpenSection={(id) => setSection(id, true)} />
+        ) : null}
         {section === 'hotels' ? <HotelsSection onRequest={setTarget} /> : null}
         {section === 'taxis' ? (
           <TaxisSection onRequest={setTarget} onOpenLaunches={() => setSection('launches', true)} />
