@@ -28,6 +28,7 @@ import {
   REPAT_INTRO,
   REPAT_QUESTION,
   STAGE_NOTES,
+  TAXIS_HOTEL_NOTE,
   TAXIS_INTRO,
   TAXIS_LAUNCH_POINTER,
 } from '../../data/crewChange';
@@ -47,6 +48,12 @@ import {
   validateRepat,
 } from '../../lib/crewChange';
 import type { CrewRequest, LoiForm, RepatForm } from '../../lib/crewChange';
+import {
+  clockTime,
+  DELAY_NOTICE_NOTE,
+  delayNotices,
+  delayNoticeSummary,
+} from '../../lib/delayNotices';
 import { launchPorts, launchSuppliers } from '../../lib/launches';
 import type { LaunchSupplier } from '../../lib/launches';
 import { deriveStatus, isBookable } from '../../lib/svs';
@@ -84,6 +91,8 @@ const LABEL = 'text-[12.5px] font-semibold text-ink-soft';
 
 const HOTELS = SUPPLIERS.filter((s) => s.category === 'Hotels');
 const TAXIS = SUPPLIERS.filter((s) => s.category === 'Taxis');
+/** Hotels the planner can put on a run (a room that night); blocked ones are never offered. */
+const HOTEL_ROOMS = HOTELS.filter((h) => isBookable(h.certs));
 const LAUNCHES = launchSuppliers(SUPPLIERS);
 const LAUNCH_PORTS = launchPorts(SUPPLIERS);
 /** Taxis run to every port the crew change covers; launches only to some of them. */
@@ -284,19 +293,43 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
   const [launchId, setLaunchId] = useState<string>(LAUNCHES[0]?.id ?? '');
   const [tracked, setTracked] = useState<FlightStatus | null>(null);
   const [notFound, setNotFound] = useState<string | null>(null);
-  const [delay, setDelay] = useState(0);
+  const [delay, setDelayMin] = useState(0);
+  const [hotelId, setHotelId] = useState('');
+  /** When the (simulated) delay notices went out — stamped each time the delay changes. */
+  const [notifiedAt, setNotifiedAt] = useState('');
+
+  function setDelay(min: number) {
+    setDelayMin(min);
+    setNotifiedAt(min ? clockTime(new Date()) : '');
+  }
 
   const launchesHere = LAUNCHES.filter((l) => l.launch.port === port);
+  const hotel = HOTEL_ROOMS.find((h) => h.id === hotelId) ?? null;
+  // A room that night takes the launch off this run (it runs on another day).
   const launch: LaunchSupplier | null =
-    launchId === '' ? null : (launchesHere.find((l) => l.id === launchId) ?? null);
+    launchId === '' || hotel ? null : (launchesHere.find((l) => l.id === launchId) ?? null);
   const status = tracked ? trackFlight(tracked.flight, delay) : null;
-  const plan = status ? planTransfers(status, port, launch?.launch ?? null) : null;
+  const plan = status ? planTransfers(status, port, launch?.launch ?? null, hotel?.name) : null;
   const paxN = Math.max(1, Math.floor(Number(pax) || 1));
   const taxi =
     TAXIS.find((t) =>
       port === 'Macduff' ? t.id === 'deveron-cabs' : t.id === 'regent-quay-cars',
     ) ?? TAXIS[0];
   const suggestions = Object.values(DEMO_FLIGHTS).filter((f) => f.direction === direction);
+  // The same run on time, so each party's notice can say what its leg moved from.
+  const booked =
+    status && status.delayMin
+      ? planTransfers(trackFlight(status.flight)!, port, launch?.launch ?? null, hotel?.name)
+      : null;
+  const notices =
+    booked && plan
+      ? delayNotices(
+          booked.legs,
+          plan.legs,
+          { taxi: taxi?.name ?? 'Taxi operator', launch: launch?.name, hotel: hotel?.name },
+          notifiedAt,
+        )
+      : [];
 
   function track() {
     const found = trackFlight(flightNo);
@@ -325,7 +358,7 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
     if (!plan || !status) return;
     const who = `${paxN} ${paxN === 1 ? 'crew member' : 'crew'}`;
     pushToast(
-      `Transport request sent — ${who}, ${status.flight} ${status.route}. ${plan.summary} Taxi ${taxi?.name ?? 'operator'}${launch ? `, launch ${launch.name}` : ''} — both hold the flight and re-time on a delay.`,
+      `Transport request sent — ${who}, ${status.flight} ${status.route}. ${plan.summary} Taxi ${taxi?.name ?? 'operator'}${launch ? `, launch ${launch.name}` : ''}${hotel ? `, hotel ${hotel.name}` : ''} — everyone on the run holds the flight and is told of a delay.`,
     );
   }
 
@@ -361,7 +394,7 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
         ))}
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <label className={LABEL}>
           Flight number
           <input
@@ -413,8 +446,10 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
           <select
             value={launchId}
             onChange={(e) => setLaunchId(e.target.value)}
-            className={INPUT}
+            className={`${INPUT} disabled:cursor-not-allowed disabled:opacity-60`}
             data-testid="flight-launch"
+            disabled={hotel !== null}
+            aria-describedby={hotel ? 'flight-hotel-note' : undefined}
           >
             <option value="">None — vessel alongside</option>
             {launchesHere.map((l) => (
@@ -424,7 +459,32 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
             ))}
           </select>
         </label>
+        <label className={LABEL}>
+          Room that night
+          <select
+            value={hotelId}
+            onChange={(e) => setHotelId(e.target.value)}
+            className={INPUT}
+            data-testid="flight-hotel"
+          >
+            <option value="">None</option>
+            {HOTEL_ROOMS.map((h) => (
+              <option key={h.id} value={h.id}>
+                {h.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
+      {hotel ? (
+        <p
+          id="flight-hotel-note"
+          className="mt-1.5 text-[12px] text-ink-soft"
+          data-testid="flight-hotel-note"
+        >
+          {TAXIS_HOTEL_NOTE}
+        </p>
+      ) : null}
       <p className="mt-1.5 text-[12px] text-ink-soft" data-testid="taxis-launch-pointer">
         {TAXIS_LAUNCH_POINTER}{' '}
         <button
@@ -466,6 +526,15 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
             {delay
               ? 'Simulate: back on time'
               : `Simulate: flight delayed ${TRANSFER_BUFFERS.simulatedDelayMin} min`}
+          </Button>
+        ) : null}
+        {status && delay ? (
+          <Button
+            variant="ghost"
+            onClick={() => setDelay(delay + TRANSFER_BUFFERS.furtherDelayMin)}
+            data-testid="simulate-further-delay"
+          >
+            {`Simulate: a further ${TRANSFER_BUFFERS.furtherDelayMin} min`}
           </Button>
         ) : null}
         <span className="text-[12px] text-ink-soft">{FLIGHT_FEED_NOTE}</span>
@@ -552,6 +621,12 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
                   {paxN > launch.launch.maxPassengers ? ` — ${paxN} needs more than one run` : ''})
                 </>
               ) : null}
+              {hotel ? (
+                <>
+                  {' '}
+                  · Hotel: <strong className="text-ink">{hotel.name}</strong>
+                </>
+              ) : null}
             </p>
             <div className="mt-3">
               <Button onClick={send} data-testid="send-transport">
@@ -559,6 +634,51 @@ function FlightPlanner({ onOpenLaunches }: { onOpenLaunches: () => void }) {
               </Button>
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {/* Always mounted while a flight is tracked, so the live region announces the notices when they arrive. */}
+      {status && plan ? (
+        <div aria-live="polite">
+          {notices.length > 0 ? (
+            <div
+              className="mt-4 rounded-lg border border-line bg-paper p-3.5"
+              data-testid="delay-notices"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[12.5px] font-bold">Delay sent to everyone on this run</p>
+                <Pill tone="warn">Re-timed</Pill>
+              </div>
+              <p className="mt-0.5 text-[12.5px] text-ink-soft" data-testid="delay-notices-summary">
+                {delayNoticeSummary(status.flight, status.delayMin, notices.length)}
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {notices.map((n) => (
+                  <li
+                    key={n.party}
+                    data-testid={`delay-notice-${n.party}`}
+                    className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 border-b border-dashed border-line pb-1.5 text-[13px] last:border-b-0"
+                  >
+                    <span>
+                      <strong>{n.name}</strong>{' '}
+                      <span className="text-[12px] text-ink-soft">· {n.role}</span>
+                      <span className="block text-ink-soft">{n.leg}</span>
+                    </span>
+                    <span className="whitespace-nowrap">
+                      <span className="text-ink-soft">{n.from}</span> →{' '}
+                      <strong className="font-display">{n.to}</strong>
+                      <span className="ml-2 text-[12px] text-ink-soft">
+                        notified {n.notifiedAt}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[12px] text-ink-soft" data-testid="delay-notice-note">
+                {DELAY_NOTICE_NOTE}
+              </p>
+            </div>
+          ) : null}
         </div>
       ) : null}
     </Card>

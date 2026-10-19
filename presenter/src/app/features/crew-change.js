@@ -95,7 +95,11 @@ const TR_BUFFERS = {
   taxiMin: { Aberdeen: 25, Peterhead: 55, Montrose: 60, Macduff: 75 },
   quayHandoverMin: 20,
   checkInBeforeDepartureMin: 120,
-  simulatedDelayMin: 40
+  simulatedDelayMin: 40,
+  /* A further slip once the flight is already late, so the notices can be seen to go out again. */
+  furtherDelayMin: 20,
+  /* Aberdeen airport ↔ the crew hotels by Regent Quay, by road. Illustrative. */
+  hotelRoadMin: 25
 };
 const TR_DIRECTIONS = [
   { id: 'arriving', label: 'On-signers arriving', hint: 'flight lands → taxi → quay → launch' },
@@ -131,21 +135,55 @@ function trLaunchTransitMin(launch) {
 }
 /* Arriving on-signers: land → taxi → quay → launch → vessel.
    Departing off-signers: vessel → launch → quay → taxi → airport by the check-in deadline.
-   `launch` is null when the vessel is alongside (no launch leg). */
-function trPlanTransfers(status, port, launch) {
+   `launch` is null when the vessel is alongside (no launch leg). `hotel` (a hotel
+   name) is a room booked that night: the run then ends at the hotel (arriving) or
+   starts there (departing), and the launch runs on another day, so it is left off.
+   Each leg carries its `party` (flight / taxi / launch / hotel) so the delay
+   notices read who to tell off the legs (site: TransferLeg.party). */
+function trPlanTransfers(status, port, launch, hotel) {
+  const flightNote = status.delayMin ? 'delayed ' + status.delayMin + ' min' : 'on time';
+  const delayedText = status.delayMin ? ', delayed ' + status.delayMin + ' min' : '';
+  if (hotel) {
+    const road = TR_BUFFERS.hotelRoadMin;
+    if (status.direction === 'arriving') {
+      const pickup = trAddMinutes(status.estimated, TR_BUFFERS.bagsAndImmigrationMin);
+      const checkIn = trAddMinutes(pickup, road);
+      return {
+        direction: 'arriving',
+        legs: [
+          { label: 'Flight lands', time: status.estimated, note: flightNote, party: 'flight' },
+          { label: 'Taxi pickup at arrivals', time: pickup, note: TR_BUFFERS.bagsAndImmigrationMin + ' min for bags and immigration', party: 'taxi' },
+          { label: 'Check in, ' + hotel, time: checkIn, note: road + ' min by road · room booked that night', party: 'hotel' }
+        ],
+        summary: 'Taxi pickup ' + pickup + ' at arrivals, timed to ' + status.flight + ' (' + status.estimated + delayedText + '); check in at ' + hotel + ' ' + checkIn + '.'
+      };
+    }
+    const atAirportH = trAddMinutes(status.estimated, -TR_BUFFERS.checkInBeforeDepartureMin);
+    const pickupH = trAddMinutes(atAirportH, -road);
+    return {
+      direction: 'departing',
+      legs: [
+        { label: 'Check out, ' + hotel, time: pickupH, note: 'room booked the night before', party: 'hotel' },
+        { label: 'Taxi pickup at the hotel', time: pickupH, note: road + ' min by road', party: 'taxi' },
+        { label: 'At the airport', time: atAirportH, note: TR_BUFFERS.checkInBeforeDepartureMin + ' min before departure' },
+        { label: 'Flight departs', time: status.estimated, note: flightNote, party: 'flight' }
+      ],
+      summary: 'Check out of ' + hotel + ' and taxi ' + pickupH + ' for ' + status.flight + ' departing ' + status.estimated + (status.delayMin ? ' (delayed ' + status.delayMin + ' min)' : '') + '.'
+    };
+  }
   const taxi = TR_BUFFERS.taxiMin[port] ?? 30;
   const transit = trLaunchTransitMin(launch);
   if (status.direction === 'arriving') {
     const pickup = trAddMinutes(status.estimated, TR_BUFFERS.bagsAndImmigrationMin);
     const quay = trAddMinutes(pickup, taxi);
     const legs = [
-      { label: 'Flight lands', time: status.estimated, note: status.delayMin ? 'delayed ' + status.delayMin + ' min' : 'on time' },
-      { label: 'Taxi pickup at arrivals', time: pickup, note: TR_BUFFERS.bagsAndImmigrationMin + ' min for bags and immigration' },
+      { label: 'Flight lands', time: status.estimated, note: flightNote, party: 'flight' },
+      { label: 'Taxi pickup at arrivals', time: pickup, note: TR_BUFFERS.bagsAndImmigrationMin + ' min for bags and immigration', party: 'taxi' },
       { label: 'Arrive at the quay, ' + port, time: quay, note: taxi + ' min by road' }
     ];
     if (launch) {
       const dep = trAddMinutes(quay, TR_BUFFERS.quayHandoverMin);
-      legs.push({ label: 'Launch departs (' + launch.vesselName + ')', time: dep, note: TR_BUFFERS.quayHandoverMin + ' min quay handover' });
+      legs.push({ label: 'Launch departs (' + launch.vesselName + ')', time: dep, note: TR_BUFFERS.quayHandoverMin + ' min quay handover', party: 'launch' });
       legs.push({ label: 'Alongside the vessel', time: trAddMinutes(dep, transit), note: transit + ' min transit' });
     } else {
       legs.push({ label: 'Board the vessel alongside', time: quay });
@@ -153,7 +191,7 @@ function trPlanTransfers(status, port, launch) {
     return {
       direction: 'arriving',
       legs: legs,
-      summary: 'Taxi pickup ' + pickup + ' at arrivals, timed to ' + status.flight + ' (' + status.estimated + (status.delayMin ? ', delayed ' + status.delayMin + ' min' : '') + ')' +
+      summary: 'Taxi pickup ' + pickup + ' at arrivals, timed to ' + status.flight + ' (' + status.estimated + delayedText + ')' +
         (launch ? '; launch ' + launch.vesselName + ' ' + legs[3].time + ' from the quay' : '') + '.'
     };
   }
@@ -164,20 +202,56 @@ function trPlanTransfers(status, port, launch) {
   if (launch) {
     const quayArrive = trAddMinutes(taxiPickup, -TR_BUFFERS.quayHandoverMin);
     const launchDep = trAddMinutes(quayArrive, -transit);
-    legs.push({ label: 'Launch leaves the vessel (' + launch.vesselName + ')', time: launchDep, note: transit + ' min transit' });
+    legs.push({ label: 'Launch leaves the vessel (' + launch.vesselName + ')', time: launchDep, note: transit + ' min transit', party: 'launch' });
     legs.push({ label: 'Ashore at the quay, ' + port, time: quayArrive, note: TR_BUFFERS.quayHandoverMin + ' min quay handover' });
   } else {
     legs.push({ label: 'Leave the vessel alongside, ' + port, time: taxiPickup });
   }
-  legs.push({ label: 'Taxi pickup at the quay', time: taxiPickup, note: taxi + ' min by road' });
+  legs.push({ label: 'Taxi pickup at the quay', time: taxiPickup, note: taxi + ' min by road', party: 'taxi' });
   legs.push({ label: 'At the airport', time: atAirport, note: TR_BUFFERS.checkInBeforeDepartureMin + ' min before departure' });
-  legs.push({ label: 'Flight departs', time: status.estimated, note: status.delayMin ? 'delayed ' + status.delayMin + ' min' : 'on time' });
+  legs.push({ label: 'Flight departs', time: status.estimated, note: flightNote, party: 'flight' });
   return {
     direction: 'departing',
     legs: legs,
     summary: (launch ? 'Launch ' + launch.vesselName + ' leaves the vessel ' + legs[0].time + '; ' : '') +
       'taxi ' + taxiPickup + ' from the quay for ' + status.flight + ' departing ' + status.estimated + (status.delayMin ? ' (delayed ' + status.delayMin + ' min)' : '') + '.'
   };
+}
+/* ---------- delay notices (src/lib/delayNotices.ts, verbatim) ----------
+   When the feed reports a delay the platform re-times the legs and tells every
+   supplier on the run, and the client's GAC agent, what moved. The party list is
+   read off the run's own legs; nothing is sent in this proof of concept. */
+const TR_AGENT_NAME = 'Your GAC agent';
+const TR_PARTY_ROLE = { taxi: 'Taxi operator', launch: 'Launch operator', hotel: 'Hotel', agent: 'Agent' };
+const TR_DELAY_NOTICE_NOTE = 'Illustrative — these notices are simulated here and nothing is sent. In production the platform messages each supplier on the run and your GAC agent as soon as the feed reports a delay, and again if it changes.';
+/* Taxis planner: a room booked that night takes the launch off the flight-timed run. */
+const CC_TAXIS_HOTEL_NOTE = 'With a room booked that night, the launch runs on another day, so it is not part of this run.';
+function trClockTime(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+/* One notice per party on the run, each with its own leg's booked and re-timed
+   time; empty when nothing moved. `booked` is the same run on time. */
+function trDelayNotices(booked, current, parties, notifiedAt) {
+  const moved = current.some((leg, i) => booked[i] && booked[i].time !== leg.time);
+  if (!moved) return [];
+  const notices = [];
+  ['taxi', 'launch', 'hotel'].forEach((party) => {
+    const name = parties[party];
+    if (!name) return;
+    const now = current.find((l) => l.party === party);
+    const was = booked.find((l) => l.party === party);
+    if (!now || !was) return;
+    notices.push({ party: party, role: TR_PARTY_ROLE[party], name: name, leg: now.label, from: was.time, to: now.time, notifiedAt: notifiedAt });
+  });
+  const flightNow = current.find((l) => l.party === 'flight');
+  const flightWas = booked.find((l) => l.party === 'flight');
+  if (flightNow && flightWas) {
+    /* The flight leads an arriving run and closes a departing one. */
+    const whole = current.indexOf(flightNow) === 0 ? 'and every leg after it' : 'and every leg before it';
+    notices.push({ party: 'agent', role: TR_PARTY_ROLE.agent, name: TR_AGENT_NAME, leg: flightNow.label + ', ' + whole, from: flightWas.time, to: flightNow.time, notifiedAt: notifiedAt });
+  }
+  return notices;
+}
+function trDelayNoticeSummary(flight, delayMin, count) {
+  return flight + ' delayed ' + delayMin + ' min — ' + count + ' ' + (count === 1 ? 'party' : 'parties') + ' told, each with the new time for their own leg.';
 }
 /* Launch operators and their home ports come from the shared roster (entries carrying a .launch block). */
 function trLaunchSuppliers(list) { return list.filter((s) => s.launch !== undefined); }
@@ -448,7 +522,11 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       trLaunchId: launches.length ? launches[0].id : '',
       trTracked: null,
       trNotFound: null,
-      trDelay: 0
+      trDelay: 0,
+      /* a room that night (hotel id, '' for none) and when the simulated delay
+         notices went out — stamped each time the delay changes */
+      trHotelId: '',
+      trNotifiedAt: ''
     };
   },
 
@@ -535,27 +613,39 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
     const taxiPorts = ccTaxiPorts(trLaunchPorts(self.SUPPLIERS));
     const taxis = self.SUPPLIERS.filter((s) => s.cat === 'Taxis');
     const launchesHere = launches.filter((l) => l.launch.port === st.trPort);
-    const trLaunchSup = st.trLaunchId === '' ? null : (launchesHere.find((l) => l.id === st.trLaunchId) || null);
+    /* Hotels the planner can put on a run (a room that night); blocked ones are never offered. */
+    const trHotels = self.SUPPLIERS.filter((s) => s.cat === 'Hotels' && self.deriveStatus(s) !== 'blocked');
+    const trHotel = trHotels.find((h) => h.id === st.trHotelId) || null;
+    /* A room that night takes the launch off this run (it runs on another day). */
+    const trLaunchSup = st.trLaunchId === '' || trHotel ? null : (launchesHere.find((l) => l.id === st.trLaunchId) || null);
     const trStatus = st.trTracked ? trTrackFlight(st.trTracked.flight, st.trDelay) : null;
-    const trPlan = trStatus ? trPlanTransfers(trStatus, st.trPort, trLaunchSup ? trLaunchSup.launch : null) : null;
+    const trPlan = trStatus ? trPlanTransfers(trStatus, st.trPort, trLaunchSup ? trLaunchSup.launch : null, trHotel ? trHotel.name : null) : null;
     const trPaxN = Math.max(1, Math.floor(Number(st.trPax) || 1));
     const trTaxi = taxis.find((t) => (st.trPort === 'Macduff' ? t.id === 'deveron-cabs' : t.id === 'regent-quay-cars')) || taxis[0] || null;
+    /* The same run on time, so each party's notice can say what its leg moved from. */
+    const trBooked = trStatus && trStatus.delayMin
+      ? trPlanTransfers(trTrackFlight(trStatus.flight, 0), st.trPort, trLaunchSup ? trLaunchSup.launch : null, trHotel ? trHotel.name : null)
+      : null;
+    const trNotices = trBooked && trPlan
+      ? trDelayNotices(trBooked.legs, trPlan.legs, { taxi: trTaxi ? trTaxi.name : 'Taxi operator', launch: trLaunchSup ? trLaunchSup.name : null, hotel: trHotel ? trHotel.name : null }, st.trNotifiedAt)
+      : [];
+    const trSetDelay = (min) => self.setState({ trDelay: min, trNotifiedAt: min ? trClockTime(new Date()) : '' });
     const trSuggestions = Object.keys(TR_DEMO_FLIGHTS).map((k) => TR_DEMO_FLIGHTS[k]).filter((f) => f.direction === st.trDirection);
     const trTrack = () => {
       const found = trTrackFlight(self.state.trFlightNo);
       if (!found) { self.setState({ trTracked: null, trNotFound: self.state.trFlightNo.trim() || 'that flight' }); return; }
-      self.setState({ trNotFound: null, trDelay: 0, trDirection: found.direction, trTracked: found });
+      self.setState({ trNotFound: null, trDelay: 0, trNotifiedAt: '', trDirection: found.direction, trTracked: found });
     };
     const trPickDirection = (d) => {
       /* Offer a matching demo flight so the button always has something to track. */
       const first = Object.keys(TR_DEMO_FLIGHTS).map((k) => TR_DEMO_FLIGHTS[k]).find((f) => f.direction === d);
-      self.setState({ trDirection: d, trTracked: null, trNotFound: null, trDelay: 0, trFlightNo: first ? first.flight : self.state.trFlightNo });
+      self.setState({ trDirection: d, trTracked: null, trNotFound: null, trDelay: 0, trNotifiedAt: '', trFlightNo: first ? first.flight : self.state.trFlightNo });
     };
     const trSend = () => {
       if (!trPlan || !trStatus) return;
       const who = trPaxN + ' ' + (trPaxN === 1 ? 'crew member' : 'crew');
       self.toastMsg('Transport request sent — ' + who + ', ' + trStatus.flight + ' ' + trStatus.route + '. ' + trPlan.summary +
-        ' Taxi ' + (trTaxi ? trTaxi.name : 'operator') + (trLaunchSup ? ', launch ' + trLaunchSup.name : '') + ' — both hold the flight and re-time on a delay.');
+        ' Taxi ' + (trTaxi ? trTaxi.name : 'operator') + (trLaunchSup ? ', launch ' + trLaunchSup.name : '') + (trHotel ? ', hotel ' + trHotel.name : '') + ' — everyone on the run holds the flight and is told of a delay.');
     };
     const trLegs = trPlan ? trPlan.legs.map((leg, i) => ({
       n: String(i + 1), label: leg.label, hasNote: !!leg.note, note: leg.note ? '· ' + leg.note : '',
@@ -743,6 +833,15 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       trLaunchOptions: launchesHere.map((l) => ({ value: l.id, label: l.launch.vesselName + ' · ' + l.name + ' · ' + l.launch.transit })),
       trLaunchId: st.trLaunchId,
       onTrLaunch: (e) => self.setState({ trLaunchId: e.target.value }),
+      trLaunchDisabled: !!trHotel,
+      trLaunchDescribedBy: trHotel ? 'flight-hotel-note' : '',
+      trLaunchSelectStyle: 'display:block;margin-top:4px;min-height:40px;width:100%;box-sizing:border-box;border:1.5px solid #CBD6E2;border-radius:8px;padding:8px 10px;font-size:13.5px;font-weight:600;background:#FFFFFF;font-family:inherit;color:#0A2540;' + (trHotel ? 'opacity:.6;cursor:not-allowed;' : ''),
+      trHotelOptions: trHotels.map((h) => ({ value: h.id, label: h.name })),
+      trHotelId: st.trHotelId,
+      onTrHotel: (e) => self.setState({ trHotelId: e.target.value }),
+      trHasHotel: !!trHotel,
+      trHotelName: trHotel ? trHotel.name : '',
+      trHotelNote: CC_TAXIS_HOTEL_NOTE,
       trSuggestions: trSuggestions.map((f, i) => ({
         sep: i ? ' · ' : '', flight: f.flight, tail: ' ' + f.route + ' ' + f.scheduled,
         on: () => self.setState({ trFlightNo: f.flight })
@@ -750,7 +849,19 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       trTrack: trTrack,
       trHasStatus: !!(trStatus && trPlan),
       trDelayBtnLabel: st.trDelay ? 'Simulate: back on time' : 'Simulate: flight delayed ' + TR_BUFFERS.simulatedDelayMin + ' min',
-      trToggleDelay: () => self.setState({ trDelay: self.state.trDelay ? 0 : TR_BUFFERS.simulatedDelayMin }),
+      trToggleDelay: () => trSetDelay(self.state.trDelay ? 0 : TR_BUFFERS.simulatedDelayMin),
+      trHasDelayed: !!(trStatus && trPlan && st.trDelay),
+      trFurtherDelayLabel: 'Simulate: a further ' + TR_BUFFERS.furtherDelayMin + ' min',
+      trFurtherDelay: () => trSetDelay(self.state.trDelay + TR_BUFFERS.furtherDelayMin),
+      /* delay notices — one line per party on the run (CrewChange.tsx, delay-notices) */
+      trHasNotices: trNotices.length > 0,
+      trNoticeSummary: trStatus && trNotices.length ? trDelayNoticeSummary(trStatus.flight, trStatus.delayMin, trNotices.length) : '',
+      trNotices: trNotices.map((n, i) => ({
+        testId: 'delay-notice-' + n.party, name: n.name, role: '· ' + n.role, leg: n.leg,
+        from: n.from, to: n.to, notified: 'notified ' + n.notifiedAt,
+        style: 'display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px;font-size:13px;padding-bottom:6px;' + (i === trNotices.length - 1 ? '' : 'border-bottom:1px dashed #E5EAF1;')
+      })),
+      trNoticeNote: TR_DELAY_NOTICE_NOTE,
       trFeedNote: TR_FLIGHT_FEED_NOTE,
       trNotFound: !!st.trNotFound,
       trNotFoundText: 'The feed does not know ' + (st.trNotFound || 'that flight') + '. Check the number, or pick one of the demo flights above — in production your agent times the transport from the itinerary instead.',

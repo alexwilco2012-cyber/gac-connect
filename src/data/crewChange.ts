@@ -92,6 +92,10 @@ export const TAXIS_INTRO =
 export const TAXIS_LAUNCH_POINTER =
   'The planner times the launch leg with the taxi. The launch operators themselves — capacity, freight and port notes — are under Launches.';
 
+/** Taxis planner: a room booked that night takes the launch off the flight-timed run. */
+export const TAXIS_HOTEL_NOTE =
+  'With a room booked that night, the launch runs on another day, so it is not part of this run.';
+
 /** Launches → Taxis: the reciprocal pointer, so a run can be hung off the flight. */
 export const LAUNCHES_TAXI_POINTER =
   'A run can be timed to the crew member’s tracked flight — the planner under Taxis times the taxi and the launch to the same flight.';
