@@ -170,7 +170,7 @@ test('crew list: demo list end to end — check, services, submit, LOIs raised, 
   await expect(serviceSummary).toContainText('LOIs · 5 visa-national on-signers');
   await expect(serviceSummary).toContainText('Taxis · 4 runs for 7 crew, timed to the flights');
   await expect(serviceSummary).not.toContainText('Hotel');
-  await expect(page.getByTestId('crew-list-vessel')).toHaveValue('caledonian-star');
+  await expect(page.getByTestId('crew-list-vessel')).toHaveValue('choice');
   await expect(page.getByTestId('crew-list-port')).toHaveValue('Aberdeen');
   await expect(page.getByTestId('crew-list-submit')).toBeDisabled();
   await page.getByTestId('crew-list-ack').check();
@@ -340,7 +340,7 @@ test('crew list: a real upload — scrambled headers, CSV, and a refused .xls', 
       '22/08/2026',
       '09:40',
       'London Heathrow',
-      'MV Caledonian Star',
+      'MV Choice',
       'Aberdeen',
     ].join(','),
   ].join('\r\n');

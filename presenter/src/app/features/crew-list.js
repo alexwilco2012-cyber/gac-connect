@@ -642,14 +642,14 @@ const CL_TEMPLATE_HEADERS = ['Family name', 'Forenames', 'Rank', 'Nationality', 
    off-signer, where a missing expiry is low-stakes — has no passport expiry,
    so the check step shows what an issue looks like. */
 const CL_DEMO_ROWS = [
-  ['DEMO', 'Crew Member 1', 'Master', 'Demo nationality A', '01/01/1990', 'X0000001', '01/01/2031', 'On', 'ZZ 417', '22/08/2026', '13:55', 'Amsterdam', 'MV Caledonian Star', 'Aberdeen'],
-  ['DEMO', 'Crew Member 2', 'Chief Officer', 'Demo nationality A', '02/02/1988', 'X0000002', '01/06/2030', 'On', 'ZZ 417', '22/08/2026', '13:55', 'Amsterdam', 'MV Caledonian Star', 'Aberdeen'],
-  ['DEMO', 'Crew Member 3', 'Second Engineer', 'Demo nationality B', '03/03/1992', 'X0000003', '15/09/2032', 'On', 'ZZ 417', '22/08/2026', '13:55', 'Amsterdam', 'MV Caledonian Star', 'Aberdeen'],
-  ['DEMO', 'Crew Member 4', 'Bosun', 'Demo nationality B', '04/04/1985', 'X0000004', '30/11/2030', 'On', 'ZZ 122', '22/08/2026', '09:40', 'London Heathrow', 'MV Caledonian Star', 'Aberdeen'],
-  ['DEMO', 'Crew Member 5', 'Able Seaman', 'Demo nationality A', '05/05/1995', 'X0000005', '12/03/2033', 'On', 'ZZ 122', '22/08/2026', '09:40', 'London Heathrow', 'MV Caledonian Star', 'Aberdeen'],
-  ['DEMO', 'Crew Member 6', 'Chief Engineer', 'Demo nationality B', '06/06/1980', 'X0000006', '20/07/2031', 'Off', 'ZZ 204', '22/08/2026', '17:10', 'Amsterdam', 'MV Caledonian Star', 'Aberdeen'],
-  ['DEMO', 'Crew Member 7', 'Cook', 'Demo nationality A', '07/07/1991', 'X0000007', '', 'Off', 'ZZ 204', '22/08/2026', '17:10', 'Amsterdam', 'MV Caledonian Star', 'Aberdeen'],
-  ['DEMO', 'Crew Member 8', 'Oiler', 'Demo nationality B', '08/08/1987', 'X0000008', '28/02/2032', 'Off', 'ZZ 131', '22/08/2026', '19:25', 'London Heathrow', 'MV Caledonian Star', 'Aberdeen']
+  ['DEMO', 'Crew Member 1', 'Master', 'Demo nationality A', '01/01/1990', 'X0000001', '01/01/2031', 'On', 'ZZ 417', '22/08/2026', '13:55', 'Amsterdam', 'MV Choice', 'Aberdeen'],
+  ['DEMO', 'Crew Member 2', 'Chief Officer', 'Demo nationality A', '02/02/1988', 'X0000002', '01/06/2030', 'On', 'ZZ 417', '22/08/2026', '13:55', 'Amsterdam', 'MV Choice', 'Aberdeen'],
+  ['DEMO', 'Crew Member 3', 'Second Engineer', 'Demo nationality B', '03/03/1992', 'X0000003', '15/09/2032', 'On', 'ZZ 417', '22/08/2026', '13:55', 'Amsterdam', 'MV Choice', 'Aberdeen'],
+  ['DEMO', 'Crew Member 4', 'Bosun', 'Demo nationality B', '04/04/1985', 'X0000004', '30/11/2030', 'On', 'ZZ 122', '22/08/2026', '09:40', 'London Heathrow', 'MV Choice', 'Aberdeen'],
+  ['DEMO', 'Crew Member 5', 'Able Seaman', 'Demo nationality A', '05/05/1995', 'X0000005', '12/03/2033', 'On', 'ZZ 122', '22/08/2026', '09:40', 'London Heathrow', 'MV Choice', 'Aberdeen'],
+  ['DEMO', 'Crew Member 6', 'Chief Engineer', 'Demo nationality B', '06/06/1980', 'X0000006', '20/07/2031', 'Off', 'ZZ 204', '22/08/2026', '17:10', 'Amsterdam', 'MV Choice', 'Aberdeen'],
+  ['DEMO', 'Crew Member 7', 'Cook', 'Demo nationality A', '07/07/1991', 'X0000007', '', 'Off', 'ZZ 204', '22/08/2026', '17:10', 'Amsterdam', 'MV Choice', 'Aberdeen'],
+  ['DEMO', 'Crew Member 8', 'Oiler', 'Demo nationality B', '08/08/1987', 'X0000008', '28/02/2032', 'Off', 'ZZ 131', '22/08/2026', '19:25', 'London Heathrow', 'MV Choice', 'Aberdeen']
 ];
 /* File names — no brand string (src/config/brand.ts rule). */
 const CL_TEMPLATE_FILE_NAME = 'crew-list-template.xlsx';
