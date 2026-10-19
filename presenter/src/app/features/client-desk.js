@@ -485,8 +485,78 @@ function CD_spendChart(calc) {
             (pct > 0 ? ', with the tier saving below' : ''),
         }),
       ),
+      CD_couldHaveSavedLine(calc)
+        ? h(
+            'p',
+            {
+              key: 'could',
+              'data-testid': 'client-spend-could-have-saved',
+              style: {
+                margin: '12px 0 0',
+                fontSize: '13px',
+                lineHeight: 1.35,
+                color: '#33475F',
+                fontVariantNumeric: 'tabular-nums',
+              },
+            },
+            CD_couldHaveSavedLine(calc),
+          )
+        : null,
     ],
   });
+}
+
+/* ---------- how much more the same spend could have saved ----------
+   Site: src/lib/couldHaveSaved.ts, word for word. The same six months of
+   spend on the lines held, priced at the next tier up and at 7%. Tiers are
+   non-cumulative, so the switch that reaches 7% is Customs on its own;
+   Procurement is never a step; at 7% there is nothing to say and no
+   celebration. Rounded like the card: each month to the pound, then summed. */
+function CD_couldHaveSaved(calc) {
+  const tiers = DC_DATA.TIERS;
+  const pct = DK_tierPct(calc);
+  const higher = Object.keys(tiers)
+    .filter((k) => !calc[k] && tiers[k] > pct)
+    .sort((a, b) => tiers[a] - tiers[b]);
+  if (!higher.length) return [];
+  const next = higher[0];
+  const top = higher[higher.length - 1];
+  const series = DK_spendSeries(calc);
+  const current = CD_sum(DK_monthlySaving(calc));
+  return (next === top ? [next] : [next, top]).map((service) => {
+    const hypothetical = Object.assign({}, calc, { [service]: true });
+    const at = DK_tierPct(hypothetical);
+    const saved = CD_sum(
+      DK.SPEND_MONTHS.map((_, i) =>
+        Math.round((series.reduce((acc, s) => acc + (s.values[i] || 0), 0) * at) / 100),
+      ),
+    );
+    return { service: service, pct: tiers[service], saved: saved, more: saved - current };
+  });
+}
+
+/* The sentence under the spend chart, or null at 7%. With no tier held the
+   "more" would only repeat the saving, so it is left off. */
+function CD_couldHaveSavedLine(calc) {
+  const steps = CD_couldHaveSaved(calc);
+  if (!steps.length) return null;
+  const held = DK_tierPct(calc) > 0;
+  return steps
+    .map(
+      (s, i) =>
+        'Add ' +
+        DK.LINE_LABELS[s.service] +
+        ' and ' +
+        (i === 0 ? 'the same spend' : 'it') +
+        ' would have saved ' +
+        VZ.gbp(s.saved) +
+        ' at ' +
+        s.pct +
+        '%' +
+        (held ? ' — ' + VZ.gbp(s.more) + ' more' : '') +
+        '.',
+    )
+    .join(' ');
 }
 
 /* ---------- registration ---------- */

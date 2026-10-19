@@ -8,6 +8,7 @@ import {
 } from '../../../../components/charts';
 import { SPEND_MONTHS } from '../../../../data/clientDesk';
 import { monthlySaving, spendSeries } from '../../../../lib/clientDesk';
+import { couldHaveSavedLine } from '../../../../lib/couldHaveSaved';
 import { compactGbp, gbp } from '../../../../lib/format';
 import { tierPct } from '../../../../lib/tier';
 import { useApp } from '../../../../store/app';
@@ -24,6 +25,9 @@ import { useApp } from '../../../../store/app';
  * watch. Colour is fixed to the line (`LINE_COLOURS`), never to its place in
  * the stack, so a survivor never repaints. No celebration at Full Stack: the
  * card above has the one gold moment on the screen.
+ *
+ * Under the plot, one plain line on what the same spend would have saved at
+ * the next tier up and at 7% (`lib/couldHaveSaved`); at 7% it is not there.
  *
  * Client-facing: the table, tooltip and accessible names carry spend and
  * saving only — never a supplier's band or commission (03 §3.2).
@@ -51,6 +55,7 @@ export function SpendChart() {
 
   const legend: LegendItem[] = series.map((s) => ({ label: s.label, color: s.color }));
   const savedHeader = `Saved at ${pct}%`;
+  const couldSave = couldHaveSavedLine(tier);
 
   const takeaway =
     pct > 0
@@ -140,6 +145,14 @@ export function SpendChart() {
           }`}
         />
       </div>
+      {couldSave ? (
+        <p
+          data-testid="client-spend-could-have-saved"
+          className="mt-3 text-[13px] leading-snug text-ink-soft tabular-nums"
+        >
+          {couldSave}
+        </p>
+      ) : null}
     </ChartFigure>
   );
 }
