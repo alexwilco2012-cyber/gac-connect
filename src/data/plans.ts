@@ -36,7 +36,7 @@ export const PLANS: PlanDef[] = [
   {
     id: 'professional',
     name: 'Professional',
-    priceLine: '£900',
+    priceLine: '£2,000',
     perLine: 'per year',
     commissionPct: COMMISSION_BANDS.professional,
     popular: true,
@@ -46,14 +46,14 @@ export const PLANS: PlanDef[] = [
       { text: 'Featured category placement (2 campaigns / month)', included: true },
       { text: 'Performance analytics: views, quote requests, win rate', included: true },
       { text: 'Priority verification renewals', included: true },
-      { text: 'Eligible for the GAC Gold Band audit', included: false },
+      { text: 'Eligible for the GAC Gold Band audit — £1,500 a year', included: true },
     ],
     cta: 'Choose Professional',
   },
   {
     id: 'premium',
     name: 'Premium',
-    priceLine: '£1,800',
+    priceLine: '£4,000',
     perLine: 'per year',
     commissionPct: COMMISSION_BANDS.premium,
     features: [

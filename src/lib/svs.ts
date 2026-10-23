@@ -31,7 +31,7 @@ export function isBookable(certs: readonly Cert[]): boolean {
 
 /**
  * GAC Gold Band — the paid annual audit above standard verification, open to
- * Premium suppliers at £1,500 a year (documentation, insurance, performance
+ * Professional and Premium suppliers at £1,500 a year (documentation, insurance, performance
  * history, site visit; proposal v18 §6). 'held' means the audit is current;
  * 'scheduled' means the supplier is eligible and booked in but has not yet
  * passed it. No supplier can advertise their way into it, and lapsed

@@ -43,11 +43,11 @@ describe('Supplier commission bands (03 §3.2, v12 model)', () => {
     }
   });
 
-  it('plan prices are unchanged: Basic free, £900, £1,800', () => {
+  it('plan prices are the locked 23 Oct 2026 ladder: Basic free, £2,000, £4,000', () => {
     expect(PLANS.map((p) => [p.name, p.priceLine])).toEqual([
       ['Basic', '£0'],
-      ['Professional', '£900'],
-      ['Premium', '£1,800'],
+      ['Professional', '£2,000'],
+      ['Premium', '£4,000'],
     ]);
   });
 });
