@@ -241,7 +241,7 @@
      the screen stays inline, as every deck screen is. */
   .gac-sv-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .gac-sv-main :focus-visible, .gac-sv-dialog :focus-visible { outline: 3px solid #0E5E8A; outline-offset: 2px; }
-  .gac-sv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; box-sizing: border-box; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 13.5px; font-weight: 700; line-height: 1.2; cursor: pointer; transition: background-color .15s, border-color .15s, color .15s; }
+  .gac-sv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; box-sizing: border-box; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 13.5px; font-weight: 700; line-height: 1.2; cursor: pointer; transition: background-color .15s, border-color .15s, color .15s, transform 160ms cubic-bezier(.23, 1, .32, 1); }
   .gac-sv-btn:disabled { cursor: not-allowed; opacity: .5; }
   .gac-sv-btn-primary { background: #0E5E8A; color: #FFFFFF; border: 1.5px solid #0E5E8A; }
   .gac-sv-btn-primary:hover:not(:disabled) { background: #0B4C70; border-color: #0B4C70; }
@@ -376,6 +376,22 @@
   .gac-an-seg button[aria-pressed="false"]:hover { color: #0A2540 !important; }
   .gac-an-main summary:hover, .gac-an-plans:hover { color: #0B4C70 !important; }
   /* ==== end analytics rules ==== */
+
+  /* ---- press feedback and dialog entrances ----------------------------
+     A button gives a little under the finger, so a click visibly lands.
+     :where() keeps the transition at zero specificity: any class that sets
+     its own transition wins (and lists transform itself), and a button with
+     an inline transition presses without easing rather than losing it. */
+  :where(button:not([style*="transition"])) { transition: transform 160ms cubic-bezier(.23, 1, .32, 1); }
+  button:not(:disabled):active { transform: scale(.97); }
+  /* Every modal's backdrop fades and its panel settles from 96%. Centred,
+     never from a trigger: a modal belongs to the viewport. No exit animation. */
+  @keyframes dlgFade { from { opacity: 0; } }
+  @keyframes dlgIn { from { opacity: 0; transform: scale(.96); } }
+  .gac-dlg-backdrop { animation: dlgFade 200ms ease-out; }
+  .gac-dlg-panel { animation: dlgIn 200ms cubic-bezier(.23, 1, .32, 1); }
+  @keyframes tourIn { from { opacity: 0; transform: translateY(8px); } }
+  .gac-tour-card { animation: tourIn 240ms cubic-bezier(.23, 1, .32, 1); }
 
   /* `animation:none` drops the fill state with the animation, so anything
      that starts at opacity 0 must be forced visible rather than left there. */

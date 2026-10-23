@@ -527,7 +527,7 @@ const CC_TRACK_STATE = {
   pending: 'border:1px solid #E5EAF1;background:#FFFFFF;color:#33475F;'
 };
 const CC_SWITCH = 'position:relative;width:46px;height:26px;border-radius:999px;border:none;cursor:pointer;flex-shrink:0;padding:0;transition:background .2s;';
-const CC_KNOB = 'position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(10,37,64,.25);transition:left .2s;display:block;';
+const CC_KNOB = 'position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(10,37,64,.25);left:3px;transition:transform .18s cubic-bezier(.23,1,.32,1);display:block;';
 
 /* Presenter's hotel desc folds the availability caveat in; the site shows the
    description and the booking note separately, so split it back out here. */
@@ -957,7 +957,7 @@ function ccHotelDesc(desc) { return String(desc || '').replace(/\s*GAC rate indi
       ccLetterNoticePoints: CC_LETTER_DATA_NOTICE.points,
       ccLoiVisaAria: loi.visaNational ? 'true' : 'false',
       ccLoiVisaTrack: CC_SWITCH + (loi.visaNational ? 'background:#0E5E8A;' : 'background:#CBD6E2;'),
-      ccLoiVisaKnob: CC_KNOB + (loi.visaNational ? 'left:23px;' : 'left:3px;'),
+      ccLoiVisaKnob: CC_KNOB + (loi.visaNational ? 'transform:translateX(20px);' : ''),
       ccLoiToggleVisa: () => setLoi({ visaNational: !self.state.ccLoi.visaNational }),
       ccLoiNotRequired: !loiRequired, ccLoiNotRequiredNote: CC_LOI_NOT_REQUIRED_NOTE,
       ccLoiFieldsDisabled: !loiRequired,

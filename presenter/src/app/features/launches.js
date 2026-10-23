@@ -108,7 +108,7 @@ const LAUNCH_STYLE = {
   chipOn: 'background:#0A2540;border:1.5px solid #0A2540;color:#FFFFFF;',
   chipOff: 'background:#FFFFFF;border:1.5px solid #CBD6E2;color:#33475F;',
   track(on) { return 'position:relative;width:46px;height:26px;border-radius:999px;border:none;cursor:pointer;flex-shrink:0;padding:0;transition:background .2s;' + (on ? 'background:#0E5E8A;' : 'background:#CBD6E2;'); },
-  knob(on) { return 'position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(10,37,64,.25);transition:left .2s;display:block;' + (on ? 'left:23px;' : 'left:3px;'); },
+  knob(on) { return 'position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(10,37,64,.25);left:3px;transition:transform .18s cubic-bezier(.23,1,.32,1);display:block;' + (on ? 'transform:translateX(20px);' : ''); },
   advice(tone) {
     return 'border-left:4px solid;border-radius:8px;padding:8px 12px;font-size:12.5px;margin:8px 0 0;' +
       (tone === 'warn' ? 'border-color:#A84D08;background:#FBF0E1;color:#A84D08;' : (tone === 'info' ? 'border-color:#0E5E8A;background:#E8F1F7;color:#0E5E8A;' : 'border-color:#047857;background:#E7F4EF;color:#047857;'));

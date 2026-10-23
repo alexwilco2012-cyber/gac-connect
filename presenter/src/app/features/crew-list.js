@@ -1507,7 +1507,7 @@ const CL_REMOVE_BTN = 'min-height:32px;min-width:32px;cursor:pointer;border-radi
     const hotel = clPlanHotel(rows, choices.hotelNights);
     const roomCount = st.clRooms ?? hotel.rooms;
     const taxis = clPlanTaxis(rows, choices.port);
-    const switchVals = (on) => ({ aria: on ? 'true' : 'false', track: CC_SWITCH + (on ? 'background:#0E5E8A;' : 'background:#CBD6E2;'), knob: CC_KNOB + (on ? 'left:23px;' : 'left:3px;') });
+    const switchVals = (on) => ({ aria: on ? 'true' : 'false', track: CC_SWITCH + (on ? 'background:#0E5E8A;' : 'background:#CBD6E2;'), knob: CC_KNOB + (on ? 'transform:translateX(20px);' : '') });
     const loiSwitch = switchVals(choices.loi);
     const hotelsSwitch = switchVals(choices.hotels);
     const taxisSwitch = switchVals(choices.taxis);

@@ -63,7 +63,9 @@
 .adv .rl.on{color:var(--gold)}
 .adv .rl.on i{background:var(--gold)}
 .adv .dots{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:21}
-.adv .dot{width:6px;height:6px;border-radius:50%;border:1px solid rgba(234,242,248,.3);background:transparent;cursor:pointer;padding:0;transition:all .3s var(--ease)}
+.adv .dot{position:relative;width:6px;height:6px;border-radius:50%;border:1px solid rgba(234,242,248,.3);background:transparent;cursor:pointer;padding:0;transition:background-color .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease)}
+/* a 6px dot is hard to hit from a lectern: the target is 24px tall and runs to the halfway line either side, so neighbours never overlap */
+.adv .dot::before{content:'';position:absolute;inset:-9px -4.5px}
 .adv .dot:hover{border-color:var(--gold)}
 .adv .dot.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(255,199,44,.6)}
 .adv .dot:focus-visible{outline:2px solid rgba(255,199,44,.7);outline-offset:3px}
@@ -74,7 +76,9 @@
   display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
   gap:clamp(12px,2.2vh,22px);padding:92px var(--gx) 104px;text-align:left;
   opacity:0;visibility:hidden;transform:translateY(22px);
-  transition:opacity .45s var(--ease), transform .45s var(--ease), visibility 0s .45s;
+  /* the slide leaving fades where it stands and only drops back to its entry offset once
+     invisible, so the old and new headlines never slide across the same spot */
+  transition:opacity .45s var(--ease), transform 0s .45s, visibility 0s .45s;
   pointer-events:none;
 }
 .adv .slide.active{
@@ -310,6 +314,7 @@
   transition:transform .25s var(--ease), box-shadow .25s var(--ease), filter .25s var(--ease);
 }
 .adv .cta:hover{transform:translateY(-2px);box-shadow:0 20px 54px rgba(255,199,44,.4);filter:brightness(1.05)}
+.adv .cta:active{transform:scale(.97);box-shadow:0 10px 34px rgba(255,199,44,.3);transition-duration:.16s}
 .adv .cta:focus-visible{outline:3px solid rgba(255,199,44,.65);outline-offset:4px}
 .adv .cta svg{transition:transform .25s var(--ease)}
 .adv .cta:hover svg{transform:translateX(4px)}
@@ -609,31 +614,32 @@
 /* ---- the cash: milestones ---- */
 .adv .cs-ms{opacity:0}
 .adv .sl-cash.active .cs-ms{animation:advFadeIn .6s ease 1.5s both}
-/* ---- the figures and the ask build in two beats: the headline numbers first, the table on the next click ---- */
-.adv .sl-bars .cols-fig,.adv .sl-ask .cols-ask{transition:grid-template-columns .8s var(--ease)}
-.adv .sl-bars .cols-fig{grid-template-columns:minmax(0,1fr) minmax(0,0fr)}
-.adv.step1 .sl-bars .cols-fig{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-.adv .sl-ask .cols-ask{grid-template-columns:minmax(0,1fr) minmax(0,0fr)}
-.adv.step1 .sl-ask .cols-ask{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
-.adv .sl-bars .cols-fig > .col:nth-child(2),.adv .sl-ask .cols-ask > .col:nth-child(2){min-width:0;overflow:hidden;opacity:0;transform:translateX(24px);transition:opacity .6s var(--ease) .25s,transform .6s var(--ease) .25s}
-.adv.step1 .sl-bars .cols-fig > .col:nth-child(2),.adv.step1 .sl-ask .cols-ask > .col:nth-child(2){opacity:1;transform:none;overflow:visible}
+/* ---- the figures and the ask build in two beats: the headline numbers first, the table on the next click ----
+   The grid holds its final widths throughout, so nothing reflows mid-build. On the figures the
+   left column starts centred on the slide and a touch larger, then slides left to make room;
+   on the ask it already sits where it ends. The second column fades in from the right. */
+.adv .sl-ask .cols-ask{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+.adv .sl-bars .cols-fig{--cg:clamp(24px,4vw,64px)}
+.adv .sl-bars .cols-fig > .col:first-child{transform:translateX(calc(50% + var(--cg) / 2)) scale(1.06);transition:transform .8s var(--ease)}
+.adv.step1 .sl-bars .cols-fig > .col:first-child{transform:none}
+/* leaving the slide resets the step: snap the column back once the slide has faded, not during */
+.adv .sl-bars:not(.active) .cols-fig > .col:first-child{transition:transform 0s .45s}
+.adv .sl-bars .cols-fig > .col:nth-child(2),.adv .sl-ask .cols-ask > .col:nth-child(2){opacity:0;transform:translateX(24px);transition:opacity .6s var(--ease) .2s,transform .6s var(--ease) .2s}
+.adv.step1 .sl-bars .cols-fig > .col:nth-child(2),.adv.step1 .sl-ask .cols-ask > .col:nth-child(2){opacity:1;transform:none}
 .adv .sl-bars.active .rev,.adv .sl-bars.active .colhead,.adv .sl-ask.active .capex,.adv .sl-ask.active .risks{animation:none}
 .adv .sl-ask .steps{max-width:760px}
 .adv .sl-bars .bignums{gap:clamp(24px,4vw,64px)}
-.adv .sl-bars .bn b{font-size:clamp(2rem,4.2vw,3.8rem)}
-.adv.step1 .sl-bars .bn b{font-size:clamp(1.7rem,3.2vw,2.9rem)}
-.adv .sl-bars .bn b{transition:font-size .8s var(--ease)}
 .adv .build-hint{position:absolute;right:var(--gx);bottom:74px;z-index:21;pointer-events:none;font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);opacity:.9}
 .adv .build-hint:empty{display:none}
 @media (max-width:860px){
   .adv .sl-bars .cols-fig,.adv.step1 .sl-bars .cols-fig,.adv .sl-ask .cols-ask,.adv.step1 .sl-ask .cols-ask{grid-template-columns:minmax(0,1fr)}
+  .adv .sl-bars .cols-fig > .col:first-child{transform:none}
   .adv .build-hint{display:none}
 }
 @media (prefers-reduced-motion: reduce){
   .adv .hb-ship-pos{transform:translateX(620px)}
   .adv.s-reveal .hb-ship-pos{transform:translateX(960px)}
   .adv .pb-ghost,.adv .pb-head,.adv .cs-ms{opacity:1}
-  .adv .sl-bars .cols-fig{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .adv .sl-ask .cols-ask{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
-  .adv .sl-bars .cols-fig > .col:nth-child(2),.adv .sl-ask .cols-ask > .col:nth-child(2){opacity:1;transform:none;overflow:visible}
+  .adv .sl-bars .cols-fig > .col:first-child{transform:none}
+  .adv .sl-bars .cols-fig > .col:nth-child(2),.adv .sl-ask .cols-ask > .col:nth-child(2){opacity:1;transform:none}
 }

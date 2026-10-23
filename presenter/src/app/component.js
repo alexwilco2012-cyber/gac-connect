@@ -779,7 +779,7 @@ class Component extends DCLogic {
       this._set('calc', next);
     };
     const swStyle = (on) => 'position:relative;width:46px;height:26px;border-radius:999px;border:none;cursor:pointer;flex-shrink:0;transition:background .2s;background:' + (on ? '#0E5E8A' : '#CBD6E2') + ';';
-    const swKnob = (on) => 'position:absolute;top:3px;left:' + (on ? '23px' : '3px') + ';width:20px;height:20px;border-radius:50%;background:#FFFFFF;transition:left .2s;display:block;';
+    const swKnob = (on) => 'position:absolute;top:3px;left:3px;transform:' + (on ? 'translateX(20px)' : 'none') + ';width:20px;height:20px;border-radius:50%;background:#FFFFFF;transition:transform .18s cubic-bezier(.23,1,.32,1);display:block;';
 
     /* tour */
     const tourOpen = st.tourStep !== null;
@@ -1323,7 +1323,7 @@ class Component extends DCLogic {
       kitchModal: () => this._openModal('North Sea Crane Co.', '£4,850'),
 
       /* drawer */
-      drawerRight: st.drawerOpen ? '0px' : '-420px',
+      drawerTransform: st.drawerOpen ? 'none' : 'translateX(calc(100% + 40px))',
       openDrawer: () => this.setState({ drawerOpen: true }),
       closeDrawer: () => this.setState({ drawerOpen: false }),
       drawerToQuotes: () => { this.setState({ drawerOpen: false }); this.nav('quotes'); },
@@ -1371,7 +1371,7 @@ class Component extends DCLogic {
 
       /* toast */
       toastMsg: st.toast.msg, toastTag: st.toast.tag, toastHasTag: !!st.toast.tag,
-      toastTransform: st.toastOn ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(80px)',
+      toastTransform: st.toastOn ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(calc(100% + 26px))',
       toastOpacity: st.toastOn ? '1' : '0',
 
       /* tour */
