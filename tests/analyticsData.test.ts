@@ -253,9 +253,9 @@ describe('one series behind every surface', () => {
     expect([...(byId.requests?.series ?? [])]).toEqual(REQUESTS_90.slice(60));
   });
 
-  it('earnings: £56,100 won and £50,490 kept on the Premium band', () => {
+  it('earnings: £56,100 won and £53,294 kept on the 5% Premium band', () => {
     expect(EARNINGS_MONTHS).toEqual(['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep']);
     expect(sum(EARNINGS_WON)).toBe(56_100);
-    expect(sum(EARNINGS_WON.map((w) => supplierKeeps(w, 'premium')))).toBe(50_490);
+    expect(sum(EARNINGS_WON.map((w) => supplierKeeps(w, 'premium')))).toBe(53_294);
   });
 });

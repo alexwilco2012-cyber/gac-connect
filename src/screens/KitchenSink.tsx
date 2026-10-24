@@ -580,7 +580,7 @@ function ChartsGallery() {
           }
           legend={[
             { label: 'You keep', color: VIZ.sea },
-            { label: '10% Premium band', color: VIZ.deduction },
+            { label: '5% Premium band', color: VIZ.deduction },
           ]}
           table={{
             caption: 'Work won, band and amount kept per month',
@@ -597,7 +597,7 @@ function ChartsGallery() {
             categories={[...EARNINGS_MONTHS]}
             series={[
               { id: 'keep', label: 'You keep', color: VIZ.sea, values: kept },
-              { id: 'band', label: '10% Premium band', color: VIZ.deduction, values: band },
+              { id: 'band', label: '5% Premium band', color: VIZ.deduction, values: band },
             ]}
             format={gbp}
             axisFormat={compactGbp}

@@ -564,7 +564,7 @@ const DK = DK_deepFreeze(
       'ISO 9001 quality management',
     ];
     const EARNINGS_MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-    /* £56,100 won; £50,490 kept at the 10% Premium band. */
+    /* £56,100 won; £53,294 kept at the 5% Premium band. */
     const EARNINGS_WON = [7200, 9850, 6400, 11300, 8750, 12600];
     /* The latest three of the 72. `by` is a client company or a role, never a person. */
     const RECENT_REVIEWS = [

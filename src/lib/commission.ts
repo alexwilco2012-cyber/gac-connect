@@ -1,7 +1,7 @@
 import type { Plan } from '../data/suppliers';
 
 /**
- * Supplier commission — 03_COMMERCIAL_RULES §3.2 (v12 model).
+ * Supplier commission — 03_COMMERCIAL_RULES §3.2 (v12 model; bands 15 / 10 / 5 since 24 Oct 2026).
  * A commission on third-party work won through the platform, banded by
  * subscription tier so a supplier who commits more keeps more of each job.
  * It is deducted at invoice matching in GA; nothing is charged to clients and
@@ -9,15 +9,16 @@ import type { Plan } from '../data/suppliers';
  */
 
 export const COMMISSION_BANDS: Record<Plan, number> = {
-  free: 20,
-  professional: 15,
-  premium: 10,
+  free: 15,
+  professional: 10,
+  premium: 5,
 };
 
-/** Founder Programme: first 50 suppliers, no subscription in the launch year, and a 5-point
- *  commission-band reduction for the first 24 months. */
-export const FOUNDER_REDUCTION_POINTS = 5;
-export const FOUNDER_REDUCTION_MONTHS = 24;
+/** Founder Programme (locked 24 Oct 2026): the first 50 suppliers get Professional free for the
+ *  first year, until the Year 1 review. No points come off the band; a Founder sits on the
+ *  Professional band because that is the plan they hold. */
+export const FOUNDER_REDUCTION_POINTS = 0;
+export const FOUNDER_FREE_MONTHS = 12;
 export const FOUNDER_COHORT = 50;
 
 export function commissionPct(plan: Plan, founder = false): number {

@@ -120,8 +120,8 @@ test('3 · the client persona never sees commission on the platform screens', as
 
   // The supplier view is the one place it belongs, and it says so plainly.
   await page.getByRole('button', { name: 'Supplier view' }).click();
-  await expect(page.getByTestId('supplier-plan')).toContainText('10% commission');
-  await expect(page.getByTestId('supplier-keeps')).toHaveText('£3,960');
+  await expect(page.getByTestId('supplier-plan')).toContainText('5% commission');
+  await expect(page.getByTestId('supplier-keeps')).toHaveText('£4,180');
 
   // The agent desk carries no commission either.
   await page.goto('/app/internal');

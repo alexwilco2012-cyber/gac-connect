@@ -432,7 +432,7 @@ function earningsChart() {
         { id: 'keep', label: 'You keep', color: VIZ.sea, values: kept },
         {
           id: 'band',
-          label: '10% Premium band',
+          label: '5% Premium band',
           color: VIZ.deduction,
           values: EARNINGS_WON.map((w, i) => w - kept[i]!),
         },
@@ -485,7 +485,7 @@ describe('StackedColumns — labels', () => {
     expect(texts.map((t) => t.text)).toContain('Sep total £12,600');
     expect(texts.map((t) => t.text)).not.toContain('£12,600');
     const total = texts.find((t) => t.text === 'Sep total £12,600')!;
-    for (const name of ['You keep', '10% Premium band']) {
+    for (const name of ['You keep', '5% Premium band']) {
       const label = texts.find((t) => t.text === name)!;
       // The names sit beside their segments, a clear line below the total.
       expect(label.y - total.y, name).toBeGreaterThanOrEqual(12);

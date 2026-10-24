@@ -54,9 +54,9 @@ describe('Invoice review — the seven-day client window (v12 §5)', () => {
   });
 
   it('commission is deducted at matching on the supplier’s band', () => {
-    expect(commissionAtMatching(4400, 'premium')).toBe(440);
-    expect(commissionAtMatching(1850, 'professional')).toBe(278);
-    expect(commissionAtMatching(2900, 'free')).toBe(580);
+    expect(commissionAtMatching(4400, 'premium')).toBe(220);
+    expect(commissionAtMatching(1850, 'professional')).toBe(185);
+    expect(commissionAtMatching(2900, 'free')).toBe(435);
   });
 
   it('commission at matching stays a supplier-side calculation — the maths still holds', () => {

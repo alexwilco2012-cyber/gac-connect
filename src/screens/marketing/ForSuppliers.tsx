@@ -5,7 +5,6 @@ import { Eyebrow } from '../../components/ui/Eyebrow';
 import { GoldBandPill, Pill } from '../../components/ui/Pill';
 import { Rating } from '../../components/ui/Rating';
 import { StatCard } from '../../components/ui/StatCard';
-import { Toggle } from '../../components/ui/Toggle';
 import { GOLD_BAND } from '../../data/goldBand';
 import {
   ANALYTICS_EXAMPLE,
@@ -20,8 +19,7 @@ import type { Plan } from '../../data/suppliers';
 import {
   commissionDue,
   commissionPct,
-  FOUNDER_REDUCTION_MONTHS,
-  FOUNDER_REDUCTION_POINTS,
+  FOUNDER_FREE_MONTHS,
   supplierKeeps,
 } from '../../lib/commission';
 import { compactGbp, gbp } from '../../lib/format';
@@ -32,17 +30,16 @@ const JOB_MAX = 25_000;
 const JOB_DEFAULT = 4_400;
 
 const PLAN_TOAST: Record<Plan, string> = {
-  free: 'Basic listing selected — free. Verification is the only gate; 20% commission applies only to work won through the platform.',
+  free: 'Basic listing selected — free. Verification is the only gate; 15% commission applies only to work won through the platform.',
   professional:
-    'Professional plan selected — £2,000 per year, 15% commission band, and eligibility for the GAC Gold Band audit. Founder suppliers pay no subscription in the launch year.',
+    'Professional plan selected — £2,000 per year, 10% commission band, and eligibility for the GAC Gold Band audit. Founder suppliers pay no subscription in the launch year.',
   premium:
-    'Premium plan selected — £4,000 per year, 10% commission band, and eligibility for the GAC Gold Band audit. Promoted placements are always labelled and never override SVS compliance status.',
+    'Premium plan selected — £4,000 per year, 5% commission band, and eligibility for the GAC Gold Band audit. Promoted placements are always labelled and never override SVS compliance status.',
 };
 
 export default function ForSuppliers() {
   const pushToast = useApp((s) => s.pushToast);
   const [jobValue, setJobValue] = useState(JOB_DEFAULT);
-  const [founder, setFounder] = useState(false);
 
   return (
     <main className="screen-enter mx-auto max-w-[1180px] px-6 py-14 md:py-20">
@@ -70,7 +67,7 @@ export default function ForSuppliers() {
           variant="gold"
           onClick={() =>
             pushToast(
-              `Founder Programme interest registered — no subscription in the launch year, plus a ${FOUNDER_REDUCTION_POINTS}-point commission-band reduction for ${FOUNDER_REDUCTION_MONTHS} months. The onboarding team will be in touch with your verification checklist.`,
+              `Founder Programme interest registered — Professional free for the first ${FOUNDER_FREE_MONTHS} months, until the Year 1 review. The onboarding team will be in touch with your verification checklist.`,
             )
           }
         >
@@ -158,24 +155,14 @@ export default function ForSuppliers() {
             <span>{compactGbp(JOB_MAX)}</span>
           </div>
 
-          <div
-            className={`mt-4 flex items-center justify-between gap-4 rounded-[13px] border-[1.5px] px-4 py-3 transition-shadow ${
-              founder ? 'border-sea shadow-[0_0_0_3px_var(--sea-soft)]' : 'border-line-strong'
-            }`}
-          >
-            <div>
-              <p className="text-[14px] font-bold">
-                Founder Programme rate (first {FOUNDER_REDUCTION_MONTHS} months)
-              </p>
-              <p className="mt-0.5 text-[12.5px] text-ink-soft">
-                {FOUNDER_REDUCTION_POINTS} points off every commission band
-              </p>
-            </div>
-            <Toggle
-              pressed={founder}
-              onToggle={() => setFounder((v) => !v)}
-              label={`Founder Programme rate (first ${FOUNDER_REDUCTION_MONTHS} months)`}
-            />
+          <div className="mt-4 rounded-[13px] border-[1.5px] border-line-strong px-4 py-3">
+            <p className="text-[14px] font-bold">
+              Founder Programme (first {FOUNDER_FREE_MONTHS} months)
+            </p>
+            <p className="mt-0.5 text-[12.5px] text-ink-soft">
+              The first 50 suppliers hold Professional free until the Year 1 review: the 10% band,
+              no subscription.
+            </p>
           </div>
 
           <p className="mt-4 text-[12.5px] text-ink-soft">
@@ -185,9 +172,9 @@ export default function ForSuppliers() {
 
         <div className="grid gap-4 sm:grid-cols-3">
           {PLANS.map((plan) => {
-            const pct = commissionPct(plan.id, founder);
-            const due = commissionDue(jobValue, plan.id, founder);
-            const keeps = supplierKeeps(jobValue, plan.id, founder);
+            const pct = commissionPct(plan.id);
+            const due = commissionDue(jobValue, plan.id);
+            const keeps = supplierKeeps(jobValue, plan.id);
             return (
               <Card key={plan.id} className="flex flex-col">
                 <p className="font-display text-[15px] font-bold">{plan.name}</p>

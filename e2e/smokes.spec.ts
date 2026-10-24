@@ -327,10 +327,10 @@ test('9 · Gold Band shows only where earned; ratings carry counts; plans carry 
 
   // Plans carry the commission bands and the keep-more worked example.
   await page.goto('/for-suppliers');
-  await expect(page.getByText('20% commission').first()).toBeVisible();
   await expect(page.getByText('15% commission').first()).toBeVisible();
   await expect(page.getByText('10% commission').first()).toBeVisible();
-  await expect(page.getByTestId('keeps-premium')).toHaveText('£3,960');
+  await expect(page.getByText('5% commission').first()).toBeVisible();
+  await expect(page.getByTestId('keeps-premium')).toHaveText('£4,180');
   await expect(page.getByText(/launch year/).first()).toBeVisible();
 });
 

@@ -147,7 +147,7 @@ export const RECOMMENDED_FOR_WELDING: readonly string[] = [
 /** Earnings through the platform, April to September 2026. */
 export const EARNINGS_MONTHS: readonly string[] = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
 
-/** Work won through the platform each month, in pounds: £56,100 won, £50,490 kept at 10%. */
+/** Work won through the platform each month, in pounds: £56,100 won, £53,294 kept at 5%. */
 export const EARNINGS_WON: readonly number[] = [7200, 9850, 6400, 11300, 8750, 12600];
 
 export interface Review {

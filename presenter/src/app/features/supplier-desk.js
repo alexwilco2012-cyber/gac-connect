@@ -29,7 +29,7 @@ const SD_NOTE_MAX = 280;
 const SD_ADD_ID = 'sd-add-certificate';
 /* The deck's roster only knows Premium (premium: true) or not; the site's
    plans.ts, for the plan card and the earnings band. */
-const SD_PLAN = { name: 'Premium', priceLine: '£4,000', perLine: 'per year', band: 10 };
+const SD_PLAN = { name: 'Premium', priceLine: '£4,000', perLine: 'per year', band: 5 };
 const SD_MONTH_NAMES = {
   Apr: 'April',
   May: 'May',

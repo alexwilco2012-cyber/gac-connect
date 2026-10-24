@@ -3549,7 +3549,7 @@ function VZ_galleryVals() {
       ],
       legend: [
         { label: 'You keep', color: VZ_C.sea },
-        { label: '10% Premium band', color: VZ_C.deduction },
+        { label: '5% Premium band', color: VZ_C.deduction },
       ],
       table: {
         caption: 'Work won through the platform by month',
@@ -3560,7 +3560,7 @@ function VZ_galleryVals() {
         categories: VZ_SPEND.months,
         series: [
           { id: 'keep', label: 'You keep', color: VZ_C.sea, values: keep },
-          { id: 'band', label: '10% Premium band', color: VZ_C.deduction, values: band },
+          { id: 'band', label: '5% Premium band', color: VZ_C.deduction, values: band },
         ],
         format: VZ_gbp,
         axisFormat: VZ_compactGbp,

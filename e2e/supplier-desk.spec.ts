@@ -405,8 +405,8 @@ test('references never break at their hyphens', async ({ page }) => {
 
 test('the supplier view keeps its plan card and never grows a second h1', async ({ page }) => {
   await openSupplierView(page);
-  await expect(page.getByTestId('supplier-plan')).toContainText('10% commission');
-  await expect(page.getByTestId('supplier-keeps')).toHaveText('£3,960');
+  await expect(page.getByTestId('supplier-plan')).toContainText('5% commission');
+  await expect(page.getByTestId('supplier-keeps')).toHaveText('£4,180');
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   await expect(page.getByRole('button', { name: /supplier view/i })).toHaveCount(1);
   // The standing sits with the name in the header, and only in the supplier view.
@@ -424,7 +424,7 @@ test('the supplier view keeps its plan card and never grows a second h1', async 
   expect(order).toEqual({ afterName: true, beforeSwitch: true });
   // Earnings, and the numbers behind the chart.
   const earnings = page.getByRole('figure', { name: 'Earnings through the platform' });
-  await expect(earnings).toContainText('£50,490 kept');
+  await expect(earnings).toContainText('£53,294 kept');
   await earnings.getByText('Show the numbers').click();
   await expect(earnings.getByRole('table')).toContainText('£12,600');
 

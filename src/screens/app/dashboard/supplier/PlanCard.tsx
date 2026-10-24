@@ -67,7 +67,7 @@ export function PlanCard({ className = '' }: { className?: string }) {
       </div>
 
       <p className="mt-3 text-[12.5px] text-ink-soft">
-        Commit more and you keep more of each job: the bands are 20 / 15 / 10 across Basic,
+        Commit more and you keep more of each job: the bands are 15 / 10 / 5 across Basic,
         Professional and Premium.
       </p>
     </Card>

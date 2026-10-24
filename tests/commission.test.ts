@@ -9,10 +9,10 @@ import {
 import { PLANS } from '../src/data/plans';
 
 describe('Supplier commission bands (03 §3.2, v12 model)', () => {
-  it('bands are 20 / 15 / 10 by tier', () => {
-    expect(COMMISSION_BANDS.free).toBe(20);
-    expect(COMMISSION_BANDS.professional).toBe(15);
-    expect(COMMISSION_BANDS.premium).toBe(10);
+  it('bands are 15 / 10 / 5 by tier (locked 24 Oct 2026)', () => {
+    expect(COMMISSION_BANDS.free).toBe(15);
+    expect(COMMISSION_BANDS.professional).toBe(10);
+    expect(COMMISSION_BANDS.premium).toBe(5);
   });
 
   it('a supplier who commits more keeps more of each job', () => {
@@ -21,20 +21,19 @@ describe('Supplier commission bands (03 §3.2, v12 model)', () => {
   });
 
   it('£4,400 crane job — what each tier keeps', () => {
-    expect(commissionDue(4400, 'free')).toBe(880);
-    expect(supplierKeeps(4400, 'free')).toBe(3520);
-    expect(commissionDue(4400, 'professional')).toBe(660);
-    expect(supplierKeeps(4400, 'professional')).toBe(3740);
-    expect(commissionDue(4400, 'premium')).toBe(440);
-    expect(supplierKeeps(4400, 'premium')).toBe(3960);
+    expect(commissionDue(4400, 'free')).toBe(660);
+    expect(supplierKeeps(4400, 'free')).toBe(3740);
+    expect(commissionDue(4400, 'professional')).toBe(440);
+    expect(supplierKeeps(4400, 'professional')).toBe(3960);
+    expect(commissionDue(4400, 'premium')).toBe(220);
+    expect(supplierKeeps(4400, 'premium')).toBe(4180);
   });
 
-  it('Founder Programme takes 5 points off the band', () => {
-    expect(FOUNDER_REDUCTION_POINTS).toBe(5);
-    expect(commissionPct('free', true)).toBe(15);
+  it('Founder Programme is Professional free for Year 1: no points off the band', () => {
+    expect(FOUNDER_REDUCTION_POINTS).toBe(0);
     expect(commissionPct('professional', true)).toBe(10);
     expect(commissionPct('premium', true)).toBe(5);
-    expect(supplierKeeps(4400, 'premium', true)).toBe(4180);
+    expect(supplierKeeps(4400, 'professional', true)).toBe(3960);
   });
 
   it('plan cards carry the same bands as the rule', () => {

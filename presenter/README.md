@@ -158,7 +158,7 @@ when the overlay fades.
 | 08 | Pay-off II | scrutinising was hours ago: the gate, 90/30/7 alerts, Gold Band |
 | 09 | Chapter III · Hyrox | two of the eight stations done for you |
 | 10 | Pay-off III | the agent's job changes shape: two roles, £270k, £15k training |
-| 11 | The figures | (£325k) · £1.2m · £4.37m and the bars left, the six revenue lines as a table right |
+| 11 | The figures | (£325k) · £950k · £3.47m and the bars left, the six revenue lines as a table right |
 | 12 | The cash | £695k needed, £750k provisioned, cumulative profit inside Year 2 |
 | 13 | The ask | £370,000 of capital expenditure: six steps, where it goes, ten named risks |
 | 14 | The point | the three pay-off lines stacked; "We have the advantage. Let's take it." |
@@ -271,9 +271,9 @@ slides animate (pieces, lights, runner); `Esc` reaches the closer and `Enter`
 
 Figures and language are locked by the v12 fact block (see
 `reference/BUILD_NOTES-v12.md` for the full block). Highlights: supplier
-commission bands 20/15/10 deducted at invoice matching (never shown to the
-client persona — 17 Aug review); Founder Programme = first 50 suppliers, first year free,
-plus a 5-point commission-band reduction for 24 months; SVS is GAC-owned,
+commission bands 15/10/5 (since 24 Oct 2026) deducted at invoice matching (never shown to the
+client persona — 17 Aug review); Founder Programme = first 50 suppliers get Professional free
+for the first year, no points off the band; SVS is GAC-owned,
 maintenance moving to Group IT. Never say: platform booking fee, "no
 commission", rebates as a live mechanism, a flat "5%" disbursement fee,
 third-party SVS licence, highest-margin customs, decade of GA data.
