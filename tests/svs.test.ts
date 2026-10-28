@@ -78,9 +78,9 @@ describe('GAC Gold Band — earned audit tier, held only while compliance holds'
     expect(goldBandActive(undefined, [ok('Insurance')])).toBe(false);
   });
 
-  it('only Premium suppliers hold or are booked for the audit (mock data)', () => {
+  it('only paid-tier suppliers hold or are booked for the audit (mock data)', () => {
     for (const s of SUPPLIERS) {
-      if (s.goldBand) expect(s.plan, s.id).toBe('premium');
+      if (s.goldBand) expect(s.plan, s.id).not.toBe('free');
     }
     const held = SUPPLIERS.filter((s) => goldBandActive(s.goldBand, s.certs)).map((s) => s.id);
     expect(held).toEqual(['caledonia-lifting']);

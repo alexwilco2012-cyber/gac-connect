@@ -49,7 +49,7 @@ export interface Supplier {
   certs: Cert[];
   promoted?: boolean;
   plan: Plan;
-  /** GAC Gold Band audit tier — Premium only, a paid annual audit, held only while compliance holds (lib/svs). */
+  /** GAC Gold Band audit tier — any paid tier (Professional or Premium), a paid annual audit, held only while compliance holds (lib/svs). */
   goldBand?: GoldBandState;
   /** When the Gold Band audit was last renewed (held) or is booked (scheduled). */
   goldBandDate?: string;

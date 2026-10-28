@@ -349,7 +349,7 @@ export default function Marketplace() {
 
       {hasGoldBand ? (
         <p className="mt-3 text-[12px] text-ink-soft">
-          ◆ Gold Band = GAC’s paid annual audit, passed by Premium suppliers — no supplier can
+          ◆ Gold Band = GAC’s paid annual audit, passed by Professional and Premium suppliers — no supplier can
           advertise their way into it.
         </p>
       ) : null}

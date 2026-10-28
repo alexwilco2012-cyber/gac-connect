@@ -9,7 +9,7 @@ export const GOLD_BAND = {
   marque: '◆ GAC Gold Band',
   eyebrow: 'GAC Gold Band · audit tier',
   summary:
-    'A paid annual audit above standard verification, open to Premium suppliers at £1,500 a year: documentation, insurance, performance history and a site visit. Suppliers who pass carry the Gold Band badge in the marketplace, so clients see at a glance which suppliers GAC has looked at most closely. Standard verification stays free.',
+    'A paid annual audit above standard verification, open to Professional and Premium suppliers at £1,500 a year: documentation, insurance, performance history and a site visit. Suppliers who pass carry the Gold Band badge in the marketplace, so clients see at a glance which suppliers GAC has looked at most closely. Standard verification stays free.',
   scope: [
     {
       title: 'Documentation',
@@ -30,5 +30,5 @@ export const GOLD_BAND = {
   ],
   rule: 'Renewed annually. No supplier can advertise their way into it, and it comes off if compliance lapses — the same rule that governs every other badge on the platform.',
   scheduledNote:
-    'Premium subscriber; the Gold Band audit is booked but not yet passed. Premium makes a supplier eligible — only the audit confers the marque.',
+    'Paid-tier subscriber; the Gold Band audit is booked but not yet passed. A paid tier makes a supplier eligible — only the audit confers the marque.',
 } as const;
