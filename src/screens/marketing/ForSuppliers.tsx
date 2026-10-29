@@ -263,8 +263,8 @@ export default function ForSuppliers() {
         <p className="mt-3 text-[12.5px] text-ink-soft">
           Promotion changes position, not credentials. Rating, ESG score, and compliance status are
           always the supplier’s own. Promotion does not confer Gold Band either — Silver City’s
-          audit is booked, not yet passed. Premium makes a supplier eligible; only the audit confers
-          the marque.
+          audit is booked, not yet passed. A paid tier makes a supplier eligible; only the audit
+          confers the marque.
         </p>
       </div>
 

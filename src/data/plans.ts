@@ -62,8 +62,6 @@ export const PLANS: PlanDef[] = [
         text: 'Eligible for the GAC Gold Band audit — £1,500 a year, renewed annually',
         included: true,
       },
-      { text: 'Homepage spotlight rotation', included: true },
-      { text: 'Category sponsorship (own a category for a month)', included: true },
       { text: 'Promoted placement in relevant searches, always labelled', included: true },
       { text: 'Full analytics with market benchmarking', included: true },
       { text: 'Quarterly performance review with GAC commercial team', included: true },
@@ -87,6 +85,8 @@ export const FOUNDER_PROGRAMME = `${FOUNDER_LEAD} — ${FOUNDER_BODY}`;
 export const COMMISSION_RULE =
   'Commission applies only to third-party work won through the platform, and is deducted when the supplier invoice matches in GAC Agent — no separate collection, nothing charged to clients, no booking fee. A supplier who commits more keeps more of each job, and can quote sharper because of it.';
 
+/** Advertising, bought by the month by any paid-tier supplier. Not part of a plan: FF06 28 Oct 2026
+ *  moved homepage spotlight and category sponsorship out of Premium and onto the advertising line. */
 export const PROMOTION_PRODUCTS = [
   {
     title: 'Featured category placement',
