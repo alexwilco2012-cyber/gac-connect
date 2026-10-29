@@ -17,7 +17,7 @@ test('the tour is offered off the dashboard, and walks all fourteen stops', asyn
   const card = page.getByRole('dialog', { name: /^Tour step/ });
   await expect(card).toBeVisible();
   await expect(card).toContainText('Tour · 1 of 14');
-  await expect(page).toHaveURL(/\/app\/internal$/);
+  await expect(page).toHaveURL(/\/app\/dashboard$/);
 
   // Step through, checking the stops that carry the service-line story.
   const checkpoints: Record<number, RegExp> = {
@@ -29,7 +29,7 @@ test('the tour is offered off the dashboard, and walks all fourteen stops', asyn
     9: /\/app\/invoices$/,
     12: /\/app\/agency\/certification$/,
     13: /\/app\/agency\/bunkers$/,
-    14: /\/app\/dashboard$/,
+    14: /\/app\/internal$/,
   };
   for (let step = 2; step <= 14; step++) {
     await page.getByRole('button', { name: 'Next →' }).click();
@@ -37,6 +37,10 @@ test('the tour is offered off the dashboard, and walks all fourteen stops', asyn
     const expected = checkpoints[step];
     if (expected) await expect(page).toHaveURL(expected);
   }
+
+  // The last stop is the agent desk, its predicted list on screen.
+  await expect(card).toContainText('Behind it, one desk');
+  await expect(page.locator('main [data-tour="predictive"]')).toBeInViewport();
 
   // Back reverses without leaving the tour.
   await page.getByRole('button', { name: 'Back' }).click();
@@ -70,11 +74,11 @@ test('the landing page offers the tour without scrolling, and starts it', async 
   await expect(invite).toBeInViewport();
 
   await invite.click();
-  await expect(page).toHaveURL(/\/app\/internal$/);
+  await expect(page).toHaveURL(/\/app\/dashboard$/);
   await expect(page.getByRole('dialog', { name: /^Tour step/ })).toContainText('Tour · 1 of 14');
 });
 
-test('the dashboard stop opens the Client view, whichever view was left on', async ({ page }) => {
+test('the tour opens on the Client view, whichever view was left on', async ({ page }) => {
   // Someone looked at the supplier side before taking the tour.
   await page.goto('/app/dashboard');
   await page.getByRole('button', { name: 'Supplier view' }).click();
@@ -82,28 +86,33 @@ test('the dashboard stop opens the Client view, whichever view was left on', asy
 
   await page.getByRole('button', { name: 'Start the tour' }).click();
   const card = page.getByRole('dialog', { name: /^Tour step/ });
-  for (let step = 2; step <= 14; step++) {
-    await page.getByRole('button', { name: 'Next →' }).click();
-    await expect(card).toContainText(`Tour · ${step} of 14`);
-  }
+  const clientView = page.getByRole('button', { name: 'Client view' });
 
-  // "What the client sees" points at the consolidation card, so it is there.
-  await expect(card).toContainText('What the client sees');
+  // Stop 1 points at the consolidation card, so it is there and on screen.
+  await expect(card).toContainText('Tour · 1 of 14');
+  await expect(card).toContainText('Where your work stands');
   await expect(page).toHaveURL(/\/app\/dashboard$/);
-  await expect(page.getByRole('button', { name: 'Client view' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(clientView).toHaveAttribute('aria-pressed', 'true');
   const consolidation = page.locator('main [data-tour="consolidation"]');
   await expect(consolidation).toBeVisible();
   await expect(consolidation).toBeInViewport();
 
+  // Stop 2 anchors the approve card.
+  await page.getByRole('button', { name: 'Next →' }).click();
+  await expect(card).toContainText('Tour · 2 of 14');
+  await expect(card).toContainText('Your list is already drafted');
+  const approve = page.locator('main [data-tour="approve"]');
+  await expect(approve).toBeVisible();
+  await expect(approve).toBeInViewport();
+
   // Switched away and come back to the stop: the Client view again.
   await page.getByRole('button', { name: 'Supplier view' }).click();
-  await expect(consolidation).toHaveCount(0);
+  await expect(approve).toHaveCount(0);
   await page.getByRole('button', { name: 'Back' }).click();
-  await expect(card).toContainText('Tour · 13 of 14');
+  await expect(card).toContainText('Tour · 1 of 14');
+  await expect(clientView).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Next →' }).click();
-  await expect(card).toContainText('Tour · 14 of 14');
-  await expect(consolidation).toBeVisible();
+  await expect(card).toContainText('Tour · 2 of 14');
+  await expect(approve).toBeVisible();
+  await expect(approve).toBeInViewport();
 });

@@ -161,7 +161,8 @@ export function LandingHero() {
                   >
                     Take the {TOUR_STEPS.length}-stop guided tour
                   </button>
-                  , a port call from the vessel arriving to the invoice being matched.
+                  , a port call from the client’s seat, from the vessel arriving to the invoice
+                  being matched.
                 </p>
 
                 <ul className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-[13px] text-[#C6D4E2] lg:mt-8 lg:gap-x-10 lg:gap-y-3.5">
