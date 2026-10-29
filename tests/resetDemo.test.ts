@@ -32,6 +32,7 @@ describe('Reset demo — the top bar control', () => {
     app.toggleTierService('logistics');
     app.setSpend(750_000);
     app.acceptQuote('Q-1');
+    app.sendQuoteRequests();
     app.rateJob('job-1', 4);
     app.setDashboardView('supplier');
     app.dismissTour();
@@ -43,6 +44,7 @@ describe('Reset demo — the top bar control', () => {
     expect(after.tier).toEqual({ agency: true, logistics: false, customs: false });
     expect(after.spend).toBe(500_000);
     expect(after.acceptedQuoteId).toBeNull();
+    expect(after.quoteRequestsSent).toBe(false);
     expect(after.jobRatings).toEqual({});
     expect(after.invoiceDecisions).toEqual({});
     expect(after.dashboardView).toBe('client');
@@ -52,6 +54,7 @@ describe('Reset demo — the top bar control', () => {
       'tier',
       'spend',
       'acceptedQuote',
+      'quoteRequestsSent',
       'jobRatings',
       'invoiceDecisions',
       'dashboardView',

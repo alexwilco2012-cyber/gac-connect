@@ -13,6 +13,7 @@ describe('a new visit starts clean', () => {
 
   const seed = () => {
     window.localStorage.setItem('gac-connect:acceptedQuote', '"q-2"');
+    window.localStorage.setItem('gac-connect:quoteRequestsSent', 'true');
     window.localStorage.setItem('gac-connect:tier', '{"agency":true,"logistics":true}');
     window.localStorage.setItem('gac-connect:procurement.stage', '"sent"');
     window.localStorage.setItem('gac-connect:sidebarCollapsed', 'true');
@@ -43,6 +44,7 @@ describe('a new visit starts clean', () => {
     seed();
     startFreshVisit(() => window.localStorage, visit);
     expect(window.localStorage.getItem('gac-connect:acceptedQuote')).toBe('"q-2"');
+    expect(window.localStorage.getItem('gac-connect:quoteRequestsSent')).toBe('true');
   });
 
   it('never throws when storage is unavailable', () => {

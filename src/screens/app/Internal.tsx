@@ -135,6 +135,9 @@ export default function Internal() {
   const pushToast = useApp((s) => s.pushToast);
   const tier = useApp((s) => s.tier);
   const spend = useApp((s) => s.spend);
+  // The client approves MV Choice's list from their dashboard (30 Oct); the
+  // desk reads the same flag, so the requests are never sent twice.
+  const clientApproved = useApp((s) => s.quoteRequestsSent);
   const needsYou = useNeedsYou();
   const applications = useSvsDesk((s) => s.applications);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -146,6 +149,8 @@ export default function Internal() {
 
   // The SVS KPI reads the SVS desk (live dashboards, 23 Sep): an applicant
   // approved on the SVS screen joins the verified count and leaves onboarding.
+  // Open quote requests move from 6 to 9 once the client has approved the
+  // list, as they do in the deck.
   const kpis = DASHBOARD_KPIS.map((k) =>
     k.label === 'SVS-verified suppliers'
       ? {
@@ -153,7 +158,9 @@ export default function Internal() {
           value: String(Number(k.value) + approvedCount(applications)),
           delta: `${onboardingOpenCount(applications)} onboarding`,
         }
-      : k,
+      : k.label === 'Open quote requests' && clientApproved
+        ? { ...k, value: '9', delta: '9 just issued for MV Choice' }
+        : k,
   );
 
   function sendQuoteRequests() {
@@ -273,22 +280,34 @@ export default function Internal() {
             })}
           </ul>
           <div className="mt-3.5 flex flex-wrap items-center gap-3.5">
-            <Button onClick={sendQuoteRequests}>Send 9 quote requests</Button>
-            <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-soft">
-              Reply-by
-              <select
-                value={replyWindowId}
-                onChange={(e) => setReplyWindowId(e.target.value)}
-                aria-label="Reply-by window"
-                className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+            {clientApproved ? (
+              <p
+                data-testid="desk-requests-issued"
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-success-soft px-4 py-2 text-[13.5px] font-bold text-success"
               >
-                {REPLY_WINDOWS.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <Icon name="circle-check" size={16} className="shrink-0" />9 quote requests issued,
+                approved by the client
+              </p>
+            ) : (
+              <>
+                <Button onClick={sendQuoteRequests}>Send 9 quote requests</Button>
+                <label className="flex items-center gap-2 text-[13px] font-semibold text-ink-soft">
+                  Reply-by
+                  <select
+                    value={replyWindowId}
+                    onChange={(e) => setReplyWindowId(e.target.value)}
+                    aria-label="Reply-by window"
+                    className="min-h-[44px] rounded-lg border-[1.5px] border-line-strong bg-white px-2.5 py-2 text-[13.5px] font-semibold text-ink"
+                  >
+                    {REPLY_WINDOWS.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            )}
             <span className="text-[12.5px] text-ink-soft">
               3 suppliers for each of 3 services · replies land side by side in Quotes
             </span>
