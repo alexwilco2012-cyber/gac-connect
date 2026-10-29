@@ -6,7 +6,7 @@ import { TOUR_STEPS } from './steps';
 /** Below this width the coach-mark stops chasing anchors and becomes a sheet. */
 const NARROW = 640;
 
-/** The stop whose anchor lives in the dashboard's Client view. */
+/** The stops whose anchors live in the dashboard's Client view. */
 const DASHBOARD_ROUTE = '/app/dashboard';
 
 function useIsNarrow() {
@@ -52,10 +52,12 @@ export function Tour() {
     if (step && pathname !== step.route) navigate(step.route);
   }, [step, pathname, navigate]);
 
-  // The dashboard stop ("What the client sees") points at the consolidation
-  // card, which only the Client view carries: however the stop is reached
-  // (start, Next or Back), the dashboard opens on that view, persisted as a
-  // click on the switch would be. Once there, the switch is the visitor's.
+  // The tour opens on the dashboard: stop 1 points at the consolidation card
+  // and stop 2 at the approve card, both of which only the Client view
+  // carries. However a dashboard stop is reached (start, Next or Back), the
+  // dashboard opens on that view, persisted as a click on the switch would be.
+  // Keyed to the route, never the index. Once there, the switch is the
+  // visitor's.
   useEffect(() => {
     if (step?.route === DASHBOARD_ROUTE) setDashboardView('client');
   }, [step, setDashboardView]);
@@ -193,8 +195,8 @@ export function TourInvite() {
     <div className="border-b border-sea-soft bg-sea-soft/70">
       <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-6 py-3.5">
         <p className="text-[13.5px]">
-          <strong>First time here?</strong> Take the {TOUR_STEPS.length}-stop guided tour — a port
-          call from the vessel arriving to the invoice being matched.
+          <strong>First time here?</strong> Take the {TOUR_STEPS.length}-stop guided tour: a port
+          call from the client’s seat, from the vessel arriving to the invoice being matched.
         </p>
         <button
           type="button"
@@ -247,8 +249,8 @@ export function TourPrompt() {
     <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sea-soft bg-sea-soft/60 px-4.5 py-3.5">
       <p className="max-w-[560px] text-[13.5px]">
         <strong>First time here?</strong> A {TOUR_STEPS.length}-stop guided tour walks the whole
-        platform in the order it works — a port call from the vessel arriving to the invoice being
-        matched.
+        platform in the order it works: a port call from the client’s seat, from the vessel arriving
+        to the invoice being matched.
       </p>
       <div className="flex flex-wrap gap-2.5">
         <button

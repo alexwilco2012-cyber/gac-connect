@@ -334,7 +334,7 @@ class Component extends DCLogic {
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('keydown', this._onPresKey);
     clearTimeout(this._loaderTimer); clearTimeout(this._loaderTimer2);
-    clearTimeout(this._toastTimer); clearTimeout(this._routeTimer);
+    clearTimeout(this._toastTimer); clearTimeout(this._routeTimer); clearTimeout(this._tourScrollTimer);
     if (this._consolIo) this._consolIo.disconnect();
     (this._consolTimers || []).forEach(clearTimeout);
     clearTimeout(this._presT); clearTimeout(this._navT); clearTimeout(this._kickT);
@@ -501,10 +501,12 @@ class Component extends DCLogic {
   }
 
   /* ---------- tour ----------
-     Every way onto a stop (start, Next, Back) comes through here. The
-     dashboard stop, "What the client sees", points at the consolidation card,
-     which only the client view carries: landing there turns the switch to
-     Client and keeps it, as a click on the switch would. */
+     Every way onto a stop (start, Next, Back) comes through here. The tour
+     opens on the dashboard: its two stops point at the consolidation card and
+     the approve card, which only the client view carries, so landing on
+     either turns the switch to Client and keeps it, as a click on the switch
+     would. Keyed to the route, never the index. A stop with an anchor scrolls
+     it into view once the screen has rendered. */
   _tourGo(i) {
     const stop = this.TOUR[i];
     if (!stop) return;
@@ -515,6 +517,13 @@ class Component extends DCLogic {
     }
     this.setState(patch);
     this.nav(stop.route);
+    clearTimeout(this._tourScrollTimer);
+    if (stop.anchor && typeof document !== 'undefined') {
+      this._tourScrollTimer = setTimeout(() => {
+        const el = document.querySelector('[data-tour="' + stop.anchor + '"]');
+        if (el) el.scrollIntoView({ block: 'center' });
+      }, 350);
+    }
   }
 
   /* ---------- toast ---------- */
@@ -1171,7 +1180,11 @@ class Component extends DCLogic {
         ];
       })(this),
       sent: !!st.sent,
-      sendLabel: st.sent ? '\u2713 9 quote requests issued' : 'Send 9 quote requests',
+      /* 'client' when the client approved the list from their dashboard
+         (client-desk.js), true when the desk sent it itself. */
+      sendLabel: st.sent === 'client'
+        ? '\u2713 9 quote requests issued, approved by the client'
+        : st.sent ? '\u2713 9 quote requests issued' : 'Send 9 quote requests',
       sendNote: st.sent
         ? 'Replies will populate the comparison view automatically \u2014 open Quotes when they land.'
         : '3 suppliers for each of 3 services \u00b7 replies land side by side in Quotes',

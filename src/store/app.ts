@@ -63,6 +63,11 @@ interface AppState {
   acceptQuote(id: string): void;
   resetQuote(): void;
 
+  // MV Choice's drafted list, approved by the client from the dashboard —
+  // persisted, so the agent desk reads the same answer
+  quoteRequestsSent: boolean;
+  sendQuoteRequests(): void;
+
   // Invoice review — persisted client decisions (allocation → matched to GA)
   invoiceDecisions: Record<string, InvoiceDecision>;
   matchInvoice(id: string, allocationId: string): void;
@@ -92,7 +97,8 @@ interface AppState {
 
   /**
    * Everything above that is persisted goes back to its default: tier and
-   * spend, the accepted quote, invoice decisions and ratings, the dashboard
+   * spend, the accepted quote, the approved MV Choice list, invoice decisions
+   * and ratings, the dashboard
    * audience and the tour dismissal. The loader flag is a session fact, not
    * demo state, and stays. Called from lib/resetDemo, which resets the slice
    * stores alongside.
@@ -131,6 +137,12 @@ export const useApp = create<AppState>((set, get) => ({
   resetQuote() {
     persistent.remove('acceptedQuote');
     set({ acceptedQuoteId: null });
+  },
+
+  quoteRequestsSent: persistent.get<boolean>('quoteRequestsSent', false),
+  sendQuoteRequests() {
+    persistent.set('quoteRequestsSent', true);
+    set({ quoteRequestsSent: true });
   },
 
   invoiceDecisions: readInvoiceDecisions(),
@@ -197,6 +209,7 @@ export const useApp = create<AppState>((set, get) => ({
       'tier',
       'spend',
       'acceptedQuote',
+      'quoteRequestsSent',
       'invoiceDecisions',
       'jobRatings',
       'dashboardView',
@@ -208,6 +221,7 @@ export const useApp = create<AppState>((set, get) => ({
       tier: DEFAULT_TIER,
       spend: DEFAULT_SPEND,
       acceptedQuoteId: null,
+      quoteRequestsSent: false,
       invoiceDecisions: {},
       jobRatings: {},
       dashboardView: 'client',

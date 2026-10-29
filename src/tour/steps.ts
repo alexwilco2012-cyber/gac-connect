@@ -1,20 +1,21 @@
 /**
  * The guided tour: the demo path, in the order it is actually walked.
  *
- * It used to be five stops covering the core flows. It is now the full
- * walkthrough — the same order the presenter takes a room through, service line
- * by service line — because the people most likely to press "start" are panel
- * members who scanned the QR and are looking at this alone, with nobody stood
- * next to them narrating. Each stop says what the screen proves, not what it
- * contains.
+ * It opens where the client opens, on their dashboard, and ends on the desk.
+ * The client sees first what they get: where their work stands, then MV
+ * Choice's list already drafted, approved in one click. The service lines
+ * follow, then the commercial screens, the vetting gate and the two previews.
+ * The last stop is the agent desk behind it all, the same port call from
+ * GAC's side (30 Oct: the platform half of the presentation is client-first).
+ *
+ * The people most likely to press "start" are panel members who scanned the QR
+ * and are looking at this alone, with nobody stood next to them narrating, so
+ * each stop says what the screen proves, not what it contains.
  *
  * Keep this in step with the presenter's own TOUR (presenter/src/app/data.js):
- * the two surfaces should tell the same story in the same order. The stops are
- * the presenter's own running order (Presentation Script, the platform half),
- * so on the day the presenter clicks Next instead of hunting the sidebar. The copy is
- * what has to match; the addresses are the site's own, and the first two stops
- * moved to `/app/internal` when the agent desk did (26 Aug) without a word of
- * the narration changing.
+ * the two surfaces should tell the same story in the same order, so on the day
+ * the presenter clicks Next instead of hunting the sidebar. The copy is what
+ * has to match word for word; the addresses are each surface's own.
  */
 
 export interface TourStep {
@@ -28,16 +29,16 @@ export interface TourStep {
 
 export const TOUR_STEPS: TourStep[] = [
   {
-    route: '/app/internal',
-    anchor: 'kpis',
-    title: 'Where every call stands',
-    body: 'Open jobs, quote requests out, suppliers vetted, and the admin hours this replaces. One glance, before anyone asks.',
+    route: '/app/dashboard',
+    anchor: 'consolidation',
+    title: 'Where your work stands',
+    body: 'Your tier, what it has saved you this year, every port call with its milestones, and what is waiting on you. One screen, before you ask anyone.',
   },
   {
-    route: '/app/internal',
-    anchor: 'predictive',
-    title: 'The morning starts done',
-    body: 'GAC Agent already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.',
+    route: '/app/dashboard',
+    anchor: 'approve',
+    title: 'Your list is already drafted',
+    body: 'MV Choice is due Regent Quay at 08:00. What she bought last time is already listed, three vetted suppliers for each, your billing split applied. One click approves it and nine quote requests go.',
   },
   {
     route: '/app/marketplace',
@@ -49,13 +50,13 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/app/agency/crew-change',
     anchor: null,
     title: 'A crew change, end to end',
-    body: 'Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it — then delete the crew’s details when the job is done. Give a flight number and every leg times itself.',
+    body: 'Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it. Then delete the crew’s details when the job is done. Give a flight number and every leg times itself.',
   },
   {
     route: '/app/logistics',
     anchor: null,
     title: 'Cargo you can watch',
-    body: 'Booked, collected, in transit, at the GAC warehouse, delivered to the quay — beside the port call it belongs to, not in a separate system.',
+    body: 'Booked, collected, in transit, at the GAC warehouse, delivered to the quay. Beside the port call it belongs to, not in a separate system.',
   },
   {
     route: '/app/customs',
@@ -73,7 +74,7 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/app/quotes',
     anchor: 'queue',
     title: 'Quotes compare themselves',
-    body: 'Replies land side by side, including ones sent as plain Outlook emails. Accepting one raises the purchase order in GAC Agent with the split already applied.',
+    body: 'Replies land side by side, including ones sent as plain Outlook emails. Accept one and the purchase order raises itself in GAC Agent with your split already applied. Nobody re-keys it.',
   },
   {
     route: '/app/invoices',
@@ -90,8 +91,8 @@ export const TOUR_STEPS: TourStep[] = [
   {
     route: '/app/svs',
     anchor: 'svs',
-    title: 'The gate and the early warning',
-    body: 'Certification is mandatory, alerts fire at 90, 30 and 7 days, and a lapse blocks booking everywhere. No commercial arrangement overrides it.',
+    title: 'The gate you never have to check',
+    body: 'Every supplier you can see has passed it. Certification is mandatory, alerts fire at 90, 30 and 7 days, and a lapse blocks booking everywhere. No commercial arrangement overrides it.',
   },
   {
     route: '/app/agency/certification',
@@ -106,9 +107,9 @@ export const TOUR_STEPS: TourStep[] = [
     body: 'A bunker enquiry priced in dollars a tonne, ranked all in with barging, each price showing how long it holds. A preview too, outside this proposal’s scope: the platform is a chassis, not a single-purpose tool.',
   },
   {
-    route: '/app/dashboard',
-    anchor: 'consolidation',
-    title: 'What the client sees',
-    body: 'One number that matters, the tier, and the three lines that earn it. Everything the desk just did arrives here as a price, a window and terms.',
+    route: '/app/internal',
+    anchor: 'predictive',
+    title: 'Behind it, one desk',
+    body: 'The same port call from GAC’s side: the list it drafted, the requests it sent, the order it raised. Nothing typed twice, and the agent’s time goes into the next call.',
   },
 ];

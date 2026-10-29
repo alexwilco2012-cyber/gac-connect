@@ -19,6 +19,7 @@ import { VESSELS } from '../../../data/vessels';
 import { useApp } from '../../../store/app';
 import { useCustoms } from '../../../store/customs';
 import { useLogistics } from '../../../store/logistics';
+import { ApproveList } from './client/ApproveList';
 import { LatestFromGac } from './client/LatestFromGac';
 import { PortCalls } from './client/PortCalls';
 import { QuickActions } from './client/QuickActions';
@@ -41,7 +42,9 @@ import { SpendChart } from './client/SpendChart';
  * then the work on the left (port calls milestone by milestone, six months of
  * GAC spend, the lines) and the client's side on the right (what waits on
  * them, what has moved since yesterday). The spend chart and the feed follow
- * the pillars in the consolidation card. The new widgets live in `./client/`;
+ * the pillars in the consolidation card. Between the lead row and "Start
+ * something", MV Choice's drafted list waits for the client to approve it
+ * (30 Oct, `./client/ApproveList`). The new widgets live in `./client/`;
  * the consolidation card, the side stats and the two row types stay here,
  * unchanged, because the tour and the tests stand on them.
  */
@@ -316,6 +319,11 @@ export function ClientView() {
             tone={tightest !== null && daysLeft(tightest) <= 2 ? 'warn' : 'info'}
           />
         </div>
+      </div>
+
+      {/* MV Choice's drafted list, waiting on one click from the client. */}
+      <div className="mt-5">
+        <ApproveList />
       </div>
 
       <div className="mt-5">

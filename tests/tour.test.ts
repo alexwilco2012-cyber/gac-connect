@@ -21,8 +21,8 @@ const ADDRESSES = new Set(addressesOf(routes));
 describe('the guided tour', () => {
   it('walks the demo path in the order the presenter takes a room through', () => {
     expect(TOUR_STEPS.map((s) => s.route)).toEqual([
-      '/app/internal',
-      '/app/internal',
+      '/app/dashboard',
+      '/app/dashboard',
       '/app/marketplace',
       '/app/agency/crew-change',
       '/app/logistics',
@@ -34,7 +34,7 @@ describe('the guided tour', () => {
       '/app/svs',
       '/app/agency/certification',
       '/app/agency/bunkers',
-      '/app/dashboard',
+      '/app/internal',
     ]);
   });
 
@@ -64,12 +64,25 @@ describe('the guided tour', () => {
     }
   });
 
-  it('frames both previews as out of scope, then ends on the client’s dashboard', () => {
-    const [cert, bunkers, last] = TOUR_STEPS.slice(-3);
+  it('opens on the client’s dashboard, frames both previews as out of scope, then ends on the desk', () => {
+    const [first, second] = TOUR_STEPS;
+    expect(first?.route).toBe('/app/dashboard');
+    expect(first?.anchor).toBe('consolidation');
+    expect(second?.route).toBe('/app/dashboard');
+    expect(second?.anchor).toBe('approve');
+    const cert = TOUR_STEPS[11];
+    const bunkers = TOUR_STEPS[12];
+    const last = TOUR_STEPS[TOUR_STEPS.length - 1];
     expect(cert?.route).toBe('/app/agency/certification');
     expect(cert?.body).toMatch(/scope/i);
     expect(bunkers?.route).toBe('/app/agency/bunkers');
     expect(bunkers?.body).toMatch(/scope/i);
-    expect(last?.route).toBe('/app/dashboard');
+    expect(last?.route).toBe('/app/internal');
+  });
+
+  it('keeps em dashes out of the copy', () => {
+    for (const s of TOUR_STEPS) {
+      expect(`${s.title} ${s.body}`).not.toContain(String.fromCharCode(0x2014));
+    }
   });
 });
