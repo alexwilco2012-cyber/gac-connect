@@ -38,10 +38,10 @@ export default function About() {
           evidence is uploaded. Promotion, plan level, and rating never override compliance.
         </p>
         <p className="mt-2 text-[14px] text-ink-soft">
-          Above standard verification sits GAC Gold Band, a paid annual audit for Professional and Premium suppliers
-          at £1,500 a year, with a site visit, and removed the moment compliance lapses. No supplier
-          can advertise their way into it. Ratings shown across the platform always carry the number
-          of ratings actually submitted.
+          Above standard verification sits GAC Gold Band, a paid annual audit for Professional and
+          Premium suppliers at £1,500 a year, with a site visit, and removed the moment compliance
+          lapses. No supplier can advertise their way into it. Ratings shown across the platform
+          always carry the number of ratings actually submitted.
         </p>
       </Card>
 
