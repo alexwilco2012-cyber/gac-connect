@@ -330,3 +330,64 @@ test('the platform footnote and the tour anchor survive the rebuild', async ({ p
   await note.getByRole('link', { name: 'Supplier Vetting System' }).click();
   await expect(page).toHaveURL(/\/app\/svs$/);
 });
+
+test('the client approves the drafted MV Choice list, and the desk agrees', async ({ page }) => {
+  await openClientView(page);
+  const card = page.getByTestId('client-approve-list');
+  await expect(card).toHaveAttribute('data-tour', 'approve');
+  await expect(card).toContainText('Your list is drafted');
+  await expect(
+    card.getByRole('heading', { name: 'MV Choice, Regent Quay, ETA 08:00 tomorrow' }),
+  ).toBeVisible();
+  for (const service of ['Crane hire', 'Medical cover', 'Scaffolding']) {
+    await expect(card.getByRole('listitem').filter({ hasText: service })).toContainText(
+      '3 vetted suppliers matched',
+    );
+  }
+  await expect(card).toContainText('60/40 Browne Energy / Grizzell Marine');
+
+  // One click: the requests go, and the client lands where the replies will.
+  await card.getByRole('button', { name: 'Approve and send 9 quote requests' }).click();
+  await expect(page).toHaveURL(/\/app\/quotes$/);
+  await expect(page.getByText('9 quote requests issued for MV Choice.')).toBeVisible();
+
+  // Back on the dashboard, and after a reload, it stays approved.
+  await page.goto('/app/dashboard');
+  await expect(card).toContainText('Approved. 9 quote requests out, replies land in Quotes');
+  await expect(card.getByRole('button')).toHaveCount(0);
+  await page.reload();
+  await expect(card).toContainText('Approved. 9 quote requests out, replies land in Quotes');
+  await expect(card.getByRole('link', { name: 'Quotes' })).toBeVisible();
+
+  // The agent desk reads the same answer.
+  await page.goto('/app/internal');
+  await expect(page.getByTestId('desk-requests-issued')).toHaveText(
+    '9 quote requests issued, approved by the client',
+  );
+  await expect(page.getByRole('button', { name: 'Send 9 quote requests' })).toHaveCount(0);
+  await expect(page.locator('[data-tour="kpis"]')).toContainText('9 just issued for MV Choice');
+
+  // Reset demo brings the button back.
+  await page.goto('/app/dashboard');
+  await page.getByTestId('reset-demo').click();
+  await page.getByTestId('reset-demo-confirm').click();
+  await expect(
+    card.getByRole('button', { name: 'Approve and send 9 quote requests' }),
+  ).toBeVisible();
+  await expect(card).not.toContainText('Approved.');
+});
+
+test('the deck carries the same approve card, and its desk agrees', async ({ page }) => {
+  await page.goto('/presenter.html#/dashboard');
+  const card = page.getByTestId('client-approve-list');
+  await expect(card).toHaveAttribute('data-tour', 'approve');
+  await expect(card).toContainText('MV Choice, Regent Quay, ETA 08:00 tomorrow');
+  await card.getByRole('button', { name: 'Approve and send 9 quote requests' }).click();
+  await expect(card).toContainText('Approved. 9 quote requests out, replies land in Quotes');
+  await expect(page).toHaveURL(/#\/quotes$/);
+
+  await page.goto('/presenter.html#/internal');
+  await expect(
+    page.getByRole('button', { name: '✓ 9 quote requests issued, approved by the client' }),
+  ).toBeVisible();
+});

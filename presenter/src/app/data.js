@@ -108,27 +108,28 @@ DC_DATA.QUOTES = [
 ];
 
 /* The guided tour: the demo path, in the order it is actually walked. Kept
-   word for word in step with the site's src/tour/steps.ts — both surfaces tell
+   word for word in step with the site's src/tour/steps.ts: both surfaces tell
    the panel the same story, and a panel member who scans the QR gets the same
-   walkthrough the room just watched. The copy is what has to match; the first
-   two stops follow the agent desk to 'internal' (26 Aug) without a word of the
-   narration changing. The stops are the presenter's own running order (the
-   Presentation Script, platform half): on the day, Next replaces the sidebar. */
+   walkthrough the room just watched. It opens where the client opens, on the
+   dashboard (the consolidation card, then MV Choice's drafted list approved in
+   one click), and ends on the agent desk behind it (30 Oct: the platform half
+   is client-first). On the day, Next replaces the sidebar. An anchor, where
+   a stop has one, is scrolled into view when the stop opens. */
 DC_DATA.TOUR = [
-  { route: 'internal', title: 'Where every call stands', body: 'Open jobs, quote requests out, suppliers vetted, and the admin hours this replaces. One glance, before anyone asks.' },
-  { route: 'internal', title: 'The morning starts done', body: 'GAC Agent already knows what this vessel buys, so the procurement list is drafted before you open it — with the client billing split applied.' },
+  { route: 'dashboard', anchor: 'consolidation', title: 'Where your work stands', body: 'Your tier, what it has saved you this year, every port call with its milestones, and what is waiting on you. One screen, before you ask anyone.' },
+  { route: 'dashboard', anchor: 'approve', title: 'Your list is already drafted', body: 'MV Choice is due Regent Quay at 08:00. What she bought last time is already listed, three vetted suppliers for each, your billing split applied. One click approves it and nine quote requests go.' },
   { route: 'marketplace', title: 'Vetted, or not bookable', body: 'GAC’s own lines pin first, promoted listings are always labelled, and a supplier with lapsed paperwork cannot be booked at any price.' },
-  { route: 'crew-change', title: 'A crew change, end to end', body: 'Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it — then delete the crew’s details when the job is done. Give a flight number and every leg times itself.' },
-  { route: 'logistics', title: 'Cargo you can watch', body: 'Booked, collected, in transit, at the GAC warehouse, delivered to the quay — beside the port call it belongs to, not in a separate system.' },
+  { route: 'crew-change', title: 'A crew change, end to end', body: 'Upload the crew list you already keep and the LOIs, hotel rooms and taxis follow from it. Then delete the crew’s details when the job is done. Give a flight number and every leg times itself.' },
+  { route: 'logistics', title: 'Cargo you can watch', body: 'Booked, collected, in transit, at the GAC warehouse, delivered to the quay. Beside the port call it belongs to, not in a separate system.' },
   { route: 'customs', title: 'Customs, without the guesswork', body: 'Documents, preparation, submission, clearance. It will not take a declaration until the document set is complete, and it informs rather than advises.' },
   { route: 'procurement', title: 'One list, one invoice', body: 'The list goes to Compass, GAC’s own procurement branch. Compass sources and supplies every line and confirms it back. One relationship, one invoice.' },
-  { route: 'quotes', title: 'Quotes compare themselves', body: 'Replies land side by side, including ones sent as plain Outlook emails. Accepting one raises the purchase order in GAC Agent with the split already applied.' },
+  { route: 'quotes', title: 'Quotes compare themselves', body: 'Replies land side by side, including ones sent as plain Outlook emails. Accept one and the purchase order raises itself in GAC Agent with your split already applied. Nobody re-keys it.' },
   { route: 'invoices', title: 'Seven days to check it', body: 'Allocate the billing party, split a disbursement line by line, match it to the call. A harbour bill at an off-hire splits down the middle here.' },
   { route: 'tiers', title: 'Consolidation pays', body: 'The highest single tier applies, never the sum. All three lines is Full Stack: 7%, and £35,000 a year on £500k of GAC spend.' },
-  { route: 'svs', title: 'The gate and the early warning', body: 'Certification is mandatory, alerts fire at 90, 30 and 7 days, and a lapse blocks booking everywhere. No commercial arrangement overrides it.' },
+  { route: 'svs', title: 'The gate you never have to check', body: 'Every supplier you can see has passed it. Certification is mandatory, alerts fire at 90, 30 and 7 days, and a lapse blocks booking everywhere. No commercial arrangement overrides it.' },
   { route: 'certification', title: 'What it could become', body: 'Crew certification on the same 90, 30 and 7 day engine as the suppliers, by reference and rank, never a name. A preview, clearly outside this proposal’s scope.' },
   { route: 'bunkers', title: 'Priced against the call', body: 'A bunker enquiry priced in dollars a tonne, ranked all in with barging, each price showing how long it holds. A preview too, outside this proposal’s scope: the platform is a chassis, not a single-purpose tool.' },
-  { route: 'dashboard', title: 'What the client sees', body: 'One number that matters, the tier, and the three lines that earn it. Everything the desk just did arrives here as a price, a window and terms.' }
+  { route: 'internal', title: 'Behind it, one desk', body: 'The same port call from GAC’s side: the list it drafted, the requests it sent, the order it raised. Nothing typed twice, and the agent’s time goes into the next call.' }
 ];
 
 /* Interactive harbour landing — copy verbatim from the "GAC Services Landing" handoff (matches the live site). */

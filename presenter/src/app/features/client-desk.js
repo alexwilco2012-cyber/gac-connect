@@ -834,7 +834,30 @@ function CD_couldHaveSavedLine(calc) {
           : ''),
     }));
 
+    /* ---- MV Choice's drafted list, approved by the client (30 Oct) ----
+       Writes the core's `sent`, the flag the agent desk already reads, as
+       'client' so the desk can say who approved it. Persisted under the core
+       key, so Reset demo and a new visit both clear it. */
+    const approved = !!st.sent;
+
     return {
+      cdApproveOpen: !approved,
+      cdApproveDone: approved,
+      cdApproveTick: CD_icon('circle-check', 17, { style: { flexShrink: '0' } }),
+      cdApproveCheck: CD_icon('badge-check', 16, {
+        style: { flexShrink: '0', marginTop: '2px', color: '#047857' },
+      }),
+      cdApprove: () => {
+        if (self.state.sent) return;
+        self.setState({ sent: 'client' });
+        self._set('sent', 'client');
+        self.toastMsg(
+          '9 quote requests issued for MV Choice. Replies will populate the comparison view automatically.',
+          'SENT',
+        );
+        self._routeTimer = setTimeout(() => self.nav('quotes'), 1500);
+      },
+      cdGoQuotes: self._go('quotes'),
       cdSideStats: sideStats,
       cdQuickActions: quickActions,
       cdPortCalls: portCalls,
