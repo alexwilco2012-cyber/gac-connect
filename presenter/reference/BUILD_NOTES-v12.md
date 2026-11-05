@@ -14,7 +14,7 @@ Operating brief for the Claude Code repo-update session. Everything in this drop
 
 ## What changed in v12
 
-Two drivers. First, the SVS story now matches what Laura confirmed: the SVS is GAC-owned, built for GAC by a third-party developer, with Group currently moving maintenance and development to Group IT. Every trace of the old third-party-licence framing is gone, including the SVS-02 capex line, the Option C alternative, milestones and Month 1 actions. Second, the supplier commission model introduced in v11 is now carried consistently through all three deliverables; the study guide and presenter previously still described the old rebate-era model and figures.
+Two drivers. First, the SVS story now matches what was confirmed internally: the SVS is GAC-owned, built for GAC by a third-party developer, with Group currently moving maintenance and development to Group IT. Every trace of the old third-party-licence framing is gone, including the SVS-02 capex line, the Option C alternative, milestones and Month 1 actions. Second, the supplier commission model introduced in v11 is now carried consistently through all three deliverables; the study guide and presenter previously still described the old rebate-era model and figures.
 
 ## Canonical fact block (v12, locked)
 
